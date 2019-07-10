@@ -1,2 +1,2 @@
-# sinetstream
+# SINETStream
 SINETStream
