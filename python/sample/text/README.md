@@ -17,27 +17,18 @@ software distributed under the License is distributed on an
 KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
---->
+-->
 
-# SINETStream
+# Sample Program using SINETStream
 
-## Files
+## How to run
 
-* `README.md`           ... this
-* `python/`             ... SINETStream for Python
-    * `README.md`       ... Python API specification
-    * `src/`            ... API of SINETStream
-    * `tests/`          ... unit tests
-    * `sample/`         ... sample programs
-    * `plugins/`
-        * `kafka/`      ... SINETStream using Kafka
-            * `src/`
-            * `tests/`  ... unit tests
-* `docs/`               ... for mkdocs
-
-## License
-
-SINETStream is licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
-[Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
-
-For additional information, see the LICENSE.
+* Kafka is installed.
+* Install SINETStream.
+* Edit ./.sinetstream_config.yml:
+    * Rewrite the hostnames according to your environment.
+* Run consumer:
+    * `python3 ./consumer.py -s service-1 -t topic-1`
+* Run producer on another terminal:
+    * `python3 ./producer.py -s service-1 -t topic-1`
+    * Enter `xxxx`, the consumer will shows `xxxc=topic-1 value=xxxxx`.

@@ -1,0 +1,7 @@
+re:^python/.eggs/
+re:^python/.pytest_cache/
+re:^python/dist/
+glob:__pycache__
+glob:*.egg-info
+glob:tags
+glob:*.orig

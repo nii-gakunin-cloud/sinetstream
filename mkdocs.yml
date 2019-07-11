@@ -1,0 +1,9 @@
+site_name: SINET Stream
+nav:
+  - Home: index.md
+  - 'Python API': python-api.md
+  - Sample:
+    - Text: python-sample-text.md
+theme:
+  name: readthedocs
+  include_sidebar: false

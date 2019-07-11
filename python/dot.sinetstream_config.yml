@@ -1,0 +1,28 @@
+service-1:
+  type: kafka
+  brokers:
+    - kafka0.dp1.nii.ac.jp:9092
+    - kafka1.dp1.nii.ac.jp:9092
+    - kafka2.dp1.nii.ac.jp:9092
+
+bad-service-1:
+  type: kafka
+  brokers:
+    - 127.0.0.1:9999
+
+tls-service-1:
+  type: kafka
+  brokers:
+    - kafka0.dp1.nii.ac.jp:9093
+    - kafka1.dp1.nii.ac.jp:9093
+    - kafka2.dp1.nii.ac.jp:9093
+  tls:
+     ca_certs: tests/cert/ca.pem
+     check_hostname: off
+
+service-1-9093:
+  type: kafka
+  brokers:
+    - kafka0.dp1.nii.ac.jp:9093
+    - kafka1.dp1.nii.ac.jp:9093
+    - kafka2.dp1.nii.ac.jp:9093
