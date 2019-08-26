@@ -106,6 +106,12 @@ class Message(object):
     pass
 
 
+# value_type
+TEXT = "text"
+BYTE_ARRAY = "byte_array"
+
+
+# consistency
 AT_MOST_ONCE = 0
 AT_LEAST_ONCE = 1
 EXACTLY_ONCE = 2
@@ -126,7 +132,21 @@ def setdict(d, k, v):
         d[k] = v
 
 
+def first(*args):
+    for x in args:
+        if x:
+            return x
+    return None
+
+
 DEFAULT_CLIENT_ID = None
+
+
+def make_client_id(cid):
+    import uuid
+    if cid is DEFAULT_CLIENT_ID or cid == "":
+        cid = "sinetstream-" + str(uuid.uuid4())
+    return cid
 
 
 class Registry(object):
@@ -153,13 +173,43 @@ class Registry(object):
             raise UnsupportedServiceTypeError()
 
 
+# value_type -> (value_serializer, value_deserializer)
+value_serdes = {
+    None: (None, None),
+    "raw": (None, None),
+    "bytearray": (None, None),
+    "byte_array": (None, None),
+    "BYTEARRAY": (None, None),
+    "BYTE_ARRAY": (None, None),
+    "text": (lambda x: x.encode(), lambda x: x.decode())
+    # "image": (xxx, yyy)
+}
+
+
 class MessageReader(object):
 
     registry = Registry("sinetstream.reader")
 
+    def usage():
+        return ('MessageReader(\n'
+                '    service=SERVICE,                 '
+                '# Service name defined in the configuration file. (REQUIRED)\n'
+                '    topics=TOPICS,                   '
+                '# The topic to receive.\n'
+                '    consistency=AT_MOST_ONCE,        '
+                '# consistency: AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE\n'
+                '    client_id=DEFAULT_CLIENT_ID,     '
+                '# If not specified, the value is automatically generated.\n'
+                '    value_type=None,                 '
+                '# The type of message.\n'
+                '    value_deserializer=None          '
+                '# If not specified, use default deserializer according to valueType.\n'
+                ')')
+
     def __init__(self, service, topics,
-                 consistency=EXACTLY_ONCE,
+                 consistency=AT_MOST_ONCE,
                  client_id=DEFAULT_CLIENT_ID,
+                 value_type=None,
                  value_deserializer=None,
                  receive_timeout_ms=float("inf"),
                  **kwargs):
@@ -176,8 +226,14 @@ class MessageReader(object):
         self.service = service
         self.topics = topics
         self.consistency = consistency
-        self._client_id = client_id
-        self.value_deserializer = value_deserializer
+        self._client_id = make_client_id(client_id)
+
+        vtype = first(value_type,
+                      self.svc.get("value_type"))
+        if vtype not in value_serdes:
+            raise InvalidArgumentError()
+        self.value_deserializer = first(value_deserializer, value_serdes[vtype][1])
+
         self.receive_timeout_ms = receive_timeout_ms
         self.kwargs = kwargs
         self.type = self.svc["type"]
@@ -216,9 +272,26 @@ class MessageWriter(object):
 
     registry = Registry("sinetstream.writer")
 
+    def usage():
+        return ('MessageWriter(\n'
+                '    service=SERVICE,              '
+                '# Service name defined in the configuration file. (REQUIRED)\n'
+                '    topics=TOPICS,                '
+                '# The topic to receive.\n'
+                '    consistency=AT_MOST_ONCE,     '
+                '# consistency: AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE\n'
+                '    client_id=DEFAULT_CLIENT_ID,  '
+                '# If not specified, the value is automatically generated.\n'
+                '    value_type=None,              '
+                '# The type of message.\n'
+                '    value_serializer=None         '
+                '# If not specified, use default serializer according to valueType.\n'
+                ')')
+
     def __init__(self, service, topic,
-                 consistency=EXACTLY_ONCE,
+                 consistency=AT_MOST_ONCE,
                  client_id=DEFAULT_CLIENT_ID,
+                 value_type=None,
                  value_serializer=None,
                  **kwargs):
         logger.debug("MessageWriter:init")
@@ -233,8 +306,14 @@ class MessageWriter(object):
 
         self.topic = topic
         self.consistency = consistency
-        self._client_id = client_id
-        self.value_serializer = value_serializer
+        self._client_id = make_client_id(client_id)
+
+        vtype = first(value_type,
+                      self.svc.get("value_type"))
+        if vtype not in value_serdes:
+            raise InvalidArgumentError()
+        self.value_serializer = first(value_serializer, value_serdes[vtype][0])
+
         self.kwargs = kwargs
         self.type = self.svc["type"]
         self._writer = self._find_writer(self.type)

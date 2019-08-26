@@ -60,12 +60,15 @@ def get_tls_configs(svc):
     configs = {}
     tls = svc.get("tls")
     if tls:
-        setdict(configs, "security_protocol", "SSL")
-        setdict(configs, "ssl_cafile", tls.get("ca_certs"))
-        setdict(configs, "ssl_certfile", tls.get("certfile"))
-        setdict(configs, "ssl_keyfile", tls.get("keyfile"))
-        setdict(configs, "ssl_ciphers", tls.get("ciphers"))
-        setdict(configs, "ssl_check_hostname", tls.get("check_hostname"))
+        if type(tls) is bool:
+            configs["security_protocol"] = "SSL"
+        else:
+            setdict(configs, "security_protocol", "SSL")
+            setdict(configs, "ssl_cafile", tls.get("ca_certs"))
+            setdict(configs, "ssl_certfile", tls.get("certfile"))
+            setdict(configs, "ssl_keyfile", tls.get("keyfile"))
+            setdict(configs, "ssl_ciphers", tls.get("ciphers"))
+            setdict(configs, "ssl_check_hostname", tls.get("check_hostname"))
     return configs
 
 
@@ -109,6 +112,14 @@ class KafkaReader(object):
             configs["consumer_timeout_ms"] = int(
                 self._reader.receive_timeout_ms)
         configs.update(get_tls_configs(self._reader.svc))
+        tls = self._reader.kwargs.get("tls")
+        if tls:
+            if type(tls) is bool:
+                del self._reader.kwargs["tls"]
+                configs["security_protocol"] = "SSL"
+            else:
+                logger.error("tls must be bool")
+                raise InvalidArgumentError()
         configs.update(self._reader.kwargs)
         try:
             if isinstance(self._reader.topics, list):

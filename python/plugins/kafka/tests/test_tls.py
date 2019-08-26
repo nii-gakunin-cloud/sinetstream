@@ -33,6 +33,23 @@ def test_tls_reader_yaml():
         pass
 
 
+def test_tls_reader_yaml_default():
+    try:
+        with sinetstream.MessageReader("tls-service-1-default", "topic") as f:
+            pass
+    except ssl.SSLError:
+        pass
+
+
+def test_tls_reader_arg0():
+    try:
+        with sinetstream.MessageReader("service-1-9093", "topic",
+                                       tls=True) as f:
+            pass
+    except ssl.SSLError:
+        pass
+
+
 def test_tls_reader_arg():
     with sinetstream.MessageReader("service-1-9093", "topic",
                                    security_protocol="SSL",

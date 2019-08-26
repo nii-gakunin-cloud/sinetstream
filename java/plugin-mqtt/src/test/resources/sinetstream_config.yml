@@ -1,0 +1,143 @@
+service-1:
+  type: mqtt
+  brokers:
+    - mqtt:1883
+service-2:
+  type: mqtt
+  brokers:
+    - mqtt
+service-3:
+  type: mqtt
+  brokers: mqtt:1883
+service-4:
+  type: mqtt
+  brokers: mqtt
+service-X-1:
+  type: mqtt
+  brokers:
+    - mqtt:1883
+    - mqtt:1884
+service-X-2:
+  type: mqtt
+service-X-3:
+  type: mqtt
+  brokers: []
+service-Z-1:
+  type: mqtt
+  brokers:
+    - mqtt1:1883
+service-Z-2:
+  type: mqtt
+  brokers:
+    - mqtt:1884
+service-by-websocket:
+  type: mqtt
+  brokers: websocket.example.org
+  username_pw_set:
+    username: mqtt
+  tls: true
+service-by-websocket-and-tls-with-boolean:
+  type: mqtt
+  brokers: websocket.example.org
+  username_pw_set:
+    username: mqtt
+  tls: true
+service-by-websocket-and-no-tls:
+  type: mqtt
+  brokers: websocket.example.org
+  username_pw_set:
+    username: mqtt
+  tls: false
+service-by-websocket-and-no-tls2:
+  type: mqtt
+  brokers: websocket.example.org
+  username_pw_set:
+    username: mqtt
+  tls: {}
+service-with-encrypt-cbc:
+  type: mqtt
+  brokers: mqtt:1883
+  crypto:
+    algorithm: AES
+    key_length: 128
+    mode: CBC
+    padding: pkcs7
+    key_derivation:
+      algorithm: pbkdf2
+      salt_bytes: 16
+      iteration: 10000
+    password: secret-000
+service-with-encrypt-eax:
+  type: mqtt
+  brokers: mqtt:1883
+  crypto:
+    algorithm: AES
+    key_length: 256
+    mode: EAX
+    key_derivation:
+      algorithm: pbkdf2
+    password: secret-00
+service-connect-by-tls_set:
+  type: mqtt
+  brokers: mqtt.dp1.nii.ac.jp
+  tls_set:
+    keyStore: ${client0KeyStore}
+    keyStorePassword: client0-pass
+    keyStoreType: PKCS12
+    trustStore: ${niicaKeyStore}
+    trustStorePassword: kafka-pass
+    trustStoreType: PKCS12
+service-connect-by-tls:
+  type: mqtt
+  brokers: mqtt.dp1.nii.ac.jp
+  tls:
+    keyStore: ${client0KeyStore}
+    keyStorePassword: client0-pass
+    keyStoreType: PKCS12
+    trustStore: ${niicaKeyStore}
+    trustStorePassword: kafka-pass
+    trustStoreType: PKCS12
+service-connect-by-tls-ca_certs:
+  type: mqtt
+  brokers: mqtt.dp1.nii.ac.jp
+  tls:
+    keyStore: ${client0KeyStore}
+    keyStorePassword: client0-pass
+    keyStoreType: PKCS12
+    ca_certs: ${ca.pem}
+service-connect-by-tls-ca_certs_cert_key:
+  type: mqtt
+  brokers: mqtt.dp1.nii.ac.jp
+  tls:
+    ca_certs: ${ca.pem}
+    certfile: ${client0.crt}
+    keyfile: ${client0.key}
+service-connect-by-tls-no-hostname-check:
+  type: mqtt
+  brokers: mqtt
+  tls:
+    keyStore: ${client0KeyStore}
+    keyStorePassword: client0-pass
+    keyStoreType: PKCS12
+    trustStore: ${niicaKeyStore}
+    trustStorePassword: kafka-pass
+    trustStoreType: PKCS12
+    check_hostname: false
+service-connect-by-tls_set-no-hostname-check:
+  type: mqtt
+  brokers: mqtt
+  tls_set:
+    ca_certs: ${ca.pem}
+    certfile: ${client0.crt}
+    keyfile: ${client0.key}
+    tls_version: TLSv1.2
+    ciphers: TLS_RSA_WITH_AES_256_CBC_SHA
+  tls_insecure_set: true
+service-connect-by-tls-encrypted-key:
+  type: mqtt
+  brokers: mqtt.dp1.nii.ac.jp
+  tls:
+    ca_certs: ${ca.pem}
+    certfile: ${client1.crt}
+    keyfile: ${client1.key}
+    keyfilePassword: client1-pass

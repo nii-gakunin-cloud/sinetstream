@@ -1,0 +1,70 @@
+/*
+ * Copyright (C) 2019 National Institute of Informatics
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+plugins {
+    id 'java'
+    id 'application'
+}
+
+sourceCompatibility = 1.8
+
+version = '0.9.5'
+
+repositories {
+    jcenter()
+    flatDir {
+        dirs "libs"
+    }
+}
+
+dependencies {
+    implementation 'commons-cli:commons-cli:1.4'
+    implementation 'jp.ad.sinet.sinetstream:SINETStream-api:0.9.5'
+    implementation 'jp.ad.sinet.sinetstream:SINETStream-kafka:0.9.5'
+    implementation 'jp.ad.sinet.sinetstream:SINETStream-mqtt:0.9.5'
+    runtimeOnly 'org.slf4j:slf4j-nop:1.7.26'
+
+    implementation group: 'org.yaml', name: 'snakeyaml', version: '1.24'
+    implementation group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.62'
+    implementation group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.62'
+    implementation group: 'org.apache.commons', name: 'commons-text', version: '1.7'
+    implementation group: 'org.apache.commons', name: 'commons-rng-simple', version: '1.2'
+    implementation group: 'org.apache.kafka', name: 'kafka-clients', version: '2.3.0'
+    implementation group: 'org.eclipse.paho', name: 'org.eclipse.paho.client.mqttv3', version: '1.2.1'
+}
+
+application {
+    mainClassName = 'jp.ad.sinet.stream.example.text.TextProducer'
+    applicationName = 'text-producer'
+}
+
+task createExtraRunApp(type: CreateStartScripts) {
+    mainClassName = 'jp.ad.sinet.stream.example.text.TextConsumer'
+    classpath = startScripts.classpath
+    outputDir = startScripts.outputDir
+    applicationName = 'text-consumer'
+}
+
+applicationDistribution.into("bin") {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from(createExtraRunApp)
+    fileMode = 0755
+}

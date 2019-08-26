@@ -1,26 +1,32 @@
+# vim:noexpandtab tabstop=8 shiftwidth=8
+
 PYTHON3 = python3.6
 SETUP = $(PYTHON3) setup.py
 LINT = flake8-3.6
 
-all:: lint
+all: lint
 
-lint::
+lint:
 	#$(LINT) src tests || true
 	$(SETUP) flake8 || true
 
-sdist::
+sdist:
 	$(SETUP) sdist
 
-bdist::
+bdist:
 	$(SETUP) bdist
 
-install::
+install:
 	$(SETUP) install --user
 
-uninstall::
+uninstall:
 	$(PYTHON3) -m pip uninstall -y sinetstream-kafka
 
-test::
+reinstall:
+	$(MAKE) uninstall
+	$(MAKE) install
+
+test:
 	-$(SETUP) test
 
 tags::

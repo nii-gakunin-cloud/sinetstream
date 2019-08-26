@@ -2,6 +2,7 @@ site_name: SINET Stream
 nav:
   - Home: index.md
   - 'Python API': python-api.md
+  - 'Java API': java-api.md
   - Sample:
     - Text: python-sample-text.md
 theme:

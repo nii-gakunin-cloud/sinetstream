@@ -1,0 +1,129 @@
+service-1:
+  type: kafka
+  brokers:
+    - kafka0.vcp-handson.org:1717
+    - kafka1.vcp-handson.org:1718
+    - kafka2.vcp-handson.org:1719
+service-using-default-port:
+  type: kafka
+  brokers:
+    - kafka0.dp1.nii.ac.jp
+service-broker-by-string:
+  type: kafka
+  brokers: kafka0.vcp-handson.org:1717
+service-broker-by-string-using-default-port:
+  type: kafka
+  brokers: kafka2.dp1.nii.ac.jp
+service-with-encrypt-cbc:
+  type: kafka
+  brokers:
+    - kafka0.vcp-handson.org:1717
+  crypto:
+    algorithm: AES
+    key_length: 128
+    mode: CBC
+    padding: pkcs7
+    key_derivation:
+      algorithm: pbkdf2
+      salt_bytes: 16
+      iteration: 10000
+    password: secret-000
+service-with-encrypt-eax:
+  type: kafka
+  brokers:
+    - kafka0.vcp-handson.org:1717
+  crypto:
+    algorithm: AES
+    key_length: 256
+    mode: EAX
+    key_derivation:
+      algorithm: pbkdf2
+    password: secret-0
+service-connect-by-tls:
+  type: kafka
+  brokers:
+    - kafka0.dp1.nii.ac.jp:9093
+  tls:
+    keyStore: ${client0KeyStore}
+    keyStorePassword: client0-pass
+    keyStoreType: PKCS12
+    trustStore: ${niicaKeyStore}
+    trustStorePassword: kafka-pass
+    trustStoreType: PKCS12
+service-connect-by-tls-ca_certs:
+  type: kafka
+  brokers:
+    - kafka0.dp1.nii.ac.jp:9093
+  tls:
+    keyStore: ${client0KeyStore}
+    keyStorePassword: client0-pass
+    keyStoreType: PKCS12
+    ca_certs: ${ca.pem}
+service-connect-by-tls-ca_certs_cert_key:
+  type: kafka
+  brokers:
+    - kafka0.dp1.nii.ac.jp:9093
+  tls:
+    ca_certs: ${ca.pem}
+    certfile: ${client0.crt}
+    keyfile: ${client0.key}
+service-connect-by-tls-no-hostname-check:
+  type: kafka
+  brokers:
+    - kafka0:9093
+  tls:
+    keyStore: ${client0KeyStore}
+    keyStorePassword: client0-pass
+    keyStoreType: PKCS12
+    trustStore: ${niicaKeyStore}
+    trustStorePassword: kafka-pass
+    trustStoreType: PKCS12
+    check_hostname: false
+service-connect-by-tls-encrypted-key:
+  type: kafka
+  brokers:
+    - kafka0.dp1.nii.ac.jp:9093
+  tls:
+    ca_certs: ${ca.pem}
+    certfile: ${client1.crt}
+    keyfile: ${client1.key}
+    keyfilePassword: client1-pass
+service-connect-by-tls_kafka:
+  type: kafka
+  brokers:
+    - kafka0.dp1.nii.ac.jp:9093
+  ssl_cafile: ${ca.pem}
+  ssl_certfile: ${client1.crt}
+  ssl_keyfile: ${client1.key}
+  ssl_password: client1-pass
+  ssl_ciphers: TLS_RSA_WITH_AES_256_CBC_SHA
+service-connect-by-tls_kafka-and-tls:
+  type: kafka
+  brokers:
+    - kafka0.dp1.nii.ac.jp:9093
+  ssl_cafile: ${ca.pem}
+  ssl_certfile: ${client1.crt}
+  ssl_keyfile: ${client1.key}
+  ssl_password: client1-pass
+  ssl_ciphers: TLS_RSA_WITH_AES_256_CBC_SHA
+  tls: false
+service-connect-by-tls_kafka-no-hostname-check:
+  type: kafka
+  brokers:
+    - kafka0:9093
+  tls_insecure_set: true
+  security_protocol: SSL
+  ssl_cafile: ${ca.pem}
+  ssl_certfile: ${client0.crt}
+  ssl_keyfile: ${client0.key}
+  ssl_check_hostname: false
+service-connect-by-no-tls:
+  type: kafka
+  brokers:
+    - kafka0.vcp-handson.org:1717
+  tls: false
+service-connect-by-no-tls2:
+  type: kafka
+  brokers:
+    - kafka0.vcp-handson.org:1717
+  tls: {}

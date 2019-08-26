@@ -85,6 +85,12 @@ def test_reader_client_id_default(dummy_reader_plugin):
     assert True
 
 
+def test_reader_client_id_empty(dummy_reader_plugin):
+    with sinetstream.MessageReader(service, topic, client_id="") as f:
+        assert f.client_id is not None and f.client_id != ""
+    assert True
+
+
 def test_reader_client_id_set(dummy_reader_plugin):
     cid = "oreore"
     with sinetstream.MessageReader(service, topic, client_id=cid) as f:

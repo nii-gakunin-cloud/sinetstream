@@ -22,4 +22,5 @@ from .api import (
     SinetError, NoServiceError, NoConfigError, InvalidArgumentError,
     ConnectionError, AlreadyConnectedError, UnsupportedServiceTypeError,
     AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE, DEFAULT_CLIENT_ID,
+    TEXT, BYTE_ARRAY,
 )

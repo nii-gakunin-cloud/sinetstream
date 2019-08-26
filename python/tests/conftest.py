@@ -20,8 +20,34 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import collections
+
 import pytest
 import sinetstream
+
+
+que = collections.defaultdict(collections.deque)
+
+
+def qwrite(topic, value):
+    assert type(value) is bytes
+    que[topic].append(value)
+
+
+def qread(topic):
+    if topic not in que:
+        return None
+    q = que[topic]
+    if len(q) == 0:
+        return None
+    return q.popleft()
+
+
+class DummyMessage(sinetstream.Message):
+    def __init__(self, topic, value):
+        self.topic = topic
+        self.value = value
+        self.raw = {"topic": topic, "value": value}
 
 
 class DummyKafkaReader(object):
@@ -39,10 +65,19 @@ class DummyKafkaReader(object):
         return self
 
     def __next__(self):
+        topics = self._reader.topics
+        if type(topics) != list:
+            topics = [topics]
+        for topic in topics:
+            value = qread(topic)
+            if value:
+                if self._reader.value_deserializer:
+                    value = self._reader.value_deserializer(value)
+                return DummyMessage(topic, value)
         raise StopIteration()
 
 
-class DummyKafkaEntryPoint(object):
+class DummyKafkaReaderEntryPoint(object):
     @classmethod
     def load(cls):
         return DummyKafkaReader
@@ -50,7 +85,7 @@ class DummyKafkaEntryPoint(object):
 
 @pytest.fixture(scope='session')
 def dummy_reader_plugin():
-    sinetstream.MessageReader.registry.register('kafka', DummyKafkaEntryPoint)
+    sinetstream.MessageReader.registry.register('kafka', DummyKafkaReaderEntryPoint)
 
 
 class DummyKafkaWriter(object):
@@ -64,8 +99,13 @@ class DummyKafkaWriter(object):
     def close(self):
         pass
 
+    def publish(self, value):
+        if self._writer.value_serializer:
+            value = self._writer.value_serializer(value)
+        qwrite(self._writer.topic, value)
 
-class DummyKafkaEntryPoint(object):
+
+class DummyKafkaWriterEntryPoint(object):
     @classmethod
     def load(cls):
         return DummyKafkaWriter
@@ -73,4 +113,4 @@ class DummyKafkaEntryPoint(object):
 
 @pytest.fixture(scope='session')
 def dummy_writer_plugin():
-    sinetstream.MessageWriter.registry.register('kafka', DummyKafkaEntryPoint)
+    sinetstream.MessageWriter.registry.register('kafka', DummyKafkaWriterEntryPoint)

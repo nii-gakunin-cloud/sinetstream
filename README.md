@@ -33,6 +33,12 @@ under the License.
         * `kafka/`      ... SINETStream using Kafka
             * `src/`
             * `tests/`  ... unit tests
+* `java/`               ... SINETStream for Java
+    * `api/`            ... API of SINETStream for Java
+    * `plugin-kafka/`   ... SINETStream using Kafka
+    * `plugin-mqtt/`    ... SINETStream using MQTT
+    * `sample/`         ... sample programs
+    * `USERGUIDE.md`    ... Java API User Guide
 * `docs/`               ... for mkdocs
 
 
@@ -41,14 +47,14 @@ under the License.
 1. Setup Kafka Server
     1. [Kafka Quickstart](https://kafka.apache.org/quickstart)
 1. Install SINETStream
-    1. `pip install --user https://github.com/nii-gakunin-cloud/sinetstream/releases/download/v0.9/sinetstream_kafka-0.9.3-py3-none-any.whl https://github.com/nii-gakunin-cloud/sinetstream/releases/download/v0.9/sinetstream-0.9.3-py3-none-any.whl`
+    1. `pip install --user https://github.com/nii-gakunin-cloud/sinetstream/releases/download/v0.9/sinetstream_kafka-0.9.5-py3-none-any.whl https://github.com/nii-gakunin-cloud/sinetstream/releases/download/v0.9/sinetstream-0.9.5-py3-none-any.whl`
 1. Create a config file for SINETStream at the home directory like this:
-   ```
-   service-1:
-     type: kafka
-       brokers:
-           - kafka_server_name:9092
-   ```
+    ```
+    service-1:
+      type: kafka
+        brokers:
+            - kafka_server_name:9092
+    ```
    Rewrite `kafka_server_name:9092` according to your environment (eg `localhost:9092`)
 1. Test
     1. Dowonload source from https://github.com/nii-gakunin-cloud/sinetstream/archive/v0.9.tar.gz
