@@ -40,6 +40,7 @@ under the License.
     * `sample/`         ... sample programs
     * `USERGUIDE.md`    ... Java API User Guide
 * `docs/`               ... for mkdocs
+    * auth.md           ... Authentication and Authorization
 
 
 ## Install

@@ -42,6 +42,7 @@ dependencies {
     implementation 'jp.ad.sinet.sinetstream:SINETStream-mqtt:0.9.5'
     implementation group: 'org.bytedeco', name: 'javacv-platform', version: '1.5.1'
     runtimeOnly 'org.slf4j:slf4j-nop:1.7.26'
+    implementation group: 'com.google.guava', name: 'guava', version: '28.0-jre'
 
 
     implementation group: 'org.yaml', name: 'snakeyaml', version: '1.24'

@@ -37,4 +37,8 @@ print(f"# topics={','.join(args.topic)}")
 
 with sinetstream.MessageReader(args.service, args.topic) as f:
     for msg in f:
-        print(f"topic={msg.topic} value={msg.value.decode('utf-8')}")
+        try:
+            value = msg.value.decode('utf-8')
+            print(f"topic={msg.topic} value(utf-8)='{value}'")
+        except:
+            print(f"topic={msg.topic} value({type(msg.value).__name__})={msg.value}")

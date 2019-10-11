@@ -26,7 +26,7 @@ import threading
 
 import paho.mqtt.client
 from sinetstream import (
-    Message, AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE,
+    make_message, AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE,
     InvalidArgumentError, ConnectionError, AlreadyConnectedError,
 )
 # from sinetstream.api import setdict
@@ -53,6 +53,9 @@ def wait_for_connected(rdwrter):
 
 def on_connect(client, userdata, flags, rc):
     logger.debug(f"MQTT:on_connect: rc={rc}")
+    if rc != 0:
+        logger.error(f"MQTT: {paho.mqtt.client.connack_string(rc)} (rc={rc})")
+        return
     rdwrter = userdata
     with rdwrter.lock:
         assert not rdwrter.connected
@@ -128,19 +131,6 @@ def set_callbacks(mqttc):
     mqttc.on_socket_unregister_write = on_socket_unregister_write
 
 
-class MqttMessage(Message):
-    def __init__(self, msg):
-        self.raw = msg
-
-    @property
-    def value(self):
-        return self.raw.payload
-
-    @property
-    def topic(self):
-        return self.raw.topic
-
-
 class MqttReaderHandleIter(object):
     def __init__(self, reader):
         logger.debug("MqttReaderHandleIter:init")
@@ -149,18 +139,17 @@ class MqttReaderHandleIter(object):
     def __next__(self):
         logger.debug("MqttReaderHandleIter:next")
         message = self.reader.pop_rcvq()
-        if self.reader._reader.value_deserializer is not None:
-            message.payload = self.reader._reader.value_deserializer(message.payload)
-        return MqttMessage(message)
+        return make_message(self.reader._reader, message.payload, message.topic, message)
 
 
-def mqtt_client_start(mqttc, svc, kwargs):
-    brokers = svc["brokers"]
+def mqtt_client_start(mqttc, params):
+    brokers = params["brokers"]
     if len(brokers) > 1:
         logger.error("only one broker can be specified")
         raise InvalidArgumentError()
-    [host, port] = brokers[0].rsplit(":", 1)
-    port = int(port)
+    hostport = brokers[0].rsplit(":", 1)
+    if len(hostport) == 2:
+        hostport[1] = int(hostport[1])
 
     ca_certs = None
     certfile = None
@@ -170,7 +159,13 @@ def mqtt_client_start(mqttc, svc, kwargs):
     ciphers = None
     use_tls = False
 
-    tls = svc.get("tls")
+    username_pw_set = params.get("username_pw_set")
+    if username_pw_set:
+        username = username_pw_set.get("username")
+        password = username_pw_set.get("password")
+        mqttc.username_pw_set(username, password)
+
+    tls = params.get("tls")
     if tls:
         if type(tls) is bool:
             use_tls = tls
@@ -184,23 +179,15 @@ def mqtt_client_start(mqttc, svc, kwargs):
             logger.error("tls: must be bool or associative array")
             raise InvalidArgumentError()
 
-    tls = kwargs.get("tls")
-    if tls:
-        if type(tls) is bool:
-            use_tls = tls
-        else:
-            logger.error("tls: must be bool or associative array")
-            raise InvalidArgumentError()
-
-    tls = kwargs.get("security_protocol")
+    tls = params.get("security_protocol")
     if tls == "SSL" or tls == "TLS" or use_tls:
         use_tls = True
-        ca_certs = kwargs.get("ca_certs", ca_certs)
-        certfile = kwargs.get("certfile", certfile)
-        keyfile = kwargs.get("keyfile", keyfile)
-        ciphers = kwargs.get("ciphers", ciphers)
+        ca_certs = params.get("ca_certs", ca_certs)
+        certfile = params.get("certfile", certfile)
+        keyfile = params.get("keyfile", keyfile)
+        ciphers = params.get("ciphers", ciphers)
 
-    tls = kwargs.get("tls_set")
+    tls = params.get("tls_set")
     if tls:
         use_tls = True
         ca_certs = tls.get("ca_certs", ca_certs)
@@ -227,7 +214,7 @@ def mqtt_client_start(mqttc, svc, kwargs):
     set_callbacks(mqttc)
 
     try:
-        mqttc.connect(host, port)
+        mqttc.connect(*hostport)
     except ConnectionRefusedError:
         logger.error(f"cannot connect broker: {brokers}")
         raise ConnectionError()
@@ -247,8 +234,8 @@ class MqttReader(object):
     def __init__(self, message_reader):
         logger.debug("MqttReader:init")
         self._reader = message_reader
-        self.qos = to_qos(message_reader.consistency)
-        self.subscribing_topics = make_list(message_reader.topics)
+        self.qos = to_qos(message_reader.params["consistency"])
+        self.subscribing_topics = make_list(message_reader.params["topics"])
         self.mqttc = None
         self.lock = threading.Lock()
         self.connected = False
@@ -262,7 +249,7 @@ class MqttReader(object):
     def pop_rcvq(self):
         with self.lock:
             wait_for_connected(self)
-        timeout = self._reader.receive_timeout_ms
+        timeout = self._reader.params["receive_timeout_ms"]
         if timeout != float("inf"):
             try:
                 msg = self.rcvq.get(block=True, timeout=timeout/1000.0)
@@ -278,9 +265,9 @@ class MqttReader(object):
             logger.error(f"already connected")
             raise AlreadyConnectedError()
 
-        mqttc = paho.mqtt.client.Client(client_id=self._reader._client_id, userdata=self)
+        mqttc = paho.mqtt.client.Client(client_id=self._reader.params["client_id"], userdata=self)
         mqttc.enable_logger(logger)
-        mqtt_client_start(mqttc, self._reader.svc, self._reader.kwargs)
+        mqtt_client_start(mqttc, self._reader.params)
         self.mqttc = mqttc
 
         with self.lock:
@@ -308,7 +295,7 @@ class MqttWriter(object):
     def __init__(self, message_writer):
         logger.debug("MqttWriter:init")
         self._writer = message_writer
-        self.qos = to_qos(message_writer.consistency)
+        self.qos = to_qos(message_writer.params["consistency"])
         self.subscribing_topics = []
         self.mqttc = None
         self.lock = threading.Lock()
@@ -333,9 +320,9 @@ class MqttWriter(object):
         if self.mqttc is not None:
             raise AlreadyConnectedError()
 
-        mqttc = paho.mqtt.client.Client(client_id=self._writer._client_id, userdata=self)
+        mqttc = paho.mqtt.client.Client(client_id=self._writer.params["client_id"], userdata=self)
         mqttc.enable_logger(logger)
-        mqtt_client_start(mqttc, self._writer.svc, self._writer.kwargs)
+        mqtt_client_start(mqttc, self._writer.params)
         self.mqttc = mqttc
 
         return self
@@ -355,8 +342,6 @@ class MqttWriter(object):
 
     def publish(self, msg):
         logger.debug("MqttWriter:publish")
-        if self._writer.value_serializer is not None:
-            msg = self._writer.value_serializer(msg)
         if type(msg) != bytes:
             logger.error("MqttWriter: msg must be bytes")
             raise InvalidArgumentError()
@@ -365,7 +350,7 @@ class MqttWriter(object):
                 logger.warning("MqttWriter: not connected")
                 wait_for_connected(self)
         with self.lock:
-            msginfo = self.mqttc.publish(self._writer.topic, payload=msg, qos=self.qos)
+            msginfo = self.mqttc.publish(self._writer.params["topic"], payload=msg, qos=self.qos)
             logger.debug(f"publish => rc={msginfo.rc} mid={msginfo.mid}")
             if msginfo.rc != paho.mqtt.client.MQTT_ERR_SUCCESS:
                 raise ConnectionError()

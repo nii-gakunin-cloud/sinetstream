@@ -26,7 +26,8 @@ import pytest
 import sinetstream
 
 
-que = collections.defaultdict(collections.deque)
+# que = collections.defaultdict(collections.deque)
+que = None
 
 
 def qwrite(topic, value):
@@ -43,20 +44,12 @@ def qread(topic):
     return q.popleft()
 
 
-class DummyMessage(sinetstream.Message):
-    def __init__(self, topic, value):
-        self.topic = topic
-        self.value = value
-        self.raw = {"topic": topic, "value": value}
-
-
 class DummyKafkaReader(object):
     def __init__(self, message_reader):
         self._reader = message_reader
 
     def open(self):
-        if self._reader._client_id is None:
-            self._reader._client_id = "client_id"
+        pass
 
     def close(self):
         pass
@@ -65,15 +58,14 @@ class DummyKafkaReader(object):
         return self
 
     def __next__(self):
-        topics = self._reader.topics
+        topics = self._reader.params.get("topics")
         if type(topics) != list:
             topics = [topics]
         for topic in topics:
             value = qread(topic)
             if value:
-                if self._reader.value_deserializer:
-                    value = self._reader.value_deserializer(value)
-                return DummyMessage(topic, value)
+                raw = {"topic": topic, "value": value}
+                return sinetstream.make_message(self._reader, value, topic, raw)
         raise StopIteration()
 
 
@@ -90,19 +82,18 @@ def dummy_reader_plugin():
 
 class DummyKafkaWriter(object):
     def __init__(self, message_writer):
+        global que
+        que = collections.defaultdict(collections.deque)
         self._writer = message_writer
 
     def open(self):
-        if self._writer._client_id is None:
-            self._writer._client_id = "client_id"
+        pass
 
     def close(self):
         pass
 
     def publish(self, value):
-        if self._writer.value_serializer:
-            value = self._writer.value_serializer(value)
-        qwrite(self._writer.topic, value)
+        qwrite(self._writer.params.get("topic"), value)
 
 
 class DummyKafkaWriterEntryPoint(object):

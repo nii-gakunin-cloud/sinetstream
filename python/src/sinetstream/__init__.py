@@ -18,7 +18,7 @@
 # under the License.
 
 from .api import (
-    MessageReader, MessageWriter, Message,
+    MessageReader, MessageWriter, make_message,
     SinetError, NoServiceError, NoConfigError, InvalidArgumentError,
     ConnectionError, AlreadyConnectedError, UnsupportedServiceTypeError,
     AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE, DEFAULT_CLIENT_ID,

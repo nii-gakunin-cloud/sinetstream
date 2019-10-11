@@ -16,6 +16,9 @@ sdist:
 bdist:
 	$(SETUP) bdist
 
+bdist_wheel:
+	$(SETUP) bdist_wheel
+
 install:
 	$(SETUP) install --user
 
@@ -30,4 +33,4 @@ test:
 	-$(SETUP) test
 
 tags::
-	uctags -R --exclude=".*" . ../../src $(HOME)/.local/lib
+	uctags -R --exclude=".*" --exclude="*.css" --exclude="*.js" src tests ../../src $(HOME)/.local/lib

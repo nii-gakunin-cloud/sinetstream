@@ -105,6 +105,7 @@ public class KafkaMessageWriter<K, V> extends KafkaBaseIO implements MessageWrit
         PRODUCER_PARAMETER_NAMES_MAP.forEach((k, v) -> updateProperty(props, k, v));
         setupConsistencyProperties(props);
         setupSSLProperties(parameters.getConfig(), props);
+        setupSASLProperties(parameters.getConfig(), props);
     }
 
     private void setupConsistencyProperties(Properties props) {

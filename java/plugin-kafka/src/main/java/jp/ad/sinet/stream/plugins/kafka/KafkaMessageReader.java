@@ -124,6 +124,7 @@ public class KafkaMessageReader<K, T> extends KafkaBaseIO implements MessageRead
         setupGroupId(consumerProperties);
         setupSSLProperties(config, consumerProperties);
         setupConsistencyProperties();
+        setupSASLProperties(config, consumerProperties);
     }
 
     private void setupConsistencyProperties() {

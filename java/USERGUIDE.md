@@ -838,7 +838,7 @@ MessageWriterFactory parameters:
     serializer(Serializer serializer)
         If not specified, use default serializer according to valueType.
     topic(String topic)
-        The topic to receive.
+        The topic to send.
     valueType(ValueType valueType[=TEXT])
         The type of message.
 ==================================================

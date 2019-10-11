@@ -45,7 +45,7 @@ public class MessageWriterFactory<T> {
     private String service;
 
     @Getter
-    @Description(value="The topic to receive.")
+    @Description(value="The topic to send.")
     private String topic;
 
     @Getter

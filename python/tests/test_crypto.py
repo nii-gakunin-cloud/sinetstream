@@ -21,23 +21,26 @@
 # under the License.
 
 import logging
+import pytest
 
 import sinetstream
 
 logging.basicConfig(level=logging.ERROR)
 
 
-service = 'service-1'
+service = 'service-crypto-1'
 topic = 'mss-test-001'
-msgs = [b'test message 001',
-        b'test message 002']
+msgs = ['test message 001',
+        'test message 002']
+
+bmsgs = [x.encode() for x in msgs]
 
 
 def test_thru(dummy_reader_plugin, dummy_writer_plugin):
-    with sinetstream.MessageWriter(service, topic) as fw:
+    with sinetstream.MessageWriter(service, topic, value_type=sinetstream.TEXT) as fw:
         for msg in msgs:
             fw.publish(msg)
-    with sinetstream.MessageReader(service, topic) as fr:
+    with sinetstream.MessageReader(service, topic, value_type=sinetstream.TEXT) as fr:
         i = 0
         for msg in fr:
             assert msg.topic == topic
@@ -46,3 +49,76 @@ def test_thru(dummy_reader_plugin, dummy_writer_plugin):
             if i == len(msgs):
                 break
     pass
+
+
+def test_enc_bin(dummy_reader_plugin, dummy_writer_plugin):
+    with sinetstream.MessageWriter(service,
+                                   topic,
+                                   value_type=sinetstream.BYTE_ARRAY,
+                                   data_encryption=True) as fw:
+        for msg in bmsgs:
+            fw.publish(msg)
+    with sinetstream.MessageReader(service,
+                                   topic,
+                                   value_type=sinetstream.BYTE_ARRAY,
+                                   data_encryption=True) as fr:
+        i = 0
+        for msg in fr:
+            assert msg.topic == topic
+            assert msg.value == bmsgs[i]
+            i += 1
+            if i == len(msgs):
+                break
+    pass
+
+
+def test_enc_text(dummy_reader_plugin, dummy_writer_plugin):
+    with sinetstream.MessageWriter(service,
+                                   topic,
+                                   value_type=sinetstream.TEXT,
+                                   data_encryption=True) as fw:
+        for msg in msgs:
+            fw.publish(msg)
+    with sinetstream.MessageReader(service,
+                                   topic,
+                                   value_type=sinetstream.TEXT,
+                                   data_encryption=True) as fr:
+        i = 0
+        for msg in fr:
+            assert msg.topic == topic
+            assert msg.value == msgs[i]
+            i += 1
+            if i == len(msgs):
+                break
+    pass
+
+
+@pytest.mark.parametrize("mode",
+                         ["CBC",
+                          "CFB",
+                          "OFB",
+                          "CTR",
+                          "OPENPGP",
+                          "OPENPGPCFB",
+                          "EAX",
+                          "GCM"])
+def test_enc_mode(mode, dummy_reader_plugin, dummy_writer_plugin):
+    with sinetstream.MessageWriter(service,
+                                   topic,
+                                   value_type=sinetstream.TEXT,
+                                   data_encryption=True,
+                                   crypto={"mode": mode}) as fw:
+        for msg in msgs:
+            fw.publish(msg)
+    with sinetstream.MessageReader(service,
+                                   topic,
+                                   value_type=sinetstream.TEXT,
+                                   data_encryption=True,
+                                   crypto={"mode": mode}) as fr:
+        i = 0
+        for msg in fr:
+            assert msg.topic == topic
+            assert msg.value == msgs[i]
+            i += 1
+            if i == len(msgs):
+                break

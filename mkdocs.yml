@@ -3,8 +3,12 @@ nav:
   - Home: index.md
   - 'Python API': python-api.md
   - 'Java API': java-api.md
+  - 'Authentication and Authorization': auth.md
   - Sample:
     - Text: python-sample-text.md
 theme:
   name: readthedocs
   include_sidebar: false
+
+extra_css:
+  - "css/numbered.css"

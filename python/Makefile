@@ -28,6 +28,12 @@ bdist-local:
 bdist-plugins:
 	$(MAKE) recurse-plugins TARGET="bdist"
 
+bdist_wheel: bdist_wheel-local bdist_wheel-plugins
+bdist_wheel-local:
+	$(SETUP) bdist_wheel
+bdist_wheel-plugins:
+	$(MAKE) recurse-plugins TARGET="bdist_wheel"
+
 install: install-local install-plugins
 	$(MAKE) show-usage
 install-local:
@@ -54,7 +60,7 @@ test-plugins:
 	$(MAKE) recurse-plugins TARGET="test"
 
 tags::
-	uctags -R --exclude=".*" . $(HOME)/.local/lib
+	uctags -R --exclude=".*" --exclude="*.css" --exclude="*.js" src plugins tests $(HOME)/.local/lib
 
 doc:: README.html
 README.html: README.md

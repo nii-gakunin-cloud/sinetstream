@@ -92,3 +92,136 @@ service-2-8883:
   type: mqtt
   brokers:
     - 192.168.2.105:8883
+
+service-crypto-1:
+  type: kafka
+  brokers:
+    - kafka0.dp1.nii.ac.jp:9092
+    - kafka1.dp1.nii.ac.jp:9092
+    - kafka2.dp1.nii.ac.jp:9092
+  crypto:
+    algorithm: AES
+    key_length: 128
+    mode: CBC
+    padding: none
+    key_derivation:
+      algorithm: pbkdf2
+      salt_bytes: 16
+      iteration: 10000
+    password:
+      value: secret-000
+  data_encryption: true
+
+test-cbc:
+    type: kafka
+    brokers:
+        - kafka0.dp1.nii.ac.jp:9092
+    crypto:
+        algorithm: AES
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            algorithm: pbkdf2
+        password: secret-000
+    data_encryption: true
+
+test-cfb:
+    type: kafka
+    brokers:
+        - kafka0.dp1.nii.ac.jp:9092
+    crypto:
+        algorithm: AES
+        mode: CFB
+        key_derivation:
+            algorithm: pbkdf2
+        password: secret-000
+    data_encryption: true
+
+test-ofb:
+    type: kafka
+    brokers:
+        - kafka0.dp1.nii.ac.jp:9092
+    crypto:
+        algorithm: AES
+        mode: OFB
+        key_derivation:
+            algorithm: pbkdf2
+        password: secret-000
+    data_encryption: true
+
+test-ctr:
+    type: kafka
+    brokers:
+        - kafka0.dp1.nii.ac.jp:9092
+    crypto:
+        algorithm: AES
+        mode: CTR
+        key_derivation:
+            algorithm: pbkdf2
+        password: secret-000
+    data_encryption: true
+
+test-openpgp:
+    type: kafka
+    brokers:
+        - kafka0.dp1.nii.ac.jp:9092
+    crypto:
+        algorithm: AES
+        #mode: OPENPGP
+        mode: OPENPGPCFB
+        #padding: none
+        key_derivation:
+            algorithm: pbkdf2
+        password: secret-000
+    data_encryption: true
+
+test-eax:
+    type: kafka
+    brokers:
+        - kafka0.dp1.nii.ac.jp:9092
+    crypto:
+        algorithm: AES
+        mode: EAX
+        key_derivation:
+            algorithm: pbkdf2
+        password: secret-000
+    data_encryption: true
+
+test-gcm:
+    type: kafka
+    brokers:
+        - kafka0.dp1.nii.ac.jp:9092
+    crypto:
+        algorithm: AES
+        mode: GCM
+        key_derivation:
+            algorithm: pbkdf2
+        password: secret-000
+    data_encryption: true
+
+local-kafka:
+  type: kafka
+  brokers:
+    - localhost:9092
+
+local-kafka-authn:
+  type: kafka
+  brokers:
+    - localhost:9099
+  security_protocol: SASL_PLAINTEXT
+  sasl_mechanism: PLAIN
+  sasl_plain_username: alice
+  sasl_plain_password: alice-secret
+
+local-mqtt:
+  type: mqtt
+  brokers:
+    - localhost:1883
+
+local-mqtt-authn:
+  type: mqtt
+  brokers:
+    - localhost:1883
+  username_pw_set:
+    username: alice
+    password: alice-secret

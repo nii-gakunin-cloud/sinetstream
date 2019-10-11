@@ -211,6 +211,28 @@ public class KafkaBaseIO {
         return ret;
     }
 
+    void setupSASLProperties(Map config, Properties props) {
+        Object sasl_plain_username = config.get("sasl_plain_username");
+        Object sasl_plain_password = config.get("sasl_plain_password");
+        Object security_protocol = config.get("security_protocol");
+        Object sasl_mechanism = config.get("sasl_mechanism");
+        if (sasl_plain_username != null || sasl_plain_password != null) {
+            String v = "org.apache.kafka.common.security.plain.PlainLoginModule required";
+            if (sasl_plain_username != null)
+                v += " username=" + "\"" + (String)sasl_plain_username + "\"";
+            if (sasl_plain_password != null)
+                v += " password=" + "\"" + (String)sasl_plain_password + "\"";
+            v += ";";
+            props.put("sasl.jaas.config", v);
+        }
+        if (security_protocol != null) {
+            props.put("security.protocol", (String)security_protocol);
+        }
+        if (sasl_mechanism != null) {
+            props.put("sasl.mechanism", (String)sasl_mechanism);
+        }
+    }
+
     private static <T, R> Function<T, R> loggingException(Function<? super T, ? extends R> mapper) {
         return v -> {
             try {

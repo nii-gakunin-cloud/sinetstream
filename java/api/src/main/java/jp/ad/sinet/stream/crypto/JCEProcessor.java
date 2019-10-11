@@ -47,9 +47,16 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
+import javax.xml.bind.DatatypeConverter;
+
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.io.IOException;
+
 @Log
 public class JCEProcessor implements Crypto {
 
+    private final boolean debug = false;
     private final Cipher cipher;
     private final SecureRandom random;
 
@@ -106,10 +113,33 @@ public class JCEProcessor implements Crypto {
         } catch (NoSuchAlgorithmException e) {
             throw new SinetStreamException(e);
         }
-        this.password = Optional.ofNullable(parameters.get("password"))
-                .filter(String.class::isInstance).map(String.class::cast)
-                .map(String::toCharArray)
-                .orElseThrow(InvalidConfigurationException::new);
+        if (parameters.containsKey("password")) {
+            if (parameters.get("password") instanceof String) {
+                this.password = Optional.ofNullable(parameters.get("password"))
+                        .filter(String.class::isInstance).map(String.class::cast)
+                        .map(String::toCharArray)
+                        .orElseThrow(InvalidConfigurationException::new);
+            } else if (parameters.get("password") instanceof Map) {
+                Map pw = (Map)parameters.get("password");
+                String value = Optional.ofNullable(pw.get("value"))
+                                .filter(String.class::isInstance).map(String.class::cast).orElse(null);
+                String path = Optional.ofNullable(pw.get("path"))
+                                .filter(String.class::isInstance).map(String.class::cast).orElse(null);
+                if (value != null && path != null || value == null && path == null)
+                    throw new InvalidConfigurationException();
+                if (path != null) {
+                    try {
+                        value = String.join("\n", Files.readAllLines(Paths.get(path)));
+                    }
+                    catch (IOException e) {
+                        throw new InvalidConfigurationException();
+                    }
+                }
+                this.password = value.toCharArray();
+            } else {
+                throw new InvalidConfigurationException();
+            }
+        }
         this.saltBytes = Optional.ofNullable(keyParams.get("salt_bytes"))
                 .filter(Integer.class::isInstance).map(Integer.class::cast).orElse(8);
         this.iterationCount = Optional.ofNullable(keyParams.get("iteration"))
@@ -179,6 +209,15 @@ public class JCEProcessor implements Crypto {
 
             cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
             byte[] encrypted = cipher.doFinal(data);
+            if (debug) {
+                System.err.println("XXX:encrypt: saltBytes=" + saltBytes);
+                System.err.println("XXX:encrypt: salt.length=" + salt.length);
+                System.err.println("XXX:encrypt: salt='" + DatatypeConverter.printHexBinary(salt) + "'");
+                System.err.println("XXX:encrypt: iv.length=" + iv.length);
+                System.err.println("XXX:encrypt: iv='" + DatatypeConverter.printHexBinary(iv) + "'");
+                System.err.println("XXX:encrypt: encrypted.length=" + encrypted.length);
+                System.err.println("XXX:encrypt: encrypted='" + DatatypeConverter.printHexBinary(encrypted) + "'");
+            }
             return ByteBuffer.allocate(saltBytes + iv.length + encrypted.length)
                     .put(salt).put(iv).put(encrypted).array();
         } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException e) {
@@ -204,6 +243,15 @@ public class JCEProcessor implements Crypto {
             cipher.updateAAD(iv);
             byte[] encrypted = cipher.doFinal(data);
 
+            if (debug) {
+                System.err.println("XXX:encryptAAD: saltBytes=" + saltBytes);
+                System.err.println("XXX:encryptAAD: salt.length=" + salt.length);
+                System.err.println("XXX:encryptAAD: salt='" + DatatypeConverter.printHexBinary(salt) + "'");
+                System.err.println("XXX:encryptAAD: iv.length=" + iv.length);
+                System.err.println("XXX:encryptAAD: iv='" + DatatypeConverter.printHexBinary(iv) + "'");
+                System.err.println("XXX:encryptAAD: encrypted.length=" + encrypted.length);
+                System.err.println("XXX:encryptAAD: encrypted='" + DatatypeConverter.printHexBinary(encrypted) + "'");
+            }
             return ByteBuffer.allocate(saltBytes + iv.length + encrypted.length)
                     .put(salt).put(iv).put(encrypted).array();
         } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException e) {
@@ -226,17 +274,35 @@ public class JCEProcessor implements Crypto {
 
     private byte[] decrypt(byte[] data) {
         try {
+            if (debug)
+                System.err.println("XXX:decrypt: data='" + DatatypeConverter.printHexBinary(data) + "'");
             byte[] salt = new byte[saltBytes];
             System.arraycopy(data, 0, salt, 0, salt.length);
+            if (debug) {
+                System.err.println("XXX:decrypt: saltBytes=" + saltBytes);
+                System.err.println("XXX:decrypt: salt='" + DatatypeConverter.printHexBinary(salt) + "'");
+            }
             SecretKeySpec key = getSecretKeySpec(salt);
+            if (debug)
+                System.err.println("XXX:decrypt: key='" + DatatypeConverter.printHexBinary(key.getEncoded()) + "'");
 
             byte[] iv = new byte[keyLength / 8];
             System.arraycopy(data, saltBytes, iv, 0, iv.length);
+            if (debug) {
+                System.err.println("XXX:decrypt: iv.length=" + iv.length);
+                System.err.println("XXX:decrypt: iv='" + DatatypeConverter.printHexBinary(iv) + "'");
+            }
 
             cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(iv));
             byte[] encrypted = new byte[data.length - saltBytes - iv.length];
             System.arraycopy(data, saltBytes + iv.length, encrypted, 0, encrypted.length);
-            return cipher.doFinal(encrypted);
+            if (debug) {
+                System.err.println("XXX:decrypt: encrypted='" + DatatypeConverter.printHexBinary(encrypted) + "'");
+            }
+            byte[] x = cipher.doFinal(encrypted);
+            if (debug)
+                System.err.println("XXX:decrypt: final='" + DatatypeConverter.printHexBinary(x) + "'");
+            return x;
         } catch (IllegalBlockSizeException | BadPaddingException | InvalidKeyException | InvalidAlgorithmParameterException e) {
             throw new SinetStreamException(e);
         }
@@ -244,19 +310,39 @@ public class JCEProcessor implements Crypto {
 
     private byte[] decryptAAD(byte[] data) {
         try {
+            if (debug)
+                System.err.println("XXX:decryptAAD: data='" + DatatypeConverter.printHexBinary(data) + "'");
             byte[] salt = new byte[saltBytes];
             System.arraycopy(data, 0, salt, 0, salt.length);
+            if (debug) {
+                System.err.println("XXX:decryptAAD: saltBytes=" + saltBytes);
+                System.err.println("XXX:decryptAAD: salt='" + DatatypeConverter.printHexBinary(salt) + "'");
+            }
             SecretKeySpec key = getSecretKeySpec(salt);
+            if (debug) {
+                System.err.println("XXX:decryptAAD: key='" + DatatypeConverter.printHexBinary(key.getEncoded()) + "'");
+            }
 
             byte[] iv = new byte[keyLength / 8];
             System.arraycopy(data, saltBytes, iv, 0, iv.length);
+            if (debug) {
+                System.err.println("XXX:decryptAAD: iv.length=" + iv.length);
+                System.err.println("XXX:decryptAAD: iv='" + DatatypeConverter.printHexBinary(iv) + "'");
+            }
 
             cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(iv));
             cipher.updateAAD(salt);
             cipher.updateAAD(iv);
             byte[] encrypted = new byte[data.length - saltBytes - iv.length];
             System.arraycopy(data, saltBytes + iv.length, encrypted, 0, encrypted.length);
-            return cipher.doFinal(encrypted);
+            if (debug) {
+                System.err.println("XXX:decryptAAD: encrypted='" + DatatypeConverter.printHexBinary(encrypted) + "'");
+            }
+            byte[] x = cipher.doFinal(encrypted);
+            if (debug) {
+                System.err.println("XXX:decryptAAD: final='" + DatatypeConverter.printHexBinary(x) + "'");
+            }
+            return x;
         } catch (IllegalBlockSizeException | BadPaddingException | InvalidKeyException | InvalidAlgorithmParameterException e) {
             throw new SinetStreamException(e);
         }
