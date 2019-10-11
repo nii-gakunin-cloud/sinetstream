@@ -675,3 +675,17 @@ SINETStream はすでにインストールされているものとする。
             $
             ```
 
+## 制限事項
+
+* エラー時の処理は使用しているライブラリに依存しており、どのようにユーザに通知されるか統一されていない。
+
+| Platform | When | Library | Behavior |
+| --- | --- | --- | --- |
+| Kafka | AuthN | Python | Exception thrown (kafka.errors.NoBrokersAvailable -> sinetstream.api.ConnectionError) |
+| Kafka | AuthN | Java | nothing |
+| Kafka | AuthZ | Python | [producer] Exception thrown on metadata updating failrue (kafka.errors.KafkaTimeoutError), [consumer] nothing |
+| Kafka | AuthZ | Java | nothing |
+| MQTT | AuthN | Python | just logged |
+| MQTT | AuthN | Java | Exception thrown (jp.ad.sinet.stream.api.ConnectionException) |
+| MQTT | AuthZ | Python | nothing |
+| MQTT | AuthZ | Java | nothing |

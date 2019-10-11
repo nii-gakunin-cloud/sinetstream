@@ -9,12 +9,14 @@
     - Not supported: CFB, OPENPGP
 - Authentication:
     - Kafka:
-	- security_protocol: PLAINTEXT, SSL, SASL_PLAINTEXT, SASL_SSL.
-	- sasl_mechanism: PLAIN, SCRAM-SHA-256, SCRAM-SHA_512.
-	- Note: GSSAPI and OAUTHBEARER are not supported.
-    - MQTT: 
-	- password
+        - security_protocol: PLAINTEXT, SSL, SASL_PLAINTEXT, SASL_SSL.
+        - sasl_mechanism: PLAIN, SCRAM-SHA-256, SCRAM-SHA_512.
+        - Note: GSSAPI and OAUTHBEARER are not supported.
+    - MQTT:
+        - password
+    - Read docs/auth.md for details.
 - Authorization(document only)
+    - Read docs/auth.md for details.
 
 ## [v0.9.5] - 2019-08-26
 

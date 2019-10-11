@@ -674,3 +674,17 @@ It is assumed SINETStream has already been installed.
             $
             ```
 
+## Limitations
+
+* Error handling depends on the library used.
+
+| Platform | When | Library | Behavior |
+| --- | --- | --- | --- |
+| Kafka | AuthN | Python | Exception thrown (kafka.errors.NoBrokersAvailable -> sinetstream.api.ConnectionError) |
+| Kafka | AuthN | Java | nothing |
+| Kafka | AuthZ | Python | [producer] Exception thrown on metadata updating failrue (kafka.errors.KafkaTimeoutError), [consumer] nothing |
+| Kafka | AuthZ | Java | nothing |
+| MQTT | AuthN | Python | just logged |
+| MQTT | AuthN | Java | Exception thrown (jp.ad.sinet.stream.api.ConnectionException) |
+| MQTT | AuthZ | Python | nothing |
+| MQTT | AuthZ | Java | nothing |
