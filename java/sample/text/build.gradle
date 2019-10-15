@@ -26,7 +26,7 @@ plugins {
 
 sourceCompatibility = 1.8
 
-version = '0.9.5'
+version = '0.9.7'
 
 repositories {
     jcenter()
@@ -37,9 +37,9 @@ repositories {
 
 dependencies {
     implementation 'commons-cli:commons-cli:1.4'
-    implementation 'jp.ad.sinet.sinetstream:SINETStream-api:0.9.5'
-    implementation 'jp.ad.sinet.sinetstream:SINETStream-kafka:0.9.5'
-    implementation 'jp.ad.sinet.sinetstream:SINETStream-mqtt:0.9.5'
+    implementation 'jp.ad.sinet.sinetstream:SINETStream-api:0.9.7'
+    implementation 'jp.ad.sinet.sinetstream:SINETStream-kafka:0.9.7'
+    implementation 'jp.ad.sinet.sinetstream:SINETStream-mqtt:0.9.7'
     runtimeOnly 'org.slf4j:slf4j-nop:1.7.26'
     implementation group: 'com.google.guava', name: 'guava', version: '28.0-jre'
 

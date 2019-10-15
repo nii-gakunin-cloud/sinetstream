@@ -21,6 +21,7 @@
 
 package jp.ad.sinet.stream.plugins.kafka;
 
+import jp.ad.sinet.stream.api.InvalidConfigurationException;
 import jp.ad.sinet.stream.api.Consistency;
 import jp.ad.sinet.stream.api.ValueType;
 import jp.ad.sinet.stream.utils.KeyStoreUtil;
@@ -217,7 +218,14 @@ public class KafkaBaseIO {
         Object security_protocol = config.get("security_protocol");
         Object sasl_mechanism = config.get("sasl_mechanism");
         if (sasl_plain_username != null || sasl_plain_password != null) {
-            String v = "org.apache.kafka.common.security.plain.PlainLoginModule required";
+            String module;
+            if ("SCRAM-SHA-256".equals(sasl_mechanism) || "SCRAM-SHA-512".equals(sasl_mechanism))
+                module = "scram.ScramLoginModule";
+            else if ("PLAIN".equals(sasl_mechanism))
+                module = "plain.PlainLoginModule";
+            else
+                throw new InvalidConfigurationException("unsupported sasl_mechanism specified");
+            String v = "org.apache.kafka.common.security." + module + " required";
             if (sasl_plain_username != null)
                 v += " username=" + "\"" + (String)sasl_plain_username + "\"";
             if (sasl_plain_password != null)

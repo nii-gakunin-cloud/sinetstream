@@ -48,7 +48,7 @@ under the License.
 1. Setup Kafka Server
     1. [Kafka Quickstart](https://kafka.apache.org/quickstart)
 1. Install SINETStream
-    1. `pip install --user https://github.com/nii-gakunin-cloud/sinetstream/releases/download/v0.9/sinetstream_kafka-0.9.5-py3-none-any.whl https://github.com/nii-gakunin-cloud/sinetstream/releases/download/v0.9/sinetstream-0.9.5-py3-none-any.whl`
+    1. `pip install --user https://github.com/nii-gakunin-cloud/sinetstream/releases/download/v0.9.7/sinetstream_kafka-0.9.7-py3-none-any.whl https://github.com/nii-gakunin-cloud/sinetstream/releases/download/v0.9.7/sinetstream-0.9.7-py3-none-any.whl`
 1. Create a config file for SINETStream at the home directory like this:
     ```
     service-1:
@@ -58,9 +58,9 @@ under the License.
     ```
    Rewrite `kafka_server_name:9092` according to your environment (eg `localhost:9092`)
 1. Test
-    1. Dowonload source from https://github.com/nii-gakunin-cloud/sinetstream/archive/v0.9.tar.gz
-    1. Extract: `tar xzf v0.9.tar.gz`
-    1. `cd sinetstream-0.9/python/sample/text`
+    1. Dowonload source from https://github.com/nii-gakunin-cloud/sinetstream/archive/v0.9.7.tar.gz
+    1. Extract: `tar xzf v0.9.7.tar.gz`
+    1. `cd sinetstream-0.9.7/python/sample/text`
     1. Run Consumer like this: `python consumer.py  -s service-1 -t hoge`
     1. Run Producer like this: `python producer.py  -s service-1 -t hoge`
 

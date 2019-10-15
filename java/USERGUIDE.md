@@ -809,7 +809,7 @@ try (MessageReader<String> reader = factory.getReader()) {
 APIのjarファイルを `java -jar` の後に指定して実行すると、チートシートが表示されます。
 
 ```
-$ java -jar SINETStream-api-0.9.5.jar
+$ java -jar SINETStream-api-0.9.7.jar
 
 ==================================================
 MessageWriter example

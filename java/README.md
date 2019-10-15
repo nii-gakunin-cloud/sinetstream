@@ -58,7 +58,7 @@ BUILD SUCCESSFUL in 2s
 が作成されています。
 
 ```
-./plugin-kafka/build/libs/SINETStream-kafka-0.9.5.jar
-./plugin-mqtt/build/libs/SINETStream-mqtt-0.9.5.jar
-./api/build/libs/SINETStream-api-0.9.5.jar
+./plugin-kafka/build/libs/SINETStream-kafka-0.9.7.jar
+./plugin-mqtt/build/libs/SINETStream-mqtt-0.9.7.jar
+./api/build/libs/SINETStream-api-0.9.7.jar
 ```
