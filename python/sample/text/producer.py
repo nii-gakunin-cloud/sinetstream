@@ -26,18 +26,14 @@ parser = argparse.ArgumentParser(description="SINETStream Producer")
 parser.add_argument("-s", "--service",
                     metavar="SERVICE_NAME",
                     required=True)
-parser.add_argument("-t", "--topic",
-                    metavar="TOPIC",
-                    required=True)
 
 args = parser.parse_args()
 
 print(f"# service={args.service}")
-print(f"# topic={args.topic}")
 
-with sinetstream.MessageWriter(args.service, args.topic) as f:
+with sinetstream.MessageWriter(args.service) as f:
     while True:
         line = sys.stdin.readline().rstrip("\r\n")
         if not line:
             break
-        f.publish(line.encode("utf-8"))
+        f.publish(line)

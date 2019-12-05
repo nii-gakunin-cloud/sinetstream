@@ -25,20 +25,12 @@ parser = argparse.ArgumentParser(description="SINETStream Consumer")
 parser.add_argument("-s", "--service",
                     metavar="SERVICE_NAME",
                     required=True)
-parser.add_argument("-t", "--topic",
-                    metavar="TOPIC",
-                    action="append",
-                    required=True)
 
 args = parser.parse_args()
 
 print(f"# service={args.service}")
-print(f"# topics={','.join(args.topic)}")
 
-with sinetstream.MessageReader(args.service, args.topic) as f:
+with sinetstream.MessageReader(args.service) as f:
     for msg in f:
-        try:
-            value = msg.value.decode('utf-8')
-            print(f"topic={msg.topic} value(utf-8)='{value}'")
-        except:
-            print(f"topic={msg.topic} value({type(msg.value).__name__})={msg.value}")
+        value = msg.value
+        print(f"topic={msg.topic} value='{value}'")
