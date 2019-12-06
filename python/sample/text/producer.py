@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # Copyright (C) 2019 National Institute of Informatics
 #
 # Licensed to the Apache Software Foundation (ASF) under one
@@ -19,21 +21,24 @@
 
 import argparse
 import sys
+from sinetstream import MessageWriter
 
-import sinetstream
 
-parser = argparse.ArgumentParser(description="SINETStream Producer")
-parser.add_argument("-s", "--service",
-                    metavar="SERVICE_NAME",
-                    required=True)
+def producer(service):
+    print(f"# service={service}")
 
-args = parser.parse_args()
+    with MessageWriter(service) as writer:
+        while True:
+            line = sys.stdin.readline().rstrip("\r\n")
+            if not line:
+                break
+            writer.publish(line)
 
-print(f"# service={args.service}")
 
-with sinetstream.MessageWriter(args.service) as f:
-    while True:
-        line = sys.stdin.readline().rstrip("\r\n")
-        if not line:
-            break
-        f.publish(line)
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="SINETStream Producer")
+    parser.add_argument(
+        "-s", "--service", metavar="SERVICE_NAME", required=True)
+    args = parser.parse_args()
+
+    producer(args.service)

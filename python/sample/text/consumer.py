@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # Copyright (C) 2019 National Institute of Informatics
 #
 # Licensed to the Apache Software Foundation (ASF) under one
@@ -18,19 +20,24 @@
 # under the License.
 
 import argparse
+from sinetstream import MessageReader
 
-import sinetstream
 
-parser = argparse.ArgumentParser(description="SINETStream Consumer")
-parser.add_argument("-s", "--service",
-                    metavar="SERVICE_NAME",
-                    required=True)
+def consumer(service):
+    print(f"# service={service}")
 
-args = parser.parse_args()
+    with MessageReader(service) as reader:
+        for msg in reader:
+            print(f"topic={msg.topic} value='{msg.value}'")
 
-print(f"# service={args.service}")
 
-with sinetstream.MessageReader(args.service) as f:
-    for msg in f:
-        value = msg.value
-        print(f"topic={msg.topic} value='{value}'")
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="SINETStream Consumer")
+    parser.add_argument(
+        "-s", "--service", metavar="SERVICE_NAME", required=True)
+    args = parser.parse_args()
+
+    try:
+        consumer(args.service)
+    except KeyboardInterrupt:
+        pass
