@@ -25,14 +25,14 @@ from sinetstream import MessageWriter
 
 
 def producer(service):
-    print(f"# service={service}")
-
     with MessageWriter(service) as writer:
         while True:
-            line = sys.stdin.readline().rstrip("\r\n")
-            if not line:
-                break
-            writer.publish(line)
+            message = get_message()
+            writer.publish(message)
+
+
+def get_message():
+    return sys.stdin.readline().rstrip("\r\n")
 
 
 if __name__ == '__main__':
@@ -41,4 +41,9 @@ if __name__ == '__main__':
         "-s", "--service", metavar="SERVICE_NAME", required=True)
     args = parser.parse_args()
 
-    producer(args.service)
+    try:
+        print("Press ctrl-c to exit the program.", file=sys.stderr)
+        print(f": service={args.service}", file=sys.stderr)
+        producer(args.service)
+    except KeyboardInterrupt:
+        pass

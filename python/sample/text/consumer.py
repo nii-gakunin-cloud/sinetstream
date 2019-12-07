@@ -20,15 +20,14 @@
 # under the License.
 
 import argparse
+import sys
 from sinetstream import MessageReader
 
 
 def consumer(service):
-    print(f"# service={service}")
-
     with MessageReader(service) as reader:
-        for msg in reader:
-            print(f"topic={msg.topic} value='{msg.value}'")
+        for message in reader:
+            print(f"topic={message.topic} value='{message.value}'")
 
 
 if __name__ == '__main__':
@@ -38,6 +37,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     try:
+        print("Press ctrl-c to exit the program.", file=sys.stderr)
+        print(f": service={args.service}", file=sys.stderr)
         consumer(args.service)
     except KeyboardInterrupt:
         pass
