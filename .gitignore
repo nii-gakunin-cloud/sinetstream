@@ -9,3 +9,7 @@ __pycache__
 htmlcov
 site
 *.tmp
+*.orig
+*~
+\#*#
+.#*

@@ -2,6 +2,7 @@ service-1:
   type: mqtt
   brokers:
     - mqtt:1883
+  retain: true
 service-2:
   type: mqtt
   brokers:

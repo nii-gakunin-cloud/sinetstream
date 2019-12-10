@@ -23,6 +23,7 @@
 import time
 import threading
 import logging
+import pytest
 
 import sinetstream
 
@@ -98,10 +99,11 @@ def test_reader_deser():
     assert True
 
 
+@pytest.mark.timeout(timeout=5, method='thread')
 def test_reader_timeout():
-    with sinetstream.MessageReader(service, topic, receive_timeout_ms=1000) as f:
-        pass
-    assert True
+    with sinetstream.MessageReader(service, topic, receive_timeout_ms=3000) as f:
+        for msg in f:
+            pass
 
 
 def test_reader_kafka_opt():
@@ -110,28 +112,23 @@ def test_reader_kafka_opt():
     assert True
 
 
-def test_reader_timeout():
-    tout = 100
-    t1 = time.time()
-    with sinetstream.MessageReader(service, topic,  receive_timeout_ms=tout) as f:
-        for msg in f:
-            assert False
-    t2 = time.time()
-    t = (t2 - t1) * 1000.0
-    jitter_factor = 5
-    assert t > tout / jitter_factor
-    assert t < tout * jitter_factor
-    assert True
-
-
-def test_reader_seek():
+def test_reader_seek_to_beginning():
     with sinetstream.MessageReader(service, topic) as f:
-        try:
-            f.seek_to_beginning()
-        except AssertionError:
-            pass  # If any partition is not currently assigned, or if no partitions are assigned.
-        try:
-            f.seek_to_end()
-        except AssertionError:
-            pass  # If any partition is not currently assigned, or if no partitions are assigned.
-    assert True
+        f.seek_to_beginning()
+
+
+def test_reader_seek_to_end():
+    with sinetstream.MessageReader(service, topic) as f:
+        f.seek_to_end()
+
+
+def test_open_close():
+    f = sinetstream.MessageReader(service, topic).open()
+    assert hasattr(f, '__iter__')
+    f.close()
+
+
+def test_open_twice():
+    with sinetstream.MessageReader(service, topic) as f:
+        with pytest.raises(sinetstream.AlreadyConnectedError):
+            f.open()

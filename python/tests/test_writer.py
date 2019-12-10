@@ -22,6 +22,7 @@
 
 import time
 import logging
+import pytest
 
 import sinetstream
 
@@ -34,20 +35,18 @@ topic = 'mss-test-001'
 
 def test_writer_1(dummy_writer_plugin):
     with sinetstream.MessageWriter(service, topic) as f:
-        pass
-    assert True
+        assert topic == f.topic
 
 
 def test_writer_1_list(dummy_writer_plugin):
     with sinetstream.MessageWriter(service, [topic]) as f:
-        pass
-    assert True
+        assert topic == f.topic
 
 
 def test_writer_2_list(dummy_writer_plugin):
-    with sinetstream.MessageWriter(service, [topic, topic+"2"]) as f:
-        pass
-    assert True
+    with pytest.raises(sinetstream.InvalidArgumentError):
+        with sinetstream.MessageWriter(service, [topic, topic+"2"]) as f:
+            pass
 
 
 def test_writer_consistency_0(dummy_writer_plugin):
@@ -101,3 +100,56 @@ def test_writer_kafka_opt(dummy_writer_plugin):
     with sinetstream.MessageWriter(service, topic, batch_size=1000) as f:
         pass
     assert True
+
+
+def test_writer_topic_in_config_file(dummy_writer_plugin):
+    with sinetstream.MessageWriter(service + "-topic") as f:
+        assert f.topic == topic
+
+
+def test_writer_topic_list_one_item_in_config_file(dummy_writer_plugin):
+    with sinetstream.MessageWriter(service + "-topic-list-one-item") as f:
+        assert f.topic == topic
+
+
+def test_writer_topic_list_in_config_file(dummy_writer_plugin):
+    with pytest.raises(sinetstream.InvalidArgumentError):
+        with sinetstream.MessageWriter(service + "-topic-list") as f:
+            pass
+
+
+def test_writer_topic_in_config_file_and_arg(dummy_writer_plugin):
+    topic2 = "mss-test-002"
+    with sinetstream.MessageWriter(service + "-topic", topic2) as f:
+        assert f.topic == topic2
+
+
+def test_writer_topic_in_config_file_and_kwarg(dummy_writer_plugin):
+    service_name = service + "-topic"
+    topic2 = "mss-test-002"
+    with sinetstream.MessageWriter(topic=topic2, service=service_name) as f:
+        assert f.topic == topic2
+
+
+def test_writer_no_topic(dummy_writer_plugin):
+    with pytest.raises(sinetstream.InvalidArgumentError):
+        with sinetstream.MessageWriter(service) as f:
+            pass
+
+
+def test_writer_empty_topic_list(dummy_writer_plugin):
+    with pytest.raises(sinetstream.InvalidArgumentError):
+        with sinetstream.MessageWriter(service, topic=[]) as f:
+            pass
+
+
+def test_open_close(dummy_writer_plugin):
+    f = sinetstream.MessageWriter(service, topic).open()
+    f.close()
+
+
+def test_close_twice(dummy_writer_plugin):
+    f = sinetstream.MessageWriter(service, topic).open()
+    f.close()
+    with pytest.raises(sinetstream.SinetError):
+        f.close()

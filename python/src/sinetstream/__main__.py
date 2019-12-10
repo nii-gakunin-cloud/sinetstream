@@ -20,10 +20,10 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import sinetstream
+from .api import MessageReader, MessageWriter
 
 
 print("==================================================")
 print("Default parameters:")
-print(sinetstream.api.MessageReader.usage())
-print(sinetstream.api.MessageWriter.usage())
+print(MessageReader.usage())
+print(MessageWriter.usage())

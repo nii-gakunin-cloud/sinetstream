@@ -21,8 +21,11 @@
 # under the License.
 
 import time
-import threading
 import logging
+import pytest
+import copy
+from threading import Thread, Semaphore
+from queue import Queue
 
 import sinetstream
 
@@ -31,22 +34,18 @@ logging.basicConfig(level=logging.ERROR)
 
 service = 'service-1'
 topic = 'mss-test-001'
-msgs = ['test message 001',
-        'test message 002']
-sem = threading.Semaphore(0)
+text_msgs = [
+    'test message 001',
+    'test message 002']
+sem = Semaphore(0)
 
 
-def reader(msgs, *args, **kwargs):
+def reader(que, len_msgs, *args, **kwargs):
     with sinetstream.MessageReader(*args, **kwargs) as f:
         sem.release()
-        i = 0
-        for msg in f:
+        for idx, msg in zip(range(len_msgs), f):
             logging.info(f"{msg.raw}")
-            assert msg.topic == topic
-            assert msg.value == msgs[i]
-            i += 1
-            if i == len(msgs):
-                break
+            que.put(msg)
 
 
 def writer(msgs, *args, **kwargs):
@@ -55,14 +54,36 @@ def writer(msgs, *args, **kwargs):
             f.publish(msg)
 
 
-def test_pubsub():
-    binmsgs = [x.encode() for x in msgs]
-    t1 = threading.Thread(target=reader, args=(binmsgs, service, topic))
-    t2 = threading.Thread(target=writer, args=(binmsgs, service, topic))
-    t1.start()
+@pytest.fixture()
+def pubsub():
+    q = Queue()
+    msgs = copy.copy(text_msgs)
+    reader_params = {
+        'service': service,
+        'topics': topic,
+    }
+    writer_params = {
+        'service': service,
+        'topic': topic,
+    }
+    yield (msgs, reader_params, writer_params)
+
+    th = Thread(target=reader, args=(q, len(msgs)), kwargs=reader_params)
+    th.start()
     sem.acquire()
-    time.sleep(1)       # XXX
-    t2.start()
+    writer(msgs, **writer_params)
+    th.join()
+
+    for expected in msgs:
+        msg = q.get_nowait()
+        assert msg.topic == topic
+        assert msg.value == expected
+
+
+def test_pubsub(pubsub):
+    msgs, _, _ = pubsub
+    msgs.clear()
+    msgs.extend([x.encode() for x in text_msgs])
 
 
 hdr = b"XXX"
@@ -76,53 +97,33 @@ def des(x):
     return x[len(hdr):].decode()
 
 
-def test_pubsub_serdes():
-    t1 = threading.Thread(target=reader,
-                          args=(msgs, service, topic),
-                          kwargs={"value_deserializer": des})
-    t2 = threading.Thread(target=writer,
-                          args=(msgs, service, topic),
-                          kwargs={"value_serializer": ser})
-    t1.start()
-    sem.acquire()
-    time.sleep(1)       # XXX
-    t2.start()
+def test_pubsub_serdes(pubsub):
+    _, reader_params, writer_params = pubsub
+    reader_params.update({'value_deserializer': des})
+    writer_params.update({'value_serializer': ser})
 
 
-def test_pubsub_value_type():
-    t1 = threading.Thread(target=reader,
-                          args=(msgs, service, topic),
-                          kwargs={"value_type": "text"})
-    t2 = threading.Thread(target=writer,
-                          args=(msgs, service, topic),
-                          kwargs={"value_type": "text"})
-    t1.start()
-    sem.acquire()
-    time.sleep(1)       # XXX
-    t2.start()
+def test_pubsub_value_type(pubsub):
+    _, reader_params, writer_params = pubsub
+    reader_params.update({'value_type': "text"})
+    writer_params.update({'value_type': "text"})
 
 
-def test_pubsub_value_type_config():
+def test_pubsub_value_type_config(pubsub):
+    _, reader_params, writer_params = pubsub
     service_text = service + "-text"
-    t1 = threading.Thread(target=reader,
-                          args=(msgs, service_text, topic))
-    t2 = threading.Thread(target=writer,
-                          args=(msgs, service_text, topic))
-    t1.start()
-    sem.acquire()
-    time.sleep(1)       # XXX
-    t2.start()
+    reader_params.update({'service': service_text})
+    writer_params.update({'service': service_text})
 
 
-def test_pubsub_value_type_config_and_arg():
+def test_pubsub_value_type_config_and_arg(pubsub):
+    _, reader_params, writer_params = pubsub
     service_text = service + "-image"
-    t1 = threading.Thread(target=reader,
-                          args=(msgs, service_text, topic),
-                          kwargs={"value_type": "text"})
-    t2 = threading.Thread(target=writer,
-                          args=(msgs, service_text, topic),
-                          kwargs={"value_type": "text"})
-    t1.start()
-    sem.acquire()
-    time.sleep(1)       # XXX
-    t2.start()
+    reader_params.update({
+        'service': service_text,
+        'value_type': 'text',
+    })
+    writer_params.update({
+        'service': service_text,
+        'value_type': 'text',
+    })

@@ -1,1 +1,0 @@
-../python/sample/text/README.md

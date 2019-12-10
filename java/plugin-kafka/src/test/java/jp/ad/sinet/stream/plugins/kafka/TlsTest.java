@@ -30,6 +30,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -83,6 +84,7 @@ class TlsTest {
     }
 
     @ParameterizedTest
+    @DisabledIfEnvironmentVariable(named="KAFKA_BROKER_REACHABLE", matches = "false")
     @ValueSource(strings = {"service-connect-by-tls", "service-connect-by-tls-ca_certs",
             "service-connect-by-tls-ca_certs_cert_key", "service-connect-by-tls-no-hostname-check",
             "service-connect-by-tls_kafka", "service-connect-by-tls_kafka-no-hostname-check",
@@ -104,6 +106,7 @@ class TlsTest {
     }
 
     @ParameterizedTest
+    @DisabledIfEnvironmentVariable(named="KAFKA_BROKER_REACHABLE", matches = "false")
     @ValueSource(strings = {"service-connect-by-tls", "service-connect-by-tls-ca_certs",
             "service-connect-by-tls-ca_certs_cert_key", "service-connect-by-tls-no-hostname-check",
             "service-connect-by-tls_kafka", "service-connect-by-tls_kafka-no-hostname-check",

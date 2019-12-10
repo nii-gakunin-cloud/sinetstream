@@ -126,19 +126,18 @@ public class MqttBaseIO {
 
         Optional.ofNullable(config.get("ws_set_options"))
                 .filter(Map.class::isInstance).map(Map.class::cast)
-                .ifPresent(wsOpt -> Optional.ofNullable(wsOpt.get("headers"))
-                        .map(headers -> {
-                            if (headers instanceof Properties) {
-                                return (Properties) headers;
-                            } else if (headers instanceof Map) {
-                                Properties ps = new Properties();
-                                ps.putAll((Map<?, ?>) headers);
-                                return ps;
-                            } else {
-                                return null;
-                            }
-                        })
-                        .ifPresent(opts::setCustomWebSocketHeaders));
+                .flatMap(wsOpt -> Optional.ofNullable(wsOpt.get("headers"))
+                .map(headers -> {
+                    if (headers instanceof Properties) {
+                        return (Properties) headers;
+                    } else if (headers instanceof Map) {
+                        Properties ps = new Properties();
+                        ps.putAll((Map<?, ?>) headers);
+                        return ps;
+                    } else {
+                        return null;
+                    }
+                })).ifPresent(opts::setCustomWebSocketHeaders);
 
         Optional.ofNullable(config.get("reconnect_delay_set"))
                 .filter(Map.class::isInstance).map(Map.class::cast)
@@ -299,9 +298,15 @@ public class MqttBaseIO {
     }
 
     private boolean setupRetain() {
-        return Optional.ofNullable(this.config.get("retain"))
+        AtomicReference<Boolean> retain = new AtomicReference<>();
+        Optional.ofNullable(this.config.get("retain"))
                 .filter(String.class::isInstance).map(String.class::cast)
-                .map(Boolean::parseBoolean).orElse(Boolean.TRUE);
+                .map(Boolean::parseBoolean)
+                .ifPresent(retain::set);
+        Optional.ofNullable(this.config.get("retain"))
+                .filter(Boolean.class::isInstance).map(Boolean.class::cast)
+                .ifPresent(retain::set);
+        return Optional.ofNullable(retain.get()).orElse(false);
     }
 
     private String getServerURI() {

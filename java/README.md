@@ -1,3 +1,4 @@
+**準備中**
 <!--
 Copyright (C) 2019 National Institute of Informatics
 
@@ -45,7 +46,7 @@ under the License.
 
 ## ビルド手順
 
-次のコマンドを実行するとSINETStreamのJARファイルがビルドされます。
+次のコマンドを実行するとSINETStreamのJARファイルがビルドされる。
 
 ```
 $ ./gradlew assemble
@@ -55,10 +56,10 @@ BUILD SUCCESSFUL in 2s
 ```
 
 ビルドが成功すると`BUILD SUCCESSFUL`と表示され、以下のJARファイル
-が作成されています。
+が作成される。
 
 ```
-./plugin-kafka/build/libs/SINETStream-kafka-0.9.7.jar
-./plugin-mqtt/build/libs/SINETStream-mqtt-0.9.7.jar
-./api/build/libs/SINETStream-api-0.9.7.jar
+./plugin-kafka/build/libs/SINETStream-kafka-1.0.0.jar
+./plugin-mqtt/build/libs/SINETStream-mqtt-1.0.0.jar
+./api/build/libs/SINETStream-api-1.0.0.jar
 ```

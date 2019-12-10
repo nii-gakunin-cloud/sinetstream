@@ -33,18 +33,15 @@ import java.util.Scanner;
 public class TextProducer {
 
     private final String service;
-    private final String topic;
 
-    public TextProducer(String service, String topic) {
+    public TextProducer(String service) {
         this.service = service;
-        this.topic = topic;
     }
-
 
     public void run() throws Exception {
         MessageWriterFactory<String> factory =
                 MessageWriterFactory.<String>builder()
-                .service(service).topic(topic)
+                .service(service)
                 .consistency(Consistency.AT_LEAST_ONCE).valueType(ValueType.TEXT).build();
         try(MessageWriter<String> writer = factory.getWriter(); Scanner scanner = new Scanner(System.in)) {
             while (scanner.hasNextLine()) {
@@ -57,13 +54,12 @@ public class TextProducer {
     public static void main(String[] args) {
         Options opts = new Options();
         opts.addOption(Option.builder("s").required().hasArg().longOpt("service").build());
-        opts.addOption(Option.builder("t").required().hasArg().longOpt("topic").build());
 
         CommandLineParser parser = new DefaultParser();
         TextProducer producer = null;
         try {
             CommandLine cmd = parser.parse(opts, args);
-            producer = new TextProducer(cmd.getOptionValue("service"), cmd.getOptionValue("topic"));
+            producer = new TextProducer(cmd.getOptionValue("service"));
         } catch (ParseException e) {
             System.err.println("Parsing failed: " + e.getMessage());
             new HelpFormatter().printHelp(TextProducer.class.getSimpleName(), opts, true);

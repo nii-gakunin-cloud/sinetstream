@@ -1,3 +1,4 @@
+**準備中**
 <!--
 Copyright (C) 2019 National Institute of Informatics
 
@@ -23,36 +24,34 @@ under the License.
 
 ## 準備
 
-SINETStreamのjarファイルを./libs に配置します。
+SINETStreamのjarファイルを./libs に配置する。
 
 $ mkdir libs
 $ cp ../../*/build/libs/SINETStream*.jar libs
 
 ## ビルド
 
-次のコマンドを実行してください。
+次のコマンドを実行する。
 
 ```
 $ ./gradlew build
 ```
 
 ` build/distributions/text-producer-*` にビルドしたコマンドなどを
-zip, tar でアーカイブしたファイルが作成されています。
+zip, tar でアーカイブしたファイルが作成されている。
 
 
 ## インストール
 
-ビルドされたアーカイブファイルをインストール先のディレクトリに展開
-してください。展開したディレクトリの `bin/text-consumer`,
-`bin/text-producer` がサンプルプログラムを実行するスクリプトになっ
-ています。
+ビルドされたアーカイブファイルをインストール先のディレクトリに展開する。
+展開したディレクトリの `bin/text-consumer`,
+`bin/text-producer` がサンプルプログラムを実行するスクリプトになっている。
 
 ## 設定ファイル
 
-サンプルプログラムを実行するディレクトリに設定ファイルを作成します。
-`./.sinetstraem_config.yml` に以下のようなファイルを作成してくださ
-い。ブローカのホスト名は実際に利用する環境に合わせて記述を変更して
-ください。
+サンプルプログラムを実行するディレクトリに設定ファイルを作成する。
+`./.sinetstraem_config.yml` に以下のようなファイルを作成する。
+ブローカのホスト名は実際に利用する環境に合わせて記述を変更する。
 
 ```
 service-1:
@@ -61,27 +60,31 @@ service-1:
     - kafka1.example.org:9092
     - kafka2.example.org:9092
     - kafka3.example.org:9092
+  topic:
+    - test-topic
 service-2:
   type: mqtt
   brokers: mqtt.example.org:1883
+  topic:
+    - test-topic
 ```
 
 ## 実行手順
 
-まずコンシューマを実行します。
+まずコンシューマを実行する。
 
 ```
-$ ./bin/text-consumer -s service-1 -t test-topic
+$ ./bin/text-consumer -s service-1
 ```
 
-`-s` には設定ファイルに定義したサービス名を指定してください。
-`-t` はコンシューマがメッセージを取得するトピック名を指定してください。
+`-s` には設定ファイルに定義したサービス名を指定する。
+`-t` はコンシューマがメッセージを取得するトピック名を指定する。
 
-次にプロデューサーを実行します。サービス名とトピック名はコンシューマ
-と同じ値を指定してください。
+次にプロデューサーを実行する。サービス名とトピック名はコンシューマ
+と同じ値を指定する。
 
 ```
-$ ./bin/text-producer -s service-1 -t test-topic
+$ ./bin/text-producer -s service-1
 ```
 
-プロデューサーの標準入力から入力したテキストがブローカに送信されます。
+プロデューサーの標準入力から入力したテキストがブローカに送信される。

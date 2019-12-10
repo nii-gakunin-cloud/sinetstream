@@ -4,3 +4,7 @@ out/
 build/
 *.lck
 repository/
+*.orig
+*~
+\#*#
+.#*

@@ -142,12 +142,27 @@ class MqttReaderHandleIter(object):
         return make_message(self.reader._reader, message.payload, message.topic, message)
 
 
-def mqtt_client_start(mqttc, params):
+def _get_broker(params):
+    if 'brokers' not in params:
+        logger.error("You must specify one broker.")
+        raise InvalidArgumentError("You must specify one broker.")
+
     brokers = params["brokers"]
-    if len(brokers) > 1:
-        logger.error("only one broker can be specified")
-        raise InvalidArgumentError()
-    hostport = brokers[0].rsplit(":", 1)
+    if isinstance(brokers, list):
+        if len(brokers) > 1:
+            logger.error("only one broker can be specified")
+            raise InvalidArgumentError("only one broker can be specified")
+        elif len(brokers) == 0:
+            logger.error("You must specify one broker.")
+            raise InvalidArgumentError("You must specify one broker.")
+        return brokers[0]
+    else:
+        return brokers
+
+
+def mqtt_client_start(mqttc, params):
+    broker = _get_broker(params)
+    hostport = broker.rsplit(":", 1)
     if len(hostport) == 2:
         hostport[1] = int(hostport[1])
 
@@ -216,7 +231,7 @@ def mqtt_client_start(mqttc, params):
     try:
         mqttc.connect(*hostport)
     except ConnectionRefusedError:
-        logger.error(f"cannot connect broker: {brokers}")
+        logger.error(f"cannot connect broker: {broker}")
         raise ConnectionError()
     mqttc.loop_start()
 
@@ -308,9 +323,12 @@ class MqttWriter(object):
         with self.lock:
             # note: msginfo.is_published() == False at on_publish().
             # assert self.inflight[mid].is_published() will fail.
-            del self.inflight[mid]
-            if len(self.inflight) == 0:
-                self.infl_cond.notify_all()
+            if mid in self.inflight:
+                del self.inflight[mid]
+                if len(self.inflight) == 0:
+                    self.infl_cond.notify_all()
+            else:
+                self.inflight[mid] = None
 
     def push_rcvq(self):
         pass
@@ -349,9 +367,17 @@ class MqttWriter(object):
             if not self.connected:
                 logger.warning("MqttWriter: not connected")
                 wait_for_connected(self)
+        msginfo = self.mqttc.publish(self._writer.params["topic"], payload=msg, qos=self.qos)
+        logger.debug(f"publish => rc={msginfo.rc} mid={msginfo.mid}")
+        if msginfo.rc != paho.mqtt.client.MQTT_ERR_SUCCESS:
+            raise ConnectionError()
         with self.lock:
-            msginfo = self.mqttc.publish(self._writer.params["topic"], payload=msg, qos=self.qos)
-            logger.debug(f"publish => rc={msginfo.rc} mid={msginfo.mid}")
-            if msginfo.rc != paho.mqtt.client.MQTT_ERR_SUCCESS:
-                raise ConnectionError()
-            self.inflight[msginfo.mid] = msginfo
+            if msginfo.mid not in self.inflight:
+                self.inflight[msginfo.mid] = msginfo
+            else:
+                # on_publish() already invoked quickly
+                assert self.inflight[msginfo.mid] is None
+                del self.inflight[msginfo.mid]
+                if len(self.inflight) == 0:
+                    self.infl_cond.notify_all()
+        return msginfo

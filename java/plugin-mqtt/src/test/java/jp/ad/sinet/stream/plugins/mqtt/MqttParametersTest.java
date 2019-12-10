@@ -251,11 +251,11 @@ class MqttParametersTest implements ConfigFileAware {
             @Test
             void defaultRetain() throws Exception {
                 MessageWriterFactory<String> builder =
-                        MessageWriterFactory.<String>builder().service("service-1").topic("test-topic-java-001")
+                        MessageWriterFactory.<String>builder().service("service-2").topic("test-topic-java-001")
                                 .consistency(Consistency.AT_LEAST_ONCE)
                                 .build();
                 try (MessageWriter<String> writer = builder.getWriter()) {
-                    assertTrue(getRetain(writer));
+                    assertFalse(getRetain(writer));
                     writer.write("message-1");
                 }
             }

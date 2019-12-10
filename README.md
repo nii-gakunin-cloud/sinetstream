@@ -1,3 +1,4 @@
+**準備中**
 <!--
 Copyright (C) 2019 National Institute of Informatics
 
@@ -21,52 +22,98 @@ under the License.
 
 # SINETStream
 
-## Files
+## メッセージングシステムの概念
 
-* `README.md`           ... this
-* `python/`             ... SINETStream for Python
-    * `README.md`       ... Python API specification
-    * `src/`            ... API of SINETStream
-    * `tests/`          ... unit tests
-    * `sample/`         ... sample programs
-    * `plugins/`
-        * `kafka/`      ... SINETStream using Kafka
-            * `src/`
-            * `tests/`  ... unit tests
-* `java/`               ... SINETStream for Java
-    * `api/`            ... API of SINETStream for Java
-    * `plugin-kafka/`   ... SINETStream using Kafka
-    * `plugin-mqtt/`    ... SINETStream using MQTT
-    * `sample/`         ... sample programs
-    * `USERGUIDE.md`    ... Java API User Guide
-* `docs/`               ... for mkdocs
-    * auth.md           ... Authentication and Authorization
+SINETStreamは
+[トピックベースのPublish/Subscribeモデル](https://ja.wikipedia.org/wiki/%E5%87%BA%E7%89%88-%E8%B3%BC%E8%AA%AD%E5%9E%8B%E3%83%A2%E3%83%87%E3%83%AB)
+のメッセージングシステムである。
+Brokerを実現するバックエンドのメッセージングシステムとしてKafkaまたはMQTTを利用している。
 
+SINETStreamではPublisherをWriterと呼び、SubscriberをReaderと呼ぶ。
 
-## Install
+![メッセージングシステムの概念図](docs/images/overview.png)
 
-1. Setup Kafka Server
-    1. [Kafka Quickstart](https://kafka.apache.org/quickstart)
-1. Install SINETStream
-    1. `pip install --user https://github.com/nii-gakunin-cloud/sinetstream/releases/download/v0.9.7/sinetstream_kafka-0.9.7-py3-none-any.whl https://github.com/nii-gakunin-cloud/sinetstream/releases/download/v0.9.7/sinetstream-0.9.7-py3-none-any.whl`
-1. Create a config file for SINETStream at the home directory like this:
-    ```
-    service-1:
-      type: kafka
-        brokers:
-            - kafka_server_name:9092
-    ```
-   Rewrite `kafka_server_name:9092` according to your environment (eg `localhost:9092`)
-1. Test
-    1. Dowonload source from https://github.com/nii-gakunin-cloud/sinetstream/archive/v0.9.7.tar.gz
-    1. Extract: `tar xzf v0.9.7.tar.gz`
-    1. `cd sinetstream-0.9.7/python/sample/text`
-    1. Run Consumer like this: `python consumer.py  -s service-1 -t hoge`
-    1. Run Producer like this: `python producer.py  -s service-1 -t hoge`
+Brokerの構成情報やBrokerとの通信パラメータをまとめたものをSINETStreamではサービスと呼ぶ。
+WriterやReaderはサービスを指定するだけでブローカーに接続してメッセージの送受信ができる。
 
-## License
+トピックとはブローカーにおける論理的なチャンネルであり、
+Writer/Readerはトピックを指定してメッセージの送受信を行うことで
+異なる種類のメッセージ配信を1つのブローカー上で行える。
 
-SINETStream is licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
+## ファイル構成
+
+* [README.md](README.md)
+    * このファイル
+* python/
+    * [README.md](python/README.md)
+        * Python版SINETStreamのビルド手順
+    * src/
+        * Python版SINETStreamの共通部分
+    * plugins/
+        * kafka/
+            * Python版SINETStreamのKafka固有部分
+        * mqtt/
+            * Python版SINETStreamのMQTT固有部分
+    * sample/
+        * サンプルプログラム
+* java/
+    * [README.md](java/README.md)
+        * Java版SINETStreamのビルド手順
+    * api/
+        * Java版SINETStreamの共通部分
+    * plugin-kafka/
+        * Java版SINETStreamのKafka固有部分
+    * plugin-mqtt/
+        * Java版SINETStreamのMQTT固有部分
+    * sample/
+        * サンプルプログラム
+* docs/
+    * userguide/
+        * [ユーザガイド](docs/userguide/index.md)
+    * tutorial/
+        * [チュートリアル](docs/tutorial/index.md)
+
+## 動作環境
+
+SINETStream API では以下の言語をサポートする。
+
+* Python 3.6
+* Java 8
+
+SINETStream では以下のメッセージングシステムをサポートする。
+
+* [Apache Kafka](https://kafka.apache.org/) 2.2.1
+* MQTT v3.1, v3.1.1
+    * [Eclipse Mosquitto](https://mosquitto.org/) v1.6.2
+
+SINETStreamの動作環境は以下の通り。
+
+* CentOS 7.6
+* Windows 10
+
+## 準備
+
+SINETStreamでは、Brokerを実現するバックエンドのメッセージングシステムとしてKafkaまたはMQTTを利用している。
+そのため、SINETStreamとともに、これらのメッセージングシステムのどちらかをインストールする必要がある。
+チュートリアルパッケージでは、dockerコンテナを利用して必要なソフトウェア一式（SINETStream, Kafka, MQTT）をインストールする方法を用意している。
+
+1. Kafkaブローカーの設定
+    * [Kafka Quickstart](https://kafka.apache.org/quickstart)
+1. MQTTブローカーの設定
+    * [Eclipse Mosquitto: Installing](https://github.com/eclipse/mosquitto#installing)
+    * [Eclipse Mosquitto: Quick start](https://github.com/eclipse/mosquitto#quick-start)
+1. SINETStreamのインストール
+    * Python: `pip3 install --user sinetstream-kafka sinetstream-mqtt`
+    * Java: Java版READMEを参照
+
+dockerコンテナをつかった[チュートリアル](docs/tutorial/index.md)も参考のこと。
+
+## リンク
+
+* [チュートリアル](docs/tutorial/index.md)
+* [ユーザガイド](docs/userguide/index.md)
+* [SINETStream性能測定結果](docs/performance/index.md)
+
+## ライセンス
+
 [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
-
-For additional information, see the LICENSE.

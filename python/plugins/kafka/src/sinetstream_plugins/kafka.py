@@ -25,10 +25,11 @@ import logging
 import kafka
 from sinetstream import (
     make_message, AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE,
-    InvalidArgumentError, ConnectionError, AlreadyConnectedError,
+    InvalidArgumentError, ConnectionError, AlreadyConnectedError, SinetError,
 )
 from sinetstream.api import setdict
 from sinetstream.api import del_sinetstream_param
+from time import sleep
 
 logger = logging.getLogger(__name__)
 
@@ -42,33 +43,6 @@ class KafkaReaderHandleIter(object):
         logger.debug("KafkaReaderHandleIter:next")
         rec = next(self.reader.kafka_consumer)
         return make_message(self.reader._reader, rec.value, rec.topic, rec)
-
-
-"""
-GOMI
-# remap dict
-# d = { k1: v1 }
-# t = { k1: [k2, (k3, f), (k4, v4)] }
-# trans_dict(d, t) => { k2: v1, k3: f(v1), k4: v4 }, {}
-def trans_dict(d, t):
-    d2 = {}
-    d3 = {}
-    for k, v in d.items():
-        lst = t.get(k)
-        if lst is not None:
-            for x in lst:
-                if type(x) is tuple:
-                    k2, f = x
-                    if callable(f):
-                        d2[k2] = f(v)
-                    else:
-                        d2[k2] = f
-                else:
-                    d2[x] = v
-        else:
-            d3[k] = v
-    return d2, d3
-"""
 
 
 def trans_dict1(d, t):
@@ -180,10 +154,23 @@ class KafkaReader(object):
         assert self.kafka_consumer is not None
         return KafkaReaderHandleIter(self)
 
-    def seek_to_beginning(self):
+    def _wait_for_assignment(self, retry):
+        count = 0
+        while not self.kafka_consumer.assignment():
+            self.kafka_consumer.poll(1)
+            count += 1
+            if count >= retry:
+                raise SinetError(
+                    'The maximum number of attempts before a consumer' +
+                    ' can be assigned has been reached.')
+            sleep(0.1)
+
+    def seek_to_beginning(self, retry=200):
+        self._wait_for_assignment(retry)
         self.kafka_consumer.seek_to_beginning()
 
-    def seek_to_end(self):
+    def seek_to_end(self, retry=200):
+        self._wait_for_assignment(retry)
         self.kafka_consumer.seek_to_end()
 
 
@@ -237,4 +224,4 @@ class KafkaWriter(object):
 
     def publish(self, msg):
         logger.debug("KafkaWriter:publish")
-        self.kafka_producer.send(self._writer.params["topic"], msg)
+        return self.kafka_producer.send(self._writer.params["topic"], msg)

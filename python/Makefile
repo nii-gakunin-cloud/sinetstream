@@ -41,7 +41,7 @@ install-local:
 install-plugins:
 	$(MAKE) recurse-plugins TARGET="install"
 show-usage:
-	$(PYTHON3) etc/usage.py
+	$(PYTHON3) -m sinetstream
 
 uninstall: uninstall-local uninstall-plugins
 uninstall-local:

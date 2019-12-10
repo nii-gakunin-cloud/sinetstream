@@ -26,10 +26,10 @@ generateLombokConfig.enabled = false
 
 dependencies {
     implementation project(':SINETStream-api')
-    implementation group: 'org.apache.kafka', name: 'kafka-clients', version: '2.3.0'
+    implementation group: 'org.apache.kafka', name: 'kafka-clients', version: '2.3.1'
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
-    compileOnly "org.projectlombok:lombok:1.18.8"
-    annotationProcessor "org.projectlombok:lombok:1.18.8"
+    compileOnly "org.projectlombok:lombok:1.18.10"
+    annotationProcessor "org.projectlombok:lombok:1.18.10"
     testImplementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
     testImplementation group: 'org.apache.commons', name: 'commons-text', version: '1.7'
 }

@@ -23,6 +23,7 @@
 import time
 import threading
 import logging
+import pytest
 
 import sinetstream
 
@@ -46,9 +47,9 @@ def test_writer_1_list():
 
 
 def test_writer_2_list():
-    with sinetstream.MessageWriter(service, [topic, topic+"2"]) as f:
-        pass
-    assert True
+    with pytest.raises(sinetstream.InvalidArgumentError):
+        with sinetstream.MessageWriter(service, [topic, topic+"2"]) as f:
+            pass
 
 
 def test_writer_consistency_0():
@@ -102,3 +103,15 @@ def test_writer_kafka_opt():
     with sinetstream.MessageWriter(service, topic, batch_size=1000) as f:
         pass
     assert True
+
+
+def test_open_twice():
+    with sinetstream.MessageWriter(service, topic) as f:
+        with pytest.raises(sinetstream.AlreadyConnectedError):
+            f.open()
+
+
+def test_publish_result():
+    with sinetstream.MessageWriter(service, topic) as f:
+        ret = f.publish(b'message')
+        assert ret is not None

@@ -1,3 +1,4 @@
+**準備中**
 <!--
 Copyright (C) 2019 National Institute of Informatics
 
@@ -19,17 +20,17 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-# Sample Program using SINETStream
+# SINETStreamをつかったサンプルプログラム
 
-## How to run
+## 実行方法
 
-* Kafka is installed.
-* Install SINETStream.
-* Install the libraries required by the sample program:
+* Kafkaをインストールする
+* SINETStreamをインストールする
+* サンプルプログラムが使うライブラリをインストールする:
     * `pip install --user opencv-python pillow`
-* Edit ./.sinetstream_config.yml:
-    * Rewrite the hostnames according to your environment.
-* Run consumer:
+* `./.sinetstream_config.yml`を編集する:
+    * 環境にあわせてホスト名を書き換える。
+* コンシューマを実行する:
     * `python3 ./consumer.py -s service-1 -t topic-1`
-* Run producer on another terminal:
+* 別の端末でプロデューサを実行する:
     * `python3 ./producer.py -s service-1 -t topic-1 -f XXX.mp4`

@@ -1,0 +1,23 @@
+version: '2.4'
+services:
+  broker:
+    image: sinetstream/tutorial:1.0.0
+    build: ./all-in-one
+    container_name: broker
+    hostname: broker
+#    ports:
+#      - "1883:1883"
+#      - "9092:9092"
+  writer:
+    image: sinetstream/tutorial:1.0.0
+    container_name: writer
+    hostname: writer
+    environment:
+      ENABLE_BROKER: 'false'
+
+  reader:
+    image: sinetstream/tutorial:1.0.0
+    container_name: reader
+    hostname: reader
+    environment:
+      ENABLE_BROKER: 'false'

@@ -1,23 +1,25 @@
 service-1:
   type: kafka
-  brokers:
-    - kafka0.vcp-handson.org:1717
-    - kafka1.vcp-handson.org:1718
-    - kafka2.vcp-handson.org:1719
+  brokers: &kafka_brokers
+    - kafka0:9092
+    - kafka1:9092
+    - kafka2:9092
+#    - kafka0.vcp-handson.org:1717
+#    - kafka1.vcp-handson.org:1718
+#    - kafka2.vcp-handson.org:1719
 service-using-default-port:
   type: kafka
   brokers:
     - kafka0.dp1.nii.ac.jp
 service-broker-by-string:
   type: kafka
-  brokers: kafka0.vcp-handson.org:1717
+  brokers: kafka0.dp1.nii.ac.jp:9092
 service-broker-by-string-using-default-port:
   type: kafka
   brokers: kafka2.dp1.nii.ac.jp
 service-with-encrypt-cbc:
   type: kafka
-  brokers:
-    - kafka0.vcp-handson.org:1717
+  brokers: *kafka_brokers
   crypto:
     algorithm: AES
     key_length: 128
@@ -30,8 +32,7 @@ service-with-encrypt-cbc:
     password: secret-000
 service-with-encrypt-eax:
   type: kafka
-  brokers:
-    - kafka0.vcp-handson.org:1717
+  brokers: *kafka_brokers
   crypto:
     algorithm: AES
     key_length: 256
@@ -41,8 +42,10 @@ service-with-encrypt-eax:
     password: secret-0
 service-connect-by-tls:
   type: kafka
-  brokers:
+  brokers: &kafka_tls_brokers
     - kafka0.dp1.nii.ac.jp:9093
+    - kafka1.dp1.nii.ac.jp:9093
+    - kafka2.dp1.nii.ac.jp:9093
   tls:
     keyStore: ${client0KeyStore}
     keyStorePassword: client0-pass
@@ -52,8 +55,7 @@ service-connect-by-tls:
     trustStoreType: PKCS12
 service-connect-by-tls-ca_certs:
   type: kafka
-  brokers:
-    - kafka0.dp1.nii.ac.jp:9093
+  brokers: *kafka_tls_brokers
   tls:
     keyStore: ${client0KeyStore}
     keyStorePassword: client0-pass
@@ -61,8 +63,7 @@ service-connect-by-tls-ca_certs:
     ca_certs: ${ca.pem}
 service-connect-by-tls-ca_certs_cert_key:
   type: kafka
-  brokers:
-    - kafka0.dp1.nii.ac.jp:9093
+  brokers: *kafka_tls_brokers
   tls:
     ca_certs: ${ca.pem}
     certfile: ${client0.crt}
@@ -81,8 +82,7 @@ service-connect-by-tls-no-hostname-check:
     check_hostname: false
 service-connect-by-tls-encrypted-key:
   type: kafka
-  brokers:
-    - kafka0.dp1.nii.ac.jp:9093
+  brokers: *kafka_tls_brokers
   tls:
     ca_certs: ${ca.pem}
     certfile: ${client1.crt}
@@ -90,8 +90,7 @@ service-connect-by-tls-encrypted-key:
     keyfilePassword: client1-pass
 service-connect-by-tls_kafka:
   type: kafka
-  brokers:
-    - kafka0.dp1.nii.ac.jp:9093
+  brokers: *kafka_tls_brokers
   ssl_cafile: ${ca.pem}
   ssl_certfile: ${client1.crt}
   ssl_keyfile: ${client1.key}
@@ -99,8 +98,7 @@ service-connect-by-tls_kafka:
   ssl_ciphers: TLS_RSA_WITH_AES_256_CBC_SHA
 service-connect-by-tls_kafka-and-tls:
   type: kafka
-  brokers:
-    - kafka0.dp1.nii.ac.jp:9093
+  brokers: *kafka_tls_brokers
   ssl_cafile: ${ca.pem}
   ssl_certfile: ${client1.crt}
   ssl_keyfile: ${client1.key}
@@ -119,11 +117,9 @@ service-connect-by-tls_kafka-no-hostname-check:
   ssl_check_hostname: false
 service-connect-by-no-tls:
   type: kafka
-  brokers:
-    - kafka0.vcp-handson.org:1717
+  brokers: *kafka_brokers
   tls: false
 service-connect-by-no-tls2:
   type: kafka
-  brokers:
-    - kafka0.vcp-handson.org:1717
+  brokers: *kafka_brokers
   tls: {}

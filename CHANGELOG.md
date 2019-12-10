@@ -1,4 +1,25 @@
+**準備中**
 # Changelog
+
+## [v1.0.0] - 2019-12-XX
+
+### Added
+
+- Tutorial
+- open/close method for MessageReader/MessageWriter (python)
+
+### Changed
+
+- {python,java}/sample/text/*.py: remove -t option to specify the topic.
+- Documents rearranged.
+- To display the cheat sheet, `python3 -m sinetstream`. (python)
+- The topic= argument removed from MessageReader/MessageWriter constructor. (python)
+
+### Fixed
+
+- Fix documents
+- Fix deadlock in MqttWriter.publish().
+- Bugfixes.
 
 ## [v0.9.7] - 2019-10-11
 

@@ -5,10 +5,68 @@ service-1:
     - kafka1.dp1.nii.ac.jp:9092
     - kafka2.dp1.nii.ac.jp:9092
 
+service-1-list-brokers:
+  type: kafka
+  brokers:
+    - kafka0.dp1.nii.ac.jp:9092
+  topic: mss-test-001
+
+service-1-str-brokers:
+  type: kafka
+  brokers: kafka0.dp1.nii.ac.jp:9092
+  topic: mss-test-001
+
+service-1-no-broker:
+  type: kafka
+
+service-1-three-brokers:
+  type: kafka
+  brokers:
+    - kafka0.dp1.nii.ac.jp:9092
+    - kafka1.dp1.nii.ac.jp:9092
+    - kafka2.dp1.nii.ac.jp:9092
+  topic: mss-test-001
+
+service-1-sasl-plain:
+  type: kafka
+  brokers:
+    - kafka0:9099
+    - kafka1:9099
+    - kafka2:9099
+  tls:
+     ca_certs: tests/cert/ca.pem
+     check_hostname: off
+  security_protocol: SASL_SSL
+  sasl_mechanism: PLAIN
+  sasl_plain_username: alice
+  sasl_plain_password: alice-secret
+
 service-2:
   type: mqtt
   brokers:
     - 192.168.2.105:1883
+
+service-2-list-brokers:
+  type: mqtt
+  brokers:
+    - 192.168.2.105:1883
+  topic: mss-test-001
+
+service-2-str-brokers:
+  type: mqtt
+  brokers: 192.168.2.105:1883
+  topic: mss-test-001
+
+service-2-two-brokers:
+  type: mqtt
+  brokers:
+    - 192.168.2.105:1883
+    - 192.168.2.106:1883
+  topic: mss-test-001
+
+service-2-no-broker:
+  type: mqtt
+  topic: mss-test-001
 
 bad-service-1:
   type: kafka
@@ -204,12 +262,21 @@ local-kafka:
   brokers:
     - localhost:9092
 
-local-kafka-authn:
+local-kafka-authn-plain:
   type: kafka
   brokers:
     - localhost:9099
   security_protocol: SASL_PLAINTEXT
   sasl_mechanism: PLAIN
+  sasl_plain_username: alice
+  sasl_plain_password: alice-secret
+
+local-kafka-authn-scram:
+  type: kafka
+  brokers:
+    - localhost:9099
+  security_protocol: SASL_PLAINTEXT
+  sasl_mechanism: SCRAM-SHA-512
   sasl_plain_username: alice
   sasl_plain_password: alice-secret
 
@@ -225,3 +292,48 @@ local-mqtt-authn:
   username_pw_set:
     username: alice
     password: alice-secret
+
+service-1-topic:
+  type: kafka
+  brokers:
+    - kafka0.dp1.nii.ac.jp:9092
+    - kafka1.dp1.nii.ac.jp:9092
+    - kafka2.dp1.nii.ac.jp:9092
+  topic: mss-test-001
+  
+service-1-topic-list-one-item:
+  type: kafka
+  brokers:
+    - kafka0.dp1.nii.ac.jp:9092
+    - kafka1.dp1.nii.ac.jp:9092
+    - kafka2.dp1.nii.ac.jp:9092
+  topic:
+    - mss-test-001
+
+service-1-topic-list:
+  type: kafka
+  brokers:
+    - kafka0.dp1.nii.ac.jp:9092
+    - kafka1.dp1.nii.ac.jp:9092
+    - kafka2.dp1.nii.ac.jp:9092
+  topic:
+    - mss-test-001
+    - mss-test-002
+
+service-1-topics:
+  type: kafka
+  brokers:
+    - kafka0.dp1.nii.ac.jp:9092
+    - kafka1.dp1.nii.ac.jp:9092
+    - kafka2.dp1.nii.ac.jp:9092
+  topics: mss-test-001
+  
+service-1-topics-list:
+  type: kafka
+  brokers:
+    - kafka0.dp1.nii.ac.jp:9092
+    - kafka1.dp1.nii.ac.jp:9092
+    - kafka2.dp1.nii.ac.jp:9092
+  topics:
+    - mss-test-001
+    - mss-test-002

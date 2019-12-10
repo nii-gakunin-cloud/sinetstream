@@ -35,18 +35,15 @@ import java.util.Objects;
 public class TextConsumer {
 
     private final String service;
-    private final String topic;
 
-    public TextConsumer(String service, String topic) {
+    public TextConsumer(String service) {
         this.service = service;
-        this.topic = topic;
     }
 
     public void run() throws Exception {
         MessageReaderFactory<String> factory =
                 MessageReaderFactory.<String>builder()
                         .service(service)
-                        .topic(topic)
                         .consistency(Consistency.AT_LEAST_ONCE)
                         .valueType(ValueType.TEXT)
                         .receiveTimeout(Duration.ofSeconds(30))
@@ -62,13 +59,12 @@ public class TextConsumer {
     public static void main(String[] args) {
         Options opts = new Options();
         opts.addOption(Option.builder("s").required().hasArg().longOpt("service").build());
-        opts.addOption(Option.builder("t").required().hasArg().longOpt("topic").build());
 
         CommandLineParser parser = new DefaultParser();
         TextConsumer consumer = null;
         try {
             CommandLine cmd = parser.parse(opts, args);
-            consumer = new TextConsumer(cmd.getOptionValue("service"), cmd.getOptionValue("topic"));
+            consumer = new TextConsumer(cmd.getOptionValue("service"));
         } catch (ParseException e) {
             System.err.println("Parsing failed: " + e.getMessage());
             new HelpFormatter().printHelp(TextProducer.class.getSimpleName(), opts, true);

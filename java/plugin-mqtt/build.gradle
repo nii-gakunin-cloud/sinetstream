@@ -26,9 +26,9 @@ generateLombokConfig.enabled = false
 
 dependencies {
     implementation project(':SINETStream-api')
-    implementation group: 'org.eclipse.paho', name: 'org.eclipse.paho.client.mqttv3', version: '1.2.1'
-    compileOnly "org.projectlombok:lombok:1.18.8"
-    annotationProcessor "org.projectlombok:lombok:1.18.8"
+    implementation group: 'org.eclipse.paho', name: 'org.eclipse.paho.client.mqttv3', version: '1.2.2'
+    compileOnly "org.projectlombok:lombok:1.18.10"
+    annotationProcessor "org.projectlombok:lombok:1.18.10"
     testImplementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
-    testImplementation group: 'org.apache.commons', name: 'commons-text', version: '1.7'
+    testImplementation group: 'org.apache.commons', name: 'commons-text', version: '1.8'
 }

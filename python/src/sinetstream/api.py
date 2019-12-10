@@ -170,6 +170,9 @@ class Message(object):
         self._topic = topic
         self._raw = raw
 
+    def __repr__(self):
+        return f"Message(value={self._value!r}, topic={self._topic!r}, raw={self._raw!r})"
+
     @property
     def value(self):
         return self._value
@@ -672,14 +675,14 @@ class MessageReader(object):
         "receive_timeout_ms": float("inf"),
     }
 
-    def __init__(self, service, topics, **kwargs):
+    def __init__(self, service, topics=None, **kwargs):
         logger.debug("MessageReader:init")
 
         validate_config(kwargs)
         params = merge_parameter(service, kwargs, MessageReader.default_params, "reader")
 
         check_consistency(params["consistency"])  # XXX
-        params["topics"] = topics
+        params["topics"] = _setup_topics(params, topics)
 
         self.kwargs = kwargs
         self.params = params
@@ -700,8 +703,16 @@ class MessageReader(object):
         self._reader.open()
         return self
 
+    open = __enter__
+
     def __exit__(self, ex_type, ex_value, trace):
         logger.debug("MessageReader:exit")
+        self.close()
+
+    def close(self):
+        logger.debug("MessageReader:close")
+        if self._reader is None:
+            raise SinetError("It has already been closed.")
         self._reader.close()
         self._reader = None
 
@@ -712,6 +723,10 @@ class MessageReader(object):
     @property
     def client_id(self):
         return self.params["client_id"]
+
+    @property
+    def topics(self):
+        return self.params["topics"]
 
     def seek_to_beginning(self):
         self._reader.seek_to_beginning()
@@ -726,17 +741,17 @@ class MessageWriter(object):
 
     def usage():
         return ('MessageWriter(\n'
-                '    service=SERVICE,              '
+                '    service=SERVICE,                 '
                 '# Service name defined in the configuration file. (REQUIRED)\n'
-                '    topic=TOPIC,                '
+                '    topic=TOPIC,                     '
                 '# The topic to send.\n'
-                '    consistency=AT_MOST_ONCE,     '
+                '    consistency=AT_MOST_ONCE,        '
                 '# consistency: AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE\n'
-                '    client_id=DEFAULT_CLIENT_ID,  '
+                '    client_id=DEFAULT_CLIENT_ID,     '
                 '# If not specified, the value is automatically generated.\n'
-                '    value_type=None,              '
+                '    value_type=None,                 '
                 '# The type of message.\n'
-                '    value_serializer=None         '
+                '    value_serializer=None            '
                 '# If not specified, use default serializer according to valueType.\n'
                 ')')
 
@@ -744,14 +759,14 @@ class MessageWriter(object):
         **default_params
     }
 
-    def __init__(self, service, topic, **kwargs):
+    def __init__(self, service, topic=None, **kwargs):
         logger.debug("MessageWriter:init")
 
         validate_config(kwargs)
         params = merge_parameter(service, kwargs, MessageWriter.default_params, "writer")
 
         check_consistency(params["consistency"])        # XXX
-        params["topic"] = topic
+        params["topic"] = _setup_topic(params, topic)
 
         self.kwargs = kwargs
         self.params = params
@@ -772,10 +787,19 @@ class MessageWriter(object):
         self._writer.open()
         return self
 
+    open = __enter__
+
     def __exit__(self, ex_type, ex_value, trace):
         logger.debug("MessageWriter:exit")
+        self.close()
+
+    def close(self):
+        logger.debug("MessageWriter:close")
+        if self._writer is None:
+            raise SinetError("It has already been closed.")
         self._writer.close()
         self._writer = None
+
 
     def publish(self, msg):
         logger.debug(f"MessageWriter:publish:type(msg)={type(msg)}")
@@ -785,8 +809,46 @@ class MessageWriter(object):
         if self.cipher:
             msg = self.cipher.encrypt(msg)
         assert type(msg) == bytes
-        self._writer.publish(msg)
+        return self._writer.publish(msg)
 
     @property
     def client_id(self):
         return self.params["client_id"]
+
+    @property
+    def topic(self):
+        return self.params["topic"]
+
+
+def _setup_topic(params, topic):
+    if topic is not None:
+        ret = topic
+    elif "topic" in params:
+        ret = params["topic"]
+    else:
+        raise InvalidArgumentError("You must specify a topic.")
+
+    if isinstance(ret, list):
+        num_topic = len(ret)
+        if num_topic > 1:
+            raise InvalidArgumentError("You cannot specify multiple topics.")
+        elif num_topic == 0:
+            raise InvalidArgumentError("You must specify a topic.")
+        return ret[0]
+    else:
+        return ret
+
+
+def _setup_topics(params, topics):
+    if topics is not None:
+        ret = topics
+    elif "topics" in params:
+        ret = params["topics"]
+    elif "topic" in params:
+        ret = params["topic"]
+    else:
+        raise InvalidArgumentError("You must specify several topics.")
+
+    if isinstance(ret, list) and len(ret) == 0:
+        raise InvalidArgumentError("You must specify several topics.")
+    return ret
