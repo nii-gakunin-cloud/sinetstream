@@ -114,6 +114,7 @@ dockerコンテナをつかった[チュートリアル](docs/tutorial/index.md)
 * [チュートリアル](docs/tutorial/index.md)
 * [ユーザガイド](docs/userguide/index.md)
 * [SINETStream性能測定結果](docs/performance/index.md)
+* [更新履歴](CHANGELOG.md)
 
 ## ライセンス
 

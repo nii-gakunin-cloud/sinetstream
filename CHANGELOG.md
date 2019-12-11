@@ -2,7 +2,7 @@
 
 # Changelog
 
-## [v1.0.0] - 2019-12-XX
+## [v1.0.0] - 2019-12-13
 
 ### Added
 
@@ -14,7 +14,7 @@
 - {python,java}/sample/text/*.py: remove -t option to specify the topic.
 - Documents rearranged.
 - To display the cheat sheet, `python3 -m sinetstream`. (python)
-- The topic= argument removed from MessageReader/MessageWriter constructor. (python)
+- The topic= argument is now optional in MessageReader/MessageWriter constructor. (python)
 
 ### Fixed
 

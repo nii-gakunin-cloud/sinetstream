@@ -387,13 +387,15 @@ service-tutorial-mqtt:
 
 #### Reader
 
-`Reader`のサンプルプログラムで SINETStream API を使用している箇所を以下に示します。
+`Reader`のサンプルプログラムconsumer.py で SINETStream API を使用している箇所を以下に示します。
 
 ```python
 with MessageReader(service) as reader:
     for message in reader:
         print(f"topic={message.topic} value='{message.value}'")
 ```
+
+> サンプルプログラムconsumer.py 全体のコードは[GitHub](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/python/sample/text/consumer.py)で確認できます。
 
 はじめにメッセージを受信するための `MessageReader` のオブジェクトを作成します。その際、引数としてサービス名を指定します。
 `MessageReader`は通常Pythonのwith文で実行します。
@@ -402,7 +404,7 @@ with文が返した値 `reader` はイテラブルなオブジェクトになっ
 
 #### Writer
 
-`Writer`のサンプルプログラムで SINETStream API を使用している箇所を以下に示します。
+`Writer`のサンプルプログラムproducer.py で SINETStream API を使用している箇所を以下に示します。
 
 ```python
 with MessageWriter(service) as writer:
@@ -410,6 +412,8 @@ with MessageWriter(service) as writer:
         message = get_message()
         writer.publish(message)
 ```
+
+> サンプルプログラムproducer.py 全体のコードは[GitHub](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/python/sample/text/producer.py)で確認できます。
 
 メッセージを送信するための `MessageWriter` のオブジェクトを作成します。その際、引数としてサービス名を指定します。
 `MessageWriter`は通常Pythonのwith文で実行します。

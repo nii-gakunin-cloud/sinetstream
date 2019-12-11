@@ -90,7 +90,8 @@ SINETStreamが利用するバックエンドのメッセージングシステム
 `Broker`のホスト環境で以下のコマンドを実行してください。
 
 ```console
-[user00@host-broker]$ docker run -d --name broker --hostname broker -p 1883:1883 -p 9092:9092 sinetstream/tutorial:1.0.0
+[user00@host-broker]$ docker run -d --name broker --hostname broker \
+                      -p 1883:1883 -p 9092:9092 sinetstream/tutorial:1.0.0
 ```
 
 コンテナが正常に起動したことを確認するために、状態を表示させます。
@@ -115,7 +116,8 @@ xxxxxxxxxxxx        sinetstream/tutorial:1.0.0   "/usr/local/bin/supe…"   Abou
 `Reader`のホスト環境で以下のコマンドを実行してください。
 
 ```console
-[user00@host-reader]$ docker run -d --name reader --hostname reader -e ENABLE_BROKER=false --add-host=broker:192.168.1.xxx sinetstream/tutorial:1.0.0
+[user00@host-reader]$ docker run -d --name reader --hostname reader -e ENABLE_BROKER=false \
+                      --add-host=broker:192.168.1.xxx sinetstream/tutorial:1.0.0
 ```
 
 > `192.168.1.XXX`には実際に使用する環境の`Broker`のIPアドレスを指定してください。
@@ -216,7 +218,8 @@ SINETStreamのPython3 APIを用いて作成された`Reader`のサンプルプ�
 `Writer`のホスト環境で以下のコマンドを実行してください。
 
 ```console
-[user00@host-writer]$ docker run -d --name writer --hostname writer -e ENABLE_BROKER=false --add-host=broker:192.168.1.xxx sinetstream/tutorial:1.0.0
+[user00@host-writer]$ docker run -d --name writer --hostname writer -e ENABLE_BROKER=false \
+                      --add-host=broker:192.168.1.xxx sinetstream/tutorial:1.0.0
 ```
 
 > `192.168.1.XXX`には実際に使用する環境の`Broker`のIPアドレスを指定してください。
@@ -226,7 +229,7 @@ SINETStreamのPython3 APIを用いて作成された`Reader`のサンプルプ�
 ```console
 [user00@host-writer]$ docker ps -l
 CONTAINER ID        IMAGE                        COMMAND                  CREATED             STATUS              PORTS                NAMES
-xxxxxxxxxxxx        sinetstream/tutorial:1.0.0   "/usr/local/bin/supe…"   About a minute ago  Up About a minute   1883/tcp, 9092/tcp   reader
+xxxxxxxxxxxx        sinetstream/tutorial:1.0.0   "/usr/local/bin/supe…"   About a minute ago  Up About a minute   1883/tcp, 9092/tcp   writer
 ```
 
 `STATUS` が `Up` と表示されていれば、コンテナが正常に起動しています。
@@ -511,13 +514,15 @@ service-tutorial-mqtt:
 
 #### Reader
 
-`Reader`のサンプルプログラムで SINETStream API を使用している箇所を以下に示します。
+`Reader`のサンプルプログラムconsumer.py で SINETStream API を使用している箇所を以下に示します。
 
 ```python
 with MessageReader(service) as reader:
     for message in reader:
         print(f"topic={message.topic} value='{message.value}'")
 ```
+
+> サンプルプログラムconsumer.py 全体のコードは[GitHub](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/python/sample/text/consumer.py)で確認できます。
 
 はじめにメッセージを受信するための `MessageReader` のオブジェクトを作成します。その際、引数としてサービス名を指定します。
 `MessageReader`は通常Pythonのwith文で実行します。
@@ -526,7 +531,7 @@ with文が返した値 `reader` はイテラブルなオブジェクトになっ
 
 #### Writer
 
-`Writer`のサンプルプログラムで SINETStream API を使用している箇所を以下に示します。
+`Writer`のサンプルプログラムproducer.py で SINETStream API を使用している箇所を以下に示します。
 
 ```python
 with MessageWriter(service) as writer:
@@ -534,6 +539,8 @@ with MessageWriter(service) as writer:
         message = get_message()
         writer.publish(message)
 ```
+
+> サンプルプログラムproducer.py 全体のコードは[GitHub](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/python/sample/text/producer.py)で確認できます。
 
 メッセージを送信するための `MessageWriter` のオブジェクトを作成します。その際、引数としてサービス名を指定します。
 `MessageWriter`は通常Pythonのwith文で実行します。
