@@ -2,13 +2,11 @@ service-tutorial-kafka:
     type: kafka
     brokers: "broker:9092"
     topic: topic-tutorial-kafka
-    consistency: AT_LEAST_ONCE
     value_type: text
 
 service-tutorial-mqtt:
     type: mqtt
     brokers: "broker:1883"
     topic: topic-tutorial-mqtt
-    consistency: AT_LEAST_ONCE
     value_type: text
 

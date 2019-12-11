@@ -1,4 +1,4 @@
-**準備中**
+**準備中** (2019-12-11 15:59:00 JST)
 
 <!--
 Copyright (C) 2019 National Institute of Informatics
@@ -106,6 +106,32 @@ xxxxxxxxxxxx        sinetstream/tutorial:1.0.0   "/usr/local/bin/supe…"   Abou
 `STATUS` が `Up` と表示されていれば、コンテナが正常に起動しています。
 
 起動したコンテナでは、SINETStreamが利用するメッセージングシステム Kafka, MQTT(Mosquitto) のブローカーが実行されています。
+コンテナで実行しているプロセスを確認してみると以下のようになります。
+
+```console
+[user00@host-broker]$ docker exec -t broker ps ax
+  PID TTY      STAT   TIME COMMAND
+    1 ?        Ss     0:00 /usr/bin/python3 /usr/local/bin/supervisord -n -c /et
+    9 ?        Sl     0:05 java -Xmx1G -Xms1G -server -XX:+UseG1GC -XX:MaxGCPaus
+   10 ?        S      0:00 /usr/sbin/mosquitto -c /etc/mosquitto/mosquitto.conf
+   12 ?        Sl     0:01 java -Xmx512M -Xms512M -server -XX:+UseG1GC -XX:MaxGC
+  822 pts/0    Rs+    0:00 ps ax
+```
+
+上記の実行例に表示された、それぞれのプロセスの役割を以下に示します。
+
+* PID 1
+    - いわゆる `init` プロセス
+    - コンテナ内で実行するサービスの管理を行う
+* PID 9
+    - Kafkaブローカー
+* PID 10
+    - MQTT(Mosquitto)ブローカー
+* PID 12
+    - ZooKeeper
+    - Kafkaが設定、構成情報などを保存するために利用しているサービス
+* PID 822
+    - プロセスリストを表示するために実行した ps コマンド
 
 ### 2.2. Readerを準備する
 
@@ -131,6 +157,34 @@ xxxxxxxxxxxx        sinetstream/tutorial:1.0.0   "/usr/local/bin/supe…"   Abou
 ```
 
 `STATUS` が `Up` と表示されていれば、コンテナが正常に起動しています。
+
+ここで実行したコンテナイメージは`Broker`と同じものですが、コンテナ起動時に`-e ENABLE_BROKER=false`を指定することで、ブローカーが実行されないようになっています。コンテナ内のプロセスの一覧を表示してそのことを確認してみます。
+
+```console
+[user00@host-reader]$ docker exec -t reader ps ax
+  PID TTY      STAT   TIME COMMAND
+    1 ?        Ss     0:00 /usr/bin/python3 /usr/local/bin/supervisord -n -c /et
+   30 pts/0    Rs+    0:00 ps ax
+```
+
+`Broker`コンテナでプロセス一覧を確認した時の結果と異なり、Kafkaブローカー、MQTTブローカー、ZooKeeperが実行されていないことがわかります。
+
+`Reader`用のコンテナを起動する際に指定した `--add-host` は　`Reader`コンテナの /etc/hosts に、`Broker` の IPアドレスを登録するためのものです。Kafkaブローカーを利用するためにはサーバアドレスの名前解決が必要となるため、このパラメータの指定を追加しています。
+`Reader`コンテナの /etc/hosts を表示して `Broker` のIPアドレスが登録されていることを確認します。
+
+```console
+[user00@host-reader]$ docker exec -t reader cat /etc/hosts
+127.0.0.1       localhost
+::1     localhost ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+192.168.1.XXX   broker
+172.17.0.3      reader
+```
+
+> `192.168.1.XXX`にはコンテナ起動時に指定した`Broker`のIPアドレスが表示されます。また reader のIPアドレスは実行環境によって異なる値が表示されます。
 
 #### 2.2.2. SINETStreamをインストールする
 
@@ -233,6 +287,31 @@ xxxxxxxxxxxx        sinetstream/tutorial:1.0.0   "/usr/local/bin/supe…"   Abou
 ```
 
 `STATUS` が `Up` と表示されていれば、コンテナが正常に起動しています。
+
+`Reader`コンテナの場合と同様、起動時に `-e ENABLE_BROKER=false`を指定したので、コンテナ内ではブローカーが実行されません。そのことを確認します。
+
+```console
+[user00@host-writer]$ docker exec -t writer ps ax
+  PID TTY      STAT   TIME COMMAND
+    1 ?        Ss     0:00 /usr/bin/python3 /usr/local/bin/supervisord -n -c /et
+   31 pts/0    Rs+    0:00 ps ax
+```
+
+また`--add-host` の指定により `Writer`コンテナの /etc/hosts に `Broker` のIPアドレスが登録されていることを確認します。
+
+```console
+[user00@host-writer]$ docker exec -t writer cat /etc/hosts
+127.0.0.1       localhost
+::1     localhost ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+192.168.1.XXX   broker
+172.17.0.4      writer
+```
+
+> `192.168.1.XXX`にはコンテナ起動時に指定した`Broker`のIPアドレスが表示されます。また writer のIPアドレスは実行環境によって異なる値が表示されます。
 
 #### 2.3.2. SINETStreamをインストールする
 
@@ -377,9 +456,28 @@ Press ctrl-c to exit the program.
 
 `Reader`のプログラムは Kafkaブローカーに送られたメッセージを受信してターミナルに表示します。先ほど `Writer` で送信したメッセージが表示されていることを確認してください。
 
+#### メッセージがブローカーによって配送されていることを確認する
+
+`Writer`から送信したメッセージが `Broker` によって`Reader`に配送されていることを確認するために、ブローカーを一時的に停止してみます。
+
+`Broker`のホスト環境で以下のコマンドを実行し`Broker`コンテナを停止させてください。
+
+```console
+[user00@host-broker]$ docker stop broker
+```
+
+`Broker`コンテナが停止した状態で `Writer` のターミナルから実行中のサンプルプログラム producer.pyでメッセージの送信を行ってください。
+Kafkaブローカーが停止しているため、`Reader`側でメッセージの受信ができず`Writer`側で入力した文字列が表示されないことが確認できます。
+
+確認が済んだら`Broker`のホスト環境で以下のコマンドを実行して`Broker`コンテナを再開させてください。
+
+```console
+[user00@host-broker]$ docker start broker
+```
+
 #### Reader, Writer の停止
 
-メッセージの送受信が行えたことを確認したら `Reader` と `Writer` を停止します。それぞれのターミナルで ctrl-c を打ち込んでください。
+`Reader` と `Writer` のサンプルプログラムを停止します。サンプルプログラムを実行しているそれぞれのターミナルで ctrl-c を打ち込んでください。
 
 ### 3.2. MQTTブローカー(Mosquitto)との間でメッセージの送受信を行う
 
@@ -417,11 +515,22 @@ Kafkaブローカーの場合と同様の操作を行い、MQTTブローカー�
 
 #### Reader, Writer の停止
 
-メッセージの送受信が行えたことを確認したら `Reader` と `Writer` を停止します。それぞれのターミナルで ctrl-c を打ち込んでください。
+メッセージの送受信が行えたことを確認したら `Reader` と `Writer` のサンプルプログラムを停止します。それぞれのターミナルで ctrl-c を打ち込んでください。
 
 ### 3.3. コンテナの停止、削除
 
-最後にチュートリアルSTEP2で使用したコンテナの停止、削除を行います。以下のコマンドをそれぞれのマシンのホスト環境で実行してください。
+最後にこのチュートリアルで使用したコンテナの停止、削除を行います。
+
+コンテナの操作はホスト環境で実行します。コンテナ環境からホスト環境に戻る場合は `exit` を実行してください。
+例えば `Reader`のターミナルでコンテナ環境からホスト環境に戻る場合、以下のようになります。
+
+```console
+[user01@reader]$ exit
+exit
+[user00@host-reader]$
+```
+
+ホスト環境に戻ったら、それぞれのマシンで以下のコマンドを実行してください。
 
 `Broker`
 ```console
@@ -456,14 +565,12 @@ service-tutorial-kafka:
     type: kafka
     brokers: "broker:9092"
     topic: topic-tutorial-kafka
-    consistency: AT_LEAST_ONCE
     value_type: text
 
 service-tutorial-mqtt:
     type: mqtt
     brokers: "broker:1883"
     topic: topic-tutorial-mqtt
-    consistency: AT_LEAST_ONCE
     value_type: text
 ```
 
@@ -480,7 +587,6 @@ service-tutorial-mqtt:
     type: kafka
     brokers: "broker:9092"
     topic: topic-tutorial-kafka
-    consistency: AT_LEAST_ONCE
     value_type: text
 ```
 
@@ -494,13 +600,6 @@ service-tutorial-mqtt:
     - アドレスの書式はホスト名とポート番号を `:` で繋げたものとします
 * topic
     - メッセージを送受信する対象となるトピックを指定します
-* consistency
-    - メッセージ配信の信頼性を指定します
-    - 指定できる値は以下のいずれかになります
-        - AT_MOST_ONCE
-        - AT_LEAST_ONCE
-        - EXACTLY_ONCE
-    - チュートリアルで指定している `AT_LEAST_ONCE` は「メッセージが必ず一度は届くが、重複が発生することがある」ことを意味します
 * value_type
     - メッセージの種別を指定します
     - 指定できる値は以下のいずれかになります
