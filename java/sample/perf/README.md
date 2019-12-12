@@ -1,4 +1,4 @@
-**準備中** (2019-12-12 15:15:40 JST)
+**準備中** (2019-12-12 16:54:49 JST)
 
 # 性能測定
 
@@ -37,4 +37,5 @@
         - 送信時刻または受信時刻 (ms)
         - メッセージサイズ (B)
 - CSVを解析して統計値を得る:
-    - `sinetstream/python/sample/perf/stat-perf.sh perftest-*.csv` を実行すると平均スループットなどが得られる。
+    - `stat-perf.sh perftest-*.csv` を実行すると平均スループットなどが得られる。
+- `test.sh` の代りに `test-tls.sh` を実行するとTLSありでの測定、`test-crypto.sh` を実行すると暗号化ありでの測定がおこなわれる。

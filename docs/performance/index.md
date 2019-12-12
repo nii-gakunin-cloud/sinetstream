@@ -1,4 +1,4 @@
-**準備中** (2019-12-12 15:15:40 JST)
+**準備中** (2019-12-12 16:54:49 JST)
 
 <!--
 Copyright (C) 2019 National Institute of Informatics
@@ -58,6 +58,9 @@ WriterまたはReaderをSINETのモバイル網に接続されたデバイスに
 * mosquitto-1.6.2 (MQTTブローカー)
 * SINETStream 1.0.0
     * [測定プログラム](https://github.com/nii-gakunin-cloud/sinetstream/tree/master/java/sample/perf)
+        * `test.sh`: 暗号化なしでの性能測定
+        * `test-tls.sh`: TLSによる通信暗号化ありでの性能測定
+        * `test-crypto.sh`: データの暗号化ありでの性能測定
 
 ## モバイルネットワークの通信性能
 
