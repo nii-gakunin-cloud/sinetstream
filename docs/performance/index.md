@@ -1,4 +1,4 @@
-**準備中** (2019-12-12 12:59:06 JST)
+**準備中** (2019-12-12 13:14:03 JST)
 
 <!--
 Copyright (C) 2019 National Institute of Informatics
@@ -56,7 +56,7 @@ WriterまたはReaderをSINETのモバイル網に接続されたデバイスに
 
 * kafka_2.12-2.3.0 (Kafkaブローカー)
 * mosquitto-1.6.2 (MQTTブローカー)
-* SINETStream 0.9.7
+* SINETStream 1.0.0
 
 ## モバイルネットワークの通信性能
 
