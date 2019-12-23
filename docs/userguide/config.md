@@ -1,5 +1,3 @@
-**準備中** (2019-12-12 16:54:49 JST)
-
 <!--
 Copyright (C) 2019 National Institute of Informatics
 
@@ -385,11 +383,13 @@ service-aes-1:
 * ssl_cipher_suites
 -->
 
+<!--
 ### パラメータの別名
 
 `ssl_check_hostname`, `ssl_cafile`, `ssl_certfile`, `ssl_keyfile`, `ssl_password`, `ssl_ciphers`
 以外のパラメータについては、`_` をすべて `.` に置き換えたパラメータ名も受け付ける。
 両方の名前が設定された場合は、`.` に置き換えたパラメータ名に設定されている値が優先される。
+-->
 
 ### 未対応
 

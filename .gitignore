@@ -13,3 +13,5 @@ site
 *~
 \#*#
 .#*
+.sass-cache
+/_site
