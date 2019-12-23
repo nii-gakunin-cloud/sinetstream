@@ -21,7 +21,7 @@
 
 allprojects {
     group = 'jp.ad.sinet.sinetstream'
-    version '0.9.7'
+    version '1.0.0'
 
     repositories {
         mavenCentral()

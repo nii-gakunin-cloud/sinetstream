@@ -6,7 +6,7 @@ set -x
 # aws -- aws -- aws
 
 #export JAVA_HOME=/usr/lib/jvm/java-1.8.0/jre
-PKGDIR="repo/sinetstream-java/sample/perf/sinetstream-binary-producer-0.9.7"
+PKGDIR="repo/sinetstream-java/sample/perf/sinetstream-binary-producer-1.0.0"
 
 SERVICE_KAFKA=service-kafka-aws-crypto
 SERVICE_MQTT=service-mqtt-aws-crypto
