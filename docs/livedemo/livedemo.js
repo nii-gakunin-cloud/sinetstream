@@ -1,17 +1,5 @@
-var ctx = document.getElementById('myChart').getContext('2d');
-var myChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: [],
-        datasets: []
-    },
-    options: {
+var chart_opts = {
         responsive: true,
-        title: {
-            display: true,
-            fontSize: 16,
-            text: 'Visualization of Temperature and Humidity Based on DHT11 Sensor'
-        },
         scales: {
             xAxes: [{
                 type: 'time',
@@ -64,24 +52,65 @@ var myChart = new Chart(ctx, {
                 scheme: 'brewer.SetOne3'
             }
         }
-    }
+    };
+var ctx1 = document.getElementById('myChart1').getContext('2d');
+var ctx2 = document.getElementById('myChart2').getContext('2d');
+
+var myChart1 = new Chart(ctx1, {
+    type: 'line',
+    data: {
+        labels: [],
+        datasets: []
+    },
+    options: Object.assign({
+                 title: {
+                     display: true,
+                     fontSize: 16,
+                     text: 'Visualization of Temperature and Humidity Based on DHT11 Sensor (Last 5 minutes)'
+        }
+             }, chart_opts)
+});
+var myChart2 = new Chart(ctx2, {
+    type: 'line',
+    data: {
+        labels: [],
+        datasets: []
+    },
+    options: Object.assign({
+                 title: {
+                     display: true,
+                     fontSize: 16,
+                     text: 'Visualization of Temperature and Humidity Based on DHT11 Sensor (Last 24 hours)'
+        }
+             }, chart_opts)
 });
 
-function updateChart() {
-    let s3_url = 'https://nii-dp-livedemo.s3-ap-northeast-1.amazonaws.com/livedemo-user1-kafka-dht11/sensor.json';
+function updateChart(chart, target) {
+    let s3_url = 'https://nii-dp-livedemo.s3-ap-northeast-1.amazonaws.com/livedemo-user1-kafka-dht11/' + target;
     $.getJSON(s3_url).done(function( data ) {
-        myChart.data.datasets.splice(0);
+        chart.data.datasets.splice(0);
         $.each( data, function(idx) {
-            myChart.data.datasets.push(
+            chart.data.datasets.push(
                 Object.assign({
                     fill: false,
                     yAxisID: this.label
                 }, this)
             );
         });
-        myChart.update({duration: 0});
+        chart.update({duration: 0});
     });
 }
 
-updateChart();
-setInterval(updateChart, 30000);
+
+function updateChart1() {
+    updateChart(myChart1, 'sensor.json');
+}
+function updateChart2() {
+    updateChart(myChart2, 'sensor10m.json');
+}
+
+
+updateChart1();
+updateChart2();
+setInterval(updateChart1, 30000);
+setInterval(updateChart2, 300000);
