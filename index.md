@@ -37,7 +37,7 @@ SINETStreamのご利用にあたり、ユーザ登録をお願いしておりま
 FAQのご紹介等の情報提供をさせていただきます。
 下記よりご登録お願いいたします。
 
-* [ユーザ登録](https://reg.nii.ac.jp/m/sinetstream_user_registration)
+* [ユーザ登録・問い合わせ先](https://reg.nii.ac.jp/m/sinetstream_user_registration)
 
 ## SINETStreamの仕組み
 

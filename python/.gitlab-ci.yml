@@ -1,0 +1,45 @@
+image: python:3.7-slim
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip
+
+before_script:
+  - python -V
+
+stages:
+  - build
+  - test
+
+test:
+  stage: test
+  script:
+  - python setup.py test
+  - pip install .
+  - cd plugins/kafka/
+  - python setup.py test
+  - cd ../mqtt/
+  - python setup.py test
+
+build:
+  stage: build
+  script:
+  - mkdir -p wheelhouse
+  - python setup.py bdist_wheel
+  - pip install dist/*
+  - cp dist/* wheelhouse/
+  - cd plugins/kafka/
+  - python setup.py bdist_wheel
+  - pip install dist/*
+  - cp dist/* ../../wheelhouse/
+  - cd ../../plugins/mqtt
+  - python setup.py bdist_wheel
+  - pip install dist/*
+  - cp dist/* ../../wheelhouse/
+  artifacts:
+    paths:
+    - wheelhouse/*.whl
+    expire_in: 3 days

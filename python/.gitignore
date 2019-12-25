@@ -1,0 +1,17 @@
+tags
+*.swp
+.eggs
+build
+dist
+__pycache__
+*.egg-info
+.coverage
+htmlcov
+site
+*.tmp
+*.orig
+*~
+\#*#
+.#*
+.sass-cache
+/_site
