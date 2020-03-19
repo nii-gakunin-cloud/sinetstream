@@ -1,22 +1,31 @@
+service-0:
+  type: mqtt
+  brokers:
+    - vcc3058.vcp-handson.org:1883
+  retain: true
 service-1:
   type: mqtt
   brokers:
-    - mqtt:1883
+    - vcc3058.vcp-handson.org:1883
   retain: true
+  value_type: text
 service-2:
   type: mqtt
   brokers:
-    - mqtt
+    - vcc3058.vcp-handson.org
+  value_type: text
 service-3:
   type: mqtt
-  brokers: mqtt:1883
+  brokers: vcc3058.vcp-handson.org:1883
+  value_type: text
 service-4:
   type: mqtt
-  brokers: mqtt
+  brokers: vcc3058.vcp-handson.org
+  value_type: text
 service-X-1:
   type: mqtt
   brokers:
-    - mqtt:1883
+    - vcc3058.vcp-handson.org:1883
     - mqtt:1884
 service-X-2:
   type: mqtt
@@ -30,34 +39,29 @@ service-Z-1:
 service-Z-2:
   type: mqtt
   brokers:
-    - mqtt:1884
+    - vcc3058.vcp-handson.org:1889
 service-by-websocket:
   type: mqtt
-  brokers: websocket.example.org
-  username_pw_set:
-    username: mqtt
-  tls: true
+  brokers: vcc3058.vcp-handson.org:8886
+  tls:
+    trustStore: ${niicaKeyStore}
+    trustStorePassword: ca-pass
+    trustStoreType: PKCS12
 service-by-websocket-and-tls-with-boolean:
   type: mqtt
-  brokers: websocket.example.org
-  username_pw_set:
-    username: mqtt
+  brokers: vcc3058.vcp-handson.org:8886
   tls: true
 service-by-websocket-and-no-tls:
   type: mqtt
-  brokers: websocket.example.org
-  username_pw_set:
-    username: mqtt
+  brokers: vcc3058.vcp-handson.org:1886
   tls: false
 service-by-websocket-and-no-tls2:
   type: mqtt
-  brokers: websocket.example.org
-  username_pw_set:
-    username: mqtt
+  brokers: vcc3058.vcp-handson.org:1886
   tls: {}
 service-with-encrypt-cbc:
   type: mqtt
-  brokers: mqtt:1883
+  brokers: vcc3058.vcp-handson.org:1883
   crypto:
     algorithm: AES
     key_length: 128
@@ -70,7 +74,7 @@ service-with-encrypt-cbc:
     password: secret-000
 service-with-encrypt-eax:
   type: mqtt
-  brokers: mqtt:1883
+  brokers: vcc3058.vcp-handson.org:1883
   crypto:
     algorithm: AES
     key_length: 256
@@ -80,27 +84,27 @@ service-with-encrypt-eax:
     password: secret-00
 service-connect-by-tls_set:
   type: mqtt
-  brokers: mqtt.dp1.nii.ac.jp
+  brokers: vcc3058.vcp-handson.org
   tls_set:
     keyStore: ${client0KeyStore}
     keyStorePassword: client0-pass
     keyStoreType: PKCS12
     trustStore: ${niicaKeyStore}
-    trustStorePassword: kafka-pass
+    trustStorePassword: ca-pass
     trustStoreType: PKCS12
 service-connect-by-tls:
   type: mqtt
-  brokers: mqtt.dp1.nii.ac.jp
+  brokers: vcc3058.vcp-handson.org
   tls:
     keyStore: ${client0KeyStore}
     keyStorePassword: client0-pass
     keyStoreType: PKCS12
     trustStore: ${niicaKeyStore}
-    trustStorePassword: kafka-pass
+    trustStorePassword: ca-pass
     trustStoreType: PKCS12
 service-connect-by-tls-ca_certs:
   type: mqtt
-  brokers: mqtt.dp1.nii.ac.jp
+  brokers: vcc3058.vcp-handson.org
   tls:
     keyStore: ${client0KeyStore}
     keyStorePassword: client0-pass
@@ -108,25 +112,25 @@ service-connect-by-tls-ca_certs:
     ca_certs: ${ca.pem}
 service-connect-by-tls-ca_certs_cert_key:
   type: mqtt
-  brokers: mqtt.dp1.nii.ac.jp
+  brokers: vcc3058.vcp-handson.org
   tls:
     ca_certs: ${ca.pem}
     certfile: ${client0.crt}
     keyfile: ${client0.key}
 service-connect-by-tls-no-hostname-check:
   type: mqtt
-  brokers: mqtt
+  brokers: 54.250.199.86
   tls:
     keyStore: ${client0KeyStore}
     keyStorePassword: client0-pass
     keyStoreType: PKCS12
     trustStore: ${niicaKeyStore}
-    trustStorePassword: kafka-pass
+    trustStorePassword: ca-pass
     trustStoreType: PKCS12
     check_hostname: false
 service-connect-by-tls_set-no-hostname-check:
   type: mqtt
-  brokers: mqtt
+  brokers: 54.250.199.86
   tls_set:
     ca_certs: ${ca.pem}
     certfile: ${client0.crt}
@@ -136,9 +140,23 @@ service-connect-by-tls_set-no-hostname-check:
   tls_insecure_set: true
 service-connect-by-tls-encrypted-key:
   type: mqtt
-  brokers: mqtt.dp1.nii.ac.jp
+  brokers: vcc3058.vcp-handson.org
   tls:
     ca_certs: ${ca.pem}
     certfile: ${client1.crt}
     keyfile: ${client1.key}
     keyfilePassword: client1-pass
+auth-password:
+  type: mqtt
+  brokers: vcc3058.vcp-handson.org:1884
+  retain: true
+  username_pw_set:
+    username: user01
+    password: user01
+auth-bad-password:
+  type: mqtt
+  brokers: vcc3058.vcp-handson.org:1884
+  retain: true
+  username_pw_set:
+    username: user01
+    password: user01x

@@ -19,12 +19,16 @@ specific language governing permissions and limitations
 under the License.
 --->
 
+[English](index.en.md)
+
 # クイックスタートガイド
+
+## はじめに
 
 このチュートリアルでは以下のことを試すことができます。
 
 * SINETStreamのインストール
-* メッセージングシステム(Kafka, MQTT)に対してSINETStreamを用いたメッセージの送受信を行う
+* メッセージングシステム(Kafka, MQTT)に対してSINETStreamを用いたメッセージの送受信
 
 チュートリアルで実行するコンポーネントは以下の図のような構成となります。
 

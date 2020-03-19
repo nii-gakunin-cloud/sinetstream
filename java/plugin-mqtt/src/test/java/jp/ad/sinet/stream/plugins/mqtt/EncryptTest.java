@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 National Institute of Informatics
+ * Copyright (C) 2020 National Institute of Informatics
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -24,6 +24,7 @@ package jp.ad.sinet.stream.plugins.mqtt;
 import jp.ad.sinet.stream.api.Message;
 import jp.ad.sinet.stream.api.MessageReader;
 import jp.ad.sinet.stream.api.MessageWriter;
+import jp.ad.sinet.stream.api.valuetype.SimpleValueType;
 import jp.ad.sinet.stream.utils.MessageReaderFactory;
 import jp.ad.sinet.stream.utils.MessageWriterFactory;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -44,11 +45,13 @@ class EncryptTest implements ConfigFileAware {
                 MessageWriterFactory.<String>builder().service(service)
                         .topic(topic)
                         .dataEncryption(true)
+                        .valueType(SimpleValueType.TEXT)
                         .build();
         MessageReaderFactory<String> readerBuilder =
                 MessageReaderFactory.<String>builder().service(service)
                         .topic(topic)
                         .dataEncryption(true)
+                        .valueType(SimpleValueType.TEXT)
                         .build();
 
         assertTrue(writerBuilder.getDataEncryption());

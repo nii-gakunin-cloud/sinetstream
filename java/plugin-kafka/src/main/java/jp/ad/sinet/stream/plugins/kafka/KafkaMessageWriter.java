@@ -22,12 +22,7 @@
 package jp.ad.sinet.stream.plugins.kafka;
 
 import jp.ad.sinet.stream.api.Consistency;
-import jp.ad.sinet.stream.api.MessageWriter;
-import jp.ad.sinet.stream.api.Serializer;
-import jp.ad.sinet.stream.api.SinetStreamIOException;
-import jp.ad.sinet.stream.crypto.CryptoSerializerWrapper;
-import jp.ad.sinet.stream.plugins.kafka.utils.KafkaSerdeWrapper;
-import jp.ad.sinet.stream.plugins.kafka.utils.KafkaSerializer;
+import jp.ad.sinet.stream.spi.PluginMessageWriter;
 import jp.ad.sinet.stream.spi.WriterParameters;
 import jp.ad.sinet.stream.utils.MessageUtils;
 import lombok.Getter;
@@ -37,24 +32,22 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.Serdes;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
 @Log
-public class KafkaMessageWriter<K, V> extends KafkaBaseIO implements MessageWriter<V> {
+public class KafkaMessageWriter extends KafkaBaseIO implements PluginMessageWriter {
 
-    private KafkaProducer<K, V> producer;
+    private KafkaProducer<String, byte[]> producer;
 
     @Getter
     private final String topic;
 
-    @Getter
-    private final KafkaSerializer<V> serializer;
-
     private final AtomicBoolean inTransaction = new AtomicBoolean(false);
-
-    private org.apache.kafka.common.serialization.Serializer<K> keySerializer;
 
     private static final Map<String, Function<Object, Object>> PRODUCER_PARAMETER_NAMES_MAP;
     static {
@@ -75,33 +68,20 @@ public class KafkaMessageWriter<K, V> extends KafkaBaseIO implements MessageWrit
         PRODUCER_PARAMETER_NAMES_MAP  = Collections.unmodifiableMap(params);
     }
 
-    KafkaMessageWriter(WriterParameters<V> parameters) {
+    KafkaMessageWriter(WriterParameters parameters) {
         super(parameters.getService(), parameters.getConsistency(), parameters.getClientId(), parameters.getConfig(),
                 parameters.getValueType(), parameters.isDataEncryption());
         this.topic = parameters.getTopic();
         Properties props = getKafkaProperties();
         setupProducerProperties(parameters, props);
-        setupKeySerializer();
-        serializer = generateSerializer(parameters);
-        setupProducer(props);
+        try {
+            setupProducer(props);
+        } catch (Throwable ex) {
+            throw wrapSinetStreamException(ex);
+        }
     }
 
-    @SuppressWarnings("unchecked")
-    private void setupKeySerializer() {
-        Class<org.apache.kafka.common.serialization.Serializer> cls =
-                org.apache.kafka.common.serialization.Serializer.class;
-        final String key = ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG;
-        @SuppressWarnings("UnnecessaryLocalVariable")
-        org.apache.kafka.common.serialization.Serializer ser = Optional.ofNullable(config.get(key))
-                .map(x -> MessageUtils.toClassObject(cls, x))
-                .orElseGet(() -> Optional
-                        .ofNullable(config.get(key.replace('.', '_')))
-                        .map(x -> MessageUtils.toClassObject(cls, x))
-                        .orElseGet(() -> Serdes.String().serializer()));
-        keySerializer = ser;
-    }
-
-    private void setupProducerProperties(WriterParameters<V> parameters, Properties props) {
+    private void setupProducerProperties(WriterParameters parameters, Properties props) {
         PRODUCER_PARAMETER_NAMES_MAP.forEach((k, v) -> updateProperty(props, k, v));
         setupConsistencyProperties(props);
         setupSSLProperties(parameters.getConfig(), props);
@@ -123,22 +103,9 @@ public class KafkaMessageWriter<K, V> extends KafkaBaseIO implements MessageWrit
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private KafkaSerializer<V> generateSerializer(WriterParameters<V> parameters) {
-        Serializer<V> ser;
-        if (Objects.isNull(parameters.getSerializer())) {
-            ser = parameters.getValueType().getSerializer();
-        } else {
-            ser = parameters.getSerializer();
-        }
-        ser = CryptoSerializerWrapper.getSerializer(config, ser);
-        return new KafkaSerdeWrapper(ser).serializer();
-    }
-
-    @SuppressWarnings("unchecked")
     private void setupProducer(Properties props) {
         log.fine(() -> "KAFKA producer init: " + getClientId());
-        producer = new KafkaProducer(props, keySerializer, serializer);
+        producer = new KafkaProducer<>(props, Serdes.String().serializer(), Serdes.ByteArray().serializer());
         if (getConsistency().equals(Consistency.EXACTLY_ONCE)) {
             initTransaction();
         }
@@ -149,30 +116,25 @@ public class KafkaMessageWriter<K, V> extends KafkaBaseIO implements MessageWrit
         producer.close();
     }
 
-    public void write(V message) {
-        ProducerRecord<K, V> record = new ProducerRecord<>(topic, message);
+    public void write(byte[] message) {
+        ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, message);
         sendRecord(record);
     }
 
-    public void write(K key, V value) {
-        ProducerRecord<K, V> record = new ProducerRecord<>(topic, key, value);
-        sendRecord(record);
-    }
-
-    private void sendRecord(ProducerRecord<K, V> record) {
+    private void sendRecord(ProducerRecord<String, byte[]> record) {
         log.finer(() -> "KAFKA send: " + getClientId() + ": " + record.toString());
         if (getConsistency().equals(Consistency.EXACTLY_ONCE) && inTransaction.compareAndSet(false, true)) {
             transactionalSendRecord(record);
         } else {
             try {
-                this.producer.send(record);
+                this.producer.send(record).get();
             } catch (Throwable e) {
-                throw new SinetStreamIOException(e);
+                throw wrapSinetStreamException(e);
             }
         }
     }
 
-    private void transactionalSendRecord(ProducerRecord<K, V> record) {
+    private void transactionalSendRecord(ProducerRecord<String, byte[]> record) {
         log.finer(() -> "KAFKA begin transaction: " + getClientId());
         producer.beginTransaction();
         try {
@@ -180,7 +142,7 @@ public class KafkaMessageWriter<K, V> extends KafkaBaseIO implements MessageWrit
             commitTransaction();
         } catch (Throwable e) {
             abortTransaction();
-            throw new SinetStreamIOException(e);
+            throw wrapSinetStreamException(e);
         }
     }
 

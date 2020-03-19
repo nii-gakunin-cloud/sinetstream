@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 National Institute of Informatics
+ * Copyright (C) 2020 National Institute of Informatics
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -23,7 +23,7 @@ package jp.ad.sinet.stream.example.image;
 
 import jp.ad.sinet.stream.api.Consistency;
 import jp.ad.sinet.stream.api.MessageWriter;
-import jp.ad.sinet.stream.api.ValueType;
+import jp.ad.sinet.stream.api.valuetype.ValueTypeFactory;
 import jp.ad.sinet.stream.utils.MessageWriterFactory;
 import org.apache.commons.cli.*;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
@@ -39,12 +39,10 @@ import java.util.Objects;
 public class ImageProducer {
 
     private final String service;
-    private final String topic;
     private final Path movie;
 
-    public ImageProducer(String service, String topic, Path movie) {
+    public ImageProducer(String service, Path movie) {
         this.service = service;
-        this.topic = topic;
         this.movie = movie;
     }
 
@@ -54,9 +52,8 @@ public class ImageProducer {
         MessageWriterFactory<BufferedImage> factory =
                 MessageWriterFactory.<BufferedImage>builder()
                         .service(service)
-                        .topic(topic)
                         .consistency(Consistency.AT_LEAST_ONCE)
-                        .valueType(ValueType.IMAGE)
+                        .valueType(new ValueTypeFactory().get("image"))
                         .build();
         try(MessageWriter<BufferedImage> writer = factory.getWriter();
             FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(movie.toFile())) {
@@ -74,7 +71,6 @@ public class ImageProducer {
     public static void main(String[] args) {
         Options opts = new Options();
         opts.addOption(Option.builder("s").required().hasArg().longOpt("service").build());
-        opts.addOption(Option.builder("t").required().hasArg().longOpt("topic").build());
         opts.addOption(Option.builder("f").required().hasArg().longOpt("input-video").build());
 
         CommandLineParser parser = new DefaultParser();
@@ -83,7 +79,6 @@ public class ImageProducer {
             CommandLine cmd = parser.parse(opts, args);
             producer = new ImageProducer(
                     cmd.getOptionValue("service"),
-                    cmd.getOptionValue("topic"),
                     Paths.get(cmd.getOptionValue("input-video")));
         } catch (ParseException e) {
             System.err.println("Parsing failed: " + e.getMessage());

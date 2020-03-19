@@ -7,7 +7,7 @@ LINT = flake8-3.6
 all:: lint
 
 recurse-plugins:
-	for dir in plugins/*; do $(MAKE) -C $$dir $(TARGET); done
+	find plugins -name Makefile -print | xargs dirname | while read dir; do $(MAKE) -C $$dir $(TARGET); done
 
 lint: lint-local #lint-plugins
 lint-local:

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 National Institute of Informatics
+ * Copyright (C) 2020 National Institute of Informatics
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -22,14 +22,12 @@
 package jp.ad.sinet.stream.plugins.mqtt;
 
 import jp.ad.sinet.stream.api.*;
+import jp.ad.sinet.stream.api.valuetype.SimpleValueType;
 import jp.ad.sinet.stream.utils.KeyStoreUtil;
 import jp.ad.sinet.stream.utils.MessageUtils;
 import lombok.Getter;
 import lombok.extern.java.Log;
-import org.eclipse.paho.client.mqttv3.IMqttToken;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.*;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -94,6 +92,8 @@ public class MqttBaseIO {
         try {
             IMqttToken ret = client.connectWithResult(connectOptions);
             log.fine(() -> "connect complete: " + ret.getResponse().toString());
+        } catch (MqttSecurityException e) {
+            throw new AuthenticationException(e);
         } catch (MqttException e) {
             throw new ConnectionException(e);
         }
@@ -185,7 +185,7 @@ public class MqttBaseIO {
                 .orElse(null);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private void setupSSLOptions(MqttConnectOptions opts) {
         Map tls = new HashMap();
         for (String key : Arrays.asList("tls", "tls_set")) {
@@ -199,6 +199,7 @@ public class MqttBaseIO {
         setupHttpsHostnameVerification(opts, tls);
     }
 
+    @SuppressWarnings("rawtypes")
     private void setupSSLProperties(MqttConnectOptions opts, Map tls) {
         Properties sslProps = new Properties();
 
@@ -224,6 +225,7 @@ public class MqttBaseIO {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     private void setupHttpsHostnameVerification(MqttConnectOptions opts, Map tls) {
         AtomicReference<Boolean> checkHostname = new AtomicReference<>();
         Optional.ofNullable(tls.get("check_hostname"))
@@ -266,7 +268,7 @@ public class MqttBaseIO {
                         if (x instanceof byte[]) {
                             return (byte[]) x;
                         } else if (x instanceof String) {
-                            return ValueType.TEXT.getSerializer().serialize(x);
+                            return SimpleValueType.TEXT.getSerializer().serialize(x);
                         } else {
                             return this.valueType.getSerializer().serialize(x);
                         }
@@ -309,6 +311,7 @@ public class MqttBaseIO {
         return Optional.ofNullable(retain.get()).orElse(false);
     }
 
+    @SuppressWarnings("rawtypes")
     private String getServerURI() {
         Object x = this.config.get("brokers");
         if (Objects.isNull(x)) {
@@ -329,6 +332,7 @@ public class MqttBaseIO {
         throw new InvalidConfigurationException();
     }
 
+    @SuppressWarnings("rawtypes")
     private boolean isSecure() {
         return Optional.ofNullable(config.get("tls")).map(x -> {
             if (x instanceof Map) {

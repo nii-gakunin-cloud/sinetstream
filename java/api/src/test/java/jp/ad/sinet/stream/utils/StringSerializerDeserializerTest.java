@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 National Institute of Informatics
+ * Copyright (C) 2020 National Institute of Informatics
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -21,6 +21,8 @@
 
 package jp.ad.sinet.stream.utils;
 
+import jp.ad.sinet.stream.api.valuetype.StringDeserializer;
+import jp.ad.sinet.stream.api.valuetype.StringSerializer;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

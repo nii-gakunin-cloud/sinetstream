@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 National Institute of Informatics
+ * Copyright (C) 2020 National Institute of Informatics
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -23,7 +23,7 @@ package jp.ad.sinet.stream.example.text;
 
 import jp.ad.sinet.stream.api.Consistency;
 import jp.ad.sinet.stream.api.MessageWriter;
-import jp.ad.sinet.stream.api.ValueType;
+import jp.ad.sinet.stream.api.valuetype.SimpleValueType;
 import jp.ad.sinet.stream.utils.MessageWriterFactory;
 import org.apache.commons.cli.*;
 
@@ -38,11 +38,11 @@ public class TextProducer {
         this.service = service;
     }
 
-    public void run() throws Exception {
+    public void run() {
         MessageWriterFactory<String> factory =
                 MessageWriterFactory.<String>builder()
                 .service(service)
-                .consistency(Consistency.AT_LEAST_ONCE).valueType(ValueType.TEXT).build();
+                .consistency(Consistency.AT_LEAST_ONCE).valueType(SimpleValueType.TEXT).build();
         try(MessageWriter<String> writer = factory.getWriter(); Scanner scanner = new Scanner(System.in)) {
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();

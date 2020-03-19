@@ -23,53 +23,41 @@
 import logging
 
 import pytest
-import sinetstream
+from sinetstream import MessageReader, MessageWriter, BYTE_ARRAY, TEXT, InvalidArgumentError
+from conftest import SERVICE, TOPIC, TOPIC2
 
 logging.basicConfig(level=logging.ERROR)
+pytestmark = pytest.mark.usefixtures('setup_config', 'dummy_reader_plugin', 'dummy_writer_plugin')
 
 
-service = 'service-1'
-topic = 'mss-test-001'
 bmsgs = [b'test message 001',
          b'test message 002']
 tmsgs = ['test message 001',
          'test message 002']
 
 
-def test_text(dummy_reader_plugin, dummy_writer_plugin):
-    with sinetstream.MessageWriter(service, topic, value_type=sinetstream.TEXT) as fw:
+def test_text():
+    with MessageWriter(SERVICE, value_type=TEXT) as fw:
         for msg in tmsgs:
             fw.publish(msg)
-    with sinetstream.MessageReader(service, topic, value_type=sinetstream.TEXT) as fr:
-        i = 0
-        for msg in fr:
-            assert msg.topic == topic
-            assert msg.value == tmsgs[i]
-            i += 1
-            if i == len(tmsgs):
-                break
-    pass
+    with MessageReader(SERVICE, value_type=TEXT) as fr:
+        for expected, msg in zip(tmsgs, fr):
+            assert msg.topic == TOPIC
+            assert msg.value == expected
 
 
-def test_byte_array(dummy_reader_plugin, dummy_writer_plugin):
-    with sinetstream.MessageWriter(service, topic, value_type=sinetstream.BYTE_ARRAY) as fw:
+def test_byte_array():
+    with MessageWriter(SERVICE, value_type=BYTE_ARRAY) as fw:
         for msg in bmsgs:
             fw.publish(msg)
-    with sinetstream.MessageReader(service, topic, value_type=sinetstream.BYTE_ARRAY) as fr:
-        i = 0
-        for msg in fr:
-            assert msg.topic == topic
-            assert msg.value == bmsgs[i]
-            i += 1
-            if i == len(bmsgs):
-                break
-    pass
+    with MessageReader(SERVICE, value_type=BYTE_ARRAY) as fr:
+        for expected, msg in zip(bmsgs, fr):
+            assert msg.topic == TOPIC
+            assert msg.value == expected
 
 
-def test_invalid(dummy_reader_plugin, dummy_writer_plugin):
-    with pytest.raises(sinetstream.InvalidArgumentError):
-        with sinetstream.MessageWriter(service, topic, value_type="invalid") as fw:
-            pass
-    with pytest.raises(sinetstream.InvalidArgumentError):
-        with sinetstream.MessageReader(service, topic, value_type="invalid") as fr:
+@pytest.mark.parametrize('io', [MessageReader, MessageWriter])
+def test_invalid(io):
+    with pytest.raises(InvalidArgumentError):
+        with io(SERVICE, value_type="invalid") as fw:
             pass

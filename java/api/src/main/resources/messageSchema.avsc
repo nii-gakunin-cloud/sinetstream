@@ -1,0 +1,18 @@
+{
+  "namespace": "jp.ad.sinet.stream",
+  "type": "record",
+  "name": "message",
+  "fields": [
+    {
+      "name": "tstamp",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-micros"
+      }
+    },
+    {
+      "name": "msg",
+      "type": "bytes"
+    }
+  ]
+}

@@ -22,7 +22,6 @@
 package jp.ad.sinet.stream.spi;
 
 import jp.ad.sinet.stream.api.Consistency;
-import jp.ad.sinet.stream.api.Deserializer;
 import jp.ad.sinet.stream.api.ValueType;
 import jp.ad.sinet.stream.utils.MessageReaderFactory;
 import lombok.Data;
@@ -34,19 +33,19 @@ import java.util.Map;
 
 @Data
 @RequiredArgsConstructor
-public class ReaderParameters<T> {
+public class ReaderParameters implements SinetStreamParameters {
     private final String service;
-    private final List<String> topics;
     private final Consistency consistency;
     private final ValueType valueType;
-    private final Map<String, ?> config;
+    private final Map<String, Object> config;
     private final boolean dataEncryption;
+
+    private final List<String> topics;
     private final Duration receiveTimeout;
 
     private String clientId;
-    private Deserializer<T> deserializer;
 
-    public ReaderParameters(MessageReaderFactory<T> builder) {
+    public ReaderParameters(MessageReaderFactory<?> builder) {
         this.service = builder.getService();
         this.topics = builder.getTopics();
         this.consistency = builder.getConsistency();
@@ -54,7 +53,6 @@ public class ReaderParameters<T> {
         this.valueType = builder.getValueType();
         this.receiveTimeout = builder.getReceiveTimeout();
         this.clientId = builder.getClientId();
-        this.deserializer = builder.getDeserializer();
         this.dataEncryption = builder.getDataEncryption();
     }
 }

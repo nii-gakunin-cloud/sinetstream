@@ -21,8 +21,6 @@
 
 package jp.ad.sinet.stream.spi;
 
-import jp.ad.sinet.stream.api.MessageReader;
-
-public interface MessageReaderProvider<T> extends SinetMessageProvider {
-    MessageReader<T> getReader(ReaderParameters<T> params);
+public interface MessageReaderProvider extends SinetMessageProvider {
+    PluginMessageReader getReader(ReaderParameters params);
 }

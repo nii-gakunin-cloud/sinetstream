@@ -19,6 +19,8 @@ specific language governing permissions and limitations
 under the License.
 -->
 
+[English](config-kafka.en.md)
+
 SINETStream ユーザガイド
 
 # Kafka固有のパラメータ
@@ -47,17 +49,13 @@ SINETStream ユーザガイド
 * delivery_timeout_ms
     * `send()` が呼び出されてから結果を報告するまでの時間の上限 (ミリ秒)
 * enable_idempotence
-    * プロデューサーからの書き込みをべき等となるようにするかどうか
+    * プロデューサーからの書き込みを冪等となるようにするかどうか
 * transaction_timeout_ms
     * トランザクションコーディネータがプロデューサからの更新を待機してからの最大待ち時間 (ミリ秒)
 * transactional_id
     * トランザクションID
 * key_serializer
     * メッセージキーのシリアライザ
-
-<!--
-* partitioner_class
--->
 
 ## `MessageReader` に関するパラメータ
 
@@ -150,19 +148,16 @@ SINETStream ユーザガイド
     * キーストアファイルのパスワード
 * ssl_keystore_type
     * キーストアファイルのファイルフォーマット
-
-<!--
-* interceptor_classes
-* ssl_key_password
-* ssl_enabled_protocols
-* ssl_protocol
-* ssl_provider
-* ssl_cipher_suites
--->
+* sasl_mechanism
+    * SASLの認証メカニズムの指定
+* sasl_plain_username
+    * SASL/PLAIN認証、SASL/SCRAM認証のユーザ名
+* sasl_plain_password
+    * SASL/PLAIN認証、SASL/SCRAM認証のパスワード
 
 ## Kafka の設定例
 
-Kafkaの機能をつかってレコード・バッチをgzipで圧縮する場合は以下のようにcompression_typeパラメータを設定する。
+Kafkaの機能を使ってレコード・バッチをgzipで圧縮する場合は以下のようにcompression_typeパラメータを設定する。
 (compression_typeを指定するのはWriter側だけでよい)
 
 ```

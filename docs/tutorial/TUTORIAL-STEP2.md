@@ -19,16 +19,17 @@ specific language governing permissions and limitations
 under the License.
 --->
 
+[English](TUTORIAL-STEP2.en.md)
+
 # チュートリアル - STEP2
 
 ## 1. 概要
 
 このチュートリアルで実行するコンポーネントを以下の図に示します。
 
-
 ![構成STEP2](images/tutorial-020.png)
 
-[index.md](index.md)に示した各コンポーネントの役割を、以下に再掲します。
+「[はじめに](index.md#はじめに)」で示した各コンポーネントの役割を、以下に再掲します。
 
 * `Writer` は `SINETStream` を用いてメッセージを `Broker` に送信します
 * `Reader` は `SINETStream` を用いて `Broker` からメッセージを受信します
@@ -40,7 +41,7 @@ STEP1のチュートリアルでは、`Writer`、`Reader`、`Broker` を同一�
 ### 前提条件
 
 1. チュートリアルを実行するマシン(`Writer`, `Reader`, `Broker`)に Docker Engine がインストールされていること
-    - Docker Engine のインストールについてはindex.mdの前提条件の節に[参考情報](index.md#前提条件)があります。
+    - Docker Engine のインストールについては「[Docker Engine インストール手順へのリンク](index.md#docker-engine-インストール手順へのリンク)」などを参照してください。
 1. `Broker`となるマシンで TCP/1883, TCP/9092 のポートが利用可能なこと
     - ブローカーがTCPの待ち受けポートとして利用します
 1. `Writer`, `Reader`のマシンから`Broker`のマシンの TCP/1883, TCP/9092 にアクセス可能なこと
@@ -48,7 +49,8 @@ STEP1のチュートリアルでは、`Writer`、`Reader`、`Broker` を同一�
 
 ### 実行例について
 
-このチュートリアルでは`Writer`, `Reader`, `Broker` が別のマシンになり、それぞれにホスト環境、コンテナ環境があるので６つの環境での実行例がでてきます。実行例におけるホスト名、ユーザ名などを以下の表のように定めます。
+このチュートリアルでは`Writer`, `Reader`, `Broker` が別のマシンになり、それぞれにホスト環境、コンテナ環境があるので６つの環境での実行例がでてきます。
+実行例におけるホスト名、ユーザ名などを以下の表のように定めます。
 
 | 役割 | 環境 | ホスト名 | ユーザ名 | IPアドレス |
 |---|---|---|---|---|
@@ -61,7 +63,8 @@ STEP1のチュートリアルでは、`Writer`、`Reader`、`Broker` を同一�
 
 ホスト環境の値については、実際にチュートリアルを実行する環境に合わせて適宜読み替えてください。
 
-実行例を示す際は、コマンドプロンプトにホスト名、ユーザ名を示すことで、どの環境で実行しているのかを区別できるように表記しています。たとえば、`Writer`のコンテナ環境での実行例は以下のように表記します。
+実行例を示す際は、コマンドプロンプトにホスト名、ユーザ名を示すことで、どの環境で実行しているのかを区別できるように表記しています。
+たとえば、`Writer`のコンテナ環境での実行例は以下のように表記します。
 
 ```console
 [user01@writer]$ ls
@@ -77,7 +80,8 @@ STEP1のチュートリアルでは、`Writer`、`Reader`、`Broker` を同一�
 
 ## 2. 実行環境を準備する
 
-`Broker`, `Reader`, `Writer` のそれぞれの環境を順に準備します。それぞれのマシンのターミナルを開き操作を行ってください。
+`Broker`, `Reader`, `Writer` のそれぞれの環境を順に準備します。
+それぞれのマシンのターミナルを開き操作を行ってください。
 
 ### 2.1. Brokerを準備する
 
@@ -156,7 +160,8 @@ xxxxxxxxxxxx        sinetstream/tutorial:1.0.0   "/usr/local/bin/supe…"   Abou
 
 `STATUS` が `Up` と表示されていれば、コンテナが正常に起動しています。
 
-ここで実行したコンテナイメージは`Broker`と同じものですが、コンテナ起動時に`-e ENABLE_BROKER=false`を指定することで、ブローカーが実行されないようになっています。コンテナ内のプロセスの一覧を表示してそのことを確認してみます。
+ここで実行したコンテナイメージは`Broker`と同じものですが、コンテナ起動時に`-e ENABLE_BROKER=false`を指定することで、ブローカーが実行されないようになっています。
+コンテナ内のプロセスの一覧を表示してそのことを確認してみます。
 
 ```console
 [user00@host-reader]$ docker exec -t reader ps ax
@@ -167,7 +172,8 @@ xxxxxxxxxxxx        sinetstream/tutorial:1.0.0   "/usr/local/bin/supe…"   Abou
 
 `Broker`コンテナでプロセス一覧を確認した時の結果と異なり、Kafkaブローカー、MQTTブローカー、ZooKeeperが実行されていないことがわかります。
 
-`Reader`用のコンテナを起動する際に指定した `--add-host` は　`Reader`コンテナの /etc/hosts に、`Broker` の IPアドレスを登録するためのものです。Kafkaブローカーを利用するためにはサーバアドレスの名前解決が必要となるため、このパラメータの指定を追加しています。
+`Reader`用のコンテナを起動する際に指定した `--add-host` は　`Reader`コンテナの /etc/hosts に、`Broker` の IPアドレスを登録するためのものです。
+Kafkaブローカーを利用するためにはサーバアドレスの名前解決が必要となるため、このパラメータの指定を追加しています。
 `Reader`コンテナの /etc/hosts を表示して `Broker` のIPアドレスが登録されていることを確認します。
 
 ```console
@@ -186,22 +192,25 @@ ff02::2 ip6-allrouters
 
 #### 2.2.2. SINETStreamをインストールする
 
-SINETStreamのPython3ライブラリをコンテナ環境にインストールします。 まず`Reader`のホスト環境からコンテナ環境にはいります。
+SINETStreamのPython3ライブラリをコンテナ環境にインストールします。
+まず`Reader`のホスト環境からコンテナ環境にはいります。
 
 ```console
 [user00@host-reader]$ docker exec -it -u user01 reader bash
 ```
 
-次にコンテナ環境で SINETStream のライブラリをインストールします。以下のコマンドを実行してください。
+次にコンテナ環境で SINETStream のライブラリをインストールします。
+以下のコマンドを実行してください。
 
 ```console
 [user01@reader]$ pip3 install --user sinetstream-kafka sinetstream-mqtt
 Collecting sinetstream-kafka
 (中略)
-Successfully installed kafka-python-1.4.7 paho-mqtt-1.5.0 pycryptodome-3.9.4 sinetstream-1.0.0 sinetstream-kafka-1.0.0 sinetstream-mqtt-1.0.0
+Successfully installed kafka-python-1.4.7 paho-mqtt-1.5.0 pycryptodome-3.9.4 sinetstream-1.1.0 sinetstream-kafka-1.1.0 sinetstream-mqtt-1.1.0
 ```
 
-最後に `Successfully installed ...`と表示されていれば、ライブラリのインストールに成功しています。確認のためインストールされている Python3　ライブラリの一覧を表示してみます。
+最後に `Successfully installed ...`と表示されていれば、ライブラリのインストールに成功しています。
+確認のためインストールされている Python3　ライブラリの一覧を表示してみます。
 
 ```console
 [user01@reader]$ pip3 list
@@ -213,9 +222,9 @@ pip               19.3.1
 pycryptodome      3.9.4
 PyYAML            3.12
 setuptools        42.0.2
-sinetstream       1.0.0
-sinetstream-kafka 1.0.0
-sinetstream-mqtt  1.0.0
+sinetstream       1.1.0
+sinetstream-kafka 1.1.0
+sinetstream-mqtt  1.1.0
 supervisor        4.1.0
 ```
 
@@ -238,21 +247,24 @@ supervisor        4.1.0
 [user01@reader]$ cd ~/sinetstream/reader
 ```
 
-SINETStreamの設定ファイルを準備します。このチュートリアルのための設定ファイルを GitHub に用意していますので、それを取得します。
+SINETStreamの設定ファイルを準備します。
+このチュートリアルのための設定ファイルを GitHub に用意していますので、それを取得します。
 
 ```console
 [user01@reader]$ ss_url=https://raw.githubusercontent.com/nii-gakunin-cloud/sinetstream/master
 [user01@reader]$ curl -O ${ss_url}/docs/tutorial/.sinetstream_config.yml
 ```
 
-SINETStreamのPython3 APIを用いて作成された`Reader`のサンプルプログラムをGitHubから取得します。取得したプログラムには実行権限を付与します。
+SINETStreamのPython3 APIを用いて作成された`Reader`のサンプルプログラムをGitHubから取得します。
+取得したプログラムには実行権限を付与します。
 
 ```console
 [user01@reader]$ curl -O ${ss_url}/python/sample/text/consumer.py
 [user01@reader]$ chmod a+x consumer.py
 ```
 
-ここまでの手順が正しく行われたことを確認します。ディレクトリとファイルが以下の実行例と同じになっていることを確認してください。
+ここまでの手順が正しく行われたことを確認します。
+ディレクトリとファイルが以下の実行例と同じになっていることを確認してください。
 
 ```console
 [user01@reader]$ pwd
@@ -286,7 +298,8 @@ xxxxxxxxxxxx        sinetstream/tutorial:1.0.0   "/usr/local/bin/supe…"   Abou
 
 `STATUS` が `Up` と表示されていれば、コンテナが正常に起動しています。
 
-`Reader`コンテナの場合と同様、起動時に `-e ENABLE_BROKER=false`を指定したので、コンテナ内ではブローカーが実行されません。そのことを確認します。
+`Reader`コンテナの場合と同様、起動時に `-e ENABLE_BROKER=false`を指定したので、コンテナ内ではブローカーが実行されません。
+そのことを確認します。
 
 ```console
 [user00@host-writer]$ docker exec -t writer ps ax
@@ -313,22 +326,25 @@ ff02::2 ip6-allrouters
 
 #### 2.3.2. SINETStreamをインストールする
 
-SINETStreamのPython3ライブラリをコンテナ環境にインストールします。 まず`Writer`のホスト環境からコンテナ環境にはいります。
+SINETStreamのPython3ライブラリをコンテナ環境にインストールします。
+まず`Writer`のホスト環境からコンテナ環境にはいります。
 
 ```console
 [user00@host-writer]$ docker exec -it -u user01 writer bash
 ```
 
-次にコンテナ環境で SINETStream のライブラリをインストールします。以下のコマンドを実行してください。
+次にコンテナ環境で SINETStream のライブラリをインストールします。
+以下のコマンドを実行してください。
 
 ```console
 [user01@writer]$ pip3 install --user sinetstream-kafka sinetstream-mqtt
 Collecting sinetstream-kafka
 (中略)
-Successfully installed kafka-python-1.4.7 paho-mqtt-1.5.0 pycryptodome-3.9.4 sinetstream-1.0.0 sinetstream-kafka-1.0.0 sinetstream-mqtt-1.0.0
+Successfully installed kafka-python-1.4.7 paho-mqtt-1.5.0 pycryptodome-3.9.4 sinetstream-1.1.0 sinetstream-kafka-1.1.0 sinetstream-mqtt-1.1.0
 ```
 
-最後に `Successfully installed ...`と表示されていれば、ライブラリのインストールに成功しています。確認のためインストールされている Python3　ライブラリの一覧を表示してみます。
+最後に `Successfully installed ...`と表示されていれば、ライブラリのインストールに成功しています。
+確認のためインストールされている Python3　ライブラリの一覧を表示してみます。
 
 ```console
 [user01@writer]$ pip3 list
@@ -340,9 +356,9 @@ pip               19.3.1
 pycryptodome      3.9.4
 PyYAML            3.12
 setuptools        42.0.2
-sinetstream       1.0.0
-sinetstream-kafka 1.0.0
-sinetstream-mqtt  1.0.0
+sinetstream       1.1.0
+sinetstream-kafka 1.1.0
+sinetstream-mqtt  1.1.0
 supervisor        4.1.0
 ```
 
@@ -365,21 +381,24 @@ supervisor        4.1.0
 [user01@writer]$ cd ~/sinetstream/writer
 ```
 
-SINETStreamの設定ファイルを準備します。このチュートリアルのための設定ファイルを GitHub に用意していますので、それを取得します。
+SINETStreamの設定ファイルを準備します。
+このチュートリアルのための設定ファイルを GitHub に用意していますので、それを取得します。
 
 ```console
 [user01@writer]$ ss_url=https://raw.githubusercontent.com/nii-gakunin-cloud/sinetstream/master
 [user01@writer]$ curl -O ${ss_url}/docs/tutorial/.sinetstream_config.yml
 ```
 
-SINETStreamのPython3 APIを用いて作成された`Writer`のサンプルプログラムをGitHubから取得します。取得したプログラムには実行権限を付与します。
+SINETStreamのPython3 APIを用いて作成された`Writer`のサンプルプログラムをGitHubから取得します。
+取得したプログラムには実行権限を付与します。
 
 ```console
 [user01@writer]$ curl -O ${ss_url}/python/sample/text/producer.py
 [user01@writer]$ chmod a+x producer.py
 ```
 
-ここまでの手順が正しく行われたことを確認します。ディレクトリとファイルが以下の実行例と同じになっていることを確認してください。
+ここまでの手順が正しく行われたことを確認します。
+ディレクトリとファイルが以下の実行例と同じになっていることを確認してください。
 
 ```console
 [user01@writer]$ pwd
@@ -392,15 +411,19 @@ SINETStreamのPython3 APIを用いて作成された`Writer`のサンプルプ�
 
 `Reader`と`Writer`を実行して SINETStream を利用したメッセージの送受信が行えることを確認します。
 
-SINETStream v1.0では、利用可能なメッセージングシステムとして[Kafka](https://kafka.apache.org/) と [MQTT(Mosquitto)](https://mosquitto.org/)をサポートしています。ここでは、まず Kafkaブローカーとメッセージの送受信が行えることを確認します。その後、設定変更のみでプログラムを変更することなくMQTTブローカーともメッセージの送受信が行えることを確認します。
+SINETStream v1.1では、利用可能なメッセージングシステムとして[Kafka](https://kafka.apache.org/) と [MQTT(Mosquitto)](https://mosquitto.org/)をサポートしています。
+ここでは、まず Kafkaブローカーとメッセージの送受信が行えることを確認します。
+その後、設定変更のみでプログラムを変更することなくMQTTブローカーともメッセージの送受信が行えることを確認します。
 
 ### 3.1. Kafkaブローカーとの間でメッセージの送受信を行う
 
-ここからは、`Reader`と`Writer`のプログラムを同時に実行します。実行するためのターミナルをそれぞれのマシンで開いてください。
+ここからは、`Reader`と`Writer`のプログラムを同時に実行します。
+実行するためのターミナルをそれぞれのマシンで開いてください。
 
 #### Readerの実行
 
-`Reader`のターミナルにて、ホスト環境からコンテナ環境に入ります。以下のコマンドを実行してください。
+`Reader`のターミナルにて、ホスト環境からコンテナ環境に入ります。
+以下のコマンドを実行してください。
 > 既にコンテナ環境に入っている場合は実行する必要はありません。
 
 ```console
@@ -413,7 +436,8 @@ SINETStream v1.0では、利用可能なメッセージングシステムとし�
 [user01@reader]$ cd ~/sinetstream/reader
 ```
 
-`Reader`のプログラムを実行します。引数に指定している`service-tutorial-kafka`はKafkaブローカーを指定するサービス名です。
+`Reader`のプログラムを実行します。
+引数に指定している`service-tutorial-kafka`はKafkaブローカーを指定するサービス名です。
 
 ```console
 [user01@reader]$ ./consumer.py -s service-tutorial-kafka
@@ -425,7 +449,8 @@ Press ctrl-c to exit the program.
 
 #### Writerの実行
 
-`Writer`のターミナルにて、ホスト環境からコンテナ環境に入ります。以下のコマンドを実行してください。
+`Writer`のターミナルにて、ホスト環境からコンテナ環境に入ります。
+以下のコマンドを実行してください。
 > 既にコンテナ環境に入っている場合は実行する必要はありません。
 
 ```console
@@ -438,7 +463,8 @@ Press ctrl-c to exit the program.
 [user01@writer]$ cd ~/sinetstream/writer
 ```
 
-`Writer`のプログラムを実行します。引数に指定している`service-tutorial-kafka`はKafkaブローカーを指定するサービス名です。
+`Writer`のプログラムを実行します。
+引数に指定している`service-tutorial-kafka`はKafkaブローカーを指定するサービス名です。
 
 ```console
 [user01@writer]$ ./producer.py -s service-tutorial-kafka
@@ -450,9 +476,11 @@ Press ctrl-c to exit the program.
 
 #### メッセージの送受信
 
-`Writer`のターミナルにて、メッセージとなるテキストを入力し最後に改行を打ち込んでください。改行までに入力された文字列がメッセージとして Kafka ブローカーに送信されます。
+`Writer`のターミナルにて、メッセージとなるテキストを入力し最後に改行を打ち込んでください。
+改行までに入力された文字列がメッセージとして Kafka ブローカーに送信されます。
 
-`Reader`のプログラムは Kafkaブローカーに送られたメッセージを受信してターミナルに表示します。先ほど `Writer` で送信したメッセージが表示されていることを確認してください。
+`Reader`のプログラムは Kafkaブローカーに送られたメッセージを受信してターミナルに表示します。
+先ほど `Writer` で送信したメッセージが表示されていることを確認してください。
 
 #### メッセージがブローカーによって配送されていることを確認する
 
@@ -475,12 +503,14 @@ Kafkaブローカーが停止しているため、`Reader`側でメッセージ�
 
 #### Reader, Writer の停止
 
-`Reader` と `Writer` のサンプルプログラムを停止します。サンプルプログラムを実行しているそれぞれのターミナルで ctrl-c を打ち込んでください。
+`Reader` と `Writer` のサンプルプログラムを停止します。
+サンプルプログラムを実行しているそれぞれのターミナルで ctrl-c を打ち込んでください。
 
 ### 3.2. MQTTブローカー(Mosquitto)との間でメッセージの送受信を行う
 
 Kafkaブローカーと同じ操作を行い、MQTTブローカーを利用した場合もメッセージの送受信が行えることを確認します。
-先ほどはプログラムの引数に Kafka ブローカーを指定するサービス名として `service-tutorial-kafka`を指定しました。ここでは代わりに MQTTブローカーを指定するためのサービス名 `service-tutorial-mqtt`を指定します。
+先ほどはプログラムの引数に Kafka ブローカーを指定するサービス名として `service-tutorial-kafka`を指定しました。
+ここでは代わりに MQTTブローカーを指定するためのサービス名 `service-tutorial-mqtt`を指定します。
 
 #### Readerの実行
 
@@ -513,13 +543,15 @@ Kafkaブローカーの場合と同様の操作を行い、MQTTブローカー�
 
 #### Reader, Writer の停止
 
-メッセージの送受信が行えたことを確認したら `Reader` と `Writer` のサンプルプログラムを停止します。それぞれのターミナルで ctrl-c を打ち込んでください。
+メッセージの送受信が行えたことを確認したら `Reader` と `Writer` のサンプルプログラムを停止します。
+それぞれのターミナルで ctrl-c を打ち込んでください。
 
 ### 3.3. コンテナの停止、削除
 
 最後にこのチュートリアルで使用したコンテナの停止、削除を行います。
 
-コンテナの操作はホスト環境で実行します。コンテナ環境からホスト環境に戻る場合は `exit` を実行してください。
+コンテナの操作はホスト環境で実行します。
+コンテナ環境からホスト環境に戻る場合は `exit` を実行してください。
 例えば `Reader`のターミナルでコンテナ環境からホスト環境に戻る場合、以下のようになります。
 
 ```console
@@ -579,7 +611,8 @@ service-tutorial-mqtt:
 サービス名はブローカーとの接続に関する種々のパラメータをまとめて扱うためのラベル名になります。
 `Reader`, `Writer`のサンプルプログラムを実行する際に指定したサービス名は、設定ファイルに記述した、この値に対応しています。
 
-サービス名の子要素にブローカーとの接続に関する具体的なパラメータを記述します。サービス名`service-tutorial-kafka` に対応するパラメータは以下の部分になります。
+サービス名の子要素にブローカーとの接続に関する具体的なパラメータを記述します。
+サービス名`service-tutorial-kafka` に対応するパラメータは以下の部分になります。
 
 ```yaml
     type: kafka
@@ -592,7 +625,7 @@ service-tutorial-mqtt:
 
 * type
     - メッセージングシステムの種別を指定します
-    - SINETStream v1.0 で指定できる値は `kafka`, `mqtt` のどちらかになります
+    - SINETStream v1.1 で指定できる値は `kafka`, `mqtt` のどちらかになります
 * brokers
     - ブローカーのアドレスを指定します
     - アドレスの書式はホスト名とポート番号を `:` で繋げたものとします
@@ -621,10 +654,12 @@ with MessageReader(service) as reader:
 
 > サンプルプログラムconsumer.py 全体のコードは[GitHub](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/python/sample/text/consumer.py)で確認できます。
 
-はじめにメッセージを受信するための `MessageReader` のオブジェクトを作成します。その際、引数としてサービス名を指定します。
+はじめにメッセージを受信するための `MessageReader` のオブジェクトを作成します。
+その際、引数としてサービス名を指定します。
 `MessageReader`は通常Pythonのwith文で実行します。
 これにより、ブローカーとの接続、切断が with文のブロックの境界で実行されます。
-with文が返した値 `reader` はイテラブルなオブジェクトになっています。for文などにより`reader`から順次取得した値が、ブローカーから受信したメッセージとなります。
+with文が返した値 `reader` はイテラブルなオブジェクトになっています。
+for文などにより`reader`から順次取得した値が、ブローカーから受信したメッセージとなります。
 
 #### Writer
 
@@ -639,7 +674,8 @@ with MessageWriter(service) as writer:
 
 > サンプルプログラムproducer.py 全体のコードは[GitHub](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/python/sample/text/producer.py)で確認できます。
 
-メッセージを送信するための `MessageWriter` のオブジェクトを作成します。その際、引数としてサービス名を指定します。
+メッセージを送信するための `MessageWriter` のオブジェクトを作成します。
+その際、引数としてサービス名を指定します。
 `MessageWriter`は通常Pythonのwith文で実行します。
 これにより、ブローカーとの接続、切断が with文のブロックの境界で実行されます。
 with文が返した値 `writer` に対して `.publish(message)`を呼び出すことでメッセージをブローカーに送信することができます。

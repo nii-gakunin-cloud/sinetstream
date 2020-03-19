@@ -19,6 +19,8 @@ specific language governing permissions and limitations
 under the License.
 -->
 
+[English](README.en.md)
+
 # SINETStream java
 
 ## ファイル構成
@@ -29,6 +31,8 @@ under the License.
     * `SINETStream` のApache Kafkaプラグイン
 * plugin-mqtt/
     * `SINETStream` のMQTT(Eclipse Paho)プラグイン
+* plugin-type-image/
+    * 画像をメッセージとして扱うためのプラグイン
 * build.gradle
     * gradle(ビルドツール)の設定ファイル
 * settings.gralde
@@ -54,11 +58,12 @@ BUILD SUCCESSFUL in 2s
 9 actionable tasks: 9 executed
 ```
 
-ビルドが成功すると`BUILD SUCCESSFUL`と表示され、以下のJARファイル
-が作成される。
+ビルドが成功すると`BUILD SUCCESSFUL`と表示され、
+以下のJARファイルが作成される。
 
 ```
-./plugin-kafka/build/libs/SINETStream-kafka-1.0.0.jar
-./plugin-mqtt/build/libs/SINETStream-mqtt-1.0.0.jar
-./api/build/libs/SINETStream-api-1.0.0.jar
+./api/build/libs/SINETStream-api-1.1.0.jar
+./plugin-kafka/build/libs/SINETStream-kafka-1.1.0.jar
+./plugin-mqtt/build/libs/SINETStream-mqtt-1.1.0.jar
+./plugin-type-image/build/libs/SINETStream-type-image-1.1.0.jar
 ```

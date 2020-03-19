@@ -20,136 +20,112 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import time
 import logging
-import pytest
 
-import sinetstream
+import pytest
+from conftest import SERVICE, TOPIC, TOPIC2
+
+from sinetstream import (
+    MessageWriter, AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE,
+    InvalidArgumentError, )
 
 logging.basicConfig(level=logging.ERROR)
+pytestmark = pytest.mark.usefixtures('setup_config', 'dummy_writer_plugin')
 
 
-service = 'service-1'
-topic = 'mss-test-001'
+@pytest.mark.parametrize("topics", [
+    TOPIC,
+    [TOPIC],
+])
+def test_writer_topic(topics):
+    with MessageWriter(SERVICE, topics) as f:
+        pass
 
 
-def test_writer_1(dummy_writer_plugin):
-    with sinetstream.MessageWriter(service, topic) as f:
-        assert topic == f.topic
-
-
-def test_writer_1_list(dummy_writer_plugin):
-    with sinetstream.MessageWriter(service, [topic]) as f:
-        assert topic == f.topic
-
-
-def test_writer_2_list(dummy_writer_plugin):
-    with pytest.raises(sinetstream.InvalidArgumentError):
-        with sinetstream.MessageWriter(service, [topic, topic+"2"]) as f:
+@pytest.mark.parametrize("config_topic", [None, [], [TOPIC, TOPIC2]])
+def test_writer_bad_topics():
+    with pytest.raises(InvalidArgumentError):
+        with MessageWriter(SERVICE) as f:
             pass
 
 
-def test_writer_consistency_0(dummy_writer_plugin):
-    with sinetstream.MessageWriter(service, topic, consistency=sinetstream.AT_MOST_ONCE) as f:
-        pass
-    assert True
+@pytest.mark.parametrize("consistency", [AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE])
+def test_writer_consistency(consistency):
+    with MessageWriter(SERVICE, consistency=consistency) as f:
+        assert consistency == f.consistency
 
 
-def test_writer_consistency_1(dummy_writer_plugin):
-    with sinetstream.MessageWriter(service, topic, consistency=sinetstream.AT_LEAST_ONCE) as f:
-        pass
-    assert True
+@pytest.mark.parametrize('config_params', [
+    {'consistency': 'AT_MOST_ONCE'},
+    {'consistency': 'AT_LEAST_ONCE'},
+    {'consistency': 'EXACTLY_ONCE'},
+])
+def test_writer_consistency_in_config_file(config_params):
+    with MessageWriter(SERVICE) as f:
+        consistency = config_params['consistency']
+        assert eval(consistency) == f.consistency
 
 
-def test_writer_consistency_2(dummy_writer_plugin):
-    with sinetstream.MessageWriter(service, topic, consistency=sinetstream.EXACTLY_ONCE) as f:
-        pass
-    assert True
-
-
-def test_writer_consistency_X(dummy_writer_plugin):
-    try:
-        with sinetstream.MessageWriter(service, topic, consistency=999) as f:
+@pytest.mark.parametrize("consistency", [999, "XXX"])
+def test_writer_bad_consistency(consistency):
+    with pytest.raises(InvalidArgumentError):
+        with MessageWriter(SERVICE, consistency=consistency) as f:
             pass
-    except sinetstream.InvalidArgumentError:
-        assert True
-    else:
-        assert False
 
 
-def test_writer_client_id_default(dummy_writer_plugin):
-    with sinetstream.MessageWriter(service, topic) as f:
+def test_writer_client_id_default():
+    with MessageWriter(SERVICE) as f:
         assert f.client_id is not None and f.client_id != ""
-    assert True
 
 
-def test_writer_client_id_set(dummy_writer_plugin):
+def test_writer_client_id_set():
     cid = "oreore"
-    with sinetstream.MessageWriter(service, topic, client_id=cid) as f:
+    with MessageWriter(SERVICE, client_id=cid) as f:
         assert f.client_id == cid
-    assert True
 
 
-def test_writer_deser(dummy_writer_plugin):
-    with sinetstream.MessageWriter(service, topic, value_serializer=(lambda x: x)) as f:
+def test_writer_deser():
+    with MessageWriter(SERVICE, value_serializer=(lambda x: x)) as f:
         pass
-    assert True
 
 
-def test_writer_kafka_opt(dummy_writer_plugin):
-    with sinetstream.MessageWriter(service, topic, batch_size=1000) as f:
-        pass
-    assert True
-
-
-def test_writer_topic_in_config_file(dummy_writer_plugin):
-    with sinetstream.MessageWriter(service + "-topic") as f:
-        assert f.topic == topic
-
-
-def test_writer_topic_list_one_item_in_config_file(dummy_writer_plugin):
-    with sinetstream.MessageWriter(service + "-topic-list-one-item") as f:
-        assert f.topic == topic
-
-
-def test_writer_topic_list_in_config_file(dummy_writer_plugin):
-    with pytest.raises(sinetstream.InvalidArgumentError):
-        with sinetstream.MessageWriter(service + "-topic-list") as f:
-            pass
-
-
-def test_writer_topic_in_config_file_and_arg(dummy_writer_plugin):
-    topic2 = "mss-test-002"
-    with sinetstream.MessageWriter(service + "-topic", topic2) as f:
-        assert f.topic == topic2
-
-
-def test_writer_topic_in_config_file_and_kwarg(dummy_writer_plugin):
-    service_name = service + "-topic"
-    topic2 = "mss-test-002"
-    with sinetstream.MessageWriter(topic=topic2, service=service_name) as f:
-        assert f.topic == topic2
-
-
-def test_writer_no_topic(dummy_writer_plugin):
-    with pytest.raises(sinetstream.InvalidArgumentError):
-        with sinetstream.MessageWriter(service) as f:
-            pass
-
-
-def test_writer_empty_topic_list(dummy_writer_plugin):
-    with pytest.raises(sinetstream.InvalidArgumentError):
-        with sinetstream.MessageWriter(service, topic=[]) as f:
-            pass
-
-
-def test_open_close(dummy_writer_plugin):
-    f = sinetstream.MessageWriter(service, topic).open()
+def test_open_close():
+    f = MessageWriter(SERVICE).open()
     f.close()
 
 
-def test_close_twice(dummy_writer_plugin):
-    f = sinetstream.MessageWriter(service, topic).open()
+def test_close_twice():
+    f = MessageWriter(SERVICE).open()
     f.close()
-    with pytest.raises(sinetstream.SinetError):
-        f.close()
+    f.close()
+
+
+@pytest.mark.parametrize('config_topic', [TOPIC])
+def test_writer_topic_in_config_file():
+    with MessageWriter(SERVICE) as f:
+        assert f.topic == TOPIC
+
+
+@pytest.mark.parametrize('config_topic', [[TOPIC]])
+def test_writer_topic_list_one_item_in_config_file():
+    with MessageWriter(SERVICE) as f:
+        assert f.topic == TOPIC
+
+
+@pytest.mark.parametrize('config_topic', [[TOPIC, TOPIC2]])
+def test_writer_topic_list_in_config_file():
+    with pytest.raises(InvalidArgumentError):
+        with MessageWriter(SERVICE) as f:
+            pass
+
+
+@pytest.mark.parametrize('config_topic', [TOPIC])
+def test_writer_topic_in_config_file_and_arg():
+    with MessageWriter(SERVICE, TOPIC2) as f:
+        assert f.topic == TOPIC2
+
+
+@pytest.mark.parametrize('config_topic', [TOPIC])
+def test_writer_topic_in_config_file_and_kwarg():
+    with MessageWriter(topic=TOPIC2, service=SERVICE) as f:
+        assert f.topic == TOPIC2

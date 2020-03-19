@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 National Institute of Informatics
+ * Copyright (C) 2020 National Institute of Informatics
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -22,31 +22,14 @@
 package jp.ad.sinet.stream.api;
 
 import java.time.Duration;
-import java.util.*;
+import java.util.List;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 public interface MessageReader<T> extends MessageIO {
 
     Message<T> read();
 
-    default Stream<Message<T>> stream() {
-        Iterator<Message<T>> iterator = new Iterator<Message<T>>() {
-            private Message<T> cache = null;
-
-            @Override
-            public boolean hasNext() {
-                this.cache = read();
-                return Objects.nonNull(this.cache);
-            }
-
-            @Override
-            public Message<T> next() {
-                return Optional.ofNullable(this.cache).orElseGet(() -> read());
-            }
-        };
-        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED | Spliterator.NONNULL), false);
-    }
+    Stream<Message<T>> stream();
 
     List<String> getTopics();
 

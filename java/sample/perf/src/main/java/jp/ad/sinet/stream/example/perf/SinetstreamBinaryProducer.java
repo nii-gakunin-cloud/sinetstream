@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 National Institute of Informatics
+ * Copyright (C) 2020 National Institute of Informatics
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -23,18 +23,15 @@ package jp.ad.sinet.stream.example.perf;
 
 import jp.ad.sinet.stream.api.Consistency;
 import jp.ad.sinet.stream.api.MessageWriter;
-import jp.ad.sinet.stream.api.ValueType;
+import jp.ad.sinet.stream.api.valuetype.SimpleValueType;
 import jp.ad.sinet.stream.utils.MessageWriterFactory;
 import org.apache.commons.cli.*;
 
-import java.util.concurrent.TimeUnit;
-import java.util.Random;
-
-import jp.ad.sinet.stream.example.perf.Util;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("WeakerAccess")
 public class SinetstreamBinaryProducer {
@@ -73,7 +70,7 @@ public class SinetstreamBinaryProducer {
                         .service(service)
                         .topic(topic_dst)
                         .consistency(consistency)
-                        .valueType(ValueType.BYTE_ARRAY)
+                        .valueType(SimpleValueType.BYTE_ARRAY)
                         .build();
         try(MessageWriter<byte[]> writer = factory.getWriter()) {
             long[] ts = new long[this.nmsg];

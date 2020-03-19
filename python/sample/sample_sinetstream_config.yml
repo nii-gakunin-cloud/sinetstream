@@ -1,0 +1,119 @@
+kafka-service-1:
+  type: kafka
+  brokers: kafka.example.org:9092
+  topic: kafka-topic-1
+  consitency: AT_LEAST_ONCE
+
+kafka-service-2:
+  type: kafka
+  brokers:
+    - kafka0.example.org:9092
+    - kafka1.example.org:9092
+    - kafka2.example.org:9092
+  topic: kafka-topic-2
+  value_type: text
+
+kafka-service-tls:
+  type: kafka
+  brokers: kafka.example.org:9093
+  topic: kafka-topic-3
+  tls:
+    ca_certs: certs/ca.pem
+
+kafka-service-sasl-plain:
+  type: kafka
+  brokers: kafka.example.org:9093
+  topic: kafka-topic-4
+  tls:
+     ca_certs: certs/ca.pem
+  security_protocol: SASL_SSL
+  sasl_mechanism: PLAIN
+  sasl_plain_username: alice
+  sasl_plain_password: alice-secret
+
+kafka-service-sasl-scram:
+  type: kafka
+  brokers: kafka.example.org:9093
+  topic: kafka-topic-5
+  security_protocol: SASL_PLAINTEXT
+  sasl_mechanism: SCRAM-SHA-512
+  sasl_plain_username: alice
+  sasl_plain_password: alice-secret
+
+mqtt-service-1:
+  type: mqtt
+  brokers: mqtt.example.org:1883
+  topic: mqtt-topic-1
+  consitency: AT_LEAST_ONCE
+
+mqtt-service-2:
+  type: mqtt
+  brokers: mqtt.example.org:1883
+  topic: mqtt-topic-2
+  consitency: AT_LEAST_ONCE
+  value_type: text
+
+mqtt-service-tls:
+  type: mqtt
+  brokers: mqtt.example.org:8883
+  topic: mqtt-topic-3
+  tls:
+    ca_certs: certs/ca.pem
+
+mqtt-service-client-cert:
+  type: mqtt
+  brokers: mqtt.example.org:8883
+  topic: mqtt-topic-4
+  tls:
+     ca_certs: certs/ca.pem
+     certfile: certs/client.crt
+     keyfile: certs/client.key
+
+mqtt-service-password-auth:
+  type: mqtt
+  brokers: mqtt.example.org:8883
+  topic: mqtt-topic-5
+  username_pw_set:
+    username: alice
+    password: alice-secret
+
+crypto-service-crypto-1:
+  type: kafka
+  brokers: kafka.example.org:9092
+  topic: crypto-topic-1
+  crypto:
+    algorithm: AES
+    key_length: 128
+    mode: CBC
+    padding: none
+    key_derivation:
+      algorithm: pbkdf2
+      salt_bytes: 16
+      iteration: 10000
+    password:
+      value: secret-000
+  data_encryption: true
+
+crypto-service-crypto-2:
+  type: kafka
+  brokers: kafka.example.org:9092
+  topic: crypto-topic-2
+  crypto:
+    algorithm: AES
+    mode: EAX
+    key_derivation:
+      algorithm: pbkdf2
+    password: secret-000
+  data_encryption: true
+
+crypto-service-crypto-3:
+  type: kafka
+  brokers: kafka.example.org:9092
+  topic: crypto-topic-3
+  crypto:
+    algorithm: AES
+    mode: GCM
+    key_derivation:
+      algorithm: pbkdf2
+    password: secret-000
+  data_encryption: true

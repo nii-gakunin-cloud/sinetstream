@@ -19,6 +19,8 @@ specific language governing permissions and limitations
 under the License.
 --->
 
+[English](index.en.md)
+
 # SINETStream性能測定結果
 
 公開日: 2019年12月13日
@@ -38,14 +40,14 @@ under the License.
 
 ### LAN環境
 
-Writer, Broker, Reader全てを同一のLANに接続されたサーバに配置し、全ての通信をLAN経由で実施
+Writer, Broker, Reader全てを同一のLANに接続されたサーバに配置し、全ての通信をLAN経由で実施しました。
 
 * サーバ仕様: Amazon EC2 m5.large AZ=ap-northeast-1a vCPU=2 CentOS7
 * ネットワーク仕様: 最大10Gbps
 
 ### モバイル環境
 
-WriterまたはReaderをSINETのモバイル網に接続されたデバイスに配置し、Writer-Broker間またはBroker-Reader間の通信をモバイル網経由で実施
+WriterまたはReaderをSINETのモバイル網に接続されたデバイスに配置し、Writer-Broker間またはBroker-Reader間の通信をモバイル網経由で実施しました。
 
 * デバイス仕様: Raspberry Pi 3 Model B Plus Rev 1.3
 * ブローカーの配置はLAN環境と同様
@@ -55,7 +57,7 @@ WriterまたはReaderをSINETのモバイル網に接続されたデバイスに
 * kafka_2.12-2.3.0 (Kafkaブローカー)
 * mosquitto-1.6.2 (MQTTブローカー)
 * SINETStream 1.0.0
-    * [測定プログラム](https://github.com/nii-gakunin-cloud/sinetstream/tree/master/java/sample/perf)
+    * [測定プログラム](https://github.com/nii-gakunin-cloud/sinetstream/tree/v1.0.0/java/sample/perf)
         * `test.sh`: 暗号化なしでの性能測定
         * `test-tls.sh`: TLSによる通信暗号化ありでの性能測定
         * `test-crypto.sh`: データの暗号化ありでの性能測定
@@ -64,9 +66,9 @@ WriterまたはReaderをSINETのモバイル網に接続されたデバイスに
 
 ### ping(RTT)
 
-| source → destination | 最小 | 平均 | 最大 | 標準偏差 |
+| source→ destination | 最小 | 平均 | 最大 | 標準偏差 |
 | ---: | ---: | ---: | ---: | ---: |
-| raspi → aws | 28.049 ms | 37.384 ms | 47.254 ms | 5.403 ms |
+| raspi→ aws | 28.049 ms | 37.384 ms | 47.254 ms | 5.403 ms |
 
 ### iperf3(スループット)
 
@@ -77,8 +79,8 @@ WriterまたはReaderをSINETのモバイル網に接続されたデバイスに
 
 ## SINETStreamの性能
 
-SINETStreamのバックエンドとして使用しているKafka、MQTTをそのまま利用する場合(Native)、
-SINETStream(バックエンドとしてKafkaまたはMQTTを使用)の性能測定結果を示します。
+Native(SINETStreamのバックエンドとして使用しているKafka・MQTTをそのまま利用する場合)と
+SINETStream(バックエンドとしてKafkaまたはMQTTを使用)のスループット測定結果を示します。
 
 横軸は送信するメッセージサイズ（100B, 1KB, 64KB）、縦軸はスループットを示します。
 

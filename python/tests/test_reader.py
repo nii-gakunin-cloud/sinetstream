@@ -20,168 +20,132 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import time
 import logging
-import pytest
 
-import sinetstream
+import pytest
+from conftest import SERVICE, TOPIC, TOPIC2
+
+from sinetstream import (
+    MessageReader, AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE,
+    InvalidArgumentError, )
 
 logging.basicConfig(level=logging.ERROR)
+pytestmark = pytest.mark.usefixtures('setup_config', 'dummy_reader_plugin')
 
 
-service = 'service-1'
-topic = 'mss-test-001'
-
-
-def test_reader_1(dummy_reader_plugin):
-    with sinetstream.MessageReader(service, topic) as f:
+@pytest.mark.parametrize("topics", [
+    TOPIC,
+    [TOPIC],
+    [TOPIC, TOPIC2],
+])
+def test_reader_topic(topics):
+    with MessageReader(SERVICE, topics) as f:
         pass
-    assert True
 
 
-def test_reader_1_list(dummy_reader_plugin):
-    with sinetstream.MessageReader(service, [topic]) as f:
-        pass
-    assert True
-
-
-def test_reader_2_list(dummy_reader_plugin):
-    with sinetstream.MessageReader(service, [topic, topic+"2"]) as f:
-        pass
-    assert True
-
-
-def test_reader_consistency_0(dummy_reader_plugin):
-    with sinetstream.MessageReader(service, topic, consistency=sinetstream.AT_MOST_ONCE) as f:
-        pass
-    assert True
-
-
-def test_reader_consistency_1(dummy_reader_plugin):
-    with sinetstream.MessageReader(service, topic, consistency=sinetstream.AT_LEAST_ONCE) as f:
-        pass
-    assert True
-
-
-def test_reader_consistency_2(dummy_reader_plugin):
-    with sinetstream.MessageReader(service, topic, consistency=sinetstream.EXACTLY_ONCE) as f:
-        pass
-    assert True
-
-
-def test_reader_consistency_X(dummy_reader_plugin):
-    try:
-        with sinetstream.MessageReader(service, topic, consistency=999) as f:
+@pytest.mark.parametrize("config_topic", [None, []])
+def test_reader_bad_topics():
+    with pytest.raises(InvalidArgumentError):
+        with MessageReader(SERVICE) as f:
             pass
-    except sinetstream.InvalidArgumentError:
-        assert True
-    else:
-        assert False
 
 
-def test_reader_client_id_default(dummy_reader_plugin):
-    with sinetstream.MessageReader(service, topic) as f:
+@pytest.mark.parametrize("consistency", [AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE])
+def test_reader_consistency(consistency):
+    with MessageReader(SERVICE, consistency=consistency) as f:
+        assert consistency == f.consistency
+
+
+@pytest.mark.parametrize('config_params', [
+    {'consistency': 'AT_MOST_ONCE'},
+    {'consistency': 'AT_LEAST_ONCE'},
+    {'consistency': 'EXACTLY_ONCE'},
+])
+def test_reader_consistency_in_config_file(config_params):
+    with MessageReader(SERVICE) as f:
+        consistency = config_params['consistency']
+        assert eval(consistency) == f.consistency
+
+
+@pytest.mark.parametrize("consistency", [999, "XXX"])
+def test_reader_bad_consistency(consistency):
+    with pytest.raises(InvalidArgumentError):
+        with MessageReader(SERVICE, consistency=consistency) as f:
+            pass
+
+
+def test_reader_client_id_default():
+    with MessageReader(SERVICE) as f:
         assert f.client_id is not None and f.client_id != ""
-    assert True
 
 
-def test_reader_client_id_empty(dummy_reader_plugin):
-    with sinetstream.MessageReader(service, topic, client_id="") as f:
+def test_reader_client_id_empty():
+    with MessageReader(SERVICE, client_id="") as f:
         assert f.client_id is not None and f.client_id != ""
-    assert True
 
 
-def test_reader_client_id_set(dummy_reader_plugin):
+def test_reader_client_id_set():
     cid = "oreore"
-    with sinetstream.MessageReader(service, topic, client_id=cid) as f:
+    with MessageReader(SERVICE, client_id=cid) as f:
         assert f.client_id == cid
-    assert True
 
 
-def test_reader_deser(dummy_reader_plugin):
-    with sinetstream.MessageReader(service, topic, value_deserializer=(lambda x: x)) as f:
-        pass
-    assert True
-
-
-def test_reader_timeout(dummy_reader_plugin):
-    with sinetstream.MessageReader(service, topic, receive_timeout_ms=3000) as f:
+def test_reader_deser():
+    with MessageReader(SERVICE, value_deserializer=(lambda x: x)) as f:
         pass
 
 
-def test_reader_kafka_opt(dummy_reader_plugin):
-    with sinetstream.MessageReader(service, topic, heartbeat_interval_ms=1000) as f:
+def test_reader_timeout():
+    with MessageReader(SERVICE, receive_timeout_ms=3000) as f:
         pass
-    assert True
 
 
-@pytest.mark.skip
-def test_reader_seek():
-    with sinetstream.MessageReader(service, topic) as f:
-        try:
-            f.seek_to_beginning()
-        except AssertionError:
-            pass  # If any partition is not currently assigned, or if no partitions are assigned.
-        try:
-            f.seek_to_end()
-        except AssertionError:
-            pass  # If any partition is not currently assigned, or if no partitions are assigned.
-    assert True
-
-
-def test_reader_topics_in_config_file(dummy_reader_plugin):
-    with sinetstream.MessageReader(service + "-topics") as f:
-        assert f.topics == topic
-
-
-def test_reader_topics_list_in_config_file(dummy_reader_plugin):
-    with sinetstream.MessageReader(service + "-topics-list") as f:
-        assert f.topics == [topic, "mss-test-002"]
-
-
-def test_reader_topic_in_config_file(dummy_reader_plugin):
-    with sinetstream.MessageReader(service + "-topic") as f:
-        assert f.topics == topic
-
-
-def test_reader_topic_list_in_config_file(dummy_reader_plugin):
-    with sinetstream.MessageReader(service + "-topic-list") as f:
-        assert f.topics == [topic, "mss-test-002"]
-
-
-def test_reader_topics_in_config_file_and_arg(dummy_reader_plugin):
-    topic2 = "mss-test-002"
-    with sinetstream.MessageReader(service + "-topic", topic2) as f:
-        assert f.topics == topic2
-
-
-def test_reader_topics_in_config_file_and_kwarg(dummy_reader_plugin):
-    service_name = service + "-topic"
-    topic2 = "mss-test-002"
-    with sinetstream.MessageReader(topics=topic2, service=service_name) as f:
-        assert f.topics == topic2
-
-
-def test_reader_no_topics(dummy_reader_plugin):
-    with pytest.raises(sinetstream.InvalidArgumentError):
-        with sinetstream.MessageReader(service) as f:
-            pass
-
-
-def test_reader_empty_topics_list(dummy_reader_plugin):
-    with pytest.raises(sinetstream.InvalidArgumentError):
-        with sinetstream.MessageReader(service, topics=[]) as f:
-            pass
-
-
-def test_open_close(dummy_reader_plugin):
-    f = sinetstream.MessageReader(service, topic).open()
+def test_open_close():
+    f = MessageReader(SERVICE).open()
     assert hasattr(f, '__iter__')
     f.close()
 
 
-def test_close_twice(dummy_reader_plugin):
-    f = sinetstream.MessageReader(service, topic).open()
+def test_close_twice():
+    f = MessageReader(SERVICE).open()
     f.close()
-    with pytest.raises(sinetstream.SinetError):
-        f.close()
+    f.close()
+
+
+def test_reader_topic_in_config_file():
+    with MessageReader(SERVICE) as f:
+        assert f.topics == TOPIC
+
+
+@pytest.mark.parametrize('config_topic', [[TOPIC, TOPIC2]])
+def test_reader_topic_list_in_config_file():
+    with MessageReader(SERVICE) as f:
+        assert f.topics == [TOPIC, TOPIC2]
+
+
+@pytest.mark.parametrize('config_topic', [TOPIC])
+def test_reader_topic_in_config_file_and_arg():
+    with MessageReader(SERVICE, TOPIC2) as f:
+        assert f.topics == TOPIC2
+
+
+@pytest.mark.parametrize('config_topic', [TOPIC])
+def test_reader_topics_in_config_file_and_kwargs():
+    with MessageReader(service=SERVICE, topic=TOPIC2) as f:
+        assert f.topics == TOPIC2
+
+
+@pytest.mark.parametrize('config_topic,config_params', [
+    pytest.param(None, {'topics': TOPIC})
+])
+def test_reader_topics_in_config_file():
+    with MessageReader(SERVICE) as f:
+        assert f.topics == TOPIC
+
+
+@pytest.mark.parametrize('config_topic,config_params', [
+    pytest.param(None, {'topics': [TOPIC, TOPIC2]})
+])
+def test_reader_topics_list_in_config_file():
+    with MessageReader(SERVICE) as f:
+        assert f.topics == [TOPIC, TOPIC2]

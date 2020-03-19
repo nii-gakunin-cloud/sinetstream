@@ -1,5 +1,5 @@
 <!--
-Copyright (C) 2019 National Institute of Informatics
+Copyright (C) 2020 National Institute of Informatics
 
 Licensed to the Apache Software Foundation (ASF) under one
 or more contributor license agreements.  See the NOTICE file
@@ -19,17 +19,41 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-# SINETStreamをつかったサンプルプログラム
+# SINETStreamのサンプルプログラム
 
-## 実行方法
+動画ファイルからフレームを読み取りKafkaブローカーに画像として送信するプロ
+デューサーと、Kafkaブローカーから受信した画像を表示するコンシューマーの
+サンプルプログラムを示します。
 
-* Kafkaをインストールする
-* SINETStreamをインストールする
-* サンプルプログラムが使うライブラリをインストールする:
-    * `pip install --user opencv-python pillow`
-* `./.sinetstream_config.yml`を編集する:
-    * 環境にあわせてホスト名を書き換える。
-* コンシューマを実行する:
-    * `python3 ./consumer.py -s service-1 -t topic-1`
-* 別の端末でプロデューサを実行する:
-    * `python3 ./producer.py -s service-1 -t topic-1 -f XXX.mp4`
+## 前提条件
+
+サンプルプログラムの実行環境からアクセスできるKakfaブローカーが用意されている
+ことを前提とします。
+
+## サンプルプログラムの実行方法
+
+1. SINETStreamをインストールする
+```
+$ pip install --user sinetstream sinetstream-kafka sinetstream-type-image
+```
+2. SINETStreamの設定ファイルを用意する
+   * サンプルの設定ファイルを`sample_sinetstream_config.yml`に用意してあります。
+   * SINETStreamが読み込めるように`.sinetstream_config.yml`にコピーしてください。
+   * 設定ファイルの`brokers`の指定を実際のブローカーのアドレスに書き換えてください。
+
+```
+$ cp sample_sinetstream_config.yml .sinetstream_config.yml
+$ sed -i -e '/brokers/s/kafka.example.org:9092/{ブローカのアドレス}/' .sinetstream_config.yml
+```
+3. コンシューマを実行する
+```
+$ python3 ./consumer.py -s image-1
+```
+4. プロデューサを実行する
+    * コンシューマーとは別の端末で実行してください。
+    * `-f` の後に動画ファイルを指定してください。
+    * 指定した動画ファイルからフレームを読み取り、画像としてKafkaブローカーに送信します。
+    * `-s` で指定するサービス名は設定ファイルの記述内容に対応しています。
+```
+$ python3 ./producer.py -s image-1 -f video.mp4
+```

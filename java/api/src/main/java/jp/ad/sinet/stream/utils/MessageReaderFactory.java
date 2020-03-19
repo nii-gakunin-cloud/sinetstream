@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 National Institute of Informatics
+ * Copyright (C) 2020 National Institute of Informatics
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -21,17 +21,17 @@
 
 package jp.ad.sinet.stream.utils;
 
-import jp.ad.sinet.stream.api.Consistency;
-import jp.ad.sinet.stream.api.Deserializer;
-import jp.ad.sinet.stream.api.MessageReader;
-import jp.ad.sinet.stream.api.ValueType;
+import jp.ad.sinet.stream.api.*;
+import jp.ad.sinet.stream.api.valuetype.SimpleValueType;
 import jp.ad.sinet.stream.spi.CryptoProvider;
 import jp.ad.sinet.stream.spi.MessageReaderProvider;
+import jp.ad.sinet.stream.spi.PluginMessageReader;
 import jp.ad.sinet.stream.spi.ReaderParameters;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Singular;
 
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.*;
 import java.util.function.Function;
@@ -86,12 +86,17 @@ public class MessageReaderFactory<T> {
     @Description("Message encryption.")
     private Boolean dataEncryption;
 
+    @Getter
+    @Parameter("config")
+    @Description("configuration file.")
+    private Path config;
+
     @DefaultParameters
     public static final Map<String, Object> defaultValues;
     static {
         Map<String, Object> values = new HashMap<>();
         values.put("consistency", AT_MOST_ONCE);
-        values.put("value_type", ValueType.TEXT);
+        values.put("value_type", SimpleValueType.BYTE_ARRAY);
         values.put("data_encryption", false);
         values.put("receive_timeout_ms", Duration.ofNanos(Long.MAX_VALUE));
         defaultValues = Collections.unmodifiableMap(values);
@@ -100,8 +105,8 @@ public class MessageReaderFactory<T> {
     @SuppressWarnings("unchecked")
     public MessageReader<T> getReader() {
         setupServiceParameters();
-        ProviderUtils<MessageReaderProvider<T>> util = new ProviderUtils(MessageReaderProvider.class);
-        MessageReaderProvider<T> provider = util.getProvider(parameters);
+        ProviderUtils<MessageReaderProvider> util = new ProviderUtils<>(MessageReaderProvider.class);
+        MessageReaderProvider provider = util.getProvider(parameters);
         if (dataEncryption) {
             CryptoProvider cryptoProvider = util.getCryptoProvider(parameters);
             Optional.ofNullable(parameters.get("crypto"))
@@ -109,17 +114,19 @@ public class MessageReaderFactory<T> {
                     .map(Map.class::cast)
                     .ifPresent(params -> params.put("provider", cryptoProvider.getCrypto(params)));
         }
-        return provider.getReader(new ReaderParameters<>(this));
+        ReaderParameters params = new ReaderParameters(this);
+        PluginMessageReader pluginReader = provider.getReader(params);
+        return new SinetStreamMessageReader<>(pluginReader, params, deserializer);
     }
 
     private void setupServiceParameters() {
         MessageUtils utils = new MessageUtils();
         Map<String, Object> serviceParameters = new HashMap<>(defaultValues);
-        serviceParameters.putAll(utils.loadServiceParameters(service));
+        serviceParameters.putAll(utils.loadServiceParameters(service, config));
         utils.mergeParameters(serviceParameters, parameters);
         updateFactoryParameters(serviceParameters);
         if (topics.isEmpty()) {
-            throw new IllegalStateException("Topic has not been set.");
+            throw new InvalidConfigurationException("Topic has not been set.");
         }
     }
 
@@ -168,7 +175,7 @@ public class MessageReaderFactory<T> {
         if (value instanceof String) {
             return Collections.singletonList((String) value);
         } else if (value instanceof List) {
-            List items = (List) value;
+            @SuppressWarnings("rawtypes") List items = (List) value;
             return (List<String>) items.stream().map(Object::toString).collect(Collectors.toList());
         }
         return null;

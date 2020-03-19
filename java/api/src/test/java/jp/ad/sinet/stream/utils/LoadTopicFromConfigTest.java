@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 National Institute of Informatics
+ * Copyright (C) 2020 National Institute of Informatics
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -57,13 +57,13 @@ class LoadTopicFromConfigTest implements ConfigFileAware {
         @Test
         default void noTopic() {
             B factory = getFactory("service-0");
-            assertThrows(IllegalStateException.class, () -> getTarget(factory));
+            assertThrows(InvalidConfigurationException.class, () -> getTarget(factory));
         }
 
         @Test
         default void emptyListTopic() {
             B factory = getFactory("service-with-empty-topic-list");
-            assertThrows(IllegalStateException.class, () -> getTarget(factory));
+            assertThrows(InvalidConfigurationException.class, () -> getTarget(factory));
         }
 
         B getFactory(String service);

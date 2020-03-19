@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 National Institute of Informatics
+ * Copyright (C) 2020 National Institute of Informatics
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -21,10 +21,11 @@
 
 package jp.ad.sinet.stream.plugins.kafka;
 
-import jp.ad.sinet.stream.api.*;
-import jp.ad.sinet.stream.crypto.CryptoDeserializerWrapper;
-import jp.ad.sinet.stream.plugins.kafka.utils.KafkaDeserializer;
-import jp.ad.sinet.stream.plugins.kafka.utils.KafkaSerdeWrapper;
+import jp.ad.sinet.stream.api.AuthenticationException;
+import jp.ad.sinet.stream.api.Consistency;
+import jp.ad.sinet.stream.api.SinetStreamIOException;
+import jp.ad.sinet.stream.spi.PluginMessageReader;
+import jp.ad.sinet.stream.spi.PluginMessageWrapper;
 import jp.ad.sinet.stream.spi.ReaderParameters;
 import jp.ad.sinet.stream.utils.MessageUtils;
 import lombok.Getter;
@@ -34,7 +35,7 @@ import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.errors.WakeupException;
+import org.apache.kafka.common.errors.TimeoutException;
 import org.apache.kafka.common.serialization.Serdes;
 
 import java.time.Duration;
@@ -42,18 +43,21 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 @Log
-public class KafkaMessageReader<K, T> extends KafkaBaseIO implements MessageReader<T> {
+public class KafkaMessageReader extends KafkaBaseIO implements PluginMessageReader {
 
-    private KafkaConsumer<K, T> consumer;
+    private KafkaConsumer<String, byte[]> consumer;
 
     private final Properties consumerProperties;
 
-    private final BlockingQueue<ConsumerRecord<K, T>> queue = new LinkedBlockingQueue<>();
+    private final BlockingQueue<Future<ConsumerRecord<String, byte[]>>> queue = new LinkedBlockingQueue<>();
 
     private final AtomicBoolean closed = new AtomicBoolean(false);
 
@@ -68,12 +72,10 @@ public class KafkaMessageReader<K, T> extends KafkaBaseIO implements MessageRead
     @Getter
     private String groupId;
 
-    @Getter
-    private final KafkaDeserializer<T> deserializer;
-
-    private org.apache.kafka.common.serialization.Deserializer<K> keyDeserializer;
-
     private AtomicBoolean sendOffsetsEnabled = new AtomicBoolean(false);
+
+    private final Lock lock = new ReentrantLock();
+    private final Condition startPolling = lock.newCondition();
 
     private static final Map<String, Function<Object, Object>> CONSUMER_PARAMETER_NAMES_MAP;
 
@@ -101,9 +103,10 @@ public class KafkaMessageReader<K, T> extends KafkaBaseIO implements MessageRead
         CONSUMER_PARAMETER_NAMES_MAP  = Collections.unmodifiableMap(params);
     }
 
-    private KafkaProducer producer;
+    private KafkaProducer<byte[], byte[]> producer;
+    private ExecutorService worker;
 
-    KafkaMessageReader(ReaderParameters<T> parameters) {
+    KafkaMessageReader(ReaderParameters parameters) {
         super(parameters.getService(), parameters.getConsistency(), parameters.getClientId(), parameters.getConfig(),
                 parameters.getValueType(), parameters.isDataEncryption());
 
@@ -112,14 +115,10 @@ public class KafkaMessageReader<K, T> extends KafkaBaseIO implements MessageRead
 
         consumerProperties = getKafkaProperties();
         setupConsumerProperties(parameters);
-
-        setupKeyDeserializer();
-        deserializer = generateDeserializer(parameters);
-
         setupConsumer(consumerProperties);
     }
 
-    private void setupConsumerProperties(ReaderParameters<T> parameters) {
+    private void setupConsumerProperties(ReaderParameters parameters) {
         CONSUMER_PARAMETER_NAMES_MAP.forEach((k, v) -> updateProperty(consumerProperties, k, v));
         setupGroupId(consumerProperties);
         setupSSLProperties(config, consumerProperties);
@@ -136,58 +135,50 @@ public class KafkaMessageReader<K, T> extends KafkaBaseIO implements MessageRead
 
     private void startPollingWorker() {
         log.fine(() -> "KAFKA: start polling thread: " + getClientId());
-        ExecutorService worker = Executors.newSingleThreadExecutor(r -> {
+        worker = Executors.newSingleThreadExecutor(r -> {
             Thread t = new Thread(r);
             t.setDaemon(true);
             return t;
         });
         worker.submit(() -> {
-            try {
-                while (!closed.get()) {
-                    log.finest(() -> "KAFKA message poll: " + getClientId());
-                    ConsumerRecords<K, T> records = this.consumer.poll(Duration.ofMillis(1000));
-                    for (ConsumerRecord<K, T> rec : records) {
-                        log.finer(() -> "KAFKA message poll: " + getClientId() + ": " + rec.toString());
-                        queue.add(rec);
-                    }
+            if (!closed.get()) {
+                lock.lock();
+                try {
+                    ConsumerRecords<String, byte[]> records = this.consumer.poll(Duration.ofMillis(1));
+                    startPolling.signalAll();
+                    append_consumer_records(records);
+                } catch (Throwable ex) {
+                    append_exception(ex);
+                } finally {
+                    lock.unlock();
                 }
-            } catch (WakeupException e) {
-                if (!closed.get()) {
-                    throw e;
-                }
-            } finally {
-                log.fine(() -> "KAFKA consumer close: " + getClientId());
-                consumer.close();
             }
+
+            while (!closed.get()) {
+                log.finest(() -> "KAFKA message poll: " + getClientId());
+                try {
+                    ConsumerRecords<String, byte[]> records = this.consumer.poll(Duration.ofMillis(100));
+                    append_consumer_records(records);
+                } catch (Throwable ex) {
+                    append_exception(ex);
+                }
+            }
+            log.fine(() -> "KAFKA consumer close: " + getClientId());
+            consumer.close();
         });
     }
 
-    @SuppressWarnings("unchecked")
-    private KafkaDeserializer<T> generateDeserializer(ReaderParameters<T> parameters) {
-        Deserializer<T> des;
-        if (Objects.isNull(parameters.getDeserializer())) {
-            des = getValueType().getDeserializer();
-        } else {
-            des = parameters.getDeserializer();
+    private void append_consumer_records(ConsumerRecords<String, byte[]> records) {
+        for (ConsumerRecord<String, byte[]> rec : records) {
+            log.finer(() -> "KAFKA message poll: " + getClientId() + ": " + rec.toString());
+            queue.add(CompletableFuture.completedFuture(rec));
         }
-        des = CryptoDeserializerWrapper.getDeserializer(config, des);
-        return new KafkaSerdeWrapper<>(des).deserializer();
     }
 
-    @SuppressWarnings("unchecked")
-    private void setupKeyDeserializer() {
-        Class<org.apache.kafka.common.serialization.Deserializer> cls =
-                org.apache.kafka.common.serialization.Deserializer.class;
-        final String key = ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG;
-
-        @SuppressWarnings("UnnecessaryLocalVariable")
-        org.apache.kafka.common.serialization.Deserializer des = Optional.ofNullable(config.get(key))
-                .map(x -> MessageUtils.toClassObject(cls, x))
-                .orElseGet(() -> Optional
-                        .ofNullable(config.get(key.replace('.', '_')))
-                        .map(x -> MessageUtils.toClassObject(cls, x))
-                        .orElseGet(() -> Serdes.String().deserializer()));
-        keyDeserializer = des;
+    private void append_exception(Throwable ex) {
+        CompletableFuture<ConsumerRecord<String, byte[]>> future = new CompletableFuture<>();
+        future.completeExceptionally(ex);
+        queue.add(future);
     }
 
     private void setupGroupId(Properties props) {
@@ -206,34 +197,48 @@ public class KafkaMessageReader<K, T> extends KafkaBaseIO implements MessageRead
 
     private void setupConsumer(Properties props) {
         log.fine(() -> "KAFKA consumer init: " + getClientId());
-        consumer = new KafkaConsumer<>(props, keyDeserializer, deserializer);
+        consumer = new KafkaConsumer<>(props, Serdes.String().deserializer(), Serdes.ByteArray().deserializer());
 
         log.fine(() -> "KAFKA consumer subscribe: " + getClientId() + ": " + getTopic());
+        try {
+            for (String topic : topics) {
+                consumer.partitionsFor(topic, Duration.ofSeconds(10));
+            }
+        } catch (org.apache.kafka.common.errors.AuthenticationException ex) {
+            throw new AuthenticationException(ex);
+        } catch (TimeoutException ex) {
+            throw new SinetStreamIOException(ex);
+        }
         consumer.subscribe(topics);
-
-        startPollingWorker();
+        lock.lock();
+        try {
+            startPollingWorker();
+            startPolling.awaitUninterruptibly();
+        } finally {
+            lock.unlock();
+        }
         setupOffsetsProducer();
     }
 
     @Override
-    public Message<T> read() {
+    public KafkaMessage read() {
         try {
-            ConsumerRecord<K, T> record = queue.poll(receiveTimeout.toNanos(), TimeUnit.NANOSECONDS);
+            Future<ConsumerRecord<String, byte[]>> record = queue.poll(receiveTimeout.toNanos(), TimeUnit.NANOSECONDS);
             if (Objects.isNull(record)) {
                 return null;
             }
-            KafkaMessage<T> ret = new KafkaMessage<>(record);
+            ConsumerRecord<String, byte[]> v = record.get();
+            KafkaMessage ret = new KafkaMessage(v);
             if (sendOffsetsEnabled.get()) {
                 sendOffsetsToTransaction(ret);
             }
             return ret;
-        } catch (InterruptedException e) {
-            throw new SinetStreamIOException(e);
+        } catch (InterruptedException | ExecutionException e) {
+            throw wrapSinetStreamException(e);
         }
     }
 
-    @Override
-    public String getTopic() {
+    private String getTopic() {
         return String.join(",", this.topics);
     }
 
@@ -242,21 +247,27 @@ public class KafkaMessageReader<K, T> extends KafkaBaseIO implements MessageRead
         closed.set(true);
         log.fine(() -> "KAFKA consumer wakeup: " + getClientId());
         consumer.wakeup();
+        worker.shutdownNow();
+        try {
+            worker.awaitTermination(1, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            log.finer(e::getMessage);
+        }
     }
 
     @Override
-    public Stream<Message<T>> stream() {
+    public Stream<PluginMessageWrapper> stream() {
         if (!getConsistency().equals(Consistency.EXACTLY_ONCE)) {
-            return MessageReader.super.stream();
+            return PluginMessageReader.super.stream();
         } else {
             return getExactlyOnceStream();
         }
     }
 
-    private Stream<Message<T>> getExactlyOnceStream() {
+    private Stream<PluginMessageWrapper> getExactlyOnceStream() {
         sendOffsetsEnabled.set(false);
-        Iterator<Message<T>> iterator = new Iterator<Message<T>>() {
-            private Message<T> cache = null;
+        Iterator<PluginMessageWrapper> iterator = new Iterator<PluginMessageWrapper>() {
+            private PluginMessageWrapper cache = null;
 
             @Override
             public boolean hasNext() {
@@ -265,16 +276,15 @@ public class KafkaMessageReader<K, T> extends KafkaBaseIO implements MessageRead
             }
 
             @Override
-            public Message<T> next() {
-                Message<T> ret = Optional.ofNullable(this.cache).orElseGet(() -> read());
-                sendOffsetsToTransaction((KafkaMessage<T>) ret);
+            public PluginMessageWrapper next() {
+                PluginMessageWrapper ret = Optional.ofNullable(this.cache).orElseGet(() -> read());
+                sendOffsetsToTransaction((KafkaMessage) ret);
                 return ret;
             }
         };
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED | Spliterator.NONNULL), false);
     }
 
-    @SuppressWarnings("unchecked")
     private void setupOffsetsProducer() {
         if (getConsistency().equals(Consistency.EXACTLY_ONCE)) {
             Properties props = new Properties();
@@ -282,14 +292,15 @@ public class KafkaMessageReader<K, T> extends KafkaBaseIO implements MessageRead
                     consumerProperties.getProperty(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG));
             setupTransactionId(props);
             setupSSLProperties(config, props);
+            setupSASLProperties(config, props);
             sendOffsetsEnabled.set(true);
-            producer = new KafkaProducer(props, Serdes.ByteArray().serializer(), Serdes.ByteArray().serializer());
+            producer = new KafkaProducer<>(props, Serdes.ByteArray().serializer(), Serdes.ByteArray().serializer());
             producer.initTransactions();
         }
     }
 
-    @SuppressWarnings({"unchecked", "WeakerAccess"})
-    public void sendOffsetsToTransaction(KafkaMessage<T> msg) {
+    @SuppressWarnings({"WeakerAccess"})
+    public void sendOffsetsToTransaction(KafkaMessage msg) {
         Map<TopicPartition, OffsetAndMetadata> offsets = new HashMap<>();
         TopicPartition partition = new TopicPartition(msg.getTopic(), msg.getRaw().partition());
         OffsetAndMetadata offset = new OffsetAndMetadata(msg.getRaw().offset() + 1);

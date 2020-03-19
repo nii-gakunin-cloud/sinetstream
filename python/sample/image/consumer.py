@@ -1,4 +1,6 @@
-# Copyright (C) 2019 National Institute of Informatics
+#!/usr/bin/env python3
+
+# Copyright (C) 2020 National Institute of Informatics
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -17,43 +19,39 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import argparse
-import io
 import logging
-import sys
+from argparse import ArgumentParser
 
-import cv2
-from PIL import Image
-import numpy
-import sinetstream
+from cv2 import imshow, waitKey
+from sinetstream import MessageReader
 
 logging.basicConfig(level=logging.INFO)
 
-parser = argparse.ArgumentParser(description="SINETStream Consumer")
-parser.add_argument("-s", "--service",
-                    metavar="SERVICE_NAME",
-                    required=True)
-parser.add_argument("-t", "--topic",
-                    metavar="TOPIC",
-                    action="append",
-                    required=True)
 
-args = parser.parse_args()
+def consumer(service):
+    with MessageReader(service, value_type='image') as reader:
+        for message in reader:
+            if show_image(message):
+                break
 
-print(f"# service={args.service}")
-print(f"# topics={','.join(args.topic)}")
 
-with sinetstream.MessageReader(args.service, args.topic) as f:
-    for t in args.topic:
-        cv2.namedWindow(t, cv2.WINDOW_AUTOSIZE)
+def show_image(message):
+    window_name = message.topic
+    image = message.value
+    imshow(window_name, image)
 
-    for msg in f:
-        img = Image.open(io.BytesIO(msg.value))
-        img_numpy = numpy.asarray(img)
-        img_numpy_bgr = cv2.cvtColor(img_numpy, cv2.COLOR_RGBA2BGR)
-        cv2.imshow(msg.topic, img_numpy_bgr)
-        key = cv2.waitKey(1)  # Flush
-        if key & 0xFF == ord("q"):
-            break
+    # Hit 'q' to stop
+    return waitKey(25) & 0xFF == ord("q")
 
-sys.exit(0)
+
+if __name__ == '__main__':
+    parser = ArgumentParser(description="SINETStream Consumer")
+    parser.add_argument(
+        "-s", "--service", metavar="SERVICE_NAME", required=True)
+    args = parser.parse_args()
+
+    print(f": service={args.service}")
+    try:
+        consumer(args.service)
+    except KeyboardInterrupt:
+        pass

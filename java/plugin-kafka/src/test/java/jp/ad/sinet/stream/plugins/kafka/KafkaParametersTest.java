@@ -43,8 +43,7 @@ class KafkaParametersTest implements ConfigFileAware {
                     MessageReaderFactory.<String>builder().service(SERVICE).topic(TOPIC)
                             .parameter("group_id", groupId).build();
             try (MessageReader<String> reader = readerBuilder.getReader()) {
-                KafkaMessageReader<?, String> kafkaReader = (KafkaMessageReader<?, String>) reader;
-                assertEquals(groupId, kafkaReader.getGroupId());
+                assertEquals(groupId, reader.getConfig().get("groupId"));
             }
         }
 
@@ -53,8 +52,7 @@ class KafkaParametersTest implements ConfigFileAware {
             MessageReaderFactory<String> readerBuilder =
                     MessageReaderFactory.<String>builder().service(SERVICE).topic(TOPIC).build();
             try (MessageReader<String> reader = readerBuilder.getReader()) {
-                KafkaMessageReader<?, String> kafkaReader = (KafkaMessageReader<?, String>) reader;
-                assertNotNull(kafkaReader.getGroupId());
+                assertNotNull(reader.getConfig().get("groupId"));
             }
         }
     }
@@ -67,8 +65,7 @@ class KafkaParametersTest implements ConfigFileAware {
                         .parameter("fetch_min_bytes", fetchMinBytes)
                         .build();
         try (MessageReader<String> reader = readerBuilder.getReader()) {
-            KafkaMessageReader<?, String> kafkaReader = (KafkaMessageReader<?, String>) reader;
-            assertNotNull(kafkaReader.getGroupId());
+            assertNotNull(reader.getConfig().get("groupId"));
         }
     }
 
@@ -80,8 +77,7 @@ class KafkaParametersTest implements ConfigFileAware {
                         .parameter("fetch_max_bytes", fetchMaxBytes)
                         .build();
         try (MessageReader<String> reader = readerBuilder.getReader()) {
-            KafkaMessageReader<?, String> kafkaReader = (KafkaMessageReader<?, String>) reader;
-            assertNotNull(kafkaReader.getGroupId());
+            assertNotNull(reader.getConfig().get("groupId"));
         }
     }
 
@@ -93,8 +89,7 @@ class KafkaParametersTest implements ConfigFileAware {
                         .parameter("fetch_max_wait_ms", fetchMaxWaitMs)
                         .build();
         try (MessageReader<String> reader = readerBuilder.getReader()) {
-            KafkaMessageReader<?, String> kafkaReader = (KafkaMessageReader<?, String>) reader;
-            assertNotNull(kafkaReader.getGroupId());
+            assertNotNull(reader.getConfig().get("groupId"));
         }
     }
 
@@ -106,8 +101,7 @@ class KafkaParametersTest implements ConfigFileAware {
                         .parameter("heartbeat_interval_ms", heartbeatIntervalMs)
                         .build();
         try (MessageReader<String> reader = readerBuilder.getReader()) {
-            KafkaMessageReader<?, String> kafkaReader = (KafkaMessageReader<?, String>) reader;
-            assertNotNull(kafkaReader.getGroupId());
+            assertNotNull(reader.getConfig().get("groupId"));
         }
     }
 }

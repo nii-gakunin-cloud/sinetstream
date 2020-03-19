@@ -21,11 +21,9 @@
 
 package jp.ad.sinet.stream.plugins.mqtt;
 
-import jp.ad.sinet.stream.api.Deserializer;
-import jp.ad.sinet.stream.api.Message;
-import jp.ad.sinet.stream.api.MessageReader;
 import jp.ad.sinet.stream.api.SinetStreamIOException;
-import jp.ad.sinet.stream.crypto.CryptoDeserializerWrapper;
+import jp.ad.sinet.stream.spi.PluginMessageReader;
+import jp.ad.sinet.stream.spi.PluginMessageWrapper;
 import jp.ad.sinet.stream.spi.ReaderParameters;
 import lombok.Getter;
 import lombok.extern.java.Log;
@@ -38,7 +36,6 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -46,34 +43,21 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 @Log
-public class MqttMessageReader<T> extends MqttBaseIO implements MessageReader<T> {
+public class MqttMessageReader extends MqttBaseIO implements PluginMessageReader {
 
     @Getter
     private final List<String> topics;
     @Getter
     private final Duration receiveTimeout;
 
-    private final BlockingQueue<MqttMessageTuple> queue;
+    private final BlockingQueue<SinetMqttMessage> queue;
 
-    @Getter
-    private final Deserializer<T> deserializer;
-
-    @SuppressWarnings("unchecked")
-    MqttMessageReader(ReaderParameters<T> parameters) {
+    MqttMessageReader(ReaderParameters parameters) {
         super(parameters.getService(), parameters.getConsistency(), parameters.getClientId(), parameters.getConfig(),
                 parameters.getValueType(), parameters.isDataEncryption());
         this.topics = Collections.unmodifiableList(parameters.getTopics());
         this.receiveTimeout = parameters.getReceiveTimeout();
         this.queue = new LinkedBlockingQueue<>();
-
-        Deserializer<T> des;
-        if (Objects.isNull(parameters.getDeserializer())) {
-            des = this.getValueType().getDeserializer();
-        } else {
-            des = parameters.getDeserializer();
-        }
-        deserializer = CryptoDeserializerWrapper.getDeserializer(config, des);
-
         this.client.setCallback(new SinetMqttCallback());
         connect();
     }
@@ -92,19 +76,14 @@ public class MqttMessageReader<T> extends MqttBaseIO implements MessageReader<T>
         reconnectDelay = reconnectMinDelay;
     }
 
-    @Override
-    public String getTopic() {
+    private String getTopic() {
         return String.join(",", this.topics);
     }
 
     @Override
-    public Message<T> read() {
+    public PluginMessageWrapper read() {
         try {
-            MqttMessageTuple tp = this.queue.poll(receiveTimeout.toNanos(), TimeUnit.NANOSECONDS);
-            if (Objects.isNull(tp)) {
-                return null;
-            }
-            return new SinetMqttMessage<>(tp.getTopic(), tp.getMessage(), this.deserializer::deserialize);
+            return this.queue.poll(receiveTimeout.toNanos(), TimeUnit.NANOSECONDS);
         } catch (InterruptedException e) {
             throw new SinetStreamIOException(e);
         }
@@ -145,23 +124,12 @@ public class MqttMessageReader<T> extends MqttBaseIO implements MessageReader<T>
         @Override
         public void messageArrived(String topic, MqttMessage message) throws Exception {
             log.finer(() -> "MQTT message arrived: " + getClientId() + ": " + message.toString());
-            queue.put(new MqttMessageTuple(topic, message));
+            queue.put(new SinetMqttMessage(topic, message));
         }
 
         @Override
         public void deliveryComplete(IMqttDeliveryToken token) {
             log.finest(() -> "MQTT delivery completed: " + token.toString());
-        }
-    }
-
-    private static class MqttMessageTuple {
-        @Getter
-        private final String topic;
-        @Getter
-        private final MqttMessage message;
-        MqttMessageTuple(String topic, MqttMessage message) {
-            this.topic = topic;
-            this.message = message;
         }
     }
 }

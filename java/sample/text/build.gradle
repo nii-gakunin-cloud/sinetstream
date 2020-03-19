@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 National Institute of Informatics
+ * Copyright (C) 2020 National Institute of Informatics
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -26,30 +26,18 @@ plugins {
 
 sourceCompatibility = 1.8
 
-version = '1.0.0'
+version = '1.1.0'
 
 repositories {
     jcenter()
-    flatDir {
-        dirs "libs"
-    }
 }
 
 dependencies {
     implementation 'commons-cli:commons-cli:1.4'
-    implementation 'jp.ad.sinet.sinetstream:SINETStream-api:1.0.0'
-    implementation 'jp.ad.sinet.sinetstream:SINETStream-kafka:1.0.0'
-    implementation 'jp.ad.sinet.sinetstream:SINETStream-mqtt:1.0.0'
-    runtimeOnly 'org.slf4j:slf4j-nop:1.7.26'
-    implementation group: 'com.google.guava', name: 'guava', version: '28.0-jre'
-
-    implementation group: 'org.yaml', name: 'snakeyaml', version: '1.24'
-    implementation group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.62'
-    implementation group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.62'
-    implementation group: 'org.apache.commons', name: 'commons-text', version: '1.7'
-    implementation group: 'org.apache.commons', name: 'commons-rng-simple', version: '1.2'
-    implementation group: 'org.apache.kafka', name: 'kafka-clients', version: '2.3.0'
-    implementation group: 'org.eclipse.paho', name: 'org.eclipse.paho.client.mqttv3', version: '1.2.1'
+    implementation 'jp.ad.sinet.sinetstream:SINETStream-api:1.+'
+    implementation 'jp.ad.sinet.sinetstream:SINETStream-kafka:1.+'
+    implementation 'jp.ad.sinet.sinetstream:SINETStream-mqtt:1.+'
+    runtimeOnly 'org.slf4j:slf4j-nop:1.7.30'
 }
 
 application {

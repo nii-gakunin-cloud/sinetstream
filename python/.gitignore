@@ -15,3 +15,8 @@ site
 .#*
 .sass-cache
 /_site
+/.venv
+/venv
+/.idea
+output
+.sinetstream_config.yml

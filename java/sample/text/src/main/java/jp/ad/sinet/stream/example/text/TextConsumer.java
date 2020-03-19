@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 National Institute of Informatics
+ * Copyright (C) 2020 National Institute of Informatics
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -22,16 +22,19 @@
 package jp.ad.sinet.stream.example.text;
 
 import jp.ad.sinet.stream.api.Consistency;
-import jp.ad.sinet.stream.api.MessageReader;
 import jp.ad.sinet.stream.api.Message;
-import jp.ad.sinet.stream.api.ValueType;
+import jp.ad.sinet.stream.api.MessageReader;
+import jp.ad.sinet.stream.api.valuetype.SimpleValueType;
 import jp.ad.sinet.stream.utils.MessageReaderFactory;
 import org.apache.commons.cli.*;
 
 import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Objects;
 
-@SuppressWarnings({"WeakerAccess", "CodeBlock2Expr"})
+@SuppressWarnings({"WeakerAccess"})
 public class TextConsumer {
 
     private final String service;
@@ -40,17 +43,24 @@ public class TextConsumer {
         this.service = service;
     }
 
-    public void run() throws Exception {
+    public void run() {
         MessageReaderFactory<String> factory =
                 MessageReaderFactory.<String>builder()
                         .service(service)
                         .consistency(Consistency.AT_LEAST_ONCE)
-                        .valueType(ValueType.TEXT)
+                        .valueType(SimpleValueType.TEXT)
                         .receiveTimeout(Duration.ofSeconds(30))
                         .build();
         try(MessageReader<String> reader = factory.getReader()) {
             Message<String> msg;
             while (Objects.nonNull(msg = reader.read())) {
+                long ts = msg.getTimestampMicroseconds();
+                if (ts != 0) {
+                    Instant i = Instant.ofEpochMilli(ts/1000);
+                    ZoneId z = ZoneId.systemDefault();
+                    String s = ZonedDateTime.ofInstant(i, z).toString();
+                    System.out.print("[" + s + "] ");
+                }
                 System.out.println(msg.getValue());
             }
         }

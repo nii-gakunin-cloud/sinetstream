@@ -21,9 +21,7 @@
 
 package jp.ad.sinet.stream.spi;
 
-import jp.ad.sinet.stream.api.MessageWriter;
+public interface MessageWriterProvider extends SinetMessageProvider {
 
-public interface MessageWriterProvider<T> extends SinetMessageProvider {
-
-    MessageWriter<T> getWriter(WriterParameters<T> params);
+    PluginMessageWriter getWriter(WriterParameters params);
 }

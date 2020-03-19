@@ -1,13 +1,14 @@
 FROM centos:7.7.1908
 
 # Install Apache Kafka
-ARG KAFKA_VERSION=2.3.1
+ARG KAFKA_VERSION=2.4.0
 ENV KAFKA_VERSION $KAFKA_VERSION
 ARG KAFKA_URL=http://ftp.riken.jp/net/apache/kafka/${KAFKA_VERSION}/kafka_2.12-${KAFKA_VERSION}.tgz
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN curl -s $KAFKA_URL | tar xzf - -C /srv \
  && yum -y install java-1.8.0-openjdk-headless \
- && yum clean all
+ && yum clean all \
+ && ln -sf /srv/kafka_2.12-${KAFKA_VERSION} /srv/kafka
 
 
 # Install Eclipse Mosquitto
@@ -52,9 +53,17 @@ RUN useradd -m $USERNAME \
 RUN pip3 install supervisor \
  && mkdir -m 0700 /var/run/supervisor /var/log/supervisor
 COPY supervisord.conf /etc/supervisord.conf
-CMD ["/usr/local/bin/supervisord", "-n", "-c", "/etc/supervisord.conf"]
 
-EXPOSE 9092 1883
-ENV ENABLE_BROKER=true ENABLE_SSHD=false
+# Setup OpenSSL
+RUN yum -y install \
+      openssl \
+      ca-certificates \
+ && yum clean all
+COPY init.sh /usr/local/bin/
+CMD ["/usr/local/bin/init.sh"]
+
+EXPOSE 9092 9093 1883 8883 8080
+ENV ENABLE_BROKER=true ENABLE_SSHD=false ENABLE_SSL=true \
+  GENERATE_CLIENT_CERTS=true SSL_CLIENT_AUTH=requested
 
 WORKDIR /home/$USERNAME

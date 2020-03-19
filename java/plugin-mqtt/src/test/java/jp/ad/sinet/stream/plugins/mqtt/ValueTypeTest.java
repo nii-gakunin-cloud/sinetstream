@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 National Institute of Informatics
+ * Copyright (C) 2020 National Institute of Informatics
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -21,7 +21,12 @@
 
 package jp.ad.sinet.stream.plugins.mqtt;
 
-import jp.ad.sinet.stream.api.*;
+import jp.ad.sinet.stream.api.Consistency;
+import jp.ad.sinet.stream.api.MessageReader;
+import jp.ad.sinet.stream.api.MessageWriter;
+import jp.ad.sinet.stream.api.SinetStreamIOException;
+import jp.ad.sinet.stream.api.valuetype.SimpleValueType;
+import jp.ad.sinet.stream.api.valuetype.ValueTypeFactory;
 import jp.ad.sinet.stream.utils.MessageReaderFactory;
 import jp.ad.sinet.stream.utils.MessageWriterFactory;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,19 +47,19 @@ class ValueTypeTest implements ConfigFileAware {
     class Writer {
         @Test
         void defaultValutType() {
-            MessageWriterFactory<String> builder = MessageWriterFactory.<String>builder().service("service-1").topic("test-topic-java-001").build();
-            try (MessageWriter<String> writer = builder.getWriter()) {
-                assertEquals(ValueType.TEXT, writer.getValueType());
-                writer.write("message 1");
+            MessageWriterFactory<byte[]> builder = MessageWriterFactory.<byte[]>builder().service("service-0").topic("test-topic-java-001").build();
+            try (MessageWriter<byte[]> writer = builder.getWriter()) {
+                assertEquals(SimpleValueType.BYTE_ARRAY, writer.getValueType());
+                writer.write("message 1".getBytes());
             }
         }
 
         @Test
         void textValueType() {
             MessageWriterFactory<String> builder =
-                    MessageWriterFactory.<String>builder().service("service-1").topic("test-topic-java-001").valueType(ValueType.TEXT).build();
+                    MessageWriterFactory.<String>builder().service("service-1").topic("test-topic-java-001").valueType(SimpleValueType.TEXT).build();
             try (MessageWriter<String> writer = builder.getWriter()) {
-                assertEquals(ValueType.TEXT, writer.getValueType());
+                assertEquals(SimpleValueType.TEXT, writer.getValueType());
                 writer.write("message 2");
             }
         }
@@ -64,9 +69,9 @@ class ValueTypeTest implements ConfigFileAware {
             URL url = ValueTypeTest.class.getResource("/GakuNinCloud.png");
             BufferedImage image = ImageIO.read(url);
             MessageWriterFactory<BufferedImage> builder =
-                    MessageWriterFactory.<BufferedImage>builder().service("service-1").topic("test-topic-java-001-image").valueType(ValueType.IMAGE).build();
+                    MessageWriterFactory.<BufferedImage>builder().service("service-1").topic("test-topic-java-001-image").valueType(new ValueTypeFactory().get("image")).build();
             try (MessageWriter<BufferedImage> writer = builder.getWriter()) {
-                assertEquals(ValueType.IMAGE, writer.getValueType());
+                assertEquals(new ValueTypeFactory().get("image"), writer.getValueType());
                 writer.write(image);
             }
         }
@@ -84,9 +89,9 @@ class ValueTypeTest implements ConfigFileAware {
 
             MessageWriterFactory<byte[]> builder =
                     MessageWriterFactory.<byte[]>builder().service("service-1").topic("test-topic-java-001-bytes")
-                            .valueType(ValueType.BYTE_ARRAY).build();
+                            .valueType(SimpleValueType.BYTE_ARRAY).build();
             try (MessageWriter<byte[]> writer = builder.getWriter()) {
-                assertEquals(ValueType.BYTE_ARRAY, writer.getValueType());
+                assertEquals(SimpleValueType.BYTE_ARRAY, writer.getValueType());
                 writer.write(out.toByteArray());
             }
         }
@@ -94,9 +99,9 @@ class ValueTypeTest implements ConfigFileAware {
         @Test
         void badValueType() {
             MessageWriterFactory<String> builder =
-                    MessageWriterFactory.<String>builder().service("service-1").topic("test-topic-java-001").valueType(ValueType.IMAGE).build();
+                    MessageWriterFactory.<String>builder().service("service-1").topic("test-topic-java-001").valueType(new ValueTypeFactory().get("image")).build();
             try (MessageWriter<String> writer = builder.getWriter()) {
-                assertEquals(ValueType.IMAGE, writer.getValueType());
+                assertEquals(new ValueTypeFactory().get("image"), writer.getValueType());
                 assertThrows(ClassCastException.class, () -> writer.write("message X"));
             }
         }
@@ -106,9 +111,9 @@ class ValueTypeTest implements ConfigFileAware {
             URL url = ValueTypeTest.class.getResource("/GakuNinCloud.png");
             BufferedImage image = ImageIO.read(url);
             MessageWriterFactory<BufferedImage> builder =
-                    MessageWriterFactory.<BufferedImage>builder().service("service-1").topic("test-topic-java-001-image").valueType(ValueType.TEXT).build();
+                    MessageWriterFactory.<BufferedImage>builder().service("service-1").topic("test-topic-java-001-image").valueType(SimpleValueType.TEXT).build();
             try (MessageWriter<BufferedImage> writer = builder.getWriter()) {
-                assertEquals(ValueType.TEXT, writer.getValueType());
+                assertEquals(SimpleValueType.TEXT, writer.getValueType());
                 assertThrows(ClassCastException.class, () -> writer.write(image));
             }
         }
@@ -118,9 +123,9 @@ class ValueTypeTest implements ConfigFileAware {
     class Reader {
         @Test
         void defaultValutType() {
-            MessageReaderFactory<String> builder = MessageReaderFactory.<String>builder().service("service-1").topic("test-topic-java-001").build();
-            try (MessageReader<String> reader = builder.getReader()) {
-                assertEquals(ValueType.TEXT, reader.getValueType());
+            MessageReaderFactory<byte[]> builder = MessageReaderFactory.<byte[]>builder().service("service-0").topic("test-topic-java-001").build();
+            try (MessageReader<byte[]> reader = builder.getReader()) {
+                assertEquals(SimpleValueType.BYTE_ARRAY, reader.getValueType());
                 assertNotNull(reader.read().getValue());
             }
         }
@@ -128,9 +133,9 @@ class ValueTypeTest implements ConfigFileAware {
         @Test
         void textValueType() {
             MessageReaderFactory<String> builder =
-                    MessageReaderFactory.<String>builder().service("service-1").topic("test-topic-java-001").valueType(ValueType.TEXT).build();
+                    MessageReaderFactory.<String>builder().service("service-1").topic("test-topic-java-001").valueType(SimpleValueType.TEXT).build();
             try (MessageReader<String> reader = builder.getReader()) {
-                assertEquals(ValueType.TEXT, reader.getValueType());
+                assertEquals(SimpleValueType.TEXT, reader.getValueType());
                 assertNotNull(reader.read().getValue());
             }
         }
@@ -138,9 +143,9 @@ class ValueTypeTest implements ConfigFileAware {
         @Test
         void imageValueType() {
             MessageReaderFactory<BufferedImage> builder =
-                    MessageReaderFactory.<BufferedImage>builder().service("service-1").topic("test-topic-java-001-image").valueType(ValueType.IMAGE).build();
+                    MessageReaderFactory.<BufferedImage>builder().service("service-1").topic("test-topic-java-001-image").valueType(new ValueTypeFactory().get("image")).build();
             try (MessageReader<BufferedImage> reader = builder.getReader()) {
-                assertEquals(ValueType.IMAGE, reader.getValueType());
+                assertEquals(new ValueTypeFactory().get("image"), reader.getValueType());
                 assertNotNull(reader.read().getValue());
             }
         }
@@ -149,19 +154,20 @@ class ValueTypeTest implements ConfigFileAware {
         void byteArrayValueType() {
             MessageReaderFactory<byte[]> builder =
                     MessageReaderFactory.<byte[]>builder().service("service-1").topic("test-topic-java-001-bytes")
-                            .valueType(ValueType.BYTE_ARRAY).build();
+                            .valueType(SimpleValueType.BYTE_ARRAY).build();
             try (MessageReader<byte[]> reader = builder.getReader()) {
-                assertEquals(ValueType.BYTE_ARRAY, reader.getValueType());
+                assertEquals(SimpleValueType.BYTE_ARRAY, reader.getValueType());
                 assertNotNull(reader.read().getValue());
             }
         }
 
+        @SuppressWarnings("ResultOfMethodCallIgnored")
         @Test
         void badValueType() {
             MessageReaderFactory<String> builder =
-                    MessageReaderFactory.<String>builder().service("service-1").topic("test-topic-java-001").valueType(ValueType.IMAGE).build();
+                    MessageReaderFactory.<String>builder().service("service-1").topic("test-topic-java-001").valueType(new ValueTypeFactory().get("image")).build();
             try (MessageReader<String> reader = builder.getReader()) {
-                assertEquals(ValueType.IMAGE, reader.getValueType());
+                assertEquals(new ValueTypeFactory().get("image"), reader.getValueType());
                 assertThrows(SinetStreamIOException.class, () -> reader.read().getValue());
             }
         }
@@ -169,9 +175,9 @@ class ValueTypeTest implements ConfigFileAware {
         @Test
         void badValueType2() {
             MessageReaderFactory<BufferedImage> builder =
-                    MessageReaderFactory.<BufferedImage>builder().service("service-1").topic("test-topic-java-001-image").valueType(ValueType.TEXT).build();
+                    MessageReaderFactory.<BufferedImage>builder().service("service-1").topic("test-topic-java-001-image").valueType(SimpleValueType.TEXT).build();
             try (MessageReader<BufferedImage> reader = builder.getReader()) {
-                assertEquals(ValueType.TEXT, reader.getValueType());
+                assertEquals(SimpleValueType.TEXT, reader.getValueType());
                 assertNotNull(reader.read().getValue());
             }
         }
@@ -182,7 +188,7 @@ class ValueTypeTest implements ConfigFileAware {
                     MessageWriterFactory.<String>builder().service("service-1").topic("test-topic-java-001")
                             .consistency(Consistency.AT_LEAST_ONCE).build();
             try (MessageWriter<String> writer = builder.getWriter()) {
-                assertEquals(ValueType.TEXT, writer.getValueType());
+                assertEquals(SimpleValueType.TEXT, writer.getValueType());
                 writer.write("message 0");
             }
         }
@@ -193,9 +199,9 @@ class ValueTypeTest implements ConfigFileAware {
             BufferedImage image = ImageIO.read(url);
             MessageWriterFactory<BufferedImage> builder =
                     MessageWriterFactory.<BufferedImage>builder().service("service-1").topic("test-topic-java-001-image")
-                            .valueType(ValueType.IMAGE).consistency(Consistency.AT_LEAST_ONCE).build();
+                            .valueType(new ValueTypeFactory().get("image")).consistency(Consistency.AT_LEAST_ONCE).build();
             try (MessageWriter<BufferedImage> writer = builder.getWriter()) {
-                assertEquals(ValueType.IMAGE, writer.getValueType());
+                assertEquals(new ValueTypeFactory().get("image"), writer.getValueType());
                 writer.write(image);
             }
         }
@@ -214,9 +220,9 @@ class ValueTypeTest implements ConfigFileAware {
 
         MessageWriterFactory<byte[]> builder =
                 MessageWriterFactory.<byte[]>builder().service("service-1").topic("test-topic-java-001-bytes")
-                        .valueType(ValueType.BYTE_ARRAY).build();
+                        .valueType(SimpleValueType.BYTE_ARRAY).build();
         try (MessageWriter<byte[]> writer = builder.getWriter()) {
-            assertEquals(ValueType.BYTE_ARRAY, writer.getValueType());
+            assertEquals(SimpleValueType.BYTE_ARRAY, writer.getValueType());
             writer.write(out.toByteArray());
         }
     }

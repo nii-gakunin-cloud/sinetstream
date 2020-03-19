@@ -1,4 +1,6 @@
-# Copyright (C) 2019 National Institute of Informatics
+#!/usr/bin/env python3
+
+# Copyright (C) 2020 National Institute of Informatics
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -17,68 +19,71 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import argparse
-import io
 import logging
-import sys
+from argparse import ArgumentParser
+from sys import exit
 
-import cv2
-from PIL import Image
-import numpy
-import sinetstream
+from cv2 import VideoCapture, imshow, waitKey
+from sinetstream import MessageWriter
 
 logging.basicConfig(level=logging.INFO)
 
-parser = argparse.ArgumentParser(description="SINETStream Producer")
-parser.add_argument("-s", "--service",
-                    metavar="SERVICE_NAME",
-                    required=True)
-parser.add_argument("-t", "--topic",
-                    metavar="TOPIC",
-                    required=True)
-parser.add_argument("-f", "--input-video",
-                    metavar="FILE",
-                    required=True)
-parser.add_argument("-l", "--preview",
-                    action="store_true",
-                    help="show on local too")
 
-args = parser.parse_args()
+def producer(service, video, preview=False):
+    with MessageWriter(service, value_type='image') as writer:
+        image = next_frame(video)
+        while image is not None:
+            writer.publish(image)
 
-print(f"# service={args.service}")
-print(f"# topic={args.topic}")
-print(f"# input-video={args.input_video}")
+            if preview and show_preview(image):
+                break
+            image = next_frame(video)
 
-jpeg_quality = 95       # 0..100
-enc_param = [int(cv2.IMWRITE_JPEG_QUALITY), jpeg_quality]
 
-video = cv2.VideoCapture(args.input_video)
-if not video.isOpened():
-    print(f"ERROR: cannot open the file {args.input_video}")
-    sys.exit(1)
+def next_frame(video):
+    global n_frame
+    if not video.isOpened():
+        return None
+    success, frame = video.read()
+    n_frame += 1
+    return frame if success else None
 
-n_frame = 0
-with sinetstream.MessageWriter(args.service, args.topic) as f:
+
+def show_preview(image):
+    imshow(args.input_video, image)
+
+    # Hit 'q' to stop
+    return waitKey(25) & 0xFF == ord("q")
+
+
+def main(service, video_file, preview=False):
+    global n_frame
+    video = VideoCapture(video_file)
+    if not video.isOpened():
+        print(f"ERROR: cannot open the file {video_file}")
+        exit(1)
+    n_frame = 0
+    try:
+        producer(service, video, preview)
+    finally:
+        video.release()
+        print(f"Fin video {args.input_video} (#frame={n_frame})")
+
+
+if __name__ == '__main__':
+
+    parser = ArgumentParser(description="SINETStream Producer")
+    parser.add_argument(
+        "-s", "--service", metavar="SERVICE_NAME", required=True)
+    parser.add_argument(
+        "-f", "--input-video", metavar="FILE", required=True)
+    parser.add_argument(
+        "-l", "--preview", action="store_true", help="show on local too")
+    args = parser.parse_args()
+
+    print(f": service={args.service}")
+    print(f": input-video={args.input_video}")
     if args.preview:
         print("Hit 'q' to stop")
-    while video.isOpened():
-        success, frame = video.read()
-        if not success:
-            break
-        n_frame += 1
-        ret, buffer = cv2.imencode('.jpg', frame, enc_param)
-        value = buffer.tobytes()
-        f.publish(value)
-        if args.preview:
-            img = Image.open(io.BytesIO(value))
-            img_numpy = numpy.asarray(img)
-            img_numpy_bgr = cv2.cvtColor(img_numpy, cv2.COLOR_RGBA2BGR)
-            cv2.imshow(args.input_video, img_numpy_bgr)
-            key = cv2.waitKey(1)  # Flush
-            if key & 0xFF == ord("q"):
-                break
 
-video.release()
-
-print(f"Fin video {args.input_video} (#frame={n_frame})")
-sys.exit(0)
+    main(args.service, args.input_video, args.preview)

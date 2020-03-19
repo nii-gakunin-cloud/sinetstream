@@ -21,27 +21,22 @@
 
 package jp.ad.sinet.stream.plugins.kafka;
 
-import jp.ad.sinet.stream.api.MessageReader;
-import jp.ad.sinet.stream.api.MessageWriter;
-import jp.ad.sinet.stream.spi.MessageReaderProvider;
-import jp.ad.sinet.stream.spi.MessageWriterProvider;
-import jp.ad.sinet.stream.spi.ReaderParameters;
-import jp.ad.sinet.stream.spi.WriterParameters;
+import jp.ad.sinet.stream.spi.*;
 import lombok.extern.java.Log;
 
 @Log
-public class KafkaMessageProvider<T> implements MessageWriterProvider<T>, MessageReaderProvider<T> {
+public class KafkaMessageProvider implements MessageWriterProvider, MessageReaderProvider {
 
     @Override
-    public MessageWriter<T> getWriter(WriterParameters<T> params) {
+    public PluginMessageWriter getWriter(WriterParameters params) {
         log.fine(() -> "KAFKA getWriter: " + params.toString());
-        return new KafkaMessageWriter<>(params);
+        return new KafkaMessageWriter(params);
     }
 
     @Override
-    public MessageReader<T> getReader(ReaderParameters<T> params) {
+    public PluginMessageReader getReader(ReaderParameters params) {
         log.fine(() -> "KAFKA getReader: " + params.toString());
-        return new KafkaMessageReader<>(params);
+        return new KafkaMessageReader(params);
     }
 
     @Override

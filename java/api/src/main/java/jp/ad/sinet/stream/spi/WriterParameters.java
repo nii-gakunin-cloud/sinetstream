@@ -22,7 +22,6 @@
 package jp.ad.sinet.stream.spi;
 
 import jp.ad.sinet.stream.api.Consistency;
-import jp.ad.sinet.stream.api.Serializer;
 import jp.ad.sinet.stream.api.ValueType;
 import jp.ad.sinet.stream.utils.MessageWriterFactory;
 import lombok.Data;
@@ -32,25 +31,23 @@ import java.util.Map;
 
 @Data
 @RequiredArgsConstructor
-public class WriterParameters<T> {
+public class WriterParameters implements SinetStreamParameters {
     private final String service;
     private final String topic;
     private final Consistency consistency;
     private final ValueType valueType;
-    private final Map<String, ?> config;
+    private final Map<String, Object> config;
     private final boolean dataEncryption;
 
     private String clientId;
-    private Serializer<T> serializer;
 
-    public WriterParameters(MessageWriterFactory<T> builder) {
+    public WriterParameters(MessageWriterFactory<?> builder) {
         this.service = builder.getService();
         this.topic = builder.getTopic();
         this.consistency = builder.getConsistency();
         this.valueType = builder.getValueType();
         this.config = builder.getParameters();
         this.clientId = builder.getClientId();
-        this.serializer = builder.getSerializer();
         this.dataEncryption = builder.getDataEncryption();
     }
 }

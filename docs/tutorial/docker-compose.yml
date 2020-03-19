@@ -2,7 +2,7 @@ version: '2.4'
 services:
   broker:
     image: sinetstream/tutorial:1.0.0
-    build: ./all-in-one
+#    build: ./all-in-one
     container_name: broker
     hostname: broker
 #    ports:

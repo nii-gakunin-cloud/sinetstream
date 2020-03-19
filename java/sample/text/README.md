@@ -21,13 +21,6 @@ under the License.
 
 # SINETStream example
 
-## 準備
-
-SINETStreamのjarファイルを./libs に配置する。
-
-$ mkdir libs
-$ cp ../../*/build/libs/SINETStream*.jar libs
-
 ## ビルド
 
 次のコマンドを実行する。
@@ -55,17 +48,12 @@ zip, tar でアーカイブしたファイルが作成されている。
 ```
 service-1:
   type: kafka
-  brokers:
-    - kafka1.example.org:9092
-    - kafka2.example.org:9092
-    - kafka3.example.org:9092
-  topic:
-    - test-topic
+  brokers: kafka.example.org:9092
+  topic: test-text-topic-1
 service-2:
   type: mqtt
   brokers: mqtt.example.org:1883
-  topic:
-    - test-topic
+  topic: test-text-topic-2
 ```
 
 ## 実行手順

@@ -23,102 +23,87 @@
 import logging
 import pytest
 
-import sinetstream
+from sinetstream import MessageReader, MessageWriter, TEXT, BYTE_ARRAY
+from conftest import SERVICE, TOPIC
 
 logging.basicConfig(level=logging.ERROR)
+pytestmark = pytest.mark.usefixtures('setup_config', 'dummy_reader_plugin', 'dummy_writer_plugin')
 
 
-service = 'service-crypto-1'
-topic = 'mss-test-001'
 msgs = ['test message 001',
         'test message 002']
 
 bmsgs = [x.encode() for x in msgs]
 
 
-def test_thru(dummy_reader_plugin, dummy_writer_plugin):
-    with sinetstream.MessageWriter(service, topic, value_type=sinetstream.TEXT) as fw:
+def test_thru():
+    with MessageWriter(SERVICE, value_type=TEXT) as fw:
         for msg in msgs:
             fw.publish(msg)
-    with sinetstream.MessageReader(service, topic, value_type=sinetstream.TEXT) as fr:
-        i = 0
-        for msg in fr:
-            assert msg.topic == topic
-            assert msg.value == msgs[i]
-            i += 1
-            if i == len(msgs):
-                break
-    pass
+    with MessageReader(SERVICE, value_type=TEXT) as fr:
+        for expected, msg in zip(msgs, fr):
+            assert msg.topic == TOPIC
+            assert msg.value == expected
 
 
-def test_enc_bin(dummy_reader_plugin, dummy_writer_plugin):
-    with sinetstream.MessageWriter(service,
-                                   topic,
-                                   value_type=sinetstream.BYTE_ARRAY,
-                                   data_encryption=True) as fw:
+def test_enc_bin():
+    with MessageWriter(SERVICE, value_type=BYTE_ARRAY, data_encryption=True) as fw:
         for msg in bmsgs:
             fw.publish(msg)
-    with sinetstream.MessageReader(service,
-                                   topic,
-                                   value_type=sinetstream.BYTE_ARRAY,
-                                   data_encryption=True) as fr:
-        i = 0
-        for msg in fr:
-            assert msg.topic == topic
-            assert msg.value == bmsgs[i]
-            i += 1
-            if i == len(msgs):
-                break
-    pass
+    with MessageReader(SERVICE, value_type=BYTE_ARRAY, data_encryption=True) as fr:
+        for expected, msg in zip(bmsgs, fr):
+            assert msg.topic == TOPIC
+            assert msg.value == expected
 
 
-def test_enc_text(dummy_reader_plugin, dummy_writer_plugin):
-    with sinetstream.MessageWriter(service,
-                                   topic,
-                                   value_type=sinetstream.TEXT,
-                                   data_encryption=True) as fw:
+def test_enc_text():
+    with MessageWriter(SERVICE, value_type=TEXT, data_encryption=True) as fw:
         for msg in msgs:
             fw.publish(msg)
-    with sinetstream.MessageReader(service,
-                                   topic,
-                                   value_type=sinetstream.TEXT,
-                                   data_encryption=True) as fr:
-        i = 0
-        for msg in fr:
-            assert msg.topic == topic
-            assert msg.value == msgs[i]
-            i += 1
-            if i == len(msgs):
-                break
-    pass
+
+    with MessageReader(SERVICE, value_type=TEXT, data_encryption=True) as fr:
+        for expected, msg in zip(msgs, fr):
+            assert msg.topic == TOPIC
+            assert msg.value == expected
 
 
-@pytest.mark.parametrize("mode",
-                         ["CBC",
-                          "CFB",
-                          "OFB",
-                          "CTR",
-                          "OPENPGP",
-                          "OPENPGPCFB",
-                          "EAX",
-                          "GCM"])
-def test_enc_mode(mode, dummy_reader_plugin, dummy_writer_plugin):
-    with sinetstream.MessageWriter(service,
-                                   topic,
-                                   value_type=sinetstream.TEXT,
-                                   data_encryption=True,
-                                   crypto={"mode": mode}) as fw:
+@pytest.mark.parametrize(
+    "crypto", [
+        {"mode": "CBC",        "padding": "pkcs7"},
+        {"mode": "CFB",        "padding": "none"},
+        {"mode": "OFB",        "padding": "none"},
+        {"mode": "CTR",        "padding": "none"},
+        {"mode": "OPENPGP",    "padding": "none"},
+        {"mode": "OPENPGPCFB", "padding": "none"},
+        {"mode": "EAX",        "padding": "none"},
+        {"mode": "GCM",        "padding": "none"},
+    ])
+def test_enc_mode(crypto):
+    with MessageWriter(SERVICE, value_type=TEXT, data_encryption=True, crypto=crypto) as fw:
         for msg in msgs:
             fw.publish(msg)
-    with sinetstream.MessageReader(service,
-                                   topic,
-                                   value_type=sinetstream.TEXT,
-                                   data_encryption=True,
-                                   crypto={"mode": mode}) as fr:
-        i = 0
-        for msg in fr:
-            assert msg.topic == topic
-            assert msg.value == msgs[i]
-            i += 1
-            if i == len(msgs):
-                break
+    with MessageReader(SERVICE, value_type=TEXT, data_encryption=True, crypto=crypto) as fr:
+        for expected, msg in zip(msgs, fr):
+            assert msg.topic == TOPIC
+            assert msg.value == expected
+
+
+@pytest.fixture()
+def config_params():
+    return {
+        'crypto': {
+            'algorithm': 'AES',
+            'key_length': 128,
+            'mode': 'GCM',
+            'padding': 'none',
+            'key_derivation': {
+                'algorithm': 'pbkdf2',
+            },
+            'salt_bytes': 16,
+            'iteration': 10000,
+            'password': {
+                'value': 'secret-000',
+            },
+        },
+        'data_encryption': True,
+    }

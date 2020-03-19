@@ -28,13 +28,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public interface ConfigFileAware {
 
     @BeforeEach
     default void makeConfigFile() throws IOException {
         try (InputStream in = ConfigFileAware.class.getResourceAsStream("/sinetstream_config.yml")) {
-            Files.copy(in, Paths.get(".sinetstream_config.yml"));
+            Files.copy(in, Paths.get(".sinetstream_config.yml"), REPLACE_EXISTING );
         }
     }
 

@@ -20,57 +20,36 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import binascii
 import logging
 import os
-from pkg_resources import iter_entry_points
+import time
+from copy import copy
+from enum import Enum, auto
+from threading import RLock
 
-from Crypto.Cipher import AES
-from Crypto.Hash import SHA256, SHA384, SHA512
-from Crypto.Protocol.KDF import PBKDF2
-from Crypto.Random import get_random_bytes
-from Crypto.Util.Padding import pad, unpad
-
-
-config = None
+from sinetstream.crypto import CipherAES
+from sinetstream.error import (
+    InvalidArgumentError, NoConfigError, NoServiceError,
+    UnsupportedServiceTypeError, InvalidMessageError, AlreadyConnectedError)
+from sinetstream.marshal import Marshaller, Unmarshaller
+from sinetstream.spi import PluginMessageReader, PluginMessageWriter
+from sinetstream.utils import Registry
+from sinetstream.value_type import BYTE_ARRAY, value_type_registry
 
 logger = logging.getLogger(__name__)
 
 
-class SinetError(Exception):
-    """Base class for exceptions in this module. """
-    pass
+class Consistency(Enum):
+    AT_MOST_ONCE = auto()
+    AT_LEAST_ONCE = auto()
+    EXACTLY_ONCE = auto()
 
 
-class NoServiceError(SinetError):
-    pass
+AT_MOST_ONCE = Consistency.AT_MOST_ONCE
+AT_LEAST_ONCE = Consistency.AT_LEAST_ONCE
+EXACTLY_ONCE = Consistency.EXACTLY_ONCE
 
-
-class UnsupportedServiceTypeError(SinetError):
-    pass
-
-
-class NoConfigError(SinetError):
-    pass
-
-
-class InvalidArgumentError(SinetError):
-    pass
-
-
-class ConnectionError(SinetError):
-    pass
-
-
-class AlreadyConnectedError(SinetError):
-    pass
-
-
-def hexlify(x):
-    if x is None:
-        return "None"
-    else:
-        return binascii.hexlify(x).decode()
+DEFAULT_CLIENT_ID = None
 
 
 def yaml_load(s):
@@ -92,86 +71,88 @@ config_files = [
 ]
 
 
-def load_config():
+def load_config(config_file=None):
+    if config_file is not None:
+        ret = load_config_from_file(config_file)
+        if ret is None:
+            logger.error(f"No configuration file exist: {config_file}")
+            raise NoConfigError(f"No configuration file exist: {config_file}")
+        return ret
+
     url = os.environ.get("SINETSTREAM_CONFIG_URL")
     if url:
         logger.info(f"SINETSTREAM_CONFIG_URL={url}")
-        import urllib.request
-        with urllib.request.urlopen(url) as res:
-            contents = res.read().decode("utf-8")
-            yml = yaml_load(contents)
-            if yml:
-                return yml
+        ret = load_config_from_url(url)
+        if ret:
+            return ret
 
     for file in config_files:
-        try:
-            with open(os.path.expanduser(file)) as fp:
-                yml = yaml_load(fp.read())
-                if yml:
-                    return yml
-        except FileNotFoundError:
-            logger.info(f"{file}: not found")
-            pass
+        ret = load_config_from_file(file)
+        if ret is not None:
+            return ret
 
     logger.error(f"No configuration file exist")
     raise NoConfigError()
 
 
+def load_config_from_url(url):
+    import urllib.request
+    try:
+        with urllib.request.urlopen(url) as res:
+            contents = res.read().decode("utf-8")
+            return yaml_load(contents)
+    except OSError as ex:
+        logger.debug('load config file from URL', stack_info=True)
+        logger.warning('Could not load from the specified URL.')
+        return None
+
+
+def load_config_from_file(file):
+    try:
+        with open(os.path.expanduser(file)) as fp:
+            logger.debug(f"load config file from {os.path.abspath(file)}")
+            yml = yaml_load(fp.read())
+            if yml:
+                return yml
+    except FileNotFoundError:
+        logger.info(f"{file}: not found")
+
+
 def convert_params(params):
-    if "consistency" in params:
-        x = params.get("consistency")
-        params["consistency"] = {
-                "AT_MOST_ONCE": AT_MOST_ONCE,
-                "AT_LEAST_ONCE": AT_LEAST_ONCE,
-                "EXACTLY_ONCE": EXACTLY_ONCE
-            }.get(x, x)
+    consistency = params.get("consistency")
+    if consistency is None:
+        return params
+    new_params = copy(params)
+    try:
+        new_params["consistency"] = (
+            consistency if isinstance(consistency, Consistency)
+            else Consistency[consistency])
+        return new_params
+    except KeyError:
+        raise InvalidArgumentError(f'invalid consistency: {consistency}')
 
 
-def load_params(service):
-    config = load_config()
+def load_params(service, config_file=None):
+    config = load_config(config_file)
     params = config.get(service)
     if params is None:
         logger.error(f"invalid service: {service}")
         raise NoServiceError()
 
-    convert_params(params)
-    validate_config(params)
-    return params
-
-
-param_list = {
-    # param_name           type                 plugin
-    "service":            ([str],               []),
-    "brokers":            ([list],              []),
-    "topic":              ([str],               []),
-    "topics":             ([str, list],         []),
-    "type":               ([str],               []),
-    "consistency":        ([int, str],          []),
-    "value_type":         ([str],               []),
-    "value_serializer":   ([type(lambda x:x)],  []),
-    "value_deserializer": ([type(lambda x:x)],  []),
-    "receive_timeout_ms": ([int],               []),
-    "tls":                ([dict],              []),
-    "crypto":             ([dict],              []),
-    "data_encryption":    ([bool],              []),
-}
-
-
-def del_sinetstream_param(d, plugin):
-    ks = param_list.keys()
-    d2 = {}
-    d2 = {k: v for k, v in d.items() if (k not in ks) or (plugin in param_list[k][1])}
-    return d2
+    return convert_params(params)
 
 
 class Message(object):
-    def __init__(self, value, topic, raw):
+    def __init__(self, value, topic, tstamp, raw):
         self._value = value
         self._topic = topic
+        self._tstamp = tstamp
         self._raw = raw
 
     def __repr__(self):
-        return f"Message(value={self._value!r}, topic={self._topic!r}, raw={self._raw!r})"
+        return (
+            f'Message(value={self._value!r}, topic={self._topic!r},' +
+            f'tstamp={self._tstamp}, raw={self._raw!r})')
 
     @property
     def value(self):
@@ -182,288 +163,37 @@ class Message(object):
         return self._topic
 
     @property
+    def timestamp(self):
+        return float(self._tstamp) / 1000000
+
+    @property
+    def timestamp_us(self):
+        return self._tstamp
+
+    @property
     def raw(self):
         return self._raw
 
 
-def make_message(reader, value, topic, raw):
-    assert type(value) == bytes
-    if reader.cipher is not None:
-        value = reader.cipher.decrypt(value)
-    assert type(value) == bytes
-    if reader.params["value_deserializer"] is not None:
-        value = reader.params["value_deserializer"](value)
-    return Message(value, topic, raw)
+'''
+crypto_params = {
+    # name             must   default available
+    ("algorithm",      True,  None,   ["AES"]),
+    ("key_length",     False, 128,    None),
+    ("mode",           True,  None,   ["CBC", "EAX"]),
+    ("padding",        False, "none", [None, "none", "pkcs7"]),
+    ("key_derivation", False, key_derivation_params,   None),
+    ("password",       True,  None,   None),
+}
 
-
-# crypto:
-#     algorithm:  XXX (MUST) == AES
-#     key_length: 128
-#     mode:       XXX (MUST)
-#     padding:    none
-#     password:   XXX (MUST)
-#     key_derivation:
-#         algorithm:  XXX (MUST)
-#         salt_bytes: 8
-#         iteration:  10000
-#         prf:        HMAC-SHA256
-
-
-class CipherNull(object):
-    def __init__(self):
-        pass
-
-    def encrypt(self, data):
-        assert type(data) is bytes
-        return b'X' + data
-
-    def decrypt(self, cdata):
-        assert type(cdata) is bytes
-        return cdata[1:]
-
-
-def get_password(crypto_params):
-    password = crypto_params["password"]
-    typ = type(password)
-    if typ is str:
-        return password
-    elif typ is dict:
-        value = password.get("value")
-        path = password.get("path")
-        if value is None and path is None:
-            logger.error("neither value: nor path is specified")
-            raise InvalidArgumentError()
-        if value is not None and path is not None:
-            logger.warning("both value: and path are specified; value is used")
-        if value is not None:
-            return value
-        return open(path, "r").read()
-    else:
-        logger.error("password: must be str or dict")
-        raise InvalidArgumentError()
-
-
-def split_bytes(x, n):
-    return x[:n], x[n:]
-
-
-def strlst(xs):
-    return ",".join(x for x in xs)
-
-
-def conv_param(s, d, kwd):
-    if s not in d:
-        logger.error(f"invalid {kwd} is specified")
-        logger.info(f"valid {kwd} are: {strlst(d)}")
-        raise InvalidArgumentError()
-    return d[s]
-
-
-def make_key(crypto_params, salt=None):
-    kd_params = crypto_params["key_derivation"]
-    salt_bytes = kd_params["salt_bytes"]
-    iteration = kd_params["iteration"]
-    prf = kd_params["prf"]
-    password = get_password(crypto_params)
-    key_length = crypto_params["key_length"]
-
-    hmac_hash_module = conv_param(prf,
-                                  {
-                                      "HMAC-SHA256": SHA256,
-                                      "HMAC-SHA384": SHA384,
-                                      "HMAC-SHA512": SHA512,
-                                  },
-                                  "crypto:key_derivation:prf")
-
-    if kd_params["algorithm"] == "pbkdf2":
-        if salt is None:
-            salt = get_random_bytes(salt_bytes)
-        else:
-            assert len(salt) == salt_bytes
-        key = PBKDF2(password,
-                     salt,
-                     dkLen=int(key_length/8),
-                     count=iteration,
-                     hmac_hash_module=hmac_hash_module)
-    else:
-        logger.error("invalid crypto:key_derivation:algorithm")
-        raise InvalidArgumentError()
-
-    logger.error(f"XXX:make_key: salt={hexlify(salt)}")
-    logger.error(f"XXX:make_key: key={hexlify(key)}")
-    assert len(key) == int(key_length/8)
-    return key, salt
-
-
-class CipherAES(object):
-    def __init__(self, crypto_params):
-        assert crypto_params["algorithm"] == "AES"
-
-        # key_length = crypto_params["key_length"]
-
-        mode = conv_param(crypto_params["mode"],
-                          {
-                              # "ECB": AES.MODE_ECB,
-                              "CBC": AES.MODE_CBC,
-                              "CFB": AES.MODE_CFB,
-                              "OFB": AES.MODE_OFB,
-                              "CTR": AES.MODE_CTR,
-                              "OPENPGP": AES.MODE_OPENPGP,
-                              "OPENPGPCFB": AES.MODE_OPENPGP,
-                              # "CCM": AES.MODE_CCM,
-                              "EAX": AES.MODE_EAX,
-                              # "SIV": AES.MODE_SIV,
-                              "GCM": AES.MODE_GCM,
-                              # "OCB": AES.MODE_OCB,
-                          },
-                          "crypto:mode")
-
-        mode_type = {
-            AES.MODE_ECB: "",
-            AES.MODE_CBC: "iv",
-            AES.MODE_CFB: "iv",
-            AES.MODE_OFB: "iv",
-            # AES.MODE_CTR: "nonce",
-            AES.MODE_CTR: "counter",
-            AES.MODE_OPENPGP: "iv",
-            AES.MODE_CCM: "nonce",
-            AES.MODE_EAX: "nonce",
-            AES.MODE_SIV: "nonce",
-            AES.MODE_GCM: "nonce",
-            AES.MODE_OCB: "nonce",
-        }[mode]
-
-        padding = conv_param(crypto_params["padding"],
-                             {
-                                 None: None,
-                                 "none": None,
-                                 "pkcs7": "pkcs7",
-                             },
-                             "crypto:padding")
-
-        self.crypto_params = crypto_params
-        self.mode = mode
-        self.mode_type = mode_type
-        self.aead = (crypto_params["mode"] in ["CCM", "EAX", "SIV", "GCM", "OCB"])
-        self.mac_len = {AES.MODE_EAX: 8, AES.MODE_GCM: 16}.get(self.mode)  # XXX Bouncycastle
-        self.padding = padding
-        self.enc_key = None
-        self.enc_salt = None
-        self.counter = None     # for CTR
-        self.dec_keys = {}
-
-    def setup_enc(self):
-        key, salt = make_key(self.crypto_params)
-        self.enc_key = key
-        self.enc_salt = salt
-
-    def encrypt(self, data):
-        assert type(data) is bytes
-
-        if self.enc_key is None:
-            self.setup_enc()
-
-        if self.padding:
-            data = pad(data, AES.block_size, style=self.padding)
-
-        if self.mode_type == "counter":
-            self.counter = get_random_bytes(AES.block_size)     # XXX
-            enc_cipher = AES.new(self.enc_key, self.mode, nonce=b'', initial_value=self.counter)
-        else:
-            if self.aead:
-                enc_cipher = AES.new(self.enc_key, self.mode, mac_len=self.mac_len)
-            else:
-                enc_cipher = AES.new(self.enc_key, self.mode)
-
-        if self.mode_type == "nonce":
-            if self.aead:
-                enc_cipher.update(self.enc_salt)
-                enc_cipher.update(enc_cipher.nonce)
-                cdata, tag = enc_cipher.encrypt_and_digest(data)
-                assert len(tag) == self.mac_len
-            else:
-                cdata = enc_cipher.encrypt(data)
-                tag = b''
-            ivnonce = enc_cipher.nonce
-        elif self.mode_type == "iv":
-            cdata = enc_cipher.encrypt(data)
-            if self.mode == AES.MODE_OPENPGP:
-                logger.error(f"XXX:enc: cdatalen={len(cdata)}")
-                ivnonce, cdata = split_bytes(cdata, AES.block_size + 2)
-            else:
-                ivnonce = enc_cipher.iv
-            tag = b''
-        elif self.mode_type == "counter":
-            cdata = enc_cipher.encrypt(data)
-            ivnonce = self.counter
-            tag = b''
-        else:
-            assert False
-        logger.error(f"XXX:enc: salt={hexlify(self.enc_salt)}")
-        logger.error(f"XXX:enc: ivnonce.len={len(ivnonce)}")
-        logger.error(f"XXX:enc: ivnonce={hexlify(ivnonce)}")
-        logger.error(f"XXX:enc: cdata={hexlify(cdata)}")
-        logger.error(f"XXX:enc: tag={hexlify(tag)}")
-        return self.enc_salt + ivnonce + cdata + tag
-
-    def decrypt(self, cmsg):
-        assert type(cmsg) is bytes
-        salt_bytes = self.crypto_params["key_derivation"]["salt_bytes"]
-        dummy_key = b"0123456789abcdef"         # XXX Crypto/Cipher/AES.py: key_size = (16, 24, 32)
-
-        salt, rem = split_bytes(cmsg, salt_bytes)
-        logger.error(f"XXX:dec: salt={hexlify(salt)}")
-        if self.mode_type == "nonce":
-            nonce_bytes = len(AES.new(dummy_key, self.mode).nonce)
-            logger.error(f"XXX:dec: nonce_bytes={nonce_bytes}")
-            nonce, rem = split_bytes(rem, nonce_bytes)
-            logger.error(f"XXX:dec: nonce={hexlify(nonce)}")
-        elif self.mode_type == "iv":
-            iv_bytes = len(AES.new(dummy_key, self.mode).iv)
-            if self.mode == AES.MODE_OPENPGP:
-                iv_bytes += 2
-            logger.error(f"XXX:dec: iv_bytes={iv_bytes}")
-            iv, rem = split_bytes(rem, iv_bytes)
-            logger.error(f"XXX:dec: iv={hexlify(iv)}")
-        elif self.mode_type == "counter":
-            counter, rem = split_bytes(rem, AES.block_size)
-            logger.error(f"XXX:dec: counter={hexlify(counter)}")
-        else:
-            assert False
-        if self.aead:
-            # tag_size = AES.block_size
-            tag_size = {AES.MODE_EAX: 8, AES.MODE_GCM: 16}[self.mode]    # XXX Java Bouncycastle?
-            cdata, tag = split_bytes(rem, -tag_size)
-        else:
-            cdata = rem
-            tag = None
-        logger.error(f"XXX:dec: cdata={hexlify(cdata)}")
-        logger.error(f"XXX:dec: tag={hexlify(tag)}")
-
-        key = self.dec_keys.get(salt)
-        if key is None:
-            key, _salt = make_key(self.crypto_params, salt=salt)
-            self.dec_keys[salt] = key
-
-        if self.mode_type == "nonce":
-            if self.aead:
-                cipher = AES.new(key, self.mode, nonce=nonce, mac_len=self.mac_len)
-            else:
-                cipher = AES.new(key, self.mode, nonce=nonce)
-        elif self.mode_type == "iv":
-            cipher = AES.new(key, self.mode, iv=iv)
-        elif self.mode_type == "counter":
-            cipher = AES.new(key, self.mode, nonce=b'', initial_value=counter)
-        else:
-            assert False
-
-        data = cipher.decrypt(cdata)
-
-        if self.padding:
-            logger.error(f"XXX:dec:padding={self.padding}")
-            data = unpad(data, AES.block_size, style=self.padding)
-
-        return data
+key_derivation_params = {
+    # name             must   default available
+    ("algorithm",      True,  None,          ["pbkdf2"]),
+    ("salt_bytes",     False, 8,             None),
+    ("iteration",      False, 10000,         None),
+    ("prf",            False, "HMAC-SHA256", ["HMAC-SHA256", "HMAC-SHA384", "HMAC-SHA512"]),
+}
+'''
 
 
 def make_cipher(crypto_params):
@@ -474,86 +204,14 @@ def make_cipher(crypto_params):
         assert False
 
 
-# value_type
-TEXT = "text"
-BYTE_ARRAY = "byte_array"
-
-
-# consistency
-AT_MOST_ONCE = 0
-AT_LEAST_ONCE = 1
-EXACTLY_ONCE = 2
-
-
-def check_consistency(x):
-    if (
-            x == AT_MOST_ONCE or
-            x == AT_LEAST_ONCE or
-            x == EXACTLY_ONCE
-    ):
-        return True
-    raise InvalidArgumentError()
-
-
-def setdict(d, k, v):
-    if v:
-        d[k] = v
-
-
-def first(*args):
-    for x in args:
-        if x:
-            return x
-    return None
-
-
-DEFAULT_CLIENT_ID = None
-
-
 def make_client_id():
     import uuid
     return "sinetstream-" + str(uuid.uuid4())
 
 
-class Registry(object):
-
-    def __init__(self, group):
-        self.group = group
-        self._plugins = {}
-        self.register_entry_points()
-
-    def register(self, name, plugin):
-        self._plugins[name] = plugin
-
-    def register_entry_points(self):
-        for ep in iter_entry_points(self.group):
-            logger.debug(f"entry_point.name={ep.name}")
-            self._plugins[ep.name] = ep
-
-    def get(self, name):
-        if name in self._plugins:
-            return self._plugins[name].load()
-        else:
-            logger.error(
-                f"the corresponding plugin was not found: {name}")
-            raise UnsupportedServiceTypeError()
-
-
-# value_type -> (value_serializer, value_deserializer)
-value_serdes = {
-    None: (None, None),
-    "raw": (None, None),
-    "bytearray": (None, None),
-    "byte_array": (None, None),
-    "BYTEARRAY": (None, None),
-    "BYTE_ARRAY": (None, None),
-    "text": (lambda x: x.encode(), lambda x: x.decode())
-    # "image": (xxx, yyy)
-}
-
-
 def validate_config(params):
-    pass        # XXX:FIXME
+    if 'brokers' not in params or not params['brokers']:
+        raise InvalidArgumentError("You must specify several brokers.")
 
 
 def deepupdate(d1, d2):
@@ -579,64 +237,25 @@ def normalize_params(params):
             crypto["password"] = {"value": password}
 
 
-def merge_parameter(service, kwargs, default_params, role):
-    svc_params = load_params(service)
-
+def merge_parameter(service, kwargs, default_values, config_file=None):
+    svc_params = load_params(service, config_file)
     # Merge parameters
     # Priority:
     #  ctor's argument (highest)
     #  config file
     #  sinetstream's default parameter
     #  plugin's default parameter (lowest)
-    params = default_params.copy()
-    validate_config(params)
+    params = default_values.copy()
     deepupdate(params, svc_params)
-    deepupdate(params, kwargs)
-    validate_config(params)
-
-    # derive: value_type -> value_serdes/value_deserializer
-    vtype = params.get("value_type")
-    vserdes = value_serdes.get(vtype)
-    if vserdes is None:
-        raise InvalidArgumentError()
-    vser, vdes = vserdes
-    if role == "reader":
-        params.setdefault("value_deserializer", vdes)
-    elif role == "writer":
-        params.setdefault("value_serializer", vser)
-    else:
-        assert False
-
+    deepupdate(params, convert_params(kwargs))
     normalize_params(params)
-
     return params
-
-
-'''
-crypto_params = {
-    # name             must   default available
-    ("algorithm",      True,  None,   ["AES"]),
-    ("key_length",     False, 128,    None),
-    ("mode",           True,  None,   ["CBC", "EAX"]),
-    ("padding",        False, "none", [None, "none", "pkcs7"]),
-    ("key_derivation", False, key_derivation_params,   None),
-    ("password",       True,  None,   None),
-}
-
-key_derivation_params = {
-    # name             must   default available
-    ("algorithm",      True,  None,          ["pbkdf2"]),
-    ("salt_bytes",     False, 8,             None),
-    ("iteration",      False, 10000,         None),
-    ("prf",            False, "HMAC-SHA256", ["HMAC-SHA256", "HMAC-SHA384", "HMAC-SHA512"]),
-}
-'''
 
 
 default_params = {
     "consistency": AT_MOST_ONCE,
     "client_id": DEFAULT_CLIENT_ID,
-    "value_type": None,
+    "value_type": BYTE_ARRAY,
     "crypto": {
         "key_length": 128,
         "padding": None,
@@ -650,174 +269,200 @@ default_params = {
 }
 
 
-class MessageReader(object):
+class MessageIO(object):
 
-    registry = Registry("sinetstream.reader")
+    def __init__(self, service, params, registry):
+        validate_config(params)
+        self._service = service
+        self.params = params
+        self._plugin = self._find_plugin(registry, params["type"])
+        self.cipher = make_cipher(params["crypto"]) if params["data_encryption"] else None
+        self._opened = False
+        self._lock = RLock()
 
+    def _find_plugin(self, registry, service_type):
+        plugin_class = registry.get(service_type)
+        if plugin_class is None:
+            raise UnsupportedServiceTypeError(f"{service_type} not found")
+        return plugin_class(self.params)
+
+    def __enter__(self):
+        logger.debug("MessageIO:enter")
+        with self._lock:
+            if self._opened:
+                logger.error(f"already connected")
+                raise AlreadyConnectedError()
+            self._plugin.open()
+            self._opened = True
+            return self
+
+    open = __enter__
+
+    def __exit__(self, ex_type, ex_value, trace):
+        logger.debug("MessageIO:exit")
+        self.close()
+
+    def close(self):
+        logger.debug("MessageIO:close")
+        with self._lock:
+            if not self._opened:
+                return
+            self._plugin.close()
+            self._plugin = None
+            self._opened = False
+
+    @property
+    def service(self):
+        return self._service
+
+    @property
+    def client_id(self):
+        return self.params["client_id"]
+
+    @property
+    def consistency(self):
+        return self.params["consistency"]
+
+    @property
+    def value_type(self):
+        return self.params["value_type"]
+
+
+READER_USAGE = '''MessageReader(
+    service=SERVICE,                 # Service name defined in the configuration file. (REQUIRED)
+    topics=TOPICS,                   # The topic to receive.
+    consistency=AT_MOST_ONCE,        # consistency: AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE
+    client_id=DEFAULT_CLIENT_ID,     # If not specified, the value is automatically generated.
+    value_type=byte_array,           # The type of message.
+    value_deserializer=None          # If not specified, use default deserializer according to valueType.
+)'''
+
+
+class MessageReader(MessageIO):
+    registry = Registry("sinetstream.reader", PluginMessageReader)
+
+    @staticmethod
     def usage():
-        return ('MessageReader(\n'
-                '    service=SERVICE,                 '
-                '# Service name defined in the configuration file. (REQUIRED)\n'
-                '    topics=TOPICS,                   '
-                '# The topic to receive.\n'
-                '    consistency=AT_MOST_ONCE,        '
-                '# consistency: AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE\n'
-                '    client_id=DEFAULT_CLIENT_ID,     '
-                '# If not specified, the value is automatically generated.\n'
-                '    value_type=None,                 '
-                '# The type of message.\n'
-                '    value_deserializer=None          '
-                '# If not specified, use default deserializer according to valueType.\n'
-                ')')
+        return READER_USAGE
 
     default_params = {
         **default_params,
         "receive_timeout_ms": float("inf"),
     }
 
-    def __init__(self, service, topics=None, **kwargs):
+    def __init__(self, service, topics=None, config_file=None, **kwargs):
         logger.debug("MessageReader:init")
-
-        validate_config(kwargs)
-        params = merge_parameter(service, kwargs, MessageReader.default_params, "reader")
-
-        check_consistency(params["consistency"])  # XXX
+        params = merge_parameter(service, kwargs, MessageReader.default_params, config_file=config_file)
         params["topics"] = _setup_topics(params, topics)
-
-        self.kwargs = kwargs
-        self.params = params
-
-        self._reader = self._find_reader(params["type"])
-
-        if params["data_encryption"]:
-            self.cipher = make_cipher(params["crypto"])
-        else:
-            self.cipher = None
-
-    def _find_reader(self, service_type):
-        reader_class = MessageReader.registry.get(service_type)
-        return reader_class(self)
-
-    def __enter__(self):
-        logger.debug("MessageReader:enter")
-        self._reader.open()
-        return self
-
-    open = __enter__
-
-    def __exit__(self, ex_type, ex_value, trace):
-        logger.debug("MessageReader:exit")
-        self.close()
-
-    def close(self):
-        logger.debug("MessageReader:close")
-        if self._reader is None:
-            raise SinetError("It has already been closed.")
-        self._reader.close()
-        self._reader = None
+        super().__init__(service, params, MessageReader.registry)
+        self.unmarshaller = Unmarshaller()
+        self.value_deserializer = self._setup_deserializer()
 
     def __iter__(self):
         logger.debug("MessageReader:iter")
-        return self._reader.__iter__()
+        self._iter = self._plugin.__iter__()
+        return self
 
-    @property
-    def client_id(self):
-        return self.params["client_id"]
+    def __next__(self):
+        message, topic, raw = next(self._iter)
+        return self._make_message(message, topic, raw)
+
+    def _make_message(self, value, topic, raw):
+        assert type(value) == bytes
+        if self.cipher is not None:
+            value = self.cipher.decrypt(value)
+        assert type(value) == bytes
+        tstamp, value = self.unmarshaller.unmarshal(value)
+        assert type(tstamp) == int
+        assert type(value) == bytes
+        if self.value_deserializer is not None:
+            value = self.value_deserializer(value)
+        return Message(value, topic, tstamp, raw)
+
+    def seek_to_beginning(self):
+        self._plugin.seek_to_beginning()
+
+    def seek_to_end(self):
+        self._plugin.seek_to_end()
+
+    def _setup_deserializer(self):
+        if 'value_deserializer' in self.params:
+            return self.params['value_deserializer']
+        value_type = self.params['value_type']
+        value_type_class = value_type_registry.get(value_type)
+        if value_type_class is None:
+            raise InvalidArgumentError(f'invalid value_type: {value_type}')
+        return value_type_class().deserializer
 
     @property
     def topics(self):
-        return self.params["topics"]
+        return copy(self.params["topics"])
 
-    def seek_to_beginning(self):
-        self._reader.seek_to_beginning()
-
-    def seek_to_end(self):
-        self._reader.seek_to_end()
+    @property
+    def receive_timeout_ms(self):
+        return self.params["receive_timeout_ms"]
 
 
-class MessageWriter(object):
+WRITER_USAGE = '''MessageWriter(
+    service=SERVICE,                 # Service name defined in the configuration file. (REQUIRED)
+    topic=TOPIC,                     # The topic to send.
+    consistency=AT_MOST_ONCE,        # consistency: AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE
+    client_id=DEFAULT_CLIENT_ID,     # If not specified, the value is automatically generated.
+    value_type=byte_array,           # The type of message.
+    value_serializer=None            # If not specified, use default serializer according to valueType.
+)'''
 
-    registry = Registry("sinetstream.writer")
 
+class MessageWriter(MessageIO):
+
+    registry = Registry("sinetstream.writer", PluginMessageWriter)
+
+    @staticmethod
     def usage():
-        return ('MessageWriter(\n'
-                '    service=SERVICE,                 '
-                '# Service name defined in the configuration file. (REQUIRED)\n'
-                '    topic=TOPIC,                     '
-                '# The topic to send.\n'
-                '    consistency=AT_MOST_ONCE,        '
-                '# consistency: AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE\n'
-                '    client_id=DEFAULT_CLIENT_ID,     '
-                '# If not specified, the value is automatically generated.\n'
-                '    value_type=None,                 '
-                '# The type of message.\n'
-                '    value_serializer=None            '
-                '# If not specified, use default serializer according to valueType.\n'
-                ')')
+        return WRITER_USAGE
 
     default_params = {
         **default_params
     }
 
-    def __init__(self, service, topic=None, **kwargs):
+    def __init__(self, service, topic=None, config_file=None, **kwargs):
         logger.debug("MessageWriter:init")
-
-        validate_config(kwargs)
-        params = merge_parameter(service, kwargs, MessageWriter.default_params, "writer")
-
-        check_consistency(params["consistency"])        # XXX
+        params = merge_parameter(service, kwargs, MessageWriter.default_params, config_file=config_file)
         params["topic"] = _setup_topic(params, topic)
-
-        self.kwargs = kwargs
-        self.params = params
-
-        self._writer = self._find_writer(params["type"])
-
-        if params["data_encryption"]:
-            self.cipher = make_cipher(params["crypto"])
-        else:
-            self.cipher = None
-
-    def _find_writer(self, service_type):
-        writer_class = MessageWriter.registry.get(service_type)
-        return writer_class(self)
-
-    def __enter__(self):
-        logger.debug("MessageWriter:enter")
-        self._writer.open()
-        return self
-
-    open = __enter__
-
-    def __exit__(self, ex_type, ex_value, trace):
-        logger.debug("MessageWriter:exit")
-        self.close()
-
-    def close(self):
-        logger.debug("MessageWriter:close")
-        if self._writer is None:
-            raise SinetError("It has already been closed.")
-        self._writer.close()
-        self._writer = None
-
+        super().__init__(service, params, MessageWriter.registry)
+        self.marshaller = Marshaller()
+        self.value_serializer = self._setup_serializer()
 
     def publish(self, msg):
+        tstamp = int(time.time() * 1000000)
         logger.debug(f"MessageWriter:publish:type(msg)={type(msg)}")
-        if self.params["value_serializer"] is not None:
-            msg = self.params["value_serializer"](msg)
-        assert type(msg) == bytes
+        if self.value_serializer is not None:
+            msg = self.value_serializer(msg)
+            if type(msg) != bytes:
+                logger.error(f"value_serializer must return byte: type(msg)={type(msg)}")
+                raise InvalidMessageError("value_serializer doesn't return bytes")
+        else:
+            if type(msg) != bytes:
+                logger.error(f"value_serializer must be specified: type(msg)={type(msg)}")
+                raise InvalidMessageError("non-bytes message is passed to publish")
+        msg = self.marshaller.marshal(msg, tstamp)
         if self.cipher:
             msg = self.cipher.encrypt(msg)
         assert type(msg) == bytes
-        return self._writer.publish(msg)
-
-    @property
-    def client_id(self):
-        return self.params["client_id"]
+        return self._plugin.publish(msg)
 
     @property
     def topic(self):
         return self.params["topic"]
+
+    def _setup_serializer(self):
+        if 'value_serializer' in self.params:
+            return self.params['value_serializer']
+        value_type = self.params['value_type']
+        value_type_class = value_type_registry.get(value_type)
+        if value_type_class is None:
+            raise InvalidArgumentError(f'invalid value_type: {value_type}')
+        return value_type_class().serializer
 
 
 def _setup_topic(params, topic):

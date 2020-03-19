@@ -21,30 +21,28 @@
 
 package jp.ad.sinet.stream.plugins.mqtt;
 
-import jp.ad.sinet.stream.api.Message;
-import lombok.Data;
+import jp.ad.sinet.stream.spi.PluginMessageWrapper;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
-import java.util.function.Function;
-
-@Data
-class SinetMqttMessage<T> implements Message<T> {
+@EqualsAndHashCode
+@ToString
+class SinetMqttMessage implements PluginMessageWrapper {
     @Getter
     private final String topic;
     @Getter
     private final MqttMessage raw;
-    @Getter
-    private final T value;
 
     @SuppressWarnings("WeakerAccess")
-    SinetMqttMessage(String topic, MqttMessage message, T value) {
+    SinetMqttMessage(String topic, MqttMessage message) {
         this.topic = topic;
         this.raw = message;
-        this.value = value;
     }
 
-    SinetMqttMessage(String topic, MqttMessage message, Function<byte[], T> deserializer) {
-        this(topic, message, deserializer.apply(message.getPayload()));
+    @Override
+    public byte[] getValue() {
+        return raw.getPayload();
     }
 }

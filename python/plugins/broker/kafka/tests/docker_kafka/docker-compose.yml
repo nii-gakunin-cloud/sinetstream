@@ -1,0 +1,36 @@
+version: '2.4'
+services:
+  broker:
+    build: container/broker/
+    hostname: broker
+    networks:
+      other-name-kafka:
+        aliases:
+        - bad-broker
+  test:
+    build: container/test/
+    volumes:
+    - ../..:/opt/ss_test
+    - ../../../../../dist:/opt/ss_test/wheelhouse
+    environment:
+      KAFKA_SSL_BROKER: broker:9093
+      KAFKA_USER_PASSWD_BROKER: broker:9094
+      CERT_URL: "http://broker:8080/"
+      CACERT_PATH: /opt/certs/cacert.pem
+      CLIENT_CERT_PATH: /opt/certs/client0.crt
+      CLIENT_CERT_KEY_PATH: /opt/certs/client0.key
+      CLIENT_BAD_CERT_PATH: /opt/certs/bad-client.crt
+      CLIENT_BAD_CERT_KEY_PATH: /opt/certs/bad-client.key
+      KAFKA_USER: user01
+      KAFKA_PASSWD: user01
+      KAFKA_READ_USER: user02
+      KAFKA_READ_PASSWD: user02
+      KAFKA_WRITE_USER: user03
+      KAFKA_WRITE_PASSWD: user03
+      KAFKA_SSL_BROKER_BAD_HOSTNAME: bad-broker:9093
+#    command: bash
+#    tty: true
+    networks:
+    - other-name-kafka
+networks:
+  other-name-kafka:

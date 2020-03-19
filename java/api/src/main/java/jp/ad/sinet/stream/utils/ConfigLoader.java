@@ -29,7 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -38,21 +38,32 @@ import java.util.function.Supplier;
 
 class ConfigLoader {
 
+    private final Path config;
+
+    ConfigLoader(Path config) {
+        this.config = config;
+    }
+
     private Map<String, Map<String, Object>> loadConfigFromEnvUrl() {
         return Optional.ofNullable(System.getenv("SINETSTREAM_CONFIG_URL"))
                 .map(this::loadConfigFileFromURL).orElse(null);
     }
 
     private Map<String, Map<String, Object>> loadConfigFromHome() {
-        return loadConfigFile(Paths.get(System.getProperty("user.home"), ".config", "sinetstream", "config.yml"));
+        return loadConfigFileFromPath(Paths.get(System.getProperty("user.home"), ".config", "sinetstream", "config.yml"));
     }
 
     private Map<String, Map<String, Object>> loadConfigFromCwd() {
-        return loadConfigFile(Paths.get(".sinetstream_config.yml"));
+        return loadConfigFileFromPath(Paths.get(".sinetstream_config.yml"));
+    }
+
+    private Map<String, Map<String, Object>> loadConfigFromPath() {
+        return Objects.nonNull(config) ? loadConfigFileFromPath(config) : null;
     }
 
     Map<String, Map<String, Object>> loadConfigFile() {
         List<Supplier<Map<String, Map<String, Object>>>> configLoaders = Arrays.asList(
+                this::loadConfigFromPath,
                 this::loadConfigFromEnvUrl,
                 this::loadConfigFromHome,
                 this::loadConfigFromCwd
@@ -78,11 +89,11 @@ class ConfigLoader {
         }
     }
 
-    private Map<String, Map<String, Object>> loadConfigFile(Path path) {
+    private Map<String, Map<String, Object>> loadConfigFileFromPath(Path path) {
         if (!path.toFile().exists()) {
             return null;
         }
-        try (BufferedReader reader = Files.newBufferedReader(path, Charset.forName("UTF-8"))) {
+        try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
             Yaml yaml = new Yaml();
             return yaml.load(reader);
         } catch (IOException e) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 National Institute of Informatics
+ * Copyright (C) 2020 National Institute of Informatics
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -21,9 +21,7 @@
 
 package jp.ad.sinet.stream.plugins.kafka;
 
-import jp.ad.sinet.stream.api.InvalidConfigurationException;
-import jp.ad.sinet.stream.api.Consistency;
-import jp.ad.sinet.stream.api.ValueType;
+import jp.ad.sinet.stream.api.*;
 import jp.ad.sinet.stream.utils.KeyStoreUtil;
 import jp.ad.sinet.stream.utils.MessageUtils;
 import lombok.Getter;
@@ -31,6 +29,7 @@ import lombok.extern.java.Log;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.config.ConfigException;
 import org.apache.kafka.common.config.SslConfigs;
 
 import java.util.*;
@@ -100,7 +99,8 @@ public class KafkaBaseIO {
     @Getter
     private String transactionId;
 
-    KafkaBaseIO(String service, Consistency consistency, String clientId, Map<String, ?> config, ValueType valueType, boolean dataEncryption) {
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    KafkaBaseIO(String service, Consistency consistency, String clientId, Map config, ValueType valueType, boolean dataEncryption) {
         this.service = service;
         this.consistency = consistency;
         this.config = Collections.unmodifiableMap(config);
@@ -145,6 +145,7 @@ public class KafkaBaseIO {
         return servers.stream().map(appendDefaultPort).collect(Collectors.joining(","));
     }
 
+    @SuppressWarnings("rawtypes")
     void setupSSLProperties(Map config, Properties props) {
         Map<String, String> tls = getInitSSLProperties(config);
 
@@ -172,6 +173,7 @@ public class KafkaBaseIO {
         SSL_PARAMETER_NAMES_MAP.forEach((k, v) -> updateProperty(props, k, v));
     }
 
+    @SuppressWarnings("rawtypes")
     private boolean isTls(Map config, Map<String, String> tls) {
         return tls.size() > 0 ||
                 Optional.ofNullable(config.get("tls")).map(x -> {
@@ -185,7 +187,7 @@ public class KafkaBaseIO {
                 }).orElse(false);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private Map<String, String> getInitSSLProperties(Map config) {
         Map<String, String> tls = new HashMap<>();
         Optional.ofNullable(config.get("tls"))
@@ -212,33 +214,49 @@ public class KafkaBaseIO {
         return ret;
     }
 
+    @SuppressWarnings("rawtypes")
     void setupSASLProperties(Map config, Properties props) {
+        Object security_protocol = config.get("security_protocol");
+        if (Objects.isNull(security_protocol)) {
+            return;
+        }
+        props.put("security.protocol", security_protocol);
+        if (!((String) security_protocol).startsWith("SASL_")) {
+            return;
+        }
+
+        Object sasl_mechanism = config.get("sasl_mechanism");
+        if (Objects.isNull(sasl_mechanism)) {
+            throw new InvalidConfigurationException("sasl_mechanism must be set.");
+        }
+        props.put("sasl.mechanism", sasl_mechanism);
+        String module;
+        switch ((String) sasl_mechanism) {
+            case "SCRAM-SHA-256":
+            case "SCRAM-SHA-512":
+                module = "scram.ScramLoginModule";
+                break;
+            case "PLAIN":
+                module = "plain.PlainLoginModule";
+                break;
+            default:
+                throw new InvalidConfigurationException("unsupported sasl_mechanism specified");
+        }
+
         Object sasl_plain_username = config.get("sasl_plain_username");
         Object sasl_plain_password = config.get("sasl_plain_password");
-        Object security_protocol = config.get("security_protocol");
-        Object sasl_mechanism = config.get("sasl_mechanism");
-        if (sasl_plain_username != null || sasl_plain_password != null) {
-            String module;
-            if ("SCRAM-SHA-256".equals(sasl_mechanism) || "SCRAM-SHA-512".equals(sasl_mechanism))
-                module = "scram.ScramLoginModule";
-            else if ("PLAIN".equals(sasl_mechanism))
-                module = "plain.PlainLoginModule";
-            else
-                throw new InvalidConfigurationException("unsupported sasl_mechanism specified");
-            String v = "org.apache.kafka.common.security." + module + " required";
-            if (sasl_plain_username != null)
-                v += " username=" + "\"" + (String)sasl_plain_username + "\"";
-            if (sasl_plain_password != null)
-                v += " password=" + "\"" + (String)sasl_plain_password + "\"";
-            v += ";";
-            props.put("sasl.jaas.config", v);
+        if (Objects.isNull(sasl_plain_username)) {
+            throw new InvalidConfigurationException("sasl_plain_username must be set.");
         }
-        if (security_protocol != null) {
-            props.put("security.protocol", (String)security_protocol);
+        if (Objects.isNull(sasl_plain_password)) {
+            throw new InvalidConfigurationException("sasl_plain_password must be set.");
         }
-        if (sasl_mechanism != null) {
-            props.put("sasl.mechanism", (String)sasl_mechanism);
-        }
+
+        String builder = "org.apache.kafka.common.security." + module + " required" +
+                " username=" + '"' + sasl_plain_username + '"' +
+                " password=" + '"' + sasl_plain_password + '"' +
+                ';';
+        props.put("sasl.jaas.config", builder);
     }
 
     private static <T, R> Function<T, R> loggingException(Function<? super T, ? extends R> mapper) {
@@ -264,5 +282,27 @@ public class KafkaBaseIO {
     private String generateTransactionId() {
         return service + "-transaction-" + KAFKA_TRANSACTION_ID_SEQUENCE.getAndIncrement() + '-'
                 + RandomStringUtils.randomAlphabetic(8);
+    }
+
+    protected SinetStreamException wrapSinetStreamException(Throwable e) {
+        if (e instanceof org.apache.kafka.common.errors.AuthorizationException) {
+            return new AuthorizationException(e);
+        } else if (e instanceof org.apache.kafka.common.errors.AuthenticationException) {
+            return new AuthenticationException(e);
+        } else {
+            Throwable cause = e.getCause();
+            if (Objects.nonNull(cause)) {
+                if (cause instanceof org.apache.kafka.common.errors.AuthorizationException) {
+                    return new AuthorizationException(cause);
+                } else if (cause instanceof org.apache.kafka.common.errors.AuthenticationException) {
+                    return new AuthenticationException(cause);
+                } else if (cause instanceof ConfigException) {
+                    return new InvalidConfigurationException(e);
+                } else if (cause instanceof IllegalArgumentException) {
+                    return new InvalidConfigurationException(e);
+                }
+            }
+        }
+        return new SinetStreamIOException(e);
     }
 }

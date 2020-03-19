@@ -1,25 +1,26 @@
+service-0:
+  type: kafka
+  brokers:
+    - vcc3058.vcp-handson.org:9092
 service-1:
   type: kafka
   brokers: &kafka_brokers
-    - kafka0:9092
-    - kafka1:9092
-    - kafka2:9092
-#    - kafka0.vcp-handson.org:1717
-#    - kafka1.vcp-handson.org:1718
-#    - kafka2.vcp-handson.org:1719
+    - vcc3058.vcp-handson.org:9092
+  value_type: text
 service-using-default-port:
   type: kafka
   brokers:
-    - kafka0.dp1.nii.ac.jp
+    - vcc3058.vcp-handson.org
 service-broker-by-string:
   type: kafka
-  brokers: kafka0.dp1.nii.ac.jp:9092
+  brokers: vcc3058.vcp-handson.org:9092
 service-broker-by-string-using-default-port:
   type: kafka
-  brokers: kafka2.dp1.nii.ac.jp
+  brokers: vcc3058.vcp-handson.org
 service-with-encrypt-cbc:
   type: kafka
   brokers: *kafka_brokers
+  value_type: text
   crypto:
     algorithm: AES
     key_length: 128
@@ -33,6 +34,7 @@ service-with-encrypt-cbc:
 service-with-encrypt-eax:
   type: kafka
   brokers: *kafka_brokers
+  value_type: text
   crypto:
     algorithm: AES
     key_length: 256
@@ -43,15 +45,13 @@ service-with-encrypt-eax:
 service-connect-by-tls:
   type: kafka
   brokers: &kafka_tls_brokers
-    - kafka0.dp1.nii.ac.jp:9093
-    - kafka1.dp1.nii.ac.jp:9093
-    - kafka2.dp1.nii.ac.jp:9093
+    - vcc3058.vcp-handson.org:9093
   tls:
     keyStore: ${client0KeyStore}
     keyStorePassword: client0-pass
     keyStoreType: PKCS12
     trustStore: ${niicaKeyStore}
-    trustStorePassword: kafka-pass
+    trustStorePassword: ca-pass
     trustStoreType: PKCS12
 service-connect-by-tls-ca_certs:
   type: kafka
@@ -71,15 +71,26 @@ service-connect-by-tls-ca_certs_cert_key:
 service-connect-by-tls-no-hostname-check:
   type: kafka
   brokers:
-    - kafka0:9093
+    - 54.250.199.86:9093
   tls:
     keyStore: ${client0KeyStore}
     keyStorePassword: client0-pass
     keyStoreType: PKCS12
     trustStore: ${niicaKeyStore}
-    trustStorePassword: kafka-pass
+    trustStorePassword: ca-pass
     trustStoreType: PKCS12
     check_hostname: false
+service-connect-by-tls_kafka-with-hostname-check:
+  type: kafka
+  brokers: *kafka_tls_brokers
+  tls:
+    keyStore: ${client0KeyStore}
+    keyStorePassword: client0-pass
+    keyStoreType: PKCS12
+    trustStore: ${niicaKeyStore}
+    trustStorePassword: ca-pass
+    trustStoreType: PKCS12
+    check_hostname: true
 service-connect-by-tls-encrypted-key:
   type: kafka
   brokers: *kafka_tls_brokers
@@ -108,7 +119,7 @@ service-connect-by-tls_kafka-and-tls:
 service-connect-by-tls_kafka-no-hostname-check:
   type: kafka
   brokers:
-    - kafka0:9093
+    - 54.250.199.86:9093
   tls_insecure_set: true
   security_protocol: SSL
   ssl_cafile: ${ca.pem}
@@ -119,7 +130,74 @@ service-connect-by-no-tls:
   type: kafka
   brokers: *kafka_brokers
   tls: false
+  value_type: text
 service-connect-by-no-tls2:
   type: kafka
   brokers: *kafka_brokers
   tls: {}
+  value_type: text
+service-ssl-256:
+  type: kafka
+  brokers: vcc3058.vcp-handson.org:9092
+  security_protocol: SASL_PLAINTEXT
+  sasl_mechanism: SCRAM-SHA-256
+  sasl_plain_username: user01
+  sasl_plain_password: user01
+service-ssl-512:
+  type: kafka
+  brokers: vcc3058.vcp-handson.org:9092
+  security_protocol: SASL_PLAINTEXT
+  sasl_mechanism: SCRAM-SHA-512
+  sasl_plain_username: user01
+  sasl_plain_password: user01
+service-ssl-512-no-username:
+  type: kafka
+  brokers: vcc3058.vcp-handson.org:9092
+  security_protocol: SASL_PLAINTEXT
+  sasl_mechanism: SCRAM-SHA-512
+  sasl_plain_username: 
+  sasl_plain_password: user01
+service-ssl-512-no-password:
+  type: kafka
+  brokers: vcc3058.vcp-handson.org:9092
+  security_protocol: SASL_PLAINTEXT
+  sasl_mechanism: SCRAM-SHA-512
+  sasl_plain_username: user01
+  sasl_plain_password:
+service-ssl-exception:
+  type: kafka
+  brokers: vcc3058.vcp-handson.org:9092
+  security_protocol: SASL_PLAINTEXT
+  sasl_mechanism: ERROR
+  sasl_plain_username: user01
+  sasl_plain_password: user01
+auth-password:
+  type: kafka
+  brokers: vcc3058.vcp-handson.org:9094
+  security_protocol: SASL_PLAINTEXT
+  sasl_mechanism: PLAIN
+  sasl_plain_username: user01
+  sasl_plain_password: user01
+auth-bad-password:
+  type: kafka
+  brokers: vcc3058.vcp-handson.org:9094
+  security_protocol: SASL_PLAINTEXT
+  sasl_mechanism: PLAIN
+  sasl_plain_username: user01
+  sasl_plain_password: user01x
+auth-read-user:
+  type: kafka
+  brokers: vcc3058.vcp-handson.org:9094
+  security_protocol: SASL_PLAINTEXT
+  sasl_mechanism: PLAIN
+  topic: mss-test-003
+  sasl_plain_username: user02
+  sasl_plain_password: user02
+auth-write-user:
+  type: kafka
+  brokers: vcc3058.vcp-handson.org:9094
+  security_protocol: SASL_PLAINTEXT
+  sasl_mechanism: PLAIN
+  topic: mss-test-003
+  sasl_plain_username: user03
+  sasl_plain_password: user03

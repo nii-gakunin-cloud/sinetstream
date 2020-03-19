@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 National Institute of Informatics
+ * Copyright (C) 2020 National Institute of Informatics
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -21,15 +21,12 @@
 
 package jp.ad.sinet.stream.plugins.dummy;
 
-import jp.ad.sinet.stream.api.*;
-import jp.ad.sinet.stream.crypto.CryptoDeserializerWrapper;
-import jp.ad.sinet.stream.crypto.CryptoSerializerWrapper;
-import jp.ad.sinet.stream.spi.MessageReaderProvider;
-import jp.ad.sinet.stream.spi.MessageWriterProvider;
-import jp.ad.sinet.stream.spi.ReaderParameters;
-import jp.ad.sinet.stream.spi.WriterParameters;
+import jp.ad.sinet.stream.api.Consistency;
+import jp.ad.sinet.stream.api.SinetStreamIOException;
+import jp.ad.sinet.stream.spi.*;
 import lombok.Data;
 import lombok.Getter;
+import lombok.Value;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -38,14 +35,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.*;
 
-public class DummyMessageProvider<T> implements MessageWriterProvider<T>, MessageReaderProvider<T> {
+public class DummyMessageProvider implements MessageWriterProvider, MessageReaderProvider {
     @Override
-    public MessageWriter<T> getWriter(WriterParameters<T> params) {
+    public PluginMessageWriter getWriter(WriterParameters params) {
         return new DummyWriter(params);
     }
 
     @Override
-    public MessageReader<T> getReader(ReaderParameters<T> params) {
+    public PluginMessageReader getReader(ReaderParameters params) {
         return new DummyReader(params);
     }
 
@@ -56,130 +53,96 @@ public class DummyMessageProvider<T> implements MessageWriterProvider<T>, Messag
 
     private static final ConcurrentMap<String, BlockingQueue<byte[]>> topicQueue = new ConcurrentHashMap<>();
 
-    @Data
-    private class DummyIO implements MessageIO {
+    public static BlockingQueue<byte[]> getQueue(String topic) {
+        return topicQueue.get(topic);
+    }
+    public static void setQueue(String topic, BlockingQueue<byte[]> queue) {
+        topicQueue.put(topic, queue);
+    }
 
+    @Data
+    private class DummyIO {
         String service;
         Consistency consistency;
         String clientId;
         Map<String, Object> config;
-        ValueType valueType;
         String topic;
-        boolean dataEncryption;
 
-        @Override
         public void close() {
         }
 
-        @SuppressWarnings("unchecked")
         DummyIO(WriterParameters params) {
             service = params.getService();
             consistency = params.getConsistency();
             clientId = params.getClientId();
-            valueType = params.getValueType();
-            config = (Map<String, Object>) Collections.unmodifiableMap(params.getConfig());
+            config = Collections.unmodifiableMap(params.getConfig());
             topic = params.getTopic();
-            dataEncryption = params.isDataEncryption();
         }
 
-        DummyIO(ReaderParameters<T> params) {
+        DummyIO(ReaderParameters params) {
             service = params.getService();
             consistency = params.getConsistency();
             clientId = params.getClientId();
-            valueType = params.getValueType();
             config = Collections.unmodifiableMap(params.getConfig());
             topic = String.join(",", params.getTopics());
-            dataEncryption = params.isDataEncryption();
         }
     }
 
-    private class DummyWriter extends DummyIO implements MessageWriter<T> {
+    public class DummyWriter extends DummyIO implements PluginMessageWriter {
 
-        @SuppressWarnings("unchecked")
-        DummyWriter(WriterParameters<T> params) {
+        public DummyWriter(WriterParameters params) {
             super(params);
             topicQueue.putIfAbsent(topic, new LinkedBlockingQueue<>());
-
-            Serializer<T> ser;
-            if (Objects.isNull(params.getSerializer())) {
-                ser = valueType.getSerializer();
-            } else {
-                ser = params.getSerializer();
-            }
-            serializer = CryptoSerializerWrapper.getSerializer(config, ser);
         }
 
-        @Getter
-        private Serializer<T> serializer;
-
         @Override
-        public void write(T message) {
+        public void write(byte[] message) {
             try {
                 BlockingQueue<byte[]> queue = topicQueue.get(topic);
-                queue.put(serializer.serialize(message));
+                queue.put(message);
             } catch (InterruptedException e) {
                 throw new SinetStreamIOException(e);
             }
         }
     }
 
-    private class DummyReader extends DummyIO implements MessageReader<T> {
+    public class DummyReader extends DummyIO implements PluginMessageReader {
 
         @Getter
         private final List<String> topics;
         @Getter
         private Duration receiveTimeout;
-        @Getter
-        private Deserializer<T> deserializer;
 
-        @SuppressWarnings("unchecked")
-        DummyReader(ReaderParameters<T> params) {
+        public DummyReader(ReaderParameters params) {
             super(params);
             topics = params.getTopics();
             receiveTimeout = params.getReceiveTimeout();
             topicQueue.putIfAbsent(topic, new LinkedBlockingQueue<>());
-
-            Deserializer<T> des;
-            if (Objects.isNull(params.getDeserializer())) {
-                des = this.getValueType().getDeserializer();
-            } else {
-                des = params.getDeserializer();
-            }
-            deserializer = CryptoDeserializerWrapper.getDeserializer(config, des);
         }
 
         @Override
-        public Message<T> read() {
+        public PluginMessageWrapper read() {
             try {
                 BlockingQueue<byte[]> queue = topicQueue.get(topic);
                 byte[] bytes = queue.poll(receiveTimeout.toNanos(), TimeUnit.NANOSECONDS);
                 if (Objects.isNull(bytes)) {
                     return null;
                 }
-                T msg = deserializer.deserialize(bytes);
-                return new DummyMessage(msg);
+                return new DummyMessage(bytes, topics.get(0), bytes);
             } catch (InterruptedException e) {
                 throw new SinetStreamIOException(e);
             }
         }
 
-        private class DummyMessage implements Message<T> {
-            @Getter
-            private final T value;
+        @Value
+        private class DummyMessage implements PluginMessageWrapper {
+            private byte[] value;
+            private String topic;
+            private Object raw;
+        }
 
-            DummyMessage(T msg) {
-                value = msg;
-            }
-
-            @Override
-            public String getTopic() {
-                return topic;
-            }
-
-            @Override
-            public Object getRaw() {
-                return value;
-            }
+        public String getGroupId() {
+            return (String) config.get("group_id");
         }
     }
 }

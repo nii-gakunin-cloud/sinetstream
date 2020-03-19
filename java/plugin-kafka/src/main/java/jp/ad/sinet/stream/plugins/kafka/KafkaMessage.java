@@ -21,25 +21,27 @@
 
 package jp.ad.sinet.stream.plugins.kafka;
 
-import jp.ad.sinet.stream.api.Message;
-import lombok.Data;
+import jp.ad.sinet.stream.spi.PluginMessageWrapper;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 import java.util.Optional;
 
-@Data
-public class KafkaMessage<T> implements Message<T> {
+@EqualsAndHashCode
+@ToString
+public class KafkaMessage implements PluginMessageWrapper {
 
     @Getter
-    private final ConsumerRecord<?, T> raw;
+    private final ConsumerRecord<String, byte[]> raw;
 
-    KafkaMessage(ConsumerRecord<?, T> record) {
+    KafkaMessage(ConsumerRecord<String, byte[]> record) {
         this.raw = record;
     }
 
     @Override
-    public T getValue() {
+    public byte[] getValue() {
         return Optional.ofNullable(raw).map(ConsumerRecord::value).orElse(null);
     }
 

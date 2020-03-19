@@ -19,6 +19,8 @@ specific language governing permissions and limitations
 under the License.
 -->
 
+[English](api-python.en.md)
+
 SINETStream ユーザガイド
 
 # Python API
@@ -85,7 +87,7 @@ with writer as f:
 > with ブロックを抜けると自動的にメッセージングシステムとの接続がクローズされる。
 
 デフォルトでは、`publish()` の引数はバイト列である。
-バイト列以外のオブジェクトを渡すには、[MessageWriter クラス](#MessageWriter クラス) のコンストラクタで `value_type` または `value_serializer` を指定する。
+バイト列以外のオブジェクトを渡すには、[MessageWriterクラス](#messagewriterクラス) のコンストラクタで `value_type` または `value_serializer` を指定する。
 
 ### メッセージ受信
 
@@ -107,7 +109,7 @@ with reader as f:
 > with ブロックを抜けると自動的にメッセージングシステムとの接続がクローズされる。
 
 デフォルトでは、メッセージ受信処理はタイムアウトせず、for 文は無限ループとなる。
-for ループから抜けるには、[MessageReader クラス](#MessageReader クラス) のコンストラクタで `receive_timeout_ms` を指定するか、シグナル処理を行う必要がある。
+for ループから抜けるには、[MessageReaderクラス](#messagereaderクラス) のコンストラクタで `receive_timeout_ms` を指定するか、シグナル処理を行う必要がある。
 
 
 ## Python API クラス一覧
@@ -123,7 +125,7 @@ for ループから抜けるには、[MessageReader クラス](#MessageReader �
 
 ### MessageReaderクラス
 
-#### MessageReader()
+#### `MessageReader()`
 
 MessageReaderクラスのコンストラクタ。
 
@@ -133,7 +135,7 @@ MessageReader(
     topics=None,
     consistency=AT_MOST_ONCE,
     client_id=DEFAULT_CLIENT_ID,
-    value_type=None,
+    value_type="byte_array",
     value_deserializer=None,
     receive_timeout_ms=float("inf"),
     **kwargs)
@@ -162,12 +164,19 @@ MessageReader(
     * DEFAULT_CLIENT_ID, None, 空文字のいずれかが指定された場合はライブラリが値を自動生成する
     * 自動生成した値は、このオブジェクトのプロパティとして取得できる
 * value_type
-    * メッセージの値の種類
-    * TEXT (='text'), BYTE_ARRAY (='byte_array') のいずれかの値をとる
-    * None(デフォルト値) が指定された場合は何もしない
+    * メッセージのデータ本体部分（ペイロード）のタイプ名
+    * ここで指定された値によって`MessageReader`が返すペイロードの型が定まる
+    * 標準パッケージでは `"byte_array"`, `"text"` の何れかを指定する
+        * `"byte_array"`(デフォルト値)を指定した場合、ペイロードの型は `bytes` となる
+        * `"text"`を指定した場合、ペイロードの型は `str` となる
+    * 追加パッケージをインストールすることにより、`value_type`に指定できるタイプ名を増やすことができる
+        * SINETStream v1.1 では画像タイプを追加するパッケージを提供している
+        * 追加されるタイプ名は `"image"` となる
+        * `"image"`を指定し当た場合、ペイロードの型は `numpy.ndarray`（OpenCVの画像データ） となる
+        * `numpy.ndarray`の画像データにおける色順序は OpenCV のもの（青、緑、赤）となる
 * value_deserializer
-    * メッセージのバイト列から値を復元するために使用する関数
-    * None (デフォルト値) が指定された場合は何もしない
+    * メッセージのバイト列から値を復元（デシリアライズ）するために使用する関数
+    * このパラメータを指定しない場合、`value_type`に指定した値によりデシリアライズする関数が定まる
 * receive_timeout_ms
     * メッセージの到着を待つ最大時間 (ms)
     * 一度タイムアウトするとこのコネクションからメッセージを読み込むことはできない。
@@ -182,11 +191,7 @@ MessageReader(
 `service` 以外の引数は、設定ファイルにデフォルト値を記述することができる。
 設定ファイルとコンストラクタの引数の両方に同じパラメータの値を指定した場合は、コンストラクタの引数に指定した値が優先する。
 
-** 制限事項: SINETStream v1.0 では、Kafka の `consistency` に `EXACTLY_ONCE` を指定しても `AT_LEAST_ONCE` にダウングレードする。**
-
-##### 戻り値
-
-メッセージングシステムとの接続状態を保持しているハンドラ
+**制限事項: SINETStream v1.1 では、Kafka の `consistency` に `EXACTLY_ONCE` を指定しても `AT_LEAST_ONCE` にダウングレードする。**
 
 ##### 例外
 
@@ -198,46 +203,55 @@ MessageReader(
     * 指定した引数の形式が正しくない。 `consistency` の値が範囲外、 `topic` 名として許容されない文字列などの場合
 * UnsupportedServiceTypeError
     * 設定ファイルに指定されている `type` に対応するメッセージングシステムのプラグインがインストールされていない
+
+#### プロパティ
+
+設定ファイルもしくはコンストラクタで指定したパラメータのうち、プロパティとして値を参照することが出来るものを以下に示す。
+
+* `client_id`
+* `consistency`
+* `topics`
+* `value_type`
+
+#### `MessageReader.open()`
+
+メッセージングシステムのブローカーに接続する。通常は明示的に呼び出すことはなく MessageReaderをwith文で
+用いた場合に、暗黙的に呼び出されることを想定している。
+
+##### 戻り値
+
+メッセージングシステムとの接続状態を保持しているハンドラ
+
+##### 例外
+
 * ConnectionError
     * ブローカーへの接続がエラーになった
 * AlreadyConnectedError
     * 既に接続状態のオブジェクトに対して、再度 open() を呼び出した場合
 
-<!-- 
-#### プロパティ
+#### `MessageReader.close()`
 
-コンストラクタの引数に指定した `service` などの値は読み取り専用のプロパティとしてアクセスできる。
-`client_id` などのようにライブラリが値を自動生成するものについては、生成された値をプロパティとして取得できる。
+メッセージングシステムのブローカーとの通信を切断する。通常は明示的に呼び出すことはなく MessageReaderをwith文で
+用いた場合に、暗黙的に呼び出されることを想定している。
 
-**制限事項: SINETStream v1.0 ではプロパティの取得は未実装である。**
- -->
+#### `MessageReader.__iter__()`
 
-<!-- 
-#### 読み取り位置の変更
+メッセージングシステムから取得したメッセージのイテレータを返す。
 
-メッセージングシステムによっては読み取り位置を変更できるものがある。
-実際 Apache KafkaではConsumerがメッセージを読み取る位置を変更できる。
+##### 例外
 
-MessageReaderのサービスが Apache Kafka だった場合、読み取り位置の変更を指定することができる
+このメソッドが返したイテレータに対して `next()` を呼び出した場合に以下の例外が発生することがある。
 
-* seek_to_beginning()
-* seek_to_end()
+* AuthorizationError
+    * 認可されていないトピックに対してメッセージの取得を行った
 
-##### 例
-```
-reader = MessageReader('service-1', 'topic-001')
-with reader.open() as f:
-    f.seek_to_beginning()
-    for msg in f:
-        print(msg.value.decode('utf-8'))
-```
-
-**開発中のデバッグ、テストを目的の非公開API。将来のリリースで削除する可能性がある。**
- -->
+メッセージングシステムによっては認可されていない操作をおこなっても上記の例外が発生しないことがある。
+MQTT(Mosquitto)がこれに該当し、認可されていない操作を行っても例外が発生しない。これは
+認可されていない操作を行った場合もブローカー側がクライアント側にエラーを返さないためである。
 
 ### MessageWriterクラス
 
-#### MessageWriter()
+#### `MessageWriter()`
 
 ```
 MessageWriter(
@@ -245,6 +259,7 @@ MessageWriter(
     topic,
     consistency=AT_MOST_ONCE,
     client_id=DEFAULT_CLIENT_ID,
+    value_type="byte_array",
     value_serializer=None,
     **kwargs)
 ```
@@ -271,12 +286,19 @@ MessageWriterクラスのコンストラクタ。
     * クライアントの名前
     * DEFAULT_CLIENT_ID, None, 空文字のいずれかが指定された場合はライブラリが値を自動生成する
 * value_type
-    * メッセージの値の種類
-    * TEXT (='text'), BYTE_ARRAY (='byte_array') のいずれかの値をとる
-    * None(デフォルト値) が指定された場合は何もしない
+    * メッセージのデータ本体部分（ペイロード）のタイプ名
+    * ここで指定された値によって `MessageWriter.publish()` の引数に渡すデータの型が定まる
+    * 標準パッケージでは `"byte_array"`, `"text"` の何れかを指定する
+        * `"byte_array"`(デフォルト値)を指定した場合、ペイロードの型は `bytes` となる
+        * `"text"`を指定した場合、ペイロードの型は `str` となる
+    * 追加パッケージをインストールすることにより、`value_type`に指定できるタイプ名を増やすことができる
+        * SINETStream v1.1 では画像タイプを追加するパッケージを提供している
+        * 追加されるタイプ名は `"image"` となる
+        * `"image"`を指定し当た場合、ペイロードの型は `numpy.ndarray` （OpenCVの画像データ）となる
+        * `numpy.ndarray`の画像データにおける色順序は OpenCV のもの（青、緑、赤）となる
 * value_serializer
-    * メッセージの値をバイト列に変換するための関数
-    * None (デフォルト値) が指定された場合は何もしない
+    * メッセージの値をバイト列に変換（シリアライズ）するための関数
+    * このパラメータを指定しない場合、`value_type`に指定した値によりシリアライズする関数が定まる
 * data_encryption
     * メッセージの暗号化、復号化の有効、無効を指定する
 * kwargs
@@ -288,11 +310,7 @@ MessageWriterクラスのコンストラクタ。
 `service` 以外の引数は、設定ファイルにデフォルト値を記述することができる。
 設定ファイルとコンストラクタの引数の両方に同じパラメータの値を指定した場合はコンストラクタの引数に指定した値が優先する。
 
-**制限事項: SINETStream v1.0 では、Kafka の `consistency` に `EXACTLY_ONCE` を指定しても `AT_LEAST_ONCE` にダウングレードする。**
-
-##### 戻り値
-
-メッセージングシステムとの接続状態を保持しているハンドラ
+**制限事項: SINETStream v1.1 では、Kafka の `consistency` に `EXACTLY_ONCE` を指定しても `AT_LEAST_ONCE` にダウングレードする。**
 
 ##### 例外
 
@@ -304,19 +322,57 @@ MessageWriterクラスのコンストラクタ。
     * 指定した引数の形式が正しくない。`consistency` の値が範囲外、`topic` 名として許容されない文字列などの場合
 * UnsupportedServiceTypeError
     * 設定ファイルに指定されている `type` に対応するメッセージングシステムのプラグインがインストールされていない
+
+#### プロパティ
+
+設定ファイルもしくはコンストラクタで指定したパラメータのうち、プロパティとして値を参照することが出来るものを以下に示す。
+
+* `client_id`
+* `consistency`
+* `topic`
+* `value_type`
+
+#### `MessageWriter.open()`
+
+メッセージングシステムのブローカーに接続する。通常は明示的に呼び出すことはなく MessageReaderをwith文で
+用いた場合に、暗黙的に呼び出されることを想定している。
+
+##### 戻り値
+
+メッセージングシステムとの接続状態を保持しているハンドラ
+
+##### 例外
+
 * ConnectionError
     * ブローカーへの接続がエラーになった
 * AlreadyConnectedError
     * 既に接続状態のオブジェクトに対して、再度 open() を呼び出した場合
 
-<!-- 
-#### プロパティ
+#### `MessageWriter.close()`
 
-コンストラクタの引数に指定した `service` などの値は読み取り専用のプロパティとしてアクセスできる。
-`client_id` などのようにライブラリが値を自動生成するものについては、生成した値がプロパティとして取得できる。
+メッセージングシステムのブローカーとの通信を切断する。通常は明示的に呼び出すことはなく MessageReaderをwith文で
+用いた場合に、暗黙的に呼び出されることを想定している。
 
-**制限事項: SINETStream v1.0 ではプロパティの取得は未実装。**
- -->
+#### `MessageWriter.publish(message)`
+
+メッセージをメッセージングシステムのブローカーに送信する。`message`は`MessageWriter`の
+パラメータ`value_type`あるいは`value_serializer`によってシリアライズされたうえで
+ブローカーに送信される。
+
+##### 例外
+
+* InvalidMessageError
+    * `message`の型が `value_type`あるいは`value_serializer`に指定した値と整合しない
+* AuthorizationError
+    * 認可されていないトピックに対してメッセージの送信を行った
+
+メッセージングシステムによっては認可されていない操作をおこなってもAuthorizationErrorの
+例外が発生しないことがある。以下のケースが該当する。
+
+1. MQTT(Mosquitto)の場合
+    * 認可されていない操作を行った場合もブローカー側がクライアント側にエラーを返さない。そのため例外が発生しない。
+1. Kafkaで`Consistency`に`AT_MOST_ONCE`を指定した場合
+    * ブローカーの応答を待たずにクライアント側のメッセージの送信処理が完了する。そのため、ブローカー側の認可エラーを検知できず、例外が発生しない。
 
 ### Messageクラス
 
@@ -327,12 +383,22 @@ MessageWriterクラスのコンストラクタ。
 全て読み取りアクセスのみ。
 
 * value
-    * メッセージの値部分
-    * Kafka では raw.value, MQTT では raw.payload
-    * デフォルトではメッセージの値のバイト列が得られる
-    * MessageReader に value_deserializer が設定されている場合は、その関数によってバイト列から変換されたオブジェクトが得られる
+    * メッセージのデータ本体部分（ペイロード）
+    * `MessageReader` の `value_type` に指定した値により`value`が返すデータの型が定まる
+        * `value_type`に `"byte_array"`（デフォルト値)を指定した場合、データの型は `bytes` となる
+        * `value_type`に `"text"`を指定した場合、データの型は `str` となる
 * topic
     * トピック名
+* timestamp
+    * メッセージ送信時刻(Unix時間)
+         * 単位は秒
+         * 型はfloat
+    * 値 `0` は時刻が設定されてないことを示す
+* timestamp_us
+    * メッセージ送信時刻(Unix時間)
+        * 単位はマイクロ秒
+        * 型はint
+    * 値 `0` は時刻が設定されてないことを示す
 * raw
     * メッセージングシステムのメッセージオブジェクト
 
@@ -343,10 +409,11 @@ MessageWriterクラスのコンストラクタ。
 |`NoServiceError`|`MessageReader()`, `MessageWriter()`|指定したサービス名が設定ファイルで定義されていない。|
 |`UnsupportedServiceTypeError`|`MessageReader()`, `MessageWriter()`|サービスの定義で指定されているサービスタイプをサポートしていない。または対応するプラグインがインストールされていない。|
 |`NoConfigError`|`MessageReader()`, `MessageWriter()`|設定ファイルがない。|
-|`InvalidArgumentError`|`MessageReader()`, `MessageWriter()`, `MqttReader.open()`, `MqttWriter.open()`, `MqttWriter.publish()`|引数が間違っている。|
-|`ConnectionError`|`KafkaReader.open()`, `KafkaWriter.open()`, `MqttReader.open()`, `MqttWriter.open()`, `MqttWriter.publish()`|ブローカーとの接続に問題がある。|
-|`AlreadyConnectedError`|`KafkaReader.open()`, `KafkaWriter.open()`, `MqttReader.open()`, `MqttWriter.open()`|すでにブローカと接続している。|
-
+|`InvalidArgumentError`|`MessageReader()`, `MessageWriter()`, `MessageReader.open()`, `MessageWriter.open()`, `MessageWriter.publish()`|引数が間違っている。|
+|`ConnectionError`|`MessageReader.open()`, `MessageWriter.open()`, `MessageWriter.publish()`|ブローカーとの接続に問題がある。|
+|`AlreadyConnectedError`|`MessageReader.open()`, `MessageWriter.open()`|すでにブローカと接続している。|
+|`InvalidMessageError`|`MessageWriter.publish()`, `MessageReader.__iter__().__next__()`|メッセージのフォーマットが間違っている。|
+|`AuthorizationError`|`MessageWriter.publish()`, `MessageReader.__iter__().__next__()`|権限のない操作を行った。|
 
 ## メッセージングシステム固有のパラメータ
 
@@ -365,135 +432,14 @@ MessageWriterクラスのコンストラクタ。
 それぞれ `MessageReader`, `MessageWriter` の対応するクラスのみに影響を与える。
 
 [Kafka固有のパラメータ](config-kafka.md)
-<!--
-* group_id
-* key_deserializer
-* key_serializer
-* value_deserializer
-* value_serializer
-* fetch_min_bytes
-* fetch_max_wait_ms
-* fetch_max_bytes
-* max_partition_fetch_bytes
-* request_timeout_ms
-* max_in_flight_requests_per_connection
-* auto_offset_reset
-* enable_auto_commit
-* auto_commit_interval_ms
-* check_crcs
-* metadata_max_age_ms
-* partition_assignment_strategy
-* max_poll_records
-* max_poll_interval_ms
-* session_timeout_ms
-* heartbeat_interval_ms
-* receive_buffer_bytes
-* send_buffer_bytes
-* socket_options
-* consumer_timeout_ms
-* security_protocol
-* ssl_context
-* ssl_check_hostname
-* ssl_cafile
-* ssl_certfile
-* ssl_keyfile
-* ssl_password
-* ssl_crlfile
-* ssl_ciphers
-* api_version
-* api_version_auto_timeout_ms
-* connections_max_idle_ms
-* metric_reporters
-* metrics_num_samples
-* metrics_sample_window_ms
-* selector
-* exclude_internal_topics
-* sasl_mechanism
-* sasl_plain_username
-* sasl_plain_password
-* sasl_kerberos_service_name
-* sasl_kerberos_domain_name
-* sasl_oauth_token_provider
-* acks
-* compression_type
-* retries
-* batch_size
-* linger_ms
-* buffer_memory
-* connections_max_idle_ms
-* max_block_ms
-* max_request_size
-* retry_backoff_ms
-* reconnect_backoff_ms
-* reconnect_backoff_max_ms
-* max_in_flight_requests_per_connection
--->
 
 ### MQTT (Eclipse Paho)
 
-<!-- 
 基本的に
-[paho.mqtt.client.Client](https://pypi.org/project/paho-mqtt/#client) の
+[paho.mqtt.client.Client](https://www.eclipse.org/paho/clients/python/docs/#client) の
 コンストラクタと設定関数 (`XXX_set`) などの引数に指定できるパラメータを指定できる。
 
 [MQTT固有のパラメータ](config-mqtt.md)
-
-* clean_session
-* userdata
-* qos
-* retain
-* protocol
-* transport
-* max_inflight_messages_set
-* max_queued_messages_set
-* message_retry_set
-* ws_set_options
-    * path
-    * headers
-* tls_set
-    * ca_certs
-    * certfile
-    * keyfile
-    * cert_reqs
-    * tls_version
-    * ciphers
-* tls_set_context
-* tls_insecure_set
-* enable_logger
-* username_pw_set
-    * username
-    * password
-* will_set
-    * topic
-    * payload
-    * qos
-    * retain
-* reconnect_delay_set
-    * min_delay
-    * max_delay
-* connect
-    * keepalive
-    * bind_address
-
-`username_pw_set()` などのコンストラクタとは別の関数で設定するパラメータについては、
-関数名がキー、その関数で設定するパラメータ名と値の組からなるマッピングが値となるように設定ファイルに記述する。
- -->
-**制限事項: SINETStream v1.0 では MQTT のパラメータ設定は未実装。**
-
-<!--
-#### 例
-
-```
-service-2:
-  type: mqtt
-  brokers: 192.168.2.105:1883
-  username_pw_set:
-    username: user01
-    password: pass01
-```
-
-`MQTTv311` などの指定は、指定された文字列を SINETStream API の MQTT プラグインが適切に処理して対応する定数に変換する。
--->
 
 ## チートシートの表示方法
 
@@ -508,7 +454,7 @@ MessageReader(
     topics=TOPICS,                   # The topic to receive.
     consistency=AT_MOST_ONCE,        # consistency: AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE
     client_id=DEFAULT_CLIENT_ID,     # If not specified, the value is automatically generated.
-    value_type=None,                 # The type of message.
+    value_type="byte_array",         # The type of message.
     value_deserializer=None          # If not specified, use default deserializer according to valueType.
 )
 MessageWriter(
@@ -516,7 +462,7 @@ MessageWriter(
     topic=TOPIC,                     # The topic to send.
     consistency=AT_MOST_ONCE,        # consistency: AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE
     client_id=DEFAULT_CLIENT_ID,     # If not specified, the value is automatically generated.
-    value_type=None,                 # The type of message.
+    value_type="byte_array",         # The type of message.
     value_serializer=None            # If not specified, use default serializer according to valueType.
 )
 ```

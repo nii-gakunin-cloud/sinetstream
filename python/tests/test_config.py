@@ -21,18 +21,95 @@
 # under the License.
 
 import logging
+import os
+from pathlib import Path
+from shutil import copyfile
+
+import pytest
 import sinetstream
+from conftest import create_config_file, SERVICE, SERVICE_TYPE, BROKER
 
-logging.basicConfig(level=logging.ERROR)
+logging.basicConfig(level=logging.WARNING)
+logger = logging.getLogger(__name__)
 
 
-def test_load_config():
-    config = sinetstream.api.load_config()     # load .sinetstream_config.yml
-    logging.info(f"config={config}")
-    assert config["service-1"] is not None
-    assert config["service-1"]["type"] == "kafka"
-    assert set(config["service-1"]["brokers"]) == {
-        "kafka0.dp1.nii.ac.jp:9092",
-        "kafka1.dp1.nii.ac.jp:9092",
-        "kafka2.dp1.nii.ac.jp:9092"
-    }
+def test_load_config(setup_config):
+    config = sinetstream.api.load_config()
+    logger.info(f"config={config}")
+    assert config[SERVICE] is not None
+    assert config[SERVICE]["type"] == SERVICE_TYPE
+    assert set(config[SERVICE]["brokers"]) == {BROKER}
+
+
+def test_load_home_config(setup_home_config):
+    config = sinetstream.api.load_config()
+    logger.info(f"config={config}")
+    assert config[SERVICE] is not None
+    assert config[SERVICE]["type"] == SERVICE_TYPE
+    assert set(config[SERVICE]["brokers"]) == {BROKER}
+
+
+def test_load_env_config(setup_env_config):
+    config = sinetstream.api.load_config()
+    logger.info(f"config={config}")
+    assert config[SERVICE] is not None
+    assert config[SERVICE]["type"] == SERVICE_TYPE
+    assert set(config[SERVICE]["brokers"]) == {BROKER}
+
+
+def test_load_config_and_bad_env(setup_bad_env_config):
+    config = sinetstream.api.load_config()
+    logger.info(f"config={config}")
+    assert config[SERVICE] is not None
+    assert config[SERVICE]["type"] == SERVICE_TYPE
+    assert set(config[SERVICE]["brokers"]) == {BROKER}
+
+
+@pytest.fixture()
+def setup_home_config(tmp_path, config_brokers, config_topic):
+    cwd = Path.cwd().absolute()
+    config = Path('~/.config/sinetstream/config.yml').expanduser()
+    backup = None
+    try:
+        os.chdir(str(tmp_path))
+        if config.exists():
+            backup = tmp_path / 'config.yml'
+            copyfile(config, backup)
+        else:
+            config.parent.mkdir(parents=True, exist_ok=True)
+        create_config_file(brokers=config_brokers, topic=config_topic, config=config)
+        yield
+    finally:
+        os.chdir(str(cwd))
+        if backup:
+            copyfile(backup, config)
+        else:
+            config.unlink()
+
+
+@pytest.fixture()
+def setup_env_config(tmp_path, config_brokers, config_topic):
+    cwd = Path.cwd().absolute()
+    try:
+        os.chdir(str(tmp_path))
+        config = tmp_path / 'ss-config.yml'
+        create_config_file(brokers=config_brokers, topic=config_topic, config=config)
+        os.environ['SINETSTREAM_CONFIG_URL'] = config.as_uri()
+        yield
+    finally:
+        del(os.environ['SINETSTREAM_CONFIG_URL'])
+        os.chdir(str(cwd))
+
+
+@pytest.fixture()
+def setup_bad_env_config(tmp_path, config_brokers, config_topic):
+    cwd = Path.cwd().absolute()
+    try:
+        os.chdir(str(tmp_path))
+        config = tmp_path / 'ss-config.yml'
+        create_config_file(brokers=config_brokers, topic=config_topic)
+        os.environ['SINETSTREAM_CONFIG_URL'] = config.as_uri()
+        yield
+    finally:
+        del(os.environ['SINETSTREAM_CONFIG_URL'])
+        os.chdir(str(cwd))

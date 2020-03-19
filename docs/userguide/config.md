@@ -19,6 +19,8 @@ specific language governing permissions and limitations
 under the License.
 -->
 
+[English](config.en.md)
+
 SINETStream ユーザガイド
 
 # 設定ファイル
@@ -77,16 +79,16 @@ API でサービス名を指定することで、設定ファイルに記述さ�
 
 設定ファイルは以下の順序で検索され、最初に見つかったファイルのみが読み込まれる。
 
-> 設定ファイルのカスケードは不可。
-> 例えば `.sinetstream_config.yml` に `パラメータ1:値1` が、
-> `$HOME/.config/sinetstream/config.yml` に `パラメータ2:値2` が書かれているとき、`パラメータ2:値2` は読み込まれない。
-
 1. 環境変数 `SINETSTREAM_CONFIG_URL` に指定された場所(URL)
     * 設定ファイルをリモートの web サーバに置くことも可能
     * ローカルファイルを指定する場合は `file://{設定ファイルの絶対パス}` の形式で指定する。
 1. カレントディレクトリの `.sinetstream_config.yml`
 1. `$HOME/.config/sinetstream/config.yml`
     * Windows 10 では `C:\Users\{userXX}\.config\sinetstream\config.yml`
+
+> 設定ファイルのカスケードは不可。
+> 例えば `.sinetstream_config.yml` に `パラメータ1:値1` が、
+> `$HOME/.config/sinetstream/config.yml` に `パラメータ2:値2` が書かれているとき、`パラメータ2:値2` は読み込まれない。
 
 ### 設定値の優先順位
 
@@ -155,19 +157,24 @@ API にパラメータを指定しなかった場合は、設定ファイルに�
         * EXACTLY_ONCE
             * メッセージは必ず一度だけ届く
 * value_type
-    * メッセージの種別
-    * 指定できる値
-        * text
+    * メッセージのデータ本体部分（ペイロード）のタイプ名
+    * 標準パッケージで指定できる値
         * byte_array
+            * ペイロードの型をバイト列として扱う
+        * text
+            * ペイロードの型を文字列として扱う
     * デフォルト値: byte_array
+    * 追加パッケージをインストールすることにより、指定するタイプ名を増やすことができる
+        * SINETStream v1.1 では画像タイプを追加するパッケージを提供している
+        * 画像のタイプ名は `image` となる
 * value_serializer
     * メッセージのシリアライズを行うクラス名
     * 指定したクラスにはパブリックなデフォルトコンストラクタが必要
-    * `MessageWriter` のみで意味をもつ
+    * `MessageWriter` のみで意味をもつ (`MessageReader` で設定されても無視される)
 * value_deserializer
     * メッセージのデシリアライズを行うクラス名
     * 指定したクラスにはパブリックなデフォルトコンストラクタが必要
-    * `MessageReader` のみで意味をもつ
+    * `MessageReader` のみで意味をもつ (`MessageWriter` で設定されても無視される)
 * data_encryption
     * メッセージの暗号化/復号化の有効/無効を指定する
 * receive_timeout_ms
@@ -179,7 +186,7 @@ API にパラメータを指定しなかった場合は、設定ファイルに�
 > MessageReader では value_deserializer が有効になり、MessageWriter では value_type が有効になる。
 
 > Python API の制限:
-> SINETStream v1.0 では、`value_serializer`/`value_deserializer` の指定はAPIのパラメータでのみ指定可能で設定ファイルには記述できない。
+> SINETStream v1.* では、`value_serializer`/`value_deserializer` の指定はAPIのパラメータでのみ指定可能で設定ファイルには記述できない。
 
 ### SSL/TLS に関するパラメータ
 
@@ -222,7 +229,7 @@ SINETStream ではそれらを共通の `tls` パラメータによって統一�
 > ※ `trustStore`, `trustStoreType`, `trustStorePassword`, `keyStore`, `keyStoreType`, `keyStorePassword`, `keyfilePassword` は
 > Java APIのみで指定できるパラメータである。Python API では指定できない。
 
-<!-- 
+<!--
 共通のパラメータ名と各メッセージングシステム固有のパラメータ名との対応を以下の表に示す。
 
 |SSL/TLS|型|Kafka|MQTT|
@@ -393,7 +400,7 @@ service-aes-1:
 
 ### 未対応
 
-SINETStream v1.0 は、以下のパラメータをサポートしていない。
+SINETStream v1.* は、以下のパラメータをサポートしていない。
 
 * metric_reporters
 * metrics_num_samples

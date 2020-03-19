@@ -19,6 +19,8 @@ specific language governing permissions and limitations
 under the License.
 -->
 
+[English](index.en.md)
+
 # SINETStream ユーザガイド
 
 ## SINETStream とは
@@ -31,8 +33,7 @@ SINETStream は、Apache Kafka や MQTT Broker などの多様なメッセージ
 1. ブローカーからのメッセージ受信
 
 SINETStream は現在、バックエンドのメッセージングシステムとして Apache Kafka と MQTT Broker をサポートしている。
-
-> 将来、他のメッセージングシステムをサポートできるよう、バックエンドはプラグインとして拡張可能になっている。
+他のメッセージングシステムをサポートできるよう、バックエンドはプラグインとして拡張可能になっている。
 
 SINETStream は Python API と Java API を提供している。
 
@@ -47,7 +48,7 @@ SINETStream は Python API と Java API を提供している。
 
 | 用語 | 意味 |
 | :--- | :--- |
-| Reader | メッセージを受診するプログラム |
+| Reader | メッセージを受信するプログラム |
 | Writer | メッセージを送信するプログラム |
 | ブローカー | Writerが送信したメッセージをReaderに中継するプログラム |
 | トピック | メッセージを送受信するときの論理的なチャンネル |

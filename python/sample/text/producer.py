@@ -19,8 +19,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import argparse
-import sys
+from argparse import ArgumentParser
+from sys import stdin, stderr
 from sinetstream import MessageWriter
 
 
@@ -32,18 +32,19 @@ def producer(service):
 
 
 def get_message():
-    return sys.stdin.readline().rstrip("\r\n")
+    return stdin.readline().rstrip("\r\n")
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="SINETStream Producer")
+    parser = ArgumentParser(description="SINETStream Producer")
     parser.add_argument(
         "-s", "--service", metavar="SERVICE_NAME", required=True)
     args = parser.parse_args()
 
+    print("Press ctrl-c to exit the program.", file=stderr)
+    print(f": service={args.service}", file=stderr)
+
     try:
-        print("Press ctrl-c to exit the program.", file=sys.stderr)
-        print(f": service={args.service}", file=sys.stderr)
         producer(args.service)
     except KeyboardInterrupt:
         pass

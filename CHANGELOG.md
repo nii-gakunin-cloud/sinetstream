@@ -1,5 +1,23 @@
 # Changelog
 
+## [v1.1.0] - 2020-03-19
+
+### Added
+
+- The capability to add `timestamp` to each send message
+- Support for image type messages.
+- English documents
+- SINETStream Server Plugin Developer Guide (Japanese only)
+
+### Changed
+
+- Message is encoded by Apache Avro.
+- `value_type` can be handled as a plugin.
+
+### Fixed
+
+- Fixed exception handling in case of authentication / authorization error.
+
 ## [v1.0.0] - 2019-12-24
 
 ### Added

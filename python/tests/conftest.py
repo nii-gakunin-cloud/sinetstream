@@ -21,13 +21,22 @@
 # under the License.
 
 import collections
+import os
+from logging import getLogger
+from pathlib import Path
 
 import pytest
 import sinetstream
+import yaml
+from sinetstream.spi import PluginMessageReader, PluginMessageWriter
 
-
-# que = collections.defaultdict(collections.deque)
 que = None
+logger = getLogger(__name__)
+SERVICE = 'service-1'
+TOPIC = 'mss-test-001'
+TOPIC2 = 'mss-test-002'
+SERVICE_TYPE = 'dummy'
+BROKER = 'broker'
 
 
 def qwrite(topic, value):
@@ -44,9 +53,16 @@ def qread(topic):
     return q.popleft()
 
 
-class DummyKafkaReader(object):
-    def __init__(self, message_reader):
-        self._reader = message_reader
+def qedit(topic, nque):
+    global que
+    oque = que[topic]
+    que[topic] = nque
+    return oque
+
+
+class DummyReader(PluginMessageReader):
+    def __init__(self, params):
+        self._params = params
 
     def open(self):
         pass
@@ -58,33 +74,33 @@ class DummyKafkaReader(object):
         return self
 
     def __next__(self):
-        topics = self._reader.params.get("topics")
+        topics = self._params.get("topics")
         if type(topics) != list:
             topics = [topics]
         for topic in topics:
             value = qread(topic)
-            if value:
+            if value is not None:
                 raw = {"topic": topic, "value": value}
-                return sinetstream.make_message(self._reader, value, topic, raw)
+                return value, topic, raw
         raise StopIteration()
 
 
-class DummyKafkaReaderEntryPoint(object):
+class DummyReaderEntryPoint(object):
     @classmethod
     def load(cls):
-        return DummyKafkaReader
+        return DummyReader
 
 
 @pytest.fixture(scope='session')
 def dummy_reader_plugin():
-    sinetstream.MessageReader.registry.register('kafka', DummyKafkaReaderEntryPoint)
+    sinetstream.MessageReader.registry.register(SERVICE_TYPE, DummyReaderEntryPoint)
 
 
-class DummyKafkaWriter(object):
-    def __init__(self, message_writer):
+class DummyWriter(PluginMessageWriter):
+    def __init__(self, params):
         global que
         que = collections.defaultdict(collections.deque)
-        self._writer = message_writer
+        self._params = params
 
     def open(self):
         pass
@@ -93,15 +109,55 @@ class DummyKafkaWriter(object):
         pass
 
     def publish(self, value):
-        qwrite(self._writer.params.get("topic"), value)
+        qwrite(self._params.get("topic"), value)
 
 
-class DummyKafkaWriterEntryPoint(object):
+class DummyWriterEntryPoint(object):
     @classmethod
     def load(cls):
-        return DummyKafkaWriter
+        return DummyWriter
 
 
 @pytest.fixture(scope='session')
 def dummy_writer_plugin():
-    sinetstream.MessageWriter.registry.register('kafka', DummyKafkaWriterEntryPoint)
+    sinetstream.MessageWriter.registry.register(SERVICE_TYPE, DummyWriterEntryPoint)
+
+
+@pytest.fixture()
+def config_brokers():
+    return [BROKER]
+
+
+@pytest.fixture()
+def config_topic():
+    return TOPIC
+
+
+@pytest.fixture()
+def config_params():
+    return None
+
+
+@pytest.fixture()
+def setup_config(tmp_path, config_brokers, config_topic, config_params):
+    cwd = Path.cwd().absolute()
+    try:
+        os.chdir(str(tmp_path))
+        create_config_file(config_brokers, config_topic, config_params)
+        yield
+    finally:
+        os.chdir(str(cwd))
+
+
+def create_config_file(
+        brokers=None, topic=None, params=None, config=Path('.sinetstream_config.yml'),
+):
+    parameters = {SERVICE: {'type': SERVICE_TYPE}}
+    if brokers is not None:
+        parameters[SERVICE]['brokers'] = brokers
+    if topic is not None:
+        parameters[SERVICE]['topic'] = topic
+    if params is not None:
+        parameters[SERVICE].update(params)
+    with config.open(mode='w') as f:
+        yaml.safe_dump(parameters, f)

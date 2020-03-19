@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 National Institute of Informatics
+ * Copyright (C) 2020 National Institute of Informatics
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -24,8 +24,12 @@ package jp.ad.sinet.stream.plugins.kafka;
 import jp.ad.sinet.stream.api.Consistency;
 import jp.ad.sinet.stream.api.MessageReader;
 import jp.ad.sinet.stream.api.MessageWriter;
-import jp.ad.sinet.stream.api.ValueType;
-import jp.ad.sinet.stream.utils.*;
+import jp.ad.sinet.stream.api.valuetype.ImageSerializer;
+import jp.ad.sinet.stream.api.valuetype.SimpleValueType;
+import jp.ad.sinet.stream.api.valuetype.StringDeserializer;
+import jp.ad.sinet.stream.api.valuetype.StringSerializer;
+import jp.ad.sinet.stream.utils.MessageReaderFactory;
+import jp.ad.sinet.stream.utils.MessageWriterFactory;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -36,7 +40,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class SerializerDeserializerTest implements ConfigFileAware {
     @Nested
@@ -49,9 +52,8 @@ class SerializerDeserializerTest implements ConfigFileAware {
                             .serializer(ser)
                             .build();
             try (MessageWriter<String> writer = builder.getWriter()) {
-                assertEquals(ValueType.TEXT, writer.getValueType());
+                assertEquals(SimpleValueType.TEXT, writer.getValueType());
                 writer.write("message 1");
-                assertNotNull(writer.getSerializer());
             }
         }
 
@@ -62,13 +64,12 @@ class SerializerDeserializerTest implements ConfigFileAware {
             ImageSerializer<BufferedImage> ser = new ImageSerializer<>();
             MessageWriterFactory<BufferedImage> builder =
                     MessageWriterFactory.<BufferedImage>builder().service("service-1").topic("test-topic-java-001")
-                            .valueType(ValueType.TEXT)
+                            .valueType(SimpleValueType.TEXT)
                             .serializer(ser)
                             .build();
             try (MessageWriter<BufferedImage> writer = builder.getWriter()) {
-                assertEquals(ValueType.TEXT, writer.getValueType());
+                assertEquals(SimpleValueType.TEXT, writer.getValueType());
                 writer.write(image);
-                assertNotNull(writer.getSerializer());
             }
         }
     }
@@ -91,7 +92,7 @@ class SerializerDeserializerTest implements ConfigFileAware {
                 reader.read();
                 String text = "message 0";
                 writer.write(text);
-                assertEquals(ValueType.TEXT, reader.getValueType());
+                assertEquals(SimpleValueType.TEXT, reader.getValueType());
                 assertEquals(text, reader.read().getValue());
             }
         }

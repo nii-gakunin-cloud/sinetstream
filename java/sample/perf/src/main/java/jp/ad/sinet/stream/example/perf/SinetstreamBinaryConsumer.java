@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 National Institute of Informatics
+ * Copyright (C) 2020 National Institute of Informatics
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -22,22 +22,19 @@
 package jp.ad.sinet.stream.example.perf;
 
 import jp.ad.sinet.stream.api.Consistency;
-import jp.ad.sinet.stream.api.MessageReader;
 import jp.ad.sinet.stream.api.Message;
-import jp.ad.sinet.stream.api.ValueType;
+import jp.ad.sinet.stream.api.MessageReader;
+import jp.ad.sinet.stream.api.valuetype.SimpleValueType;
 import jp.ad.sinet.stream.utils.MessageReaderFactory;
 import org.apache.commons.cli.*;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.time.Duration;
 import java.util.Objects;
 
-import jp.ad.sinet.stream.example.perf.Util;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-
-@SuppressWarnings({"WeakerAccess", "CodeBlock2Expr"})
+@SuppressWarnings({"WeakerAccess"})
 public class SinetstreamBinaryConsumer {
 
     private final String service;
@@ -63,7 +60,7 @@ public class SinetstreamBinaryConsumer {
                         .service(service)
                         .topic(topic_src)
                         .consistency(consistency)
-                        .valueType(ValueType.BYTE_ARRAY)
+                        .valueType(SimpleValueType.BYTE_ARRAY)
                         .receiveTimeout(Duration.ofSeconds(this.timeout / 1000))
                         .build();
         try(MessageReader<byte[]> reader = factory.getReader()) {

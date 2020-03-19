@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 National Institute of Informatics
+ * Copyright (C) 2020 National Institute of Informatics
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -22,14 +22,17 @@
 package jp.ad.sinet.stream.utils;
 
 import jp.ad.sinet.stream.api.*;
+import jp.ad.sinet.stream.api.valuetype.SimpleValueType;
 import jp.ad.sinet.stream.spi.CryptoProvider;
 import jp.ad.sinet.stream.spi.MessageWriterProvider;
+import jp.ad.sinet.stream.spi.PluginMessageWriter;
 import jp.ad.sinet.stream.spi.WriterParameters;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Singular;
 import lombok.extern.java.Log;
 
+import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Function;
 
@@ -77,12 +80,17 @@ public class MessageWriterFactory<T> {
     @Description("Message encryption.")
     private Boolean dataEncryption;
 
+    @Getter
+    @Parameter("config")
+    @Description("configuration file.")
+    private Path config;
+
     @DefaultParameters
     public static final Map<String, Object> defaultValues;
     static {
         Map<String, Object> values = new HashMap<>();
         values.put("consistency", AT_MOST_ONCE);
-        values.put("value_type", ValueType.TEXT);
+        values.put("value_type", SimpleValueType.BYTE_ARRAY);
         values.put("data_encryption", false);
         defaultValues = Collections.unmodifiableMap(values);
     }
@@ -90,25 +98,27 @@ public class MessageWriterFactory<T> {
     @SuppressWarnings("unchecked")
     public MessageWriter<T> getWriter() {
         setupServiceParameters();
-        ProviderUtils<MessageWriterProvider<T>> util = new ProviderUtils(MessageWriterProvider.class);
-        MessageWriterProvider<T> provider = util.getProvider(parameters);
+        ProviderUtils<MessageWriterProvider> util = new ProviderUtils<>(MessageWriterProvider.class);
+        MessageWriterProvider provider = util.getProvider(parameters);
         if (dataEncryption) {
             CryptoProvider cryptoProvider = util.getCryptoProvider(parameters);
             Optional.ofNullable(parameters.get("crypto"))
                     .filter(Map.class::isInstance).map(Map.class::cast)
                     .ifPresent(params -> params.put("provider", cryptoProvider.getCrypto(params)));
         }
-        return provider.getWriter(new WriterParameters<>(this));
+        WriterParameters params = new WriterParameters(this);
+        PluginMessageWriter pluginWriter = provider.getWriter(params);
+        return new SinetStreamMessageWriter<>(pluginWriter, params, serializer);
     }
 
     private void setupServiceParameters() {
         MessageUtils utils = new MessageUtils();
         Map<String, Object> serviceParameters = new HashMap<>(defaultValues);
-        serviceParameters.putAll(utils.loadServiceParameters(service));
+        serviceParameters.putAll(utils.loadServiceParameters(service, config));
         utils.mergeParameters(serviceParameters, parameters);
         updateFactoryParameters(serviceParameters);
         if (Objects.isNull(topic)) {
-            throw new IllegalStateException("Topic has not been set.");
+            throw new InvalidConfigurationException("Topic has not been set.");
         }
     }
 
@@ -151,7 +161,7 @@ public class MessageWriterFactory<T> {
         if (value instanceof String) {
             return (String) value;
         } else if (value instanceof List) {
-            List items = (List) value;
+            @SuppressWarnings("rawtypes") List items = (List) value;
             switch (items.size()) {
                 case 0:
                     break;

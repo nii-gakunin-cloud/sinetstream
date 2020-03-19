@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 National Institute of Informatics
+ * Copyright (C) 2020 National Institute of Informatics
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -22,15 +22,17 @@
 package jp.ad.sinet.stream.utils;
 
 import jp.ad.sinet.stream.api.*;
+import jp.ad.sinet.stream.api.valuetype.ValueTypeFactory;
 
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class MessageUtils {
-    Map<String, Object> loadServiceParameters(String service) {
-        return Optional.ofNullable((new ConfigLoader().loadConfigFile()).get(service))
+    Map<String, Object> loadServiceParameters(String service, Path config) {
+        return Optional.ofNullable((new ConfigLoader(config).loadConfigFile()).get(service))
                 .orElseThrow(NoServiceException::new);
     }
 
@@ -52,7 +54,7 @@ public class MessageUtils {
         if (value instanceof ValueType) {
             return (ValueType) value;
         } else if (value instanceof String) {
-            return ValueType.valueOf(((String) value).toUpperCase());
+            return new ValueTypeFactory().get((String) value);
         } else {
             return null;
         }
@@ -119,15 +121,17 @@ public class MessageUtils {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     static Deserializer toDeserializer(Object value) {
         return toClassObject(Deserializer.class, value);
     }
 
+    @SuppressWarnings("rawtypes")
     static Serializer toSerializer(Object value) {
         return toClassObject(Serializer.class, value);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public static <T> T toClassObject(Class<T> targetClass, Object value) {
         Class cls = null;
         if (targetClass.isInstance(value)) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 National Institute of Informatics
+ * Copyright (C) 2020 National Institute of Informatics
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -23,36 +23,32 @@ package jp.ad.sinet.stream.example.image;
 
 import jp.ad.sinet.stream.api.Consistency;
 import jp.ad.sinet.stream.api.MessageReader;
-import jp.ad.sinet.stream.api.ValueType;
+import jp.ad.sinet.stream.api.valuetype.ValueTypeFactory;
 import jp.ad.sinet.stream.utils.MessageReaderFactory;
 import org.apache.commons.cli.*;
 import org.bytedeco.javacv.CanvasFrame;
 
 import javax.swing.*;
 import java.awt.image.BufferedImage;
-import java.time.Duration;
 
 @SuppressWarnings({"WeakerAccess", "CodeBlock2Expr"})
 public class ImageConsumer {
 
     private final String service;
-    private final String topic;
     private final CanvasFrame canvas;
 
-    public ImageConsumer(String service, String topic) {
+    public ImageConsumer(String service) {
         this.service = service;
-        this.topic = topic;
         this.canvas = new CanvasFrame(this.getClass().getSimpleName());
         this.canvas.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
-    public void run() throws Exception {
+    public void run() {
         MessageReaderFactory<BufferedImage> factory =
                 MessageReaderFactory.<BufferedImage>builder()
                         .service(service)
-                        .topic(topic)
                         .consistency(Consistency.AT_LEAST_ONCE)
-                        .valueType(ValueType.IMAGE)
+                        .valueType(new ValueTypeFactory().get("image"))
                         .build();
         try(MessageReader<BufferedImage> reader = factory.getReader()) {
             reader.stream().forEach(msg -> {
@@ -69,16 +65,12 @@ public class ImageConsumer {
     public static void main(String[] args) {
         Options opts = new Options();
         opts.addOption(Option.builder("s").required().hasArg().longOpt("service").build());
-        opts.addOption(Option.builder("t").required().hasArg().longOpt("topic").build());
 
         CommandLineParser parser = new DefaultParser();
         ImageConsumer producer = null;
         try {
             CommandLine cmd = parser.parse(opts, args);
-            producer = new ImageConsumer(
-                    cmd.getOptionValue("service"),
-                    cmd.getOptionValue("topic")
-            );
+            producer = new ImageConsumer(cmd.getOptionValue("service"));
         } catch (ParseException e) {
             System.err.println("Parsing failed: " + e.getMessage());
             new HelpFormatter().printHelp(ImageConsumer.class.getSimpleName(), opts, true);

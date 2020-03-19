@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 National Institute of Informatics
+ * Copyright (C) 2020 National Institute of Informatics
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -24,22 +24,32 @@ package jp.ad.sinet.stream.plugins.mqtt;
 import jp.ad.sinet.stream.api.ConnectionException;
 import jp.ad.sinet.stream.api.Consistency;
 import jp.ad.sinet.stream.api.MessageWriter;
+import jp.ad.sinet.stream.api.SinetStreamIOException;
+import jp.ad.sinet.stream.api.valuetype.SimpleValueType;
 import jp.ad.sinet.stream.utils.MessageWriterFactory;
+import org.apache.commons.text.StringSubstitutor;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import static jp.ad.sinet.stream.api.Consistency.AT_MOST_ONCE;
 import static jp.ad.sinet.stream.api.Consistency.EXACTLY_ONCE;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class MqttParametersTest implements ConfigFileAware {
 
@@ -61,24 +71,16 @@ class MqttParametersTest implements ConfigFileAware {
     @Nested
     class Writer {
         @Nested
-        @EnabledIfEnvironmentVariable(named = "MQTT_PASSWORD", matches = ".+")
         class WebSockets {
 
             @ParameterizedTest
-            @ValueSource(strings = {"service-by-websocket", "service-by-websocket-and-tls-with-boolean"})
+            @ValueSource(strings = {"service-by-websocket"})
             void websockets(String service) {
-                Map<String, String> pw = new HashMap<>();
-                pw.put("username", "mqtt");
-                pw.put("password", System.getenv("MQTT_PASSWORD"));
-
                 MessageWriterFactory.MessageWriterFactoryBuilder<String> builder =
                         MessageWriterFactory.<String>builder().service(service).topic("test-topic-java-001")
                                 .consistency(Consistency.AT_LEAST_ONCE)
-                                .parameter("username_pw_set", pw)
+                                .valueType(SimpleValueType.TEXT)
                                 .parameter("transport", "websockets");
-                if (System.getenv().containsKey("MQTT_WEBSOCKET_ADDRESS")) {
-                    builder = builder.parameter("brokers", System.getenv("MQTT_WEBSOCKET_ADDRESS"));
-                }
                 try (MessageWriter<String> writer = builder.build().getWriter()) {
                     writer.write("message-1");
                 }
@@ -87,20 +89,12 @@ class MqttParametersTest implements ConfigFileAware {
             @ParameterizedTest
             @ValueSource(strings = {"service-by-websocket-and-no-tls", "service-by-websocket-and-no-tls2"})
             void noTls(String service) {
-                Map<String, String> pw = new HashMap<>();
-                pw.put("username", "mqtt");
-                pw.put("password", System.getenv("MQTT_PASSWORD"));
-
-                MessageWriterFactory.MessageWriterFactoryBuilder<String> builder0 =
-                        MessageWriterFactory.<String>builder().service(service).topic("test-topic-java-001")
+                final MessageWriterFactory.MessageWriterFactoryBuilder<String> builder =
+                        MessageWriterFactory.<String>builder()
+                                .service(service)
+                                .topic("test-topic-java-001")
                                 .consistency(Consistency.AT_LEAST_ONCE)
-                                .parameter("username_pw_set", pw)
                                 .parameter("transport", "websockets");
-                if (System.getenv().containsKey("MQTT_WEBSOCKET_ADDRESS")) {
-                    builder0 = builder0.parameter("brokers", System.getenv("MQTT_WEBSOCKET_ADDRESS"));
-                }
-
-                final MessageWriterFactory.MessageWriterFactoryBuilder<String> builder = builder0;
                 assertThrows(
                         ConnectionException.class,
                         () -> builder.build().getWriter()
@@ -110,15 +104,13 @@ class MqttParametersTest implements ConfigFileAware {
             //* ws_set_options
             //    * path
             //    * headers
+            @Disabled
             @Nested
             class WsSetOptions {
+                @SuppressWarnings("rawtypes")
                 @Test
                 void headers() {
                     String service = "service-by-websocket";
-                    Map<String, String> pw = new HashMap<>();
-                    pw.put("username", "mqtt");
-                    pw.put("password", System.getenv("MQTT_PASSWORD"));
-
                     Map<String, String> headers = new HashMap<>();
                     headers.put("X-test-sinetstream", "header-001");
                     Map<String, Map> wsOptions = new HashMap<>();
@@ -127,7 +119,6 @@ class MqttParametersTest implements ConfigFileAware {
                     MessageWriterFactory.MessageWriterFactoryBuilder<String> builder =
                             MessageWriterFactory.<String>builder().service(service).topic("test-topic-java-001")
                                     .consistency(Consistency.AT_LEAST_ONCE)
-                                    .parameter("username_pw_set", pw)
                                     .parameter("transport", "websockets")
                                     .parameter("ws_set_options", wsOptions);
                     if (System.getenv().containsKey("MQTT_WEBSOCKET_ADDRESS")) {
@@ -141,17 +132,11 @@ class MqttParametersTest implements ConfigFileAware {
                 @Test
                 void path() {
                     String service = "service-by-websocket";
-                    Map<String, String> pw = new HashMap<>();
-                    pw.put("username", "mqtt");
-                    pw.put("password", System.getenv("MQTT_PASSWORD"));
-
                     Map<String, String> wsOptions = new HashMap<>();
                     wsOptions.put("path", "/test");
-
                     MessageWriterFactory.MessageWriterFactoryBuilder<String> builder =
                             MessageWriterFactory.<String>builder().service(service).topic("test-topic-java-001")
                                     .consistency(Consistency.AT_LEAST_ONCE)
-                                    .parameter("username_pw_set", pw)
                                     .parameter("transport", "websockets")
                                     .parameter("ws_set_options", wsOptions);
                     if (System.getenv().containsKey("MQTT_WEBSOCKET_ADDRESS")) {
@@ -160,6 +145,53 @@ class MqttParametersTest implements ConfigFileAware {
                     try (MessageWriter<String> writer = builder.build().getWriter()) {
                         writer.write("message-1");
                     }
+                }
+            }
+
+            private Path makeTempKeyStore(String name) throws IOException {
+                Path path = Files.createTempFile(null, ".p12");
+                try (InputStream in = ConfigFileAware.class.getResourceAsStream("/cert/" + name)) {
+                    Files.copy(in, path, StandardCopyOption.REPLACE_EXISTING);
+                }
+                path.toFile().deleteOnExit();
+                return path;
+            }
+
+            private Path makeTempPemFile(String filename) throws IOException {
+                Path path = Files.createTempFile(null, ".pem");
+                try (InputStream in = ConfigFileAware.class.getResourceAsStream("/cert/" + filename)) {
+                    Files.copy(in, path, StandardCopyOption.REPLACE_EXISTING);
+                }
+                path.toFile().deleteOnExit();
+                return path;
+            }
+
+            @BeforeEach
+            void makeConfigFile() throws IOException {
+                Map<String, String> vars = new HashMap<>();
+                for (String name: Arrays.asList("niica", "client0")) {
+                    Path path = makeTempKeyStore(name + ".p12");
+                    vars.put(name + "KeyStore", path.toAbsolutePath().normalize().toString());
+                }
+                for (String name: Arrays.asList("ca.pem", "client0.crt", "client0.key", "client1.crt", "client1.key")) {
+                    Path path = makeTempPemFile(name);
+                    vars.put(name, path.toAbsolutePath().normalize().toString());
+                }
+
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                        ConfigFileAware.class.getResourceAsStream("/sinetstream_config.yml"), StandardCharsets.UTF_8));
+                     BufferedWriter writer = Files.newBufferedWriter(Paths.get(".sinetstream_config.yml"))) {
+                    reader.lines().map(line -> {
+                        StringSubstitutor ss = new StringSubstitutor(vars);
+                        return ss.replace(line);
+                    }).forEach(line -> {
+                        try {
+                            writer.write(line);
+                            writer.newLine();
+                        } catch (IOException e) {
+                            throw new SinetStreamIOException(e);
+                        }
+                    });
                 }
             }
         }
@@ -249,47 +281,42 @@ class MqttParametersTest implements ConfigFileAware {
         @Nested
         class Retain {
             @Test
-            void defaultRetain() throws Exception {
+            void defaultRetain() {
                 MessageWriterFactory<String> builder =
                         MessageWriterFactory.<String>builder().service("service-2").topic("test-topic-java-001")
                                 .consistency(Consistency.AT_LEAST_ONCE)
                                 .build();
                 try (MessageWriter<String> writer = builder.getWriter()) {
-                    assertFalse(getRetain(writer));
+                    assertEquals(false, writer.getConfig().get("retain"));
                     writer.write("message-1");
                 }
             }
 
             @Test
-            void badRetain() throws Exception {
+            void badRetain() {
                 MessageWriterFactory<String> builder =
                         MessageWriterFactory.<String>builder().service("service-1").topic("test-topic-java-001")
                                 .consistency(Consistency.AT_LEAST_ONCE)
                                 .parameter("retain", "xxx")
                                 .build();
                 try (MessageWriter<String> writer = builder.getWriter()) {
-                    assertFalse(getRetain(writer));
+                    assertEquals(false, writer.getConfig().get("retain"));
                     writer.write("message-1");
                 }
             }
 
             @ParameterizedTest
             @ValueSource(booleans = {true, false})
-            void retain(boolean retain) throws Exception {
+            void retain(boolean retain) {
                 MessageWriterFactory<String> builder =
                         MessageWriterFactory.<String>builder().service("service-1").topic("test-topic-java-001")
                                 .consistency(Consistency.AT_LEAST_ONCE)
                                 .parameter("retain", Boolean.toString(retain))
                                 .build();
                 try (MessageWriter<String> writer = builder.getWriter()) {
-                    assertEquals(retain, getRetain(writer));
+                    assertEquals(retain, writer.getConfig().get("retain"));
                     writer.write("message-1");
                 }
-            }
-
-            private Boolean getRetain(MessageWriter target) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-                Method method = target.getClass().getMethod("isRetain");
-                return (Boolean) method.invoke(target);
             }
         }
 

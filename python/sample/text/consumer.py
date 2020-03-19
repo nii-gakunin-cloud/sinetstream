@@ -19,26 +19,33 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import argparse
-import sys
+from argparse import ArgumentParser
+from datetime import datetime
+from sys import stderr
 from sinetstream import MessageReader
 
 
 def consumer(service):
     with MessageReader(service) as reader:
         for message in reader:
-            print(f"topic={message.topic} value='{message.value}'")
+            show_message(message)
+
+
+def show_message(message):
+    ts = datetime.fromtimestamp(message.timestamp)
+    print(f"[{ts}] topic={message.topic} value='{message.value}'")
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="SINETStream Consumer")
+    parser = ArgumentParser(description="SINETStream Consumer")
     parser.add_argument(
         "-s", "--service", metavar="SERVICE_NAME", required=True)
     args = parser.parse_args()
 
+    print("Press ctrl-c to exit the program.", file=stderr)
+    print(f": service={args.service}", file=stderr)
+
     try:
-        print("Press ctrl-c to exit the program.", file=sys.stderr)
-        print(f": service={args.service}", file=sys.stderr)
         consumer(args.service)
     except KeyboardInterrupt:
         pass

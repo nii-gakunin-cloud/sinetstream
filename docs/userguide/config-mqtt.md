@@ -19,26 +19,30 @@ specific language governing permissions and limitations
 under the License.
 -->
 
+[English](config-mqtt.en.md)
+
 SINETStream ユーザガイド
 
 # MQTT固有のパラメータ
 
 * clean_session
     * 再起動、再接続で状態を記憶するかどうか
+* protocol
+    * MQTTバージョン
+    * 指定できる値は `MQTTv31`, `MQTTv311`, `MQTTv5` のどれか
+* transport
+    * 指定できる値は `tcp`, `websocket` のどちらか
 * qos
     * メッセージを送受信する際の QoS
     * 0, 1, 2 が指定でき、それぞれ `Consistency` の `AT_MOST_ONCE`, `AT_LEAST_ONCE`, `EXACTLY_ONCE` に対応する
     * `Consistency` の設定値より、`qos` の設定値が優先される
-    * `qos` の値が設定されると `MessageReader`, `MessageWriter` から `getConsistency()` で取得する値に影響を及ぼす
+    * 指定された`qos` の値は `MessageReader`, `MessageWriter` から `getConsistency()` で取得できる
 * retain
     * サーバーがこのメッセージを保持するかどうか
-* protocol
-    * MQTTバージョン
-    * 指定できる値は `MQTTv31`, `MQTTv311` のどちらか
-* transport
-    * 指定できる値は `tcp`, `websocket` のどちらか
 * max_inflight_messages_set
-    * ネットワークフローを一度に通過できる QoS > 0のメッセージの最大数
+    * 以下のパラメータを指定できる
+        * inflight
+            * ネットワークフローを一度に通過できる QoS > 0のメッセージの最大数
 * ws_set_options
     * WebSocket接続のオプションを指定する
     * 以下のパラメータを指定できる
@@ -55,26 +59,30 @@ SINETStream ユーザガイド
             * クライアント証明書ファイル (PEM) のパス
         * keyfile
             * クライアント証明書の秘密鍵ファイル (PEM) のパス
-        * keyfilePassword
+        * keyfilePassword (*)
             * クライアント証明書の秘密鍵ファイル (PEM) のパスワード
         * tls_version
             * TLSプロトコルのバージョン
         * ciphers
             * この接続で許可する暗号
-        * trustStore
+        * trustStore (*)
             * トラストストアのパス
-        * trustStoreType
+        * trustStoreType (*)
             * トラストストアのファイルフォーマット (jks, pkcs12, ...)
-        * trustStorePassword
+        * trustStorePassword (*)
             * トラストストアのパスワード
-        * keyStore
+        * keyStore (*)
             * キーストアのパス
-        * keyStoreType
+        * keyStoreType (*)
             * キーストアのファイルフォーマット (jks, pkcs12, ...)
-        * keyStorePassword
+        * keyStorePassword (*)
             * キーストアのパスワード
+> (*) `trustStore`, `trustStoreType`, `trustStorePassword`, `keyStore`, `keyStoreType`, `keyStorePassword`, `keyfilePassword` は
+> Java APIのみで指定できるパラメータである。Python API では指定できない。
 * tls_insecure_set
-    * TLS接続でホスト名の検証を無視するかどうか
+    * 以下のパラメータを指定できる
+        * value
+            * TLS接続でホスト名の検証を無視するかどうか
 * username_pw_set
     * 認証用のユーザ、パスワードをマッピングで指定する
     * 以下のパラメータを指定する
@@ -84,8 +92,8 @@ SINETStream ユーザガイド
     * Last Will and Testament (LWT) に関するパラメータをマッピングで指定する
     * クライアントが予期せず切断された場合、ブローカーがLWTに設定されているメッセージを代わりに発行する
     * 以下のパラメータを指定できる
-        * topic (必須)
-        * payload (必須)
+        * topic
+        * payload
         * qos
         * retain
 * reconnect_delay_set
@@ -100,11 +108,12 @@ SINETStream ユーザガイド
     * 以下のパラメータを指定できる
         * keepalive
             * キープアライブの間隔 (秒) を指定する
-        * automatic_reconnect
+        * automatic_reconnect (*)
             * 接続が切れた場合に、自動的に再接続を行うかどうか
-        * connection_timeout
+        * connection_timeout (*)
             * 接続タイムアウト値 (秒) を指定する
-
+> (*) `automatic_reconnect`, `connection_timeout` は
+> Java APIのみで指定できるパラメータである。Python API では指定できない。
 
 ## MQTTの設定例
 

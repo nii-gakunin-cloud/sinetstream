@@ -21,13 +21,6 @@ under the License.
 
 # SINETStream example
 
-## 準備
-
-SINETStreamのjarファイルを./libs に配置する。
-
-$ mkdir libs
-$ cp ../../*/build/libs/SINETStream*.jar libs
-
 ## ビルド
 
 次のコマンドを実行する。
@@ -56,13 +49,12 @@ zip, tar でアーカイブしたファイルが作成されている。
 ```
 service-1:
   type: kafka
-  brokers:
-    - kafka1.example.org:9092
-    - kafka2.example.org:9092
-    - kafka3.example.org:9092
+  brokers: kafka.example.org:9092
+  topic: test-image-topic-1
 service-2:
   type: mqtt
   brokers: mqtt.example.org:1883
+  topic: test-image-topic-2
 ```
 
 ## 実行手順
@@ -70,17 +62,15 @@ service-2:
 まずコンシューマを実行する。
 
 ```
-$ ./bin/image-consumer -s service-1 -t test-topic
+$ ./bin/image-consumer -s service-1
 ```
 
 `-s` には設定ファイルに定義したサービス名を指定する。
-`-t` はコンシューマがメッセージを取得するトピック名を指定する。
 
-次にプロデューサーを実行する。サービス名とトピック名はコンシューマ
-と同じ値を指定する。
+次にプロデューサーを実行する。サービス名はコンシューマと同じ値を指定する。
 
 ```
-$ ./bin/image-producer -s service-1 -t test-topic -f movie.mp4
+$ ./bin/image-producer -s service-1 -f movie.mp4
 ```
 
 `-f` に指定した動画ファイルから画像を切り出してブローカに送信する。

@@ -21,27 +21,22 @@
 
 package jp.ad.sinet.stream.plugins.mqtt;
 
-import jp.ad.sinet.stream.api.MessageReader;
-import jp.ad.sinet.stream.api.MessageWriter;
-import jp.ad.sinet.stream.spi.MessageReaderProvider;
-import jp.ad.sinet.stream.spi.MessageWriterProvider;
-import jp.ad.sinet.stream.spi.ReaderParameters;
-import jp.ad.sinet.stream.spi.WriterParameters;
+import jp.ad.sinet.stream.spi.*;
 import lombok.extern.java.Log;
 
 @Log
-public class MqttMessageProvider<T> implements MessageWriterProvider<T>, MessageReaderProvider<T> {
+public class MqttMessageProvider implements MessageWriterProvider, MessageReaderProvider {
 
     @Override
-    public MessageWriter<T> getWriter(WriterParameters<T> params) {
+    public PluginMessageWriter getWriter(WriterParameters params) {
         log.fine(() -> "MQTT getWriter: " + params.toString());
-        return new MqttMessageWriter<>(params);
+        return new MqttMessageWriter(params);
     }
 
     @Override
-    public MessageReader<T> getReader(ReaderParameters<T> params) {
+    public PluginMessageReader getReader(ReaderParameters params) {
         log.fine(() -> "MQTT getReader: " + params.toString());
-        return new MqttMessageReader<>(params);
+        return new MqttMessageReader(params);
     }
 
     @Override

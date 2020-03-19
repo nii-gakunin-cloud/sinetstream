@@ -19,6 +19,8 @@ specific language governing permissions and limitations
 under the License.
 -->
 
+[English](api-java.en.md)
+
 SINETStream ユーザガイド
 
 # Java API
@@ -149,20 +151,25 @@ try(MessageReader<String> reader = factory.getReader()) {
     * 列挙型で `AT_MOST_ONCE`, `AT_LEAST_ONCE`, `EXACTLY_ONCE` のいずれかの値をとる
     * デフォルト値は `AT_MOST_ONCE`
 * valueType(ValueType)
-    * メッセージのタイプ
-    * 列挙型で `text`, ``byte_array` のいずれかの値をとる
-    * デフォルト値は `text`
-    * この設定値によって、デフォルトのシリアライザが設定される
+    * メッセージのデータ本体部分（ペイロード）のタイプ
+    * `MessageWriter.write()` が送信するメッセージは、このパラメータに対応するシリアライザによってバイト列に変換される
+    * 標準パッケージでは `SimpleValueType.BYTE_ARRAY`, `SimpleValueType.TEXT` の何れかを指定する
+        * `SimpleValueType.BYTE_ARRAY`(デフォルト値)を指定した場合、ペイロードの型は `byte[]` として処理する
+        * `SimpleValueType.TEXT`を指定した場合、ペイロードの型は `java.lang.String` として処理する
+    * 追加パッケージをインストールすることにより、サポートする`ValueType`の種類を増やすことができる
+        * SINETStream v1.1 では画像タイプを追加するパッケージを提供している
+        * 画像タイプを指定する場合は`valueType()`の引数に `new ValueTypeFactory().get("image")` を設定する
+        * 画像タイプを指定した場合、ペイロードの型は `java.awt.image.BufferedImage` として処理する
 * serializer(Serializer\<T\>)
-    * メッセージのシリアライザ
-    * 指定されなかった場合は、`valueType`の値に応じたデフォルトのシリアライザを利用する
+    * メッセージのデータ本体のシリアライザ
+    * このパラメータを指定しない場合、シリアライザは`valueType`の値から決定される
 * dataEncryption(Boolean)
     * メッセージを暗号化の有効、無効の指定
     * 暗号化を有効にする場合は、暗号化に関するパラメータ `crypto` が設定ファイルなどで指定されている必要がある
 * parameter(String key, Object value)
-    * メッセージングシステム固有のパラメータを指定する
+    * メッセージングシステム固有のパラメータを指定する。設定ファイルと異なる値を指定したい場合にマッピングを指定する
 * parameters(Map\<String, Object\> parameters)
-    * メッセージングシステム固有のパラメータを指定する
+    * メッセージングシステム固有のパラメータを指定する。設定ファイルと異なる値を複数のマッピングペアで指定する
 
 ビルダークラスのインスタンスを取得するには `MessageWriterFactory.builder()` を呼び出す。
 また、ビルダーオブジェクトからファクトリオブジェクトを得るには `build()` を呼び出す。
@@ -183,7 +190,7 @@ MessageWriterFactory<String> factory =
 
 ファクトリクラスのインスタンスに対して `getWriter()` を呼び出すことで、ライタークラス
 `MessageWriter` のインスタンスが取得できる。
-`MessageWriter` には `AutoClosable` が実装されているので try-with-resources 文を利用できる。
+`MessageWriter` には `AutoCloseable` が実装されているので try-with-resources 文を利用できる。
 以下に例を示す。
 
 ```
@@ -218,22 +225,27 @@ try (MessageWriter<String> writer = factory.getWriter()) {
     * 列挙型で `AT_MOST_ONCE`, `AT_LEAST_ONCE`, `EXACTLY_ONCE` のいずれかの値をとる
     * デフォルト値は `AT_MOST_ONCE`
 * valueType(ValueType)
-    * メッセージのタイプ
-    * 列挙型で `text`, ``byte_array` のいずれかの値をとる
-    * デフォルト値は `text`
-    * この設定値によって、デフォルトのデシリアライザが設定される
+    * メッセージのデータ本体部分（ペイロード）のタイプ
+    * `MessageReader.read()` で受信するメッセージは、このパラメータに対応するデシリアライザによってバイト列から変換される
+    * 標準パッケージでは `SimpleValueType.BYTE_ARRAY`, `SimpleValueType.TEXT` の何れかを指定する
+        * `SimpleValueType.BYTE_ARRAY`(デフォルト値)を指定した場合、ペイロードの型は `byte[]` として処理する
+        * `SimpleValueType.TEXT`を指定した場合、ペイロードの型は `java.lang.String` として処理する
+    * 追加パッケージをインストールすることにより、サポートする`ValueType`の種類を増やすことができる
+        * SINETStream v1.1 では画像タイプを追加するパッケージを提供している
+        * 画像タイプを指定する場合は`valueType()`の引数に `new ValueTypeFactory().get("image")` を設定する
+        * 画像タイプを指定した場合、ペイロードの型は `java.awt.image.BufferedImage` として処理する
 * deserializer(Serializer\<T\>)
-    * メッセージのデシリアライザ
-    * 指定されなかった場合は、`valueType` の値に応じたデフォルトのデシリアライザを利用する
+    * メッセージのデータ本体のデシリアライザ
+    * このパラメータを指定しない場合、デシリアライザは`valueType`の値から決定される
 * dataEncryption(Boolean)
     * 暗号化されたメッセージの復号処理の有効、無効の指定
     * 暗号化を有効にする場合は、暗号化に関するパラメータ `crypto` が設定ファイルなどで指定されている必要がある
 * receiveTimeout(Duration)
     * `MessageReader` の `read()` メソッドがメッセージの到着を待つ最大待ち時間
 * parameter(String key, Object value)
-    * 設定ファイルと異なる値を指定したい場合にマッピングを指定する
+    * メッセージングシステム固有のパラメータを指定する。設定ファイルと異なる値を指定したい場合にマッピングを指定する
 * parameters(Map\<String, Object\> parameters)
-    * 設定ファイルと異なる値を複数のマッピングペアで指定する
+    * メッセージングシステム固有のパラメータを指定する。設定ファイルと異なる値を複数のマッピングペアで指定する
 
 ビルダークラスのインスタンスを取得するには `MessageReaderFactory.builder()` を呼び出す。
 また、ビルダーオブジェクトからファクトリオブジェクトを得るには `build()` を呼び出す。
@@ -253,7 +265,7 @@ MessageReaderFactory<String> factory =
 ブローカーからメッセージを受信するクラス。
 
 ファクトリクラスのインスタンスに対して `getReader()` を呼び出すことで、リーダークラス `MessageReader` のインスタンスが取得できる。
-`MessageReader` には `AutoClosable` が実装されているので try-with-resources 文を利用できる。
+`MessageReader` には `AutoCloseable` が実装されているので try-with-resources 文を利用できる。
 以下に例を示す。
 
 ```
@@ -269,7 +281,21 @@ try (MessageReader<String> reader = factory.getReader()) {
 ```
 
 `read()` メソッドの返り値は `Message<T>` クラスのインスタンスになる。
-`getTopic()` でトピック名が、`getValue()` でメッセージの値が取得できる。
+
+### Message
+
+ブローカーから受信したメッセージのクラス。
+
+* getTopic()
+    * トピック名を取得する。
+* getValue()
+    * メッセージの値を取得する。
+* getTimestamp()
+    * メッセージ送信時刻(Unix時間;単位は秒)を取得する。
+    * 値 `0` は時刻が設定されてないことを示す。
+* getTimestampMicroseconds()
+    * メッセージ送信時刻(Unix時間;単位はマイクロ秒単位)を取得する。
+    * 値 `0` は時刻が設定されてないことを示す。
 
 ### 例外一覧
 
@@ -282,6 +308,13 @@ try (MessageReader<String> reader = factory.getReader()) {
 | InvalidConfigurationException | MessageReaderFactory#getReader() MessageWriterFactory#getWriter()  | 設定ファイルの記述内容に誤りがある |
 | SinetStreamIOException | MessageReaderFactory#getReader() MessageWriterFactory#getWriter() MessageReader\<T\>#read() MessageReader\<T\>#close() MessageWriter\<T\>#write(T) MessageWriter\<T\>#close() | メッセージングシステムとのIOでエラーが発生した |
 | SinetStreamException | MessageReaderFactory#getReader() MessageWriterFactory#getWriter() MessageReader\<T\>#read() MessageReader\<T\>#close() MessageWriter\<T\>write(T) MessageWriter\<T\>close() | SINETStreamに関するその他のエラー |
+| InvalidMessageException | MessageReader\<T\>#read() | メッセージのフォーマットが間違っている |
+| AuthenticationException | MessageReaderFactory#getReader() MessageWriterFactory#getWriter() | ブローカーとの接続で認証エラーになった |
+| AuthorizationException | MessageReader\<T\>#read() MessageWriter\<T\>#write() | 認可されない操作を行った(*) |
+
+(*) メッセージングシステムのタイプや`Consistency`のパラメータによっては認可されない操作を行っても例外が発生しない場合がある。
+1. MQTT(Mosquitto)では認可されない操作を行ってもブローカーがエラーを返さないため例外が発生しない
+2. Kafkaのブローカーに対して`Consistency`に`AT_MOST_ONCE`を指定してメッセージの送信を行った場合、ブローカーからの応答を待たずに送信処理が完了するため、認可されない操作を行った場合も例外が発生しない
 
 ## メッセージングシステム固有のパラメータ
 
@@ -293,7 +326,7 @@ try (MessageReader<String> reader = factory.getReader()) {
 APIのjarファイルを `java -jar` の後に指定して実行すると、チートシートが表示される。
 
 ```
-$ java -jar SINETStream-api-1.0.0.jar
+$ java -jar SINETStream-api-1.1.0.jar
 
 ==================================================
 MessageWriter example
@@ -323,7 +356,7 @@ MessageWriterFactory parameters:
         If not specified, use default serializer according to valueType.
     topic(String topic)
         The topic to send.
-    valueType(ValueType valueType[=TEXT])
+    valueType(ValueType valueType[=SimpleValueType.BYTE_ARRAY])
         The type of message.
 ==================================================
 MessageReader example
@@ -358,6 +391,6 @@ MessageReaderFactory parameters:
         The topic to receive.
     topics(Collection topics)
         A list of topics to receive.
-    valueType(ValueType valueType[=TEXT])
+    valueType(ValueType valueType[=SimpleValueType.BYTE_ARRAY])
         The type of message.
 ```

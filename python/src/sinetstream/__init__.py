@@ -18,9 +18,12 @@
 # under the License.
 
 from .api import (
-    MessageReader, MessageWriter, make_message,
+    MessageReader, MessageWriter, AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE,
+    DEFAULT_CLIENT_ID,
+)
+from .error import (
     SinetError, NoServiceError, NoConfigError, InvalidArgumentError,
     ConnectionError, AlreadyConnectedError, UnsupportedServiceTypeError,
-    AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE, DEFAULT_CLIENT_ID,
-    TEXT, BYTE_ARRAY,
+    InvalidMessageError, AuthorizationError,
 )
+from .value_type import TEXT, BYTE_ARRAY

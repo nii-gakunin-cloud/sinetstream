@@ -22,6 +22,8 @@ specific language governing permissions and limitations
 under the License.
 --->
 
+[English](README.en.md)
+
 ## メッセージングシステムの概念
 
 SINETStreamは
@@ -50,10 +52,14 @@ Writer/Readerはトピックを指定してメッセージの送受信を行う�
     * src/
         * Python版SINETStreamの共通部分
     * plugins/
-        * kafka/
-            * Python版SINETStreamのKafka固有部分
-        * mqtt/
-            * Python版SINETStreamのMQTT固有部分
+        * broker/
+            * kafka/
+                * Python版SINETStreamのKafka固有部分
+            * mqtt/
+                * Python版SINETStreamのMQTT固有部分
+        * value_type/
+            * image/
+                * 画像メッセージのサポート
     * sample/
         * サンプルプログラム
 * java/
@@ -65,6 +71,8 @@ Writer/Readerはトピックを指定してメッセージの送受信を行う�
         * Java版SINETStreamのKafka固有部分
     * plugin-mqtt/
         * Java版SINETStreamのMQTT固有部分
+    * plugin-type-image/
+        * 画像メッセージのサポート
     * sample/
         * サンプルプログラム
 * docs/
@@ -72,6 +80,8 @@ Writer/Readerはトピックを指定してメッセージの送受信を行う�
         * [ユーザガイド](docs/userguide/index.md)
     * tutorial/
         * [チュートリアル](docs/tutorial/index.md)
+    * developer_guide/
+        * [開発者ガイド](docs/developer_guide/index.md)
 
 ## 動作環境
 
@@ -113,8 +123,9 @@ dockerコンテナをつかった[チュートリアル](docs/tutorial/index.md)
 * [チュートリアル](docs/tutorial/index.md)
 * [ユーザガイド](docs/userguide/index.md)
 * [SINETStream性能測定結果](docs/performance/index.md)
+* [プラグイン開発ガイド](docs/developer_guide/index.md)
 * [更新履歴](CHANGELOG.md)
 
 ## ライセンス
 
-[Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
+[Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0).

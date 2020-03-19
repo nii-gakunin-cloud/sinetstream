@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 National Institute of Informatics
+ * Copyright (C) 2020 National Institute of Informatics
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -21,10 +21,21 @@
 
 package jp.ad.sinet.stream.api;
 
-public interface Message<T> {
-    T getValue();
+import lombok.Value;
 
-    String getTopic();
+import java.util.Objects;
 
-    Object getRaw();
+@Value
+public class Message<T> {
+    private T value;
+    private String topic;
+    private Long timestampMicroseconds;
+    private Object raw;
+
+    public Long getTimestamp() {
+        if (Objects.isNull(timestampMicroseconds)) {
+            return null;
+        }
+        return timestampMicroseconds / 1000_000L;
+    }
 }

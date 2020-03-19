@@ -21,10 +21,8 @@
 
 package jp.ad.sinet.stream.plugins.mqtt;
 
-import jp.ad.sinet.stream.api.MessageWriter;
-import jp.ad.sinet.stream.api.Serializer;
 import jp.ad.sinet.stream.api.SinetStreamIOException;
-import jp.ad.sinet.stream.crypto.CryptoSerializerWrapper;
+import jp.ad.sinet.stream.spi.PluginMessageWriter;
 import jp.ad.sinet.stream.spi.WriterParameters;
 import lombok.Getter;
 import lombok.extern.java.Log;
@@ -34,41 +32,27 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.logging.Level;
 
 @Log
-public class MqttMessageWriter<T> extends MqttBaseIO implements MessageWriter<T> {
+public class MqttMessageWriter extends MqttBaseIO implements PluginMessageWriter {
 
     @Getter
     private final String topic;
 
-    @Getter
-    private final Serializer<T> serializer;
-
-    @SuppressWarnings("unchecked")
-    MqttMessageWriter(WriterParameters<T> parameters) {
+    MqttMessageWriter(WriterParameters parameters) {
         super(parameters.getService(), parameters.getConsistency(), parameters.getClientId(), parameters.getConfig(),
                 parameters.getValueType(), parameters.isDataEncryption());
         this.topic = parameters.getTopic();
-
-        Serializer<T> ser;
-        if (Objects.isNull(parameters.getSerializer())) {
-            ser = valueType.getSerializer();
-        } else {
-            ser = parameters.getSerializer();
-        }
-        serializer = CryptoSerializerWrapper.getSerializer(config, ser);
         this.client.setCallback(new MqttMessageWriter.SinetMqttCallback());
         connect();
     }
 
     @Override
-    public void write(T message) {
+    public void write(byte[] message) {
         try {
-            byte[] payload = serializer.serialize(message);
-            log.finer(() -> "MQTT publish: " + getClientId() + ": " + Arrays.toString(payload));
-            client.publish(topic, payload, consistency.getQos(), retain);
+            log.finer(() -> "MQTT publish: " + getClientId() + ": " + Arrays.toString(message));
+            client.publish(topic, message, consistency.getQos(), retain);
         } catch (MqttException e) {
             throw new SinetStreamIOException(e);
         }

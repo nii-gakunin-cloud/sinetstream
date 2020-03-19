@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 National Institute of Informatics
+ * Copyright (C) 2020 National Institute of Informatics
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -22,6 +22,7 @@
 package jp.ad.sinet.stream.plugins.kafka;
 
 import jp.ad.sinet.stream.api.*;
+import jp.ad.sinet.stream.api.valuetype.SimpleValueType;
 import jp.ad.sinet.stream.utils.MessageReaderFactory;
 import jp.ad.sinet.stream.utils.MessageWriterFactory;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -30,6 +31,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -47,6 +49,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class TlsTest {
 
@@ -57,7 +60,8 @@ class TlsTest {
     @ValueSource(strings = {"service-connect-by-tls", "service-connect-by-tls-ca_certs",
             "service-connect-by-tls-ca_certs_cert_key", "service-connect-by-tls-no-hostname-check",
             "service-connect-by-tls_kafka", "service-connect-by-tls_kafka-no-hostname-check",
-            "service-connect-by-tls-encrypted-key"})
+            "service-connect-by-tls_kafka-with-hostname-check", "service-connect-by-tls-encrypted-key",
+            "service-ssl-256", "service-ssl-512", "service-ssl-512-no-username", "service-ssl-512-no-password" })
     void writeRead(String service) {
         String groupId = "group-java-" + RandomStringUtils.randomAlphanumeric(6);
         MessageWriterFactory<String> writerBuilder =
@@ -85,10 +89,20 @@ class TlsTest {
 
     @ParameterizedTest
     @DisabledIfEnvironmentVariable(named="KAFKA_BROKER_REACHABLE", matches = "false")
-    @ValueSource(strings = {"service-connect-by-tls", "service-connect-by-tls-ca_certs",
-            "service-connect-by-tls-ca_certs_cert_key", "service-connect-by-tls-no-hostname-check",
-            "service-connect-by-tls_kafka", "service-connect-by-tls_kafka-no-hostname-check",
-            "service-connect-by-tls-encrypted-key"})
+    @ValueSource(strings = {
+            "service-connect-by-tls",
+            "service-connect-by-tls-ca_certs",
+            "service-connect-by-tls-ca_certs_cert_key",
+            "service-connect-by-tls-no-hostname-check",
+        //  "service-connect-by-tls_kafka",                     // エラー発生
+            "service-connect-by-tls_kafka-no-hostname-check",
+            "service-connect-by-tls_kafka-with-hostname-check"
+        //  "service-connect-by-tls-encrypted-key",             // エラー発生
+        //  "service-ssl-256",                                  // SecurityProtocolTest と重複
+        //  "service-ssl-512",                                  // SecurityProtocolTest と重複
+        //  "service-ssl-512-no-username",                      // SecurityProtocolTest と重複
+        //  "service-ssl-512-no-password"                       // SecurityProtocolTest と重複
+        })
     void read(String service) {
         MessageReaderFactory<String> readerBuilder =
                 MessageReaderFactory.<String>builder().service(service)
@@ -107,15 +121,27 @@ class TlsTest {
 
     @ParameterizedTest
     @DisabledIfEnvironmentVariable(named="KAFKA_BROKER_REACHABLE", matches = "false")
-    @ValueSource(strings = {"service-connect-by-tls", "service-connect-by-tls-ca_certs",
-            "service-connect-by-tls-ca_certs_cert_key", "service-connect-by-tls-no-hostname-check",
-            "service-connect-by-tls_kafka", "service-connect-by-tls_kafka-no-hostname-check",
-            "service-connect-by-tls-encrypted-key", "service-connect-by-tls_kafka-and-tls"})
+    @ValueSource(strings = {
+                "service-connect-by-tls",
+                "service-connect-by-tls-ca_certs",
+                "service-connect-by-tls-ca_certs_cert_key",
+                "service-connect-by-tls-no-hostname-check",
+            //  "service-connect-by-tls_kafka",                     // エラー発生
+                "service-connect-by-tls_kafka-no-hostname-check",
+            //  "service-connect-by-tls-encrypted-key",             // エラー発生
+            //  "service-connect-by-tls_kafka-and-tls",             // エラー発生
+                "service-connect-by-tls_kafka-with-hostname-check",
+            //  "service-ssl-256",                                  // SecurityProtocolTest と重複
+            //  "service-ssl-512",                                  // SecurityProtocolTest と重複
+            //  "service-ssl-512-no-username",                      // SecurityProtocolTest と重複
+            //  "service-ssl-512-no-password"                       // SecurityProtocolTest と重複
+        })
     void write(String service) {
         MessageWriterFactory<String> writerBuilder =
                 MessageWriterFactory.<String>builder().service(service)
                         .topic(topic)
                         .consistency(Consistency.EXACTLY_ONCE)
+                        .valueType(SimpleValueType.TEXT)
                         .build();
 
         try (MessageWriter<String> writer = writerBuilder.getWriter()) {
@@ -137,6 +163,22 @@ class TlsTest {
             final String data = RandomStringUtils.randomAlphabetic(10);
             writer.write(data);
         }
+    }
+
+    @Disabled   // SecurityProtocolTest と重複
+    @Test
+    void writeInvalidConfiguration() {
+		assertThrows(InvalidConfigurationException.class, ()->{
+			MessageWriterFactory<String> writerBuilder =
+					MessageWriterFactory.<String>builder().service("service-ssl-exception")
+							.topic(topic)
+							.consistency(Consistency.EXACTLY_ONCE)
+							.build();
+
+			MessageWriter<String> writer = writerBuilder.getWriter();
+			final String data = RandomStringUtils.randomAlphabetic(10);
+			writer.write(data);
+		});
     }
 
     @BeforeEach

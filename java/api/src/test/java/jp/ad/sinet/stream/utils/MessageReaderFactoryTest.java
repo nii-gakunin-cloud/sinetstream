@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 National Institute of Informatics
+ * Copyright (C) 2020 National Institute of Informatics
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -22,9 +22,12 @@
 package jp.ad.sinet.stream.utils;
 
 import jp.ad.sinet.stream.ConfigFileAware;
+import jp.ad.sinet.stream.api.InvalidConfigurationException;
 import jp.ad.sinet.stream.api.MessageReader;
 import jp.ad.sinet.stream.api.NoServiceException;
 import jp.ad.sinet.stream.api.ValueType;
+import jp.ad.sinet.stream.api.valuetype.SimpleValueType;
+import jp.ad.sinet.stream.api.valuetype.ValueTypeFactory;
 import org.junit.jupiter.api.Test;
 
 import java.awt.image.BufferedImage;
@@ -39,7 +42,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class MessageReaderFactoryTest implements ConfigFileAware {
 
-    private static final String DEFAULT_SERVICE = "service-0";
+    private static final String DEFAULT_SERVICE = "service-00";
     private static final String SERVICE = "service-with-parameters-for-reader";
     private static final String DESERIALIZER_SERVICE = "service-with-serializer-deserializer";
     private static final String TOPIC = "test-topic-java-001";
@@ -53,7 +56,7 @@ class MessageReaderFactoryTest implements ConfigFileAware {
     @Test
     void noTopic() {
         MessageReaderFactory<String> factory = MessageReaderFactory.<String>builder().service(DEFAULT_SERVICE).build();
-        assertThrows(IllegalStateException.class, factory::getReader);
+        assertThrows(InvalidConfigurationException.class, factory::getReader);
     }
 
     @Test
@@ -79,10 +82,11 @@ class MessageReaderFactoryTest implements ConfigFileAware {
         MessageReader<String> reader = factory.getReader();
         assertEquals(AT_MOST_ONCE, reader.getConsistency());
         assertFalse(reader.isDataEncryption());
-        assertEquals(ValueType.TEXT, reader.getValueType());
+        assertEquals(SimpleValueType.BYTE_ARRAY, reader.getValueType());
         assertEquals(Duration.ofNanos(Long.MAX_VALUE), reader.getReceiveTimeout());
     }
 
+    @SuppressWarnings("rawtypes")
     @Test
     void configurationFileParameters() {
         MessageReaderFactory<byte[]> factory =
@@ -90,7 +94,7 @@ class MessageReaderFactoryTest implements ConfigFileAware {
         MessageReader<byte[]> reader = factory.getReader();
         assertEquals(AT_LEAST_ONCE, reader.getConsistency());
         assertTrue(reader.isDataEncryption());
-        assertEquals(ValueType.BYTE_ARRAY, reader.getValueType());
+        assertEquals(SimpleValueType.BYTE_ARRAY, reader.getValueType());
         assertEquals(Duration.ofMillis(10000), reader.getReceiveTimeout());
         assertEquals("client-001", reader.getClientId());
         assertIterableEquals(Arrays.asList("topic-001", "topic-002"), reader.getTopics());
@@ -102,18 +106,20 @@ class MessageReaderFactoryTest implements ConfigFileAware {
                 (List) reader.getConfig().get("brokers"));
     }
 
+    @SuppressWarnings("rawtypes")
     @Test
     void constructorParameters() {
         Map<String, String> crypto = new LinkedHashMap<>();
         crypto.put("algorithm", "AES");
         crypto.put("mode", "CBC");
         crypto.put("padding", "pkcs7");
+        ValueType valueType = new ValueTypeFactory().get("image");
 
         MessageReaderFactory<BufferedImage> factory =
                 MessageReaderFactory.<BufferedImage>builder()
                         .service(SERVICE)
                         .consistency(EXACTLY_ONCE)
-                        .valueType(ValueType.IMAGE)
+                        .valueType(valueType)
                         .dataEncryption(false)
                         .receiveTimeout(Duration.ofSeconds(60))
                         .topics(Arrays.asList("topic-003", "topic-004"))
@@ -123,47 +129,14 @@ class MessageReaderFactoryTest implements ConfigFileAware {
         MessageReader<BufferedImage> reader = factory.getReader();
         assertEquals(EXACTLY_ONCE, reader.getConsistency());
         assertFalse(reader.isDataEncryption());
-        assertEquals(ValueType.IMAGE, reader.getValueType());
+        assertEquals(valueType, reader.getValueType());
         assertEquals(Duration.ofSeconds(60), reader.getReceiveTimeout());
         assertIterableEquals(Arrays.asList("topic-003", "topic-004", "topic-005"), reader.getTopics());
-        assertEquals(ValueType.IMAGE.getDeserializer(), reader.getDeserializer());
-
         assertIterableEquals(
                 Arrays.asList("algorithm", "mode", "padding"), ((Map) reader.getConfig().get("crypto")).keySet());
 
         assertIterableEquals(
                 Arrays.asList("dummy0.example.org:1718", "dummy1.example.org"),
                 (List) reader.getConfig().get("brokers"));
-    }
-
-    @Test
-    void deserializer() {
-        MessageReaderFactory<String> factory =
-                MessageReaderFactory.<String>builder().service(DESERIALIZER_SERVICE).build();
-        MessageReader<String> reader = factory.getReader();
-        assertEquals(new StringDeserializer(), reader.getDeserializer());
-    }
-
-    @Test
-    void deserializerByConstructorParameter() {
-        MessageReaderFactory<BufferedImage> factory =
-                MessageReaderFactory.<BufferedImage>builder()
-                        .service(DESERIALIZER_SERVICE)
-                        .parameter("value_deserializer", ImageDeserializer.class)
-                        .build();
-        MessageReader<BufferedImage> reader = factory.getReader();
-        assertEquals(new ImageDeserializer(), reader.getDeserializer());
-    }
-
-    @Test
-    void deserializerByConstructorParameterAndDeserializer() {
-        MessageReaderFactory<String> factory =
-                MessageReaderFactory.<String>builder()
-                        .service(DESERIALIZER_SERVICE)
-                        .deserializer(new StringDeserializer())
-                        .parameter("value_deserializer", ImageDeserializer.class)
-                        .build();
-        MessageReader<String> reader = factory.getReader();
-        assertEquals(new StringDeserializer(), reader.getDeserializer());
     }
 }

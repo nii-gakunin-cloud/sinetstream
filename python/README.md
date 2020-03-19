@@ -19,6 +19,8 @@ specific language governing permissions and limitations
 under the License.
 -->
 
+[English](README.en.md)
+
 # SINETStream python
 
 ## ファイル構成
@@ -30,10 +32,14 @@ under the License.
 * sample/
     * サンプルプログラム
 * plugins/
-    * kafka/
-        * Python版SINETStreamのKafka固有部分
-    * mqtt
-        * Python版SINETStreamのMQTT固有部分
+    * broker/
+        * kafka/
+            * SINETStreamのKafkaプラグイン
+        * mqtt
+            * SINETStreamのMQTTプラグイン
+    * value_type/
+        * image/
+            * 画像をメッセージとして扱うためのプラグイン
 * README.md
 
 ## ビルド手順
@@ -42,19 +48,21 @@ under the License.
 
 ```
 $ python3 setup.py bdist_wheel
-$ cd plugins/kafka
+$ cd plugins/broker/kafka
 $ python3 setup.py bdist_wheel
 $ cd ../mqtt
 $ python3 setup.py bdist_wheel
-$ cd ../..
+$ cd ../../value_type/image
+$ python3 setup.py bdist_wheel
 ```
 
-ビルドが成功すると以下のWHLファイルが作成される。
+ビルドが成功すると以下のwheel ファイルが作成される。
 
 ```
-./dist/sinetstream-1.0.0-py3-none-any.whl
-./plugins/kafka/dist/sinetstream_kafka-1.0.0-py3-none-any.whl
-./plugins/mqtt/dist/sinetstream_mqtt-1.0.0-py3-none-any.whl
+./dist/sinetstream-1.1.0-py3-none-any.whl
+./plugins/broker/kafka/dist/sinetstream_kafka-1.1.0-py3-none-any.whl
+./plugins/broker/mqtt/dist/sinetstream_mqtt-1.1.0-py3-none-any.whl
+./plugins/value_type/image/dist/sinetstream_type_image-1.1.0-py3-none-any.whl
 ```
 
 ## インストール
@@ -63,6 +71,12 @@ pypiに登録してあるパッケージを利用することもできる。
 
 ```
 pip3 install --user sinetstream-kafka sinetstream-mqtt
+```
+
+画像をメッセージとして扱いたい場合は、imageプラグインをインストールする。
+
+```
+pip3 install --user sinetstream-type-image
 ```
 
 ## 依存関係にあるライブラリ
