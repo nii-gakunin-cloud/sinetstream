@@ -30,6 +30,9 @@ version = '1.1.0'
 
 repositories {
     jcenter()
+    maven {
+        url  "https://dl.bintray.com/nii-gakunin-cloud/maven"
+    }
 }
 
 dependencies {

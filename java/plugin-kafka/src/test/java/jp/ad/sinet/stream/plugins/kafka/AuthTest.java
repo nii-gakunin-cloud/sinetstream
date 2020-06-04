@@ -22,197 +22,378 @@
 package jp.ad.sinet.stream.plugins.kafka;
 
 import jp.ad.sinet.stream.api.*;
-import jp.ad.sinet.stream.api.valuetype.SimpleValueType;
 import jp.ad.sinet.stream.utils.MessageReaderFactory;
 import jp.ad.sinet.stream.utils.MessageWriterFactory;
-import lombok.SneakyThrows;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.TestReporter;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.function.Executable;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
+import java.nio.file.Path;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
-class AuthTest implements ConfigFileAware {
+class AuthTest {
 
-    private String topic;
+    @TempDir
+    Path workdir;
 
-    @ParameterizedTest
-    @EnumSource(Consistency.class)
-    void passwordAuthWrite(Consistency consistency) {
-        MessageWriterFactory<String> writerBuilder =
-                MessageWriterFactory.<String>builder()
-                        .service("auth-password")
-                        .topic(topic)
-                        .consistency(consistency)
-                        .valueType(SimpleValueType.TEXT)
-                        .build();
+    @Nested
+    class Sasl implements ConfigFileAware {
 
-        try (MessageWriter<String> writer = writerBuilder.getWriter()) {
+        @ParameterizedTest
+        @EnumSource(Consistency.class)
+        void passwordAuthWrite(Consistency consistency) {
+            MessageWriterFactory<String> writerBuilder =
+                    MessageWriterFactory.<String>builder()
+                            .config(getConfigFile(workdir))
+                            .service(getServiceName())
+                            .consistency(consistency)
+                            .build();
+
+            try (MessageWriter<String> writer = writerBuilder.getWriter()) {
+                final String data = RandomStringUtils.randomAlphabetic(10);
+                writer.write(data);
+            }
+        }
+
+        @ParameterizedTest
+        @EnumSource(Consistency.class)
+        void passwordAuthRead(Consistency consistency) throws InterruptedException {
             final String data = RandomStringUtils.randomAlphabetic(10);
-            writer.write(data);
-        }
-    }
 
-    @ParameterizedTest
-    @EnumSource(Consistency.class)
-    void passwordBadAuthWrite(Consistency consistency) {
-        MessageWriterFactory<String> writerBuilder =
-                MessageWriterFactory.<String>builder()
-                        .service("auth-bad-password")
-                        .topic(topic)
-                        .consistency(consistency)
-                        .valueType(SimpleValueType.TEXT)
-                        .build();
+            MessageWriterFactory<String> writerBuilder =
+                    MessageWriterFactory.<String>builder()
+                            .config(getConfigFile(workdir))
+                            .service(getServiceName())
+                            .consistency(Consistency.AT_LEAST_ONCE)
+                            .build();
 
-        assertThrows(AuthenticationException.class, () -> {
-            try (MessageWriter<String> writer = writerBuilder.getWriter()) {
-                final String data = RandomStringUtils.randomAlphabetic(10);
-                writer.write(data);
-            }
-        });
-    }
+            MessageReaderFactory<String> readerBuilder =
+                    MessageReaderFactory.<String>builder()
+                            .config(getConfigFile(workdir))
+                            .service(getServiceName())
+                            .consistency(consistency)
+                            .receiveTimeout(Duration.ofSeconds(3))
+                            .build();
 
-    @SneakyThrows
-    @ParameterizedTest
-    @EnumSource(Consistency.class)
-    void passwordAuthRead(Consistency consistency) {
-        final String data = RandomStringUtils.randomAlphabetic(10);
-
-        MessageWriterFactory<String> writerBuilder =
-                MessageWriterFactory.<String>builder()
-                        .service("auth-password")
-                        .topic(topic)
-                        .consistency(Consistency.AT_LEAST_ONCE)
-                        .valueType(SimpleValueType.TEXT)
-                        .build();
-
-        MessageReaderFactory<String> readerBuilder =
-                MessageReaderFactory.<String>builder()
-                        .service("auth-password")
-                        .topic(topic)
-                        .consistency(consistency)
-                        .valueType(SimpleValueType.TEXT)
-                        .receiveTimeout(Duration.ofSeconds(5))
-                        .build();
-
-        try (MessageReader<String> reader = readerBuilder.getReader()) {
-            Thread.sleep(1000);
-            try (MessageWriter<String> writer = writerBuilder.getWriter()) {
-                writer.write(data);
-            }
-            Message<String> msg = reader.read();
-            assertEquals(data, msg.getValue());
-        }
-    }
-
-    @ParameterizedTest
-    @EnumSource(Consistency.class)
-    void passwordBadAuthRead(Consistency consistency) {
-        final String data = RandomStringUtils.randomAlphabetic(10);
-
-        MessageWriterFactory<String> writerBuilder =
-                MessageWriterFactory.<String>builder()
-                        .service("auth-password")
-                        .topic(topic)
-                        .consistency(consistency)
-                        .valueType(SimpleValueType.TEXT)
-                        .build();
-
-        MessageReaderFactory<String> readerBuilder =
-                MessageReaderFactory.<String>builder()
-                        .service("auth-bad-password")
-                        .topic(topic)
-                        .consistency(consistency)
-                        .valueType(SimpleValueType.TEXT)
-                        .receiveTimeout(Duration.ofSeconds(10))
-                        .build();
-
-        assertThrows(AuthenticationException.class, () -> {
-            try (MessageReader<String> reader = readerBuilder.getReader();
-                 MessageWriter<String> writer = writerBuilder.getWriter()) {
-                writer.write(data);
-                reader.stream().forEach((msg) -> assertEquals(data, msg.getValue()));
-            }
-        });
-    }
-
-    @ParameterizedTest
-    @EnumSource(Consistency.class)
-    void readAuthorizeUserWrite(Consistency consistency) throws Throwable {
-        MessageWriterFactory<String> writerBuilder =
-                MessageWriterFactory.<String>builder()
-                        .service("auth-read-user")
-                        .consistency(consistency)
-                        .valueType(SimpleValueType.TEXT)
-                        .build();
-        Executable doWrite = () -> {
-            try (MessageWriter<String> writer = writerBuilder.getWriter()) {
-                final String data = RandomStringUtils.randomAlphabetic(10);
-                writer.write(data);
-            }
-        };
-        if (consistency.equals(Consistency.AT_MOST_ONCE)) {
-            doWrite.execute();
-        } else {
-            assertThrows(AuthorizationException.class, doWrite);
-        }
-    }
-
-    @ParameterizedTest
-    @EnumSource(Consistency.class)
-    void writeAuthorizeUserRead(Consistency consistency) {
-        final String data = RandomStringUtils.randomAlphabetic(10);
-
-        MessageWriterFactory<String> writerBuilder =
-                MessageWriterFactory.<String>builder()
-                        .service("auth-write-user")
-                        .consistency(consistency)
-                        .valueType(SimpleValueType.TEXT)
-                        .build();
-
-        MessageReaderFactory<String> readerBuilder =
-                MessageReaderFactory.<String>builder()
-                        .service("auth-write-user")
-                        .consistency(consistency)
-                        .valueType(SimpleValueType.TEXT)
-                        .receiveTimeout(Duration.ofSeconds(10))
-                        .build();
-
-        assertThrows(AuthorizationException.class, () -> {
-            try (MessageReader<String> reader = readerBuilder.getReader();
-                 MessageWriter<String> writer = writerBuilder.getWriter()) {
-                writer.write(data);
+            try (MessageReader<String> reader = readerBuilder.getReader()) {
+                Thread.sleep(1000);
+                try (MessageWriter<String> writer = writerBuilder.getWriter()) {
+                    writer.write(data);
+                }
                 Message<String> msg = reader.read();
                 assertEquals(data, msg.getValue());
             }
-        });
-    }
+        }
 
+        @Override
+        public Map<String, Object> getParameters() {
+            Map<String, Object> params = new HashMap<>();
+            params.put("security_protocol", "SASL_PLAINTEXT");
+            params.put("sasl_mechanism", "PLAIN");
+            params.put("sasl_plain_username", "user01");
+            params.put("sasl_plain_password", "user01");
+            return params;
+        }
 
-
-    @BeforeEach
-    void setupTopic() {
-        topic = "topic-pw-" + RandomStringUtils.randomAlphabetic(5);
-        MessageWriterFactory<String> writerBuilder =
-                MessageWriterFactory.<String>builder()
-                        .service("auth-password")
-                        .topic(topic)
-                        .consistency(Consistency.AT_LEAST_ONCE)
-                        .valueType(SimpleValueType.TEXT)
-                        .build();
-
-        try (MessageWriter<String> writer = writerBuilder.getWriter()) {
-            writer.write("xxx");
+        @Override
+        public Object getBroker() {
+            return System.getenv().getOrDefault("KAFKA_SASL_BROKER", "broker2:9096");
         }
     }
 
-    @BeforeEach
-    void setupReporter(TestReporter reporter) {
+    @Nested
+    class BadPassword implements ConfigFileAware {
+
+        @ParameterizedTest
+        @EnumSource(Consistency.class)
+        void passwordBadAuthWrite(Consistency consistency) {
+            MessageWriterFactory<String> writerBuilder =
+                    MessageWriterFactory.<String>builder()
+                            .config(getConfigFile(workdir))
+                            .service(getServiceName())
+                            .consistency(consistency)
+                            .build();
+
+            assertThrows(AuthenticationException.class, () -> {
+                try (MessageWriter<String> writer = writerBuilder.getWriter()) {
+                    final String data = RandomStringUtils.randomAlphabetic(10);
+                    writer.write(data);
+                }
+            });
+        }
+
+        @ParameterizedTest
+        @EnumSource(Consistency.class)
+        void passwordBadAuthRead(Consistency consistency) {
+            MessageReaderFactory<String> readerBuilder =
+                    MessageReaderFactory.<String>builder()
+                            .config(getConfigFile(workdir))
+                            .service(getServiceName())
+                            .consistency(consistency)
+                            .receiveTimeout(Duration.ofSeconds(3))
+                            .build();
+
+            assertThrows(AuthenticationException.class, () -> {
+                //noinspection EmptyTryBlock
+                try (MessageReader<String> reader = readerBuilder.getReader()) {
+
+                }
+            });
+        }
+
+
+        @ParameterizedTest
+        @EnumSource(value=Consistency.class, names = {"AT_MOST_ONCE", "AT_LEAST_ONCE"})
+        void passwordBadAuthAsyncWrite(Consistency consistency) throws InterruptedException {
+            MessageWriterFactory<String> writerBuilder =
+                    MessageWriterFactory.<String>builder()
+                            .config(getConfigFile(workdir))
+                            .service(getServiceName())
+                            .consistency(consistency)
+                            .build();
+
+            final AtomicInteger count = new AtomicInteger(0);
+            CountDownLatch done = new CountDownLatch(1);
+            try (AsyncMessageWriter<String> writer = writerBuilder.getAsyncWriter()) {
+                final String data = RandomStringUtils.randomAlphabetic(10);
+                writer.write(data).fail(e -> {
+                    if (e instanceof AuthenticationException) {
+                        count.getAndIncrement();
+                    }
+                }).always((s, r, e) -> done.countDown());
+                boolean ret = done.await(10, TimeUnit.SECONDS);
+                assertTrue(ret);
+            }
+            assertEquals(1, count.get());
+        }
+
+        @ParameterizedTest
+        @EnumSource(value=Consistency.class, names = {"EXACTLY_ONCE"})
+        void passwordBadAuthAsyncWriteEOS(Consistency consistency) {
+            MessageWriterFactory<String> writerBuilder =
+                    MessageWriterFactory.<String>builder()
+                            .config(getConfigFile(workdir))
+                            .service(getServiceName())
+                            .consistency(consistency)
+                            .build();
+
+            assertThrows(AuthenticationException.class, () -> {
+                //noinspection EmptyTryBlock
+                try (AsyncMessageWriter<String> writer = writerBuilder.getAsyncWriter()) {
+                }
+            });
+        }
+
+        @ParameterizedTest
+        @EnumSource(Consistency.class)
+        void passwordBadAuthAsyncRead(Consistency consistency) {
+            MessageReaderFactory<String> readerBuilder =
+                    MessageReaderFactory.<String>builder()
+                            .config(getConfigFile(workdir))
+                            .service(getServiceName())
+                            .consistency(consistency)
+                            .build();
+
+            assertThrows(AuthenticationException.class, () -> {
+                //noinspection EmptyTryBlock
+                try (AsyncMessageReader<String> ignored = readerBuilder.getAsyncReader()) {
+                }
+            });
+        }
+
+        @Override
+        public Map<String, Object> getParameters() {
+            Map<String, Object> params = new HashMap<>();
+            params.put("security_protocol", "SASL_PLAINTEXT");
+            params.put("sasl_mechanism", "PLAIN");
+            params.put("sasl_plain_username", "user01");
+            params.put("sasl_plain_password", "xxxx");
+            return params;
+        }
+
+        @Override
+        public Object getBroker() {
+            return System.getenv().getOrDefault("KAFKA_SASL_BROKER", "broker2:9096");
+        }
+    }
+
+    @Nested
+    class ReadUser implements ConfigFileAware {
+
+        @ParameterizedTest
+        @EnumSource(Consistency.class)
+        void readAuthorizeUserWrite(Consistency consistency) throws Throwable {
+            MessageWriterFactory<String> writerBuilder =
+                    MessageWriterFactory.<String>builder()
+                            .config(getConfigFile(workdir))
+                            .service(getServiceName())
+                            .consistency(consistency)
+                            .build();
+            Executable doWrite = () -> {
+                try (MessageWriter<String> writer = writerBuilder.getWriter()) {
+                    final String data = RandomStringUtils.randomAlphabetic(10);
+                    writer.write(data);
+                }
+            };
+            if (consistency.equals(Consistency.AT_MOST_ONCE)) {
+                doWrite.execute();
+            } else {
+                assertThrows(AuthorizationException.class, doWrite);
+            }
+        }
+
+        @ParameterizedTest
+        @EnumSource(Consistency.class)
+        void readAuthorizeUserAsyncWrite(Consistency consistency) throws Throwable {
+            MessageWriterFactory<String> writerBuilder =
+                    MessageWriterFactory.<String>builder()
+                            .config(getConfigFile(workdir))
+                            .service(getServiceName())
+                            .consistency(consistency)
+                            .build();
+            final AtomicInteger count = new AtomicInteger(0);
+            final CountDownLatch done = new CountDownLatch(1);
+            try (AsyncMessageWriter<String> writer = writerBuilder.getAsyncWriter()) {
+                final String data = RandomStringUtils.randomAlphabetic(10);
+                writer.write(data).fail(e -> {
+                    if (e instanceof AuthorizationException) {
+                        count.getAndIncrement();
+                    }
+                }).always((s, r, e) -> done.countDown());
+                boolean ret = done.await(10, TimeUnit.SECONDS);
+                assertTrue(ret);
+            }
+            if (consistency.equals(Consistency.AT_MOST_ONCE)) {
+                assertEquals(0, count.get());
+            } else {
+                assertEquals(1, count.get());
+            }
+        }
+
+
+        @Override
+        public Map<String, Object> getParameters() {
+            Map<String, Object> params = new HashMap<>();
+            params.put("security_protocol", "SASL_PLAINTEXT");
+            params.put("sasl_mechanism", "PLAIN");
+            params.put("sasl_plain_username", "user02");
+            params.put("sasl_plain_password", "user02");
+            return params;
+        }
+
+        @Override
+        public Object getBroker() {
+            return System.getenv().getOrDefault("KAFKA_SASL_BROKER", "broker2:9096");
+        }
+
+        @Override
+        public Optional<String> getTopic() {
+            return Optional.of("mss-test-003");
+        }
+    }
+
+    @Nested
+    class WriteUser implements ConfigFileAware {
+
+        @ParameterizedTest
+        @EnumSource(value=Consistency.class)
+        void writeAuthorizeUserRead(Consistency consistency) {
+            final String data = RandomStringUtils.randomAlphabetic(10);
+
+            MessageWriterFactory<String> writerBuilder =
+                    MessageWriterFactory.<String>builder()
+                            .config(getConfigFile(workdir))
+                            .service(getServiceName())
+                            .consistency(consistency)
+                            .build();
+
+            MessageReaderFactory<String> readerBuilder =
+                    MessageReaderFactory.<String>builder()
+                            .config(getConfigFile(workdir))
+                            .service(getServiceName())
+                            .consistency(consistency)
+                            .receiveTimeout(Duration.ofSeconds(3))
+                            .build();
+
+            assertThrows(AuthorizationException.class, () -> {
+                try (MessageReader<String> reader = readerBuilder.getReader();
+                     MessageWriter<String> writer = writerBuilder.getWriter()) {
+                    writer.write(data);
+                    reader.read();
+                }
+            });
+        }
+
+        @ParameterizedTest
+        @EnumSource(Consistency.class)
+        void writeAuthorizeUserAsyncRead(Consistency consistency) throws InterruptedException {
+            final String data = RandomStringUtils.randomAlphabetic(10);
+
+            MessageWriterFactory<String> writerBuilder =
+                    MessageWriterFactory.<String>builder()
+                            .config(getConfigFile(workdir))
+                            .service(getServiceName())
+                            .consistency(consistency)
+                            .build();
+
+            MessageReaderFactory<String> readerBuilder =
+                    MessageReaderFactory.<String>builder()
+                            .config(getConfigFile(workdir))
+                            .service(getServiceName())
+                            .consistency(consistency)
+                            .receiveTimeout(Duration.ofSeconds(3))
+                            .build();
+
+            final AtomicInteger count = new AtomicInteger(0);
+            final CountDownLatch done = new CountDownLatch(1);
+            try (AsyncMessageReader<String> reader = readerBuilder.getAsyncReader();
+                 MessageWriter<String> writer = writerBuilder.getWriter()) {
+
+                reader.addOnMessageCallback(
+                        msg -> done.countDown(),
+                        e -> {
+                            done.countDown();
+                            if (e instanceof AuthorizationException) {
+                                count.getAndIncrement();
+                            }
+                        });
+                writer.write(data);
+                boolean ret = done.await(10, TimeUnit.SECONDS);
+                assertTrue(ret);
+                assertEquals(1, count.get());
+            }
+        }
+
+
+        @Override
+        public Map<String, Object> getParameters() {
+            Map<String, Object> params = new HashMap<>();
+            params.put("security_protocol", "SASL_PLAINTEXT");
+            params.put("sasl_mechanism", "PLAIN");
+            params.put("sasl_plain_username", "user03");
+            params.put("sasl_plain_password", "user03");
+            return params;
+        }
+
+        @Override
+        public Object getBroker() {
+            return System.getenv().getOrDefault("KAFKA_SASL_BROKER", "broker2:9096");
+        }
+
+        @Override
+        public Optional<String> getTopic() {
+            return Optional.of("mss-test-003");
+        }
     }
 }

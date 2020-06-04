@@ -26,4 +26,8 @@ public interface PluginMessageWriter extends PluginMessageIO {
     void write(byte[] message);
 
     String getTopic();
+
+    default boolean isThreadSafe() {
+        return false;
+    }
 }

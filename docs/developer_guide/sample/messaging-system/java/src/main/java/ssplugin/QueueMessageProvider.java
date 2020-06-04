@@ -23,31 +23,44 @@ package ssplugin;
 
 import jp.ad.sinet.stream.spi.*;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.*;
 
-public class QueueMessageProvider implements MessageReaderProvider, MessageWriterProvider {
+public class QueueMessageProvider implements MessageReaderProvider, MessageWriterProvider,
+        AsyncMessageReaderProvider, AsyncMessageWriterProvider {
 
     private static final ConcurrentMap<String, BlockingQueue<QueueMessage>> queues = new ConcurrentHashMap<>();
+    private static final int QUEUE_SIZE = 10;
+
+    @Override
+    public String getType() {
+        return "queue";
+    }
 
     @Override
     public PluginMessageReader getReader(ReaderParameters params) {
         String topic = params.getTopics().get(0);
-        BlockingQueue<QueueMessage> queue = queues.computeIfAbsent(topic, key -> new LinkedBlockingQueue<>());
+        BlockingQueue<QueueMessage> queue = queues.computeIfAbsent(topic, key -> new ArrayBlockingQueue<>(QUEUE_SIZE));
         return new QueueMessageReader(params, queue);
     }
 
     @Override
     public PluginMessageWriter getWriter(WriterParameters params) {
         String topic = params.getTopic();
-        BlockingQueue<QueueMessage> queue = queues.computeIfAbsent(topic, key -> new LinkedBlockingQueue<>());
+        BlockingQueue<QueueMessage> queue = queues.computeIfAbsent(topic, key -> new ArrayBlockingQueue<>(QUEUE_SIZE));
         return new QueueMessageWriter(params, queue);
     }
 
     @Override
-    public String getType() {
-        return "queue";
+    public PluginAsyncMessageReader getAsyncReader(ReaderParameters params) {
+        String topic = params.getTopics().get(0);
+        BlockingQueue<QueueMessage> queue = queues.computeIfAbsent(topic, key -> new ArrayBlockingQueue<>(QUEUE_SIZE));
+        return new QueueAsyncMessageReader(params, queue);
+    }
+
+    @Override
+    public PluginAsyncMessageWriter getAsyncWriter(WriterParameters params) {
+        String topic = params.getTopic();
+        BlockingQueue<QueueMessage> queue = queues.computeIfAbsent(topic, key -> new ArrayBlockingQueue<>(QUEUE_SIZE));
+        return new QueueAsyncMessageWriter(params, queue);
     }
 }

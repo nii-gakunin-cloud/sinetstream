@@ -18,8 +18,8 @@
 # under the License.
 
 from .api import (
-    MessageReader, MessageWriter, AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE,
-    DEFAULT_CLIENT_ID,
+    MessageReader, MessageWriter, AsyncMessageWriter, AsyncMessageReader,
+    AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE, DEFAULT_CLIENT_ID,
 )
 from .error import (
     SinetError, NoServiceError, NoConfigError, InvalidArgumentError,

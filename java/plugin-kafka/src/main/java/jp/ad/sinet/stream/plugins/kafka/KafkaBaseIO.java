@@ -36,6 +36,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 @Log
@@ -165,6 +166,7 @@ public class KafkaBaseIO {
                 props.put(SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG, "");
             }
         };
+        props.put(SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG, "https");
         Optional.ofNullable(tls.get("check_hostname")).map(Boolean::parseBoolean).ifPresent(setupCheckHostname);
 
         if (isTls(config, tls)) {
@@ -264,7 +266,7 @@ public class KafkaBaseIO {
             try {
                 return mapper.apply(v);
             } catch (Throwable e) {
-                log.warning(e.getMessage());
+                log.log(Level.FINER, "logging", e);
                 return null;
             }
         };

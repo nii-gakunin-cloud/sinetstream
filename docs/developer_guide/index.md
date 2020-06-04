@@ -1,3 +1,5 @@
+**準備中** (2020-06-04 18:27:50 JST)
+
 <!--
 Copyright (C) 2020 National Institute of Informatics
 
@@ -18,6 +20,8 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 --->
+
+[English](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/developer_guide/index.html "google translate")
 
 # 開発者ガイド
 

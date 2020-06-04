@@ -20,14 +20,34 @@
 # specific language governing permissions and limitations
 # under the License.
 
+from time import time
+
 import pytest
-from sinetstream import MessageReader, MessageWriter
+
+from sinetstream import MessageReader, MessageWriter, AsyncMessageReader, AsyncMessageWriter
+from sinetstream.api import Message
 
 
 def test_usage_prog():
-    import sinetstream.__main__
+    pass
 
 
-@pytest.mark.parametrize("io", [MessageReader, MessageWriter])
+@pytest.mark.parametrize(
+    "io", [MessageReader, MessageWriter, AsyncMessageReader, AsyncMessageWriter])
 def test_usage(io):
     io.usage()
+
+
+def test_message():
+    raw = {
+        'value': 'message',
+        'topic': 'topic-1',
+    }
+    ts = int(time() * 1000_000)
+    msg = Message(raw['value'], raw['topic'], ts, raw)
+    assert msg.raw == raw
+    assert msg.value == raw['value']
+    assert msg.topic == raw['topic']
+    assert msg.timestamp_us == ts
+    assert msg.timestamp == ts / 1000_000.0
+    assert repr(msg) is not None

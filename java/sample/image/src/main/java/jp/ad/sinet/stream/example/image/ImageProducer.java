@@ -55,8 +55,8 @@ public class ImageProducer {
                         .consistency(Consistency.AT_LEAST_ONCE)
                         .valueType(new ValueTypeFactory().get("image"))
                         .build();
-        try(MessageWriter<BufferedImage> writer = factory.getWriter();
-            FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(movie.toFile())) {
+        try (MessageWriter<BufferedImage> writer = factory.getWriter();
+             FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(movie.toFile())) {
             Frame frame;
             grabber.start();
             while (Objects.nonNull(frame = grabber.grab())) {

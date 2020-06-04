@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 National Institute of Informatics
+ * Copyright (C) 2020 National Institute of Informatics
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -21,32 +21,15 @@
 
 package jp.ad.sinet.stream.example.perf;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
 import org.apache.commons.cli.*;
-
-import java.util.concurrent.TimeUnit;
-import java.util.Random;
-
-import jp.ad.sinet.stream.example.perf.Util;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-
-//import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-//import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-//import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-//import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("WeakerAccess")
 public class MqttBinaryProducer {
@@ -82,7 +65,7 @@ public class MqttBinaryProducer {
 
         String clientId = "perftest" + System.currentTimeMillis();
         MqttClient client = new MqttClient(this.brokers, clientId);
-        MqttConnectOptions  conOpt = new MqttConnectOptions();
+        MqttConnectOptions conOpt = new MqttConnectOptions();
         conOpt.setCleanSession(true);
         //conOpt.setPassword(this.password.toCharArray());
         //conOpt.setUserName(this.userName);
@@ -118,7 +101,7 @@ public class MqttBinaryProducer {
         }
         pw.close();
     }
-    
+
     public static void main(String[] args) {
         //String logfile = "mqttJava.produced." + Util.getTime() + "." + Util.getHostName() + ".csv";
         Options opts = new Options();
@@ -142,7 +125,7 @@ public class MqttBinaryProducer {
                     Integer.parseInt(cmd.getOptionValue("fps", "15")),
                     Integer.parseInt(cmd.getOptionValue("nmsg", "5")),
                     cmd.getOptionValue("logfile")
-                    );
+            );
         } catch (ParseException e) {
             System.err.println("Parsing failed: " + e.getMessage());
             new HelpFormatter().printHelp(MqttBinaryProducer.class.getSimpleName(), opts, true);

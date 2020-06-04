@@ -21,7 +21,10 @@
 
 package jp.ad.sinet.stream.plugins.mqtt;
 
-import jp.ad.sinet.stream.api.*;
+import jp.ad.sinet.stream.api.Consistency;
+import jp.ad.sinet.stream.api.Message;
+import jp.ad.sinet.stream.api.MessageReader;
+import jp.ad.sinet.stream.api.ValueType;
 import jp.ad.sinet.stream.api.valuetype.SimpleValueType;
 import jp.ad.sinet.stream.utils.MessageReaderFactory;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -30,12 +33,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestReporter;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
-import org.junit.jupiter.params.provider.ValueSource;
 
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
@@ -45,19 +49,20 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class MessageReaderTest implements ConfigFileAware {
+class MessageReaderTest {
 
-    private TestReporter reporter;
-    private static final String SERVICE = "service-1";
-    private static final String TOPIC = "test-topic-java-001";
+    @TempDir
+    Path workdir;
 
     @Nested
-    class ReaderTest {
+    class ReaderTest implements ConfigFileAware {
 
         @Test
         void testGetReader() {
             MessageReaderFactory<String> builder =
-                    MessageReaderFactory.<String>builder().service(SERVICE).topic(TOPIC).build();
+                    MessageReaderFactory.<String>builder()
+                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .receiveTimeout(Duration.ofSeconds(10)).build();
             try (MessageReader<String> reader = builder.getReader()) {
                 assertNotNull(reader);
             }
@@ -65,9 +70,10 @@ class MessageReaderTest implements ConfigFileAware {
 
         @ParameterizedTest
         @EnumSource(Consistency.class)
-        void consistency(Consistency consistency) {
+        void consistency(Consistency consistency, TestReporter reporter) {
             MessageReaderFactory<String> builder =
-                    MessageReaderFactory.<String>builder().service(SERVICE).topic(TOPIC)
+                    MessageReaderFactory.<String>builder()
+                            .config(getConfigFile(workdir)).service(getServiceName())
                             .consistency(consistency)
                             .receiveTimeout(Duration.ofSeconds(10))
                             .valueType(SimpleValueType.TEXT)
@@ -83,11 +89,12 @@ class MessageReaderTest implements ConfigFileAware {
 
         @ParameterizedTest
         @EnumSource(Consistency.class)
-        void streamTest(Consistency consistency) {
+        void streamTest(Consistency consistency, TestReporter reporter) {
             MessageReaderFactory<String> builder =
-                    MessageReaderFactory.<String>builder().service(SERVICE).topic(TOPIC)
+                    MessageReaderFactory.<String>builder()
+                            .config(getConfigFile(workdir)).service(getServiceName())
                             .consistency(consistency)
-                            .receiveTimeout(Duration.ofSeconds(10))
+                            .receiveTimeout(Duration.ofSeconds(3))
                             .valueType(SimpleValueType.TEXT)
                             .build();
             try (MessageReader<String> reader = builder.getReader()) {
@@ -100,35 +107,60 @@ class MessageReaderTest implements ConfigFileAware {
     }
 
     @Nested
-    class PropertiesTest {
+    class TopicTest {
 
         @Nested
-        class TopicTest {
+        class Topic implements ConfigFileAware {
+            private String topic;
+
             @Test
             void topic() {
-                MessageReaderFactory<String> builder = MessageReaderFactory.<String>builder().service(SERVICE).topic(TOPIC).build();
+                MessageReaderFactory<String> builder = MessageReaderFactory.<String>builder()
+                        .config(getConfigFile(workdir)).service(getServiceName())
+                        .topic(topic)
+                        .build();
                 try (MessageReader<String> reader = builder.getReader()) {
-                    assertEquals(TOPIC, reader.getTopic());
+                    assertEquals(topic, reader.getTopic());
                 }
             }
 
+            @BeforeEach
+            void setupTopic() {
+                topic = generateTopic();
+            }
+        }
+
+        @Nested
+        class Topics implements ConfigFileAware {
+            private List<String> topics;
+
             @Test
             void topics() {
-                List<String> topics =
-                        IntStream.range(0, 5).mapToObj(x -> String.format(TOPIC + "-%d", x)).collect(Collectors.toList());
-
-                MessageReaderFactory<String> builder = MessageReaderFactory.<String>builder().service(SERVICE).topics(topics).build();
+                MessageReaderFactory<String> builder = MessageReaderFactory.<String>builder()
+                        .config(getConfigFile(workdir)).service(getServiceName())
+                        .topics(topics)
+                        .build();
                 try (MessageReader<String> reader = builder.getReader()) {
                     assertIterableEquals(topics, reader.getTopics());
                 }
             }
+
+            @BeforeEach
+            void setupTopic() {
+                topics = IntStream.range(0, 5).mapToObj(x -> generateTopic()).collect(Collectors.toList());
+            }
         }
+    }
+
+    @Nested
+    class PropertiesTest implements ConfigFileAware {
 
         @ParameterizedTest
         @EnumSource(Consistency.class)
         void consistency(Consistency consistency) {
             MessageReaderFactory<String> builder =
-                    MessageReaderFactory.<String>builder().service(SERVICE).topic(TOPIC)
+                    MessageReaderFactory.<String>builder()
+                            .config(getConfigFile(workdir)).service(getServiceName())
                             .consistency(consistency)
                             .build();
             try (MessageReader<String> reader = builder.getReader()) {
@@ -142,7 +174,8 @@ class MessageReaderTest implements ConfigFileAware {
             void clientId() {
                 String clientId = RandomStringUtils.randomAlphabetic(10);
                 MessageReaderFactory<String> builder =
-                        MessageReaderFactory.<String>builder().service(SERVICE).topic(TOPIC)
+                        MessageReaderFactory.<String>builder()
+                                .config(getConfigFile(workdir)).service(getServiceName())
                                 .clientId(clientId)
                                 .build();
                 try (MessageReader<String> reader = builder.getReader()) {
@@ -153,7 +186,8 @@ class MessageReaderTest implements ConfigFileAware {
             @Test
             void defaultClientId() {
                 MessageReaderFactory<String> builder =
-                        MessageReaderFactory.<String>builder().service(SERVICE).topic(TOPIC)
+                        MessageReaderFactory.<String>builder()
+                                .config(getConfigFile(workdir)).service(getServiceName())
                                 .build();
                 try (MessageReader<String> reader = builder.getReader()) {
                     assertNotNull(reader.getClientId());
@@ -164,7 +198,8 @@ class MessageReaderTest implements ConfigFileAware {
             @NullAndEmptySource
             void emptyAndNull(String clientId) {
                 MessageReaderFactory<String> builder =
-                        MessageReaderFactory.<String>builder().service(SERVICE).topic(TOPIC)
+                        MessageReaderFactory.<String>builder()
+                                .config(getConfigFile(workdir)).service(getServiceName())
                                 .clientId(clientId)
                                 .build();
                 try (MessageReader<String> reader = builder.getReader()) {
@@ -174,72 +209,28 @@ class MessageReaderTest implements ConfigFileAware {
             }
         }
 
-        /*
+        @SuppressWarnings("rawtypes")
         @ParameterizedTest
-        @EnumSource(ValueType.class)
+        @EnumSource(SimpleValueType.class)
         void valueType(ValueType valueType) {
             MessageReaderFactory builder =
-                    MessageReaderFactory.builder().service(SERVICE).topic(TOPIC)
+                    MessageReaderFactory.builder()
+                            .config(getConfigFile(workdir)).service(getServiceName())
                             .valueType(valueType)
                             .build();
             try (MessageReader reader = builder.getReader()) {
                 assertEquals(valueType, reader.getValueType());
             }
         }
-         */
-
-        @ParameterizedTest
-        @ValueSource(booleans = {true, false})
-        void dataEncryption(Boolean dataEncryption) {
-            MessageReaderFactory<String> builder =
-                    MessageReaderFactory.<String>builder().service("service-with-encrypt-eax").topic(TOPIC)
-                            .dataEncryption(dataEncryption)
-                            .build();
-            try (MessageReader<String> reader = builder.getReader()) {
-                assertEquals(dataEncryption, reader.isDataEncryption());
-            }
-        }
-
-        /*
-        @Nested
-        @SuppressWarnings("unchecked")
-        class DeserializerTest {
-            @ParameterizedTest
-            @EnumSource(ValueType.class)
-            void deserializer(ValueType valueType) {
-                Deserializer des = valueType.getDeserializer();
-                MessageReaderFactory builder =
-                        MessageReaderFactory.builder().service(SERVICE).topic(TOPIC)
-                                .deserializer(des)
-                                .build();
-                try (MessageReader reader = builder.getReader()) {
-                    // @Disabled XXX FIXME Timestamp breaks this test.
-                    // assertEquals(des, reader.getDeserializer());
-                }
-            }
-
-            @Test
-            void equality() {
-                Deserializer<String> des = ValueType.TEXT.getDeserializer();
-                MessageReaderFactory<String> builder =
-                        MessageReaderFactory.<String>builder().service(SERVICE).topic(TOPIC)
-                                .deserializer(des)
-                                .build();
-                try (MessageReader<String> reader = builder.getReader()) {
-                    byte[] bytes = RandomStringUtils.randomAlphabetic(24).getBytes(StandardCharsets.UTF_8);
-                    // @Disabled XXX FIXME Timestamp breaks this test.
-                    // assertEquals(des.deserialize(bytes), reader.getDeserializer().deserialize(bytes));
-                }
-            }
-        }
-         */
 
         @Nested
         class ReceiveTimeoutTest {
             @Test
             void defaultTimeout() {
                 MessageReaderFactory<String> builder =
-                        MessageReaderFactory.<String>builder().service(SERVICE).topic(TOPIC).build();
+                        MessageReaderFactory.<String>builder()
+                                .config(getConfigFile(workdir)).service(getServiceName())
+                                .build();
                 try (MessageReader<String> reader = builder.getReader()) {
                     assertEquals(Duration.ofNanos(Long.MAX_VALUE), reader.getReceiveTimeout());
                 }
@@ -249,7 +240,8 @@ class MessageReaderTest implements ConfigFileAware {
             @MethodSource("jp.ad.sinet.stream.plugins.mqtt.MessageReaderTest#getDurations")
             void receiveTimeout(Duration timeout) {
                 MessageReaderFactory<String> builder =
-                        MessageReaderFactory.<String>builder().service(SERVICE).topic(TOPIC)
+                        MessageReaderFactory.<String>builder()
+                                .config(getConfigFile(workdir)).service(getServiceName())
                                 .receiveTimeout(timeout)
                                 .build();
                 try (MessageReader<String> reader = builder.getReader()) {
@@ -263,90 +255,5 @@ class MessageReaderTest implements ConfigFileAware {
         return Stream.of(
                 Duration.ofSeconds(10), Duration.ofHours(3), Duration.ofDays(7), Duration.ZERO,
                 Duration.ofMillis(100), Duration.ofNanos(123456789));
-    }
-
-    @Nested
-    class BrokerTest {
-        @Test
-        void brokersWithDefaultPort() {
-            MessageReaderFactory<String> builder =
-                    MessageReaderFactory.<String>builder().service("service-2").topic(TOPIC)
-                            .receiveTimeout(Duration.ofSeconds(10)).build();
-            try (MessageReader<String> reader = builder.getReader()) {
-                Message<String> msg;
-                while (Objects.nonNull(msg = reader.read())) {
-                    assertNotNull(msg.getValue());
-                    reporter.publishEntry(msg.getValue());
-                }
-            }
-        }
-
-        @Test
-        void brokersByString() {
-            MessageReaderFactory<String> builder =
-                    MessageReaderFactory.<String>builder().service("service-3").topic(TOPIC)
-                            .receiveTimeout(Duration.ofSeconds(10)).build();
-            try (MessageReader<String> reader = builder.getReader()) {
-                Message<String> msg;
-                while (Objects.nonNull(msg = reader.read())) {
-                    assertNotNull(msg.getValue());
-                    reporter.publishEntry(msg.getValue());
-                }
-            }
-        }
-
-        @Test
-        void brokersByStringWithDefaultPort() {
-            MessageReaderFactory<String> builder =
-                    MessageReaderFactory.<String>builder().service("service-4").topic(TOPIC)
-                            .receiveTimeout(Duration.ofSeconds(10)).build();
-            try (MessageReader<String> reader = builder.getReader()) {
-                Message<String> msg;
-                while (Objects.nonNull(msg = reader.read())) {
-                    assertNotNull(msg.getValue());
-                    reporter.publishEntry(msg.getValue());
-                }
-            }
-        }
-
-        @Test
-        void manyBrokers() {
-            MessageReaderFactory<String> builder =
-                    MessageReaderFactory.<String>builder().service("service-X-1").topic(TOPIC).build();
-            assertThrows(InvalidConfigurationException.class, builder::getReader);
-        }
-
-        @Test
-        void noBrokers() {
-            MessageReaderFactory<String> builder =
-                    MessageReaderFactory.<String>builder().service("service-X-2").topic(TOPIC).build();
-            assertThrows(InvalidConfigurationException.class, builder::getReader);
-        }
-
-        @Test
-        void emptyBrokers() {
-            MessageReaderFactory<String> builder =
-                    MessageReaderFactory.<String>builder().service("service-X-3").topic(TOPIC).build();
-            assertThrows(InvalidConfigurationException.class, builder::getReader);
-        }
-
-        @Test
-        void unknownHostBroker() {
-            MessageReaderFactory<String> builder =
-                    MessageReaderFactory.<String>builder().service("service-Z-1").topic(TOPIC).build();
-            assertThrows(ConnectionException.class, builder::getReader);
-        }
-
-        @Test
-        void unreachableBroker() {
-            MessageReaderFactory<String> builder =
-                    MessageReaderFactory.<String>builder().service("service-Z-2").topic(TOPIC).build();
-            assertThrows(ConnectionException.class, builder::getReader);
-        }
-    }
-
-    @BeforeEach
-    void setup(TestReporter reporter) {
-        this.reporter = reporter;
     }
 }

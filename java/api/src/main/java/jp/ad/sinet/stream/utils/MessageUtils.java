@@ -64,7 +64,14 @@ public class MessageUtils {
         if (value instanceof Boolean) {
             return (Boolean) value;
         } else if (value instanceof String) {
-            return Boolean.parseBoolean((String) value);
+			String txtValue = (String) value;
+			if (txtValue.equalsIgnoreCase("true")) {
+				return true;
+			} else if (txtValue.equalsIgnoreCase("false")) {
+				return false;
+			} else {
+				throw new SinetStreamException("value (" + txtValue + ") cannot convert to Boolean");
+			}
         } else {
             return null;
         }

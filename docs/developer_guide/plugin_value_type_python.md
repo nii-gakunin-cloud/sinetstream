@@ -1,3 +1,5 @@
+**準備中** (2020-06-04 18:27:50 JST)
+
 <!--
 Copyright (C) 2020 National Institute of Informatics
 
@@ -19,11 +21,13 @@ specific language governing permissions and limitations
 under the License.
 --->
 
+[English](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/developer_guide/plugin_value_type_python.html "google translate")
+
 # プラグイン開発ガイド(message type/ Python)
 
 * 新たなメッセージタイプをSINETStream (Python)で扱えるようにするためのプラグインを開発する手順について説明します。
 
-## はじめに
+## 1. はじめに
 
 SINETStream では設定ファイルあるいはコンストラクタのパラメータで指定する
 `value_type`の値に応じて、メッセージのシリアライズ、デシリアライズを行います。
@@ -48,13 +52,13 @@ SINETStream v1.1 では以下の `value_type` をサポートしています。
 新たなプラグインを実装することで、上記に示した`value_type`以外のタイプを
 SINETStreamのメッセージとして扱えるようになります。
 
-### 対象者
+### 1.1 対象者
 
 このドキュメントが対象としている読者を以下に示します。
 
 * SINETStreamで新たなメッセージタイプを利用できるようにしたい開発者
 
-### 前提知識
+### 1.2 前提知識
 
 このドキュメントの説明は、以下の知識を有している読者を前提としています。
 
@@ -62,9 +66,9 @@ SINETStreamのメッセージとして扱えるようになります。
 * [setuptools](https://setuptools.readthedocs.io/en/latest/)による配布パッケージの作成手順
 * SINETStream の Python APIの利用方法、設定ファイルの記述方法
 
-## プラグインの実装方法
+## 2. プラグインの実装方法
 
-### 概要
+### 2.1 概要
 
 SINETStreamのプラグインを作成するためには以下の作業が必要となります。
 
@@ -73,7 +77,7 @@ SINETStreamのプラグインを作成するためには以下の作業が必要
 
 それぞれの作業項目の詳細について以下に記します。
 
-### プラグインに定められているプロパティを実装したクラスの作成
+### 2.2 プラグインに定められているプロパティを実装したクラスの作成
 
 `value_type`のプラグインではメッセージのタイプに応じたシリアライザ、デシリアライザ
 をプロパティとして提供する必要があります。具体的には以下のプロパティの定義が必要となります。
@@ -87,7 +91,7 @@ SINETStreamのプラグインを作成するためには以下の作業が必要
 抽象基底クラス `sinetstream.spi.PluginValueType`を利用することができます。
 `PluginValueType`では上記のプロパティが抽象プロパティとして定義されています。
     
-### パッケージメタデータの作成
+### 2.3 パッケージメタデータの作成
 
 [setuptools](http://setuptools.readthedocs.io/)のエントリポイントにクラスを
 登録することで、SINETStreamがプラグインを見つけることができるようになります。
@@ -113,14 +117,14 @@ sinetstream.value_type =
 を参照してください。
 
 
-## プラグインの実装例
+## 3. プラグインの実装例
 
 プラグイン実装の具体的な手順を示すために実装例を示します。
 
 ここでは dict型のオブジェクトをSINETStreamのメッセージとして扱えるようにするための
 `value_type`プラグインを実装します。
 
-### ファイル構成
+### 3.1 ファイル構成
 
 以下のファイルを作成します。
 
@@ -131,7 +135,7 @@ sinetstream.value_type =
 * setup.cfg
     * `setup.py`の設定ファイル
 
-### プラグイン実装
+### 3.2 プラグイン実装
 
 プラグインの実装を行うモジュールファイル`map_yaml.py`について説明します。
 
@@ -173,9 +177,9 @@ class MapYamlValueType(PluginValueType):
 
 先ほど定義したシリアライザ`_map_to_bytes`、デシリアライザ`_map_from_bytes`を返すプロパティを定義しています。
 
-### パッケージング
+### 3.3 パッケージング
 
-#### `setup.py`, `setup.cfg`の作成
+#### 3.3.1 `setup.py`, `setup.cfg`の作成
 
 パッケージングを行う際のコマンドラインインタフェースとなる `setup.py` とその設定ファイル `setup.cfg` を作成します。
 
@@ -217,7 +221,7 @@ sinetstream.value_type =
 `sinetstream.value_type`が`value_type`プラグインに対応するグループになります。
 グループに対して (`value_type`のタイプ名)=(パッケージ名:クラス名) を指定しています。
 
-#### パッケージの作成
+#### 3.3.2 パッケージの作成
 
 wheelパッケージを作成します。
 
@@ -231,7 +235,7 @@ $ ls dist/
 dist/sinetstream_type_map_yaml-1.0.0-py3-none-any.whl
 ```
 
-### 利用例
+### 3.4 利用例
 
 作成したプラグインを利用して dict型オブジェクトを送信する例を以下に示します。
 
@@ -249,7 +253,7 @@ with MessageWriter(service='service-1', value_type='map_yaml') as writer:
 新たに作成した`value_type`プラグインのタイプ名`map_yaml`を指定しています。
 そのため、`writer.publish()`の引数に直接dict型変数を渡すことができます。
 
-### ソースコード
+### 3.5 ソースコード
 ここまで記した実装例のファイルへのリンクを以下に示します。
 * [src/ssplugin/map_yaml.py](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/docs/developer_guide/sample/value_type/python/src/ssplugin/map_yaml.py)
 * [setup.py](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/docs/developer_guide/sample/value_type/python/setup.py)

@@ -25,14 +25,17 @@ import jp.ad.sinet.stream.api.MessageReader;
 import jp.ad.sinet.stream.utils.MessageReaderFactory;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class KafkaParametersTest implements ConfigFileAware {
 
-    private static final String SERVICE = "service-1";
-    private static final String TOPIC = "test-topic-java-001";
+    @TempDir
+    Path workdir;
 
     @Nested
     class GroupId {
@@ -40,8 +43,10 @@ class KafkaParametersTest implements ConfigFileAware {
         void groupId() {
             String groupId = "group-001";
             MessageReaderFactory<String> readerBuilder =
-                    MessageReaderFactory.<String>builder().service(SERVICE).topic(TOPIC)
-                            .parameter("group_id", groupId).build();
+                    MessageReaderFactory.<String>builder()
+                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .parameter("group_id", groupId)
+                            .build();
             try (MessageReader<String> reader = readerBuilder.getReader()) {
                 assertEquals(groupId, reader.getConfig().get("groupId"));
             }
@@ -50,7 +55,8 @@ class KafkaParametersTest implements ConfigFileAware {
         @Test
         void defaultGroupId() {
             MessageReaderFactory<String> readerBuilder =
-                    MessageReaderFactory.<String>builder().service(SERVICE).topic(TOPIC).build();
+                    MessageReaderFactory.<String>builder()
+                            .config(getConfigFile(workdir)).service(getServiceName()).build();
             try (MessageReader<String> reader = readerBuilder.getReader()) {
                 assertNotNull(reader.getConfig().get("groupId"));
             }
@@ -61,7 +67,8 @@ class KafkaParametersTest implements ConfigFileAware {
     void fetchMinBytes() {
         int fetchMinBytes = 1000;
         MessageReaderFactory<String> readerBuilder =
-                MessageReaderFactory.<String>builder().service(SERVICE).topic(TOPIC)
+                MessageReaderFactory.<String>builder()
+                        .config(getConfigFile(workdir)).service(getServiceName())
                         .parameter("fetch_min_bytes", fetchMinBytes)
                         .build();
         try (MessageReader<String> reader = readerBuilder.getReader()) {
@@ -73,7 +80,8 @@ class KafkaParametersTest implements ConfigFileAware {
     void fetchMaxBytes() {
         int fetchMaxBytes = 10000000;
         MessageReaderFactory<String> readerBuilder =
-                MessageReaderFactory.<String>builder().service(SERVICE).topic(TOPIC)
+                MessageReaderFactory.<String>builder()
+                        .config(getConfigFile(workdir)).service(getServiceName())
                         .parameter("fetch_max_bytes", fetchMaxBytes)
                         .build();
         try (MessageReader<String> reader = readerBuilder.getReader()) {
@@ -85,7 +93,8 @@ class KafkaParametersTest implements ConfigFileAware {
     void fetchMaxWaitMs() {
         int fetchMaxWaitMs = 10000;
         MessageReaderFactory<String> readerBuilder =
-                MessageReaderFactory.<String>builder().service(SERVICE).topic(TOPIC)
+                MessageReaderFactory.<String>builder()
+                        .config(getConfigFile(workdir)).service(getServiceName())
                         .parameter("fetch_max_wait_ms", fetchMaxWaitMs)
                         .build();
         try (MessageReader<String> reader = readerBuilder.getReader()) {
@@ -97,7 +106,8 @@ class KafkaParametersTest implements ConfigFileAware {
     void heartbeatIntervalMs() {
         int heartbeatIntervalMs = 1000;
         MessageReaderFactory<String> readerBuilder =
-                MessageReaderFactory.<String>builder().service(SERVICE).topic(TOPIC)
+                MessageReaderFactory.<String>builder()
+                        .config(getConfigFile(workdir)).service(getServiceName())
                         .parameter("heartbeat_interval_ms", heartbeatIntervalMs)
                         .build();
         try (MessageReader<String> reader = readerBuilder.getReader()) {

@@ -22,7 +22,6 @@ package ssplugin;
 
 import jp.ad.sinet.stream.api.Consistency;
 import jp.ad.sinet.stream.api.SinetStreamIOException;
-import jp.ad.sinet.stream.api.ValueType;
 import jp.ad.sinet.stream.spi.PluginMessageReader;
 import jp.ad.sinet.stream.spi.PluginMessageWrapper;
 import jp.ad.sinet.stream.spi.ReaderParameters;
@@ -38,9 +37,7 @@ public class QueueMessageReader implements PluginMessageReader {
     private final BlockingQueue<QueueMessage> queue;
     private final List<String> topics;
     private final Duration receiveTimeout;
-    private final String service;
     private final Map<String, Object> config;
-    private final ValueType valueType;
     private final Consistency consistency;
     private final String clientId;
 
@@ -48,10 +45,7 @@ public class QueueMessageReader implements PluginMessageReader {
         this.queue = queue;
         this.topics = Collections.unmodifiableList(params.getTopics());
         this.receiveTimeout = params.getReceiveTimeout();
-
-        this.service = params.getService();
         this.config = Collections.unmodifiableMap(params.getConfig());
-        this.valueType = params.getValueType();
         this.consistency = params.getConsistency();
         this.clientId = params.getClientId();
     }

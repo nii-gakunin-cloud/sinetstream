@@ -24,8 +24,9 @@ from pathlib import Path
 
 import cv2
 import pytest
-import sinetstream
 import yaml
+
+import sinetstream
 
 que = None
 logger = getLogger(__name__)

@@ -21,220 +21,404 @@
 
 package jp.ad.sinet.stream.plugins.kafka;
 
-import jp.ad.sinet.stream.api.*;
-import jp.ad.sinet.stream.api.valuetype.SimpleValueType;
+import jp.ad.sinet.stream.api.AuthenticationException;
+import jp.ad.sinet.stream.api.Consistency;
+import jp.ad.sinet.stream.api.MessageReader;
+import jp.ad.sinet.stream.api.MessageWriter;
 import jp.ad.sinet.stream.utils.MessageReaderFactory;
 import jp.ad.sinet.stream.utils.MessageWriterFactory;
+import lombok.SneakyThrows;
+import lombok.extern.java.Log;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.text.StringSubstitutor;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.api.io.TempDir;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@Log
 class TlsTest {
 
-    private String topic;
+    @TempDir
+    Path workdir;
 
-    @Disabled
-    @ParameterizedTest
-    @ValueSource(strings = {"service-connect-by-tls", "service-connect-by-tls-ca_certs",
-            "service-connect-by-tls-ca_certs_cert_key", "service-connect-by-tls-no-hostname-check",
-            "service-connect-by-tls_kafka", "service-connect-by-tls_kafka-no-hostname-check",
-            "service-connect-by-tls_kafka-with-hostname-check", "service-connect-by-tls-encrypted-key",
-            "service-ssl-256", "service-ssl-512", "service-ssl-512-no-username", "service-ssl-512-no-password" })
-    void writeRead(String service) {
-        String groupId = "group-java-" + RandomStringUtils.randomAlphanumeric(6);
-        MessageWriterFactory<String> writerBuilder =
-                MessageWriterFactory.<String>builder().service(service)
-                        .topic(topic)
-                        .consistency(Consistency.EXACTLY_ONCE)
-                        .build();
-        MessageReaderFactory<String> readerBuilder =
-                MessageReaderFactory.<String>builder().service(service)
-                        .topic(topic)
-                        .receiveTimeout(Duration.ofSeconds(2))
-                        .consistency(Consistency.EXACTLY_ONCE)
-                        .parameter(ConsumerConfig.GROUP_ID_CONFIG, groupId)
-                        .build();
-
-        try (MessageWriter<String> writer = writerBuilder.getWriter();
-             MessageReader<String> reader = readerBuilder.getReader()) {
-
-            final String data = RandomStringUtils.randomAlphabetic(10);
-            writer.write(data);
-            Message<String> result = reader.read();
-            assertEquals(data, result.getValue());
+    @Nested
+    class TlsKeyStore extends ReaderWriterTest {
+        @SneakyThrows
+        @Override
+        public Map<String, Object> getParameters() {
+            Map<String, Object> params = new HashMap<>();
+            Map<String, Object> tls = new HashMap<>();
+            params.put("tls", tls);
+            tls.put("trustStore", makeTempCert("ca.p12").toAbsolutePath().toString());
+            tls.put("trustStoreType", "PKCS12");
+            tls.put("trustStorePassword", System.getenv().getOrDefault("TRUSTSTORE_PASSWORD", "ca-pass"));
+            tls.put("keyStore", makeTempCert("client0.p12").toAbsolutePath().toString());
+            tls.put("keyStoreType", "PKCS12");
+            tls.put("keyStorePassword", System.getenv().getOrDefault("KEYSTORE_PASSWORD", "client0-pass"));
+            return params;
         }
     }
 
-    @ParameterizedTest
-    @DisabledIfEnvironmentVariable(named="KAFKA_BROKER_REACHABLE", matches = "false")
-    @ValueSource(strings = {
-            "service-connect-by-tls",
-            "service-connect-by-tls-ca_certs",
-            "service-connect-by-tls-ca_certs_cert_key",
-            "service-connect-by-tls-no-hostname-check",
-        //  "service-connect-by-tls_kafka",                     // エラー発生
-            "service-connect-by-tls_kafka-no-hostname-check",
-            "service-connect-by-tls_kafka-with-hostname-check"
-        //  "service-connect-by-tls-encrypted-key",             // エラー発生
-        //  "service-ssl-256",                                  // SecurityProtocolTest と重複
-        //  "service-ssl-512",                                  // SecurityProtocolTest と重複
-        //  "service-ssl-512-no-username",                      // SecurityProtocolTest と重複
-        //  "service-ssl-512-no-password"                       // SecurityProtocolTest と重複
-        })
-    void read(String service) {
-        MessageReaderFactory<String> readerBuilder =
-                MessageReaderFactory.<String>builder().service(service)
-                        .topic(topic)
-                        .receiveTimeout(Duration.ofSeconds(3))
-                        .consistency(Consistency.EXACTLY_ONCE)
-                        .build();
+    @Nested
+    class CaCerts extends ReaderWriterTest {
+        @SneakyThrows
+        @Override
+        public Map<String, Object> getParameters() {
+            Map<String, Object> params = new HashMap<>();
+            Map<String, Object> tls = new HashMap<>();
+            params.put("tls", tls);
+            tls.put("ca_certs", makeTempCert("cacert.pem").toAbsolutePath().toString());
+            tls.put("keyStore", makeTempCert("client0.p12").toAbsolutePath().toString());
+            tls.put("keyStoreType", "PKCS12");
+            tls.put("keyStorePassword", System.getenv().getOrDefault("KEYSTORE_PASSWORD", "client0-pass"));
+            return params;
+        }
+    }
 
-        try (MessageReader<String> reader = readerBuilder.getReader()) {
-            //noinspection StatementWithEmptyBody
-            while (Objects.nonNull(reader.read())) {
+    @Nested
+    class PemCert extends ReaderWriterTest {
+        @SneakyThrows
+        @Override
+        public Map<String, Object> getParameters() {
+            Map<String, Object> params = new HashMap<>();
+            Map<String, Object> tls = new HashMap<>();
+            params.put("tls", tls);
+            tls.put("ca_certs", makeTempCert("cacert.pem").toAbsolutePath().toString());
+            tls.put("certfile", makeTempCert("client0.crt").toAbsolutePath().toString());
+            tls.put("keyfile", makeTempCert("client0.key").toAbsolutePath().toString());
+            return params;
+        }
+    }
 
+    @Nested
+    class PemCertWithEncKey extends ReaderWriterTest {
+        @SneakyThrows
+        @Override
+        public Map<String, Object> getParameters() {
+            Map<String, Object> params = new HashMap<>();
+            Map<String, Object> tls = new HashMap<>();
+            params.put("tls", tls);
+            tls.put("ca_certs", makeTempCert("cacert.pem").toAbsolutePath().toString());
+            tls.put("certfile", makeTempCert("client0.crt").toAbsolutePath().toString());
+            tls.put("keyfile", makeTempCert("client0-enc.key").toAbsolutePath().toString());
+            tls.put("keyfilePassword", System.getenv().getOrDefault("CERT_PASSPHRASE", "client1-pass"));
+            return params;
+        }
+    }
+
+    @Nested
+    class PemCertKafkaParams extends ReaderWriterTest {
+        @SneakyThrows
+        @Override
+        public Map<String, Object> getParameters() {
+            Map<String, Object> params = new HashMap<>();
+            params.put("ssl_cafile", makeTempCert("cacert.pem").toAbsolutePath().toString());
+            params.put("ssl_certfile", makeTempCert("client0.crt").toAbsolutePath().toString());
+            params.put("ssl_keyfile", makeTempCert("client0.key").toAbsolutePath().toString());
+            return params;
+        }
+    }
+
+    @Nested
+    class PemCertKafkaParamsWithEncKey extends ReaderWriterTest {
+        @SneakyThrows
+        @Override
+        public Map<String, Object> getParameters() {
+            Map<String, Object> params = new HashMap<>();
+            params.put("ssl_cafile", makeTempCert("cacert.pem").toAbsolutePath().toString());
+            params.put("ssl_certfile", makeTempCert("client0.crt").toAbsolutePath().toString());
+            params.put("ssl_keyfile", makeTempCert("client0-enc.key").toAbsolutePath().toString());
+            params.put("ssl_password", System.getenv().getOrDefault("CERT_PASSPHRASE", "client1-pass"));
+            return params;
+        }
+    }
+
+    @Nested
+    class PemCertKafkaParamsAndCommonTlsParam extends ReaderWriterTest {
+        @SneakyThrows
+        @Override
+        public Map<String, Object> getParameters() {
+            Map<String, Object> params = new HashMap<>();
+            params.put("ssl_cafile", makeTempCert("cacert.pem").toAbsolutePath().toString());
+            params.put("ssl_certfile", makeTempCert("client0.crt").toAbsolutePath().toString());
+            params.put("ssl_keyfile", makeTempCert("client0.key").toAbsolutePath().toString());
+            params.put("tls", false);
+            return params;
+        }
+    }
+
+    @Nested
+    class CheckHostname {
+        @Nested
+        class NoHostnameCheck extends ReaderWriterTest {
+            @SneakyThrows
+            @Override
+            public Map<String, Object> getParameters() {
+                Map<String, Object> params = new HashMap<>();
+                Map<String, Object> tls = new HashMap<>();
+                params.put("tls", tls);
+                tls.put("ca_certs", makeTempCert("cacert.pem").toAbsolutePath().toString());
+                tls.put("keyStore", makeTempCert("client0.p12").toAbsolutePath().toString());
+                tls.put("keyStoreType", "PKCS12");
+                tls.put("keyStorePassword", System.getenv().getOrDefault("KEYSTORE_PASSWORD", "client0-pass"));
+                tls.put("check_hostname", false);
+                return params;
+            }
+
+            @Override
+            public String getBroker() {
+                return System.getenv().getOrDefault("KAFKA_SSL_BROKER_IP", "127.0.0.1:9093");
+            }
+        }
+
+        @Nested
+        class HostnameCheck extends AuthenticationErrorTest {
+            @SneakyThrows
+            @Override
+            public Map<String, Object> getParameters() {
+                Map<String, Object> params = new HashMap<>();
+                Map<String, Object> tls = new HashMap<>();
+                params.put("tls", tls);
+                tls.put("ca_certs", makeTempCert("cacert.pem").toAbsolutePath().toString());
+                tls.put("keyStore", makeTempCert("client0.p12").toAbsolutePath().toString());
+                tls.put("keyStoreType", "PKCS12");
+                tls.put("keyStorePassword", System.getenv().getOrDefault("KEYSTORE_PASSWORD", "client0-pass"));
+                return params;
             }
         }
     }
 
-    @ParameterizedTest
-    @DisabledIfEnvironmentVariable(named="KAFKA_BROKER_REACHABLE", matches = "false")
-    @ValueSource(strings = {
-                "service-connect-by-tls",
-                "service-connect-by-tls-ca_certs",
-                "service-connect-by-tls-ca_certs_cert_key",
-                "service-connect-by-tls-no-hostname-check",
-            //  "service-connect-by-tls_kafka",                     // エラー発生
-                "service-connect-by-tls_kafka-no-hostname-check",
-            //  "service-connect-by-tls-encrypted-key",             // エラー発生
-            //  "service-connect-by-tls_kafka-and-tls",             // エラー発生
-                "service-connect-by-tls_kafka-with-hostname-check",
-            //  "service-ssl-256",                                  // SecurityProtocolTest と重複
-            //  "service-ssl-512",                                  // SecurityProtocolTest と重複
-            //  "service-ssl-512-no-username",                      // SecurityProtocolTest と重複
-            //  "service-ssl-512-no-password"                       // SecurityProtocolTest と重複
-        })
-    void write(String service) {
-        MessageWriterFactory<String> writerBuilder =
-                MessageWriterFactory.<String>builder().service(service)
-                        .topic(topic)
-                        .consistency(Consistency.EXACTLY_ONCE)
-                        .valueType(SimpleValueType.TEXT)
-                        .build();
+    @Nested
+    class SslCheckHostname {
 
-        try (MessageWriter<String> writer = writerBuilder.getWriter()) {
-            final String data = RandomStringUtils.randomAlphabetic(10);
-            writer.write(data);
+        @Nested
+        class NoHostnameCheckKafkaParams extends ReaderWriterTest {
+            @SneakyThrows
+            @Override
+            public Map<String, Object> getParameters() {
+                Map<String, Object> params = new HashMap<>();
+                params.put("ssl_cafile", makeTempCert("cacert.pem").toAbsolutePath().toString());
+                params.put("ssl_certfile", makeTempCert("client0.crt").toAbsolutePath().toString());
+                params.put("ssl_keyfile", makeTempCert("client0.key").toAbsolutePath().toString());
+                params.put("ssl_check_hostname", false);
+                return params;
+            }
+
+            @Override
+            public String getBroker() {
+                return System.getenv().getOrDefault("KAFKA_SSL_BROKER_IP", "127.0.0.1:9093");
+            }
+        }
+
+        @Nested
+        class HostnameCheckKafkaParams extends AuthenticationErrorTest {
+            @SneakyThrows
+            @Override
+            public Map<String, Object> getParameters() {
+                Map<String, Object> params = new HashMap<>();
+                params.put("ssl_cafile", makeTempCert("cacert.pem").toAbsolutePath().toString());
+                params.put("ssl_certfile", makeTempCert("client0.crt").toAbsolutePath().toString());
+                params.put("ssl_keyfile", makeTempCert("client0.key").toAbsolutePath().toString());
+                return params;
+            }
+
+            @Override
+            public String getBroker() {
+                return System.getenv().getOrDefault("KAFKA_SSL_BROKER_IP", "127.0.0.1:9093");
+            }
+        }
+
+        @Nested
+        class SaslNoHostnameCheckKafkaParams extends ReaderWriterTest {
+            @SneakyThrows
+            @Override
+            public Map<String, Object> getParameters() {
+                Map<String, Object> params = new HashMap<>();
+                params.put("ssl_cafile", makeTempCert("cacert.pem").toAbsolutePath().toString());
+                params.put("security_protocol", "SASL_SSL");
+                params.put("sasl_mechanism", "PLAIN");
+                params.put("sasl_plain_username", "user01");
+                params.put("sasl_plain_password", "user01");
+                params.put("ssl_check_hostname", false);
+                return params;
+            }
+
+            @Override
+            public String getBroker() {
+                return System.getenv().getOrDefault("KAFKA_SASL_SSL_BROKER_IP", "127.0.0.1:9097");
+            }
+
+            private Path makeTempCert(String name) throws IOException {
+                URL baseURL = new URL(
+                        System.getenv().getOrDefault("KAFKA_SASL_CERT_URL", "http://broker2:28080"));
+                return TlsTest.this.makeTempCert(name, baseURL);
+            }
+        }
+
+        @Nested
+        class SaslHostnameCheckKafkaParams extends AuthenticationErrorTest {
+            @SneakyThrows
+            @Override
+            public Map<String, Object> getParameters() {
+                Map<String, Object> params = new HashMap<>();
+                params.put("ssl_cafile", makeTempCert("cacert.pem").toAbsolutePath().toString());
+                params.put("security_protocol", "SASL_SSL");
+                params.put("sasl_mechanism", "PLAIN");
+                params.put("sasl_plain_username", "user01");
+                params.put("sasl_plain_password", "user01");
+                return params;
+            }
+
+            @Override
+            public String getBroker() {
+                return System.getenv().getOrDefault("KAFKA_SASL_SSL_BROKER_IP", "127.0.0.1:9097");
+            }
+
+            private Path makeTempCert(String name) throws IOException {
+                URL baseURL = new URL(
+                        System.getenv().getOrDefault("KAFKA_SASL_CERT_URL", "http://broker2:28080"));
+                return TlsTest.this.makeTempCert(name, baseURL);
+            }
         }
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"service-connect-by-no-tls", "service-connect-by-no-tls2"})
-    void writeNoTls(String service) {
-        MessageWriterFactory<String> writerBuilder =
-                MessageWriterFactory.<String>builder().service(service)
-                        .topic(topic)
-                        .consistency(Consistency.EXACTLY_ONCE)
-                        .build();
+    @Nested
+    class NoTls extends ReaderWriterTest {
+        @Override
+        public Map<String, Object> getParameters() {
+            Map<String, Object> params = new HashMap<>();
+            params.put("tls", false);
+            return params;
+        }
 
-        try (MessageWriter<String> writer = writerBuilder.getWriter()) {
-            final String data = RandomStringUtils.randomAlphabetic(10);
-            writer.write(data);
+        @Override
+        public String getBroker() {
+            return System.getenv().getOrDefault("KAFKA_BROKER", "broker:9092");
         }
     }
 
-    @Disabled   // SecurityProtocolTest と重複
-    @Test
-    void writeInvalidConfiguration() {
-		assertThrows(InvalidConfigurationException.class, ()->{
-			MessageWriterFactory<String> writerBuilder =
-					MessageWriterFactory.<String>builder().service("service-ssl-exception")
-							.topic(topic)
-							.consistency(Consistency.EXACTLY_ONCE)
-							.build();
-
-			MessageWriter<String> writer = writerBuilder.getWriter();
-			final String data = RandomStringUtils.randomAlphabetic(10);
-			writer.write(data);
-		});
-    }
-
-    @BeforeEach
-    void setupTopic() {
-        topic = "topic-ssl-" + RandomStringUtils.randomAlphabetic(5);
-    }
-
-    @BeforeEach
-    void makeConfigFile() throws IOException {
-        Map<String, String> vars = new HashMap<>();
-        for (String name: Arrays.asList("niica", "client0")) {
-            Path path = makeTempKeyStore(name + ".p12");
-            vars.put(name + "KeyStore", path.toAbsolutePath().normalize().toString());
-        }
-        for (String name: Arrays.asList("ca.pem", "client0.crt", "client0.key", "client1.crt", "client1.key")) {
-            Path path = makeTempPemFile(name);
-            vars.put(name, path.toAbsolutePath().normalize().toString());
+    @Nested
+    class EmptyMapTls extends ReaderWriterTest {
+        @Override
+        public Map<String, Object> getParameters() {
+            Map<String, Object> params = new HashMap<>();
+            params.put("tls", Collections.emptyMap());
+            return params;
         }
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                ConfigFileAware.class.getResourceAsStream("/sinetstream_config.yml"), StandardCharsets.UTF_8));
-             BufferedWriter writer = Files.newBufferedWriter(Paths.get(".sinetstream_config.yml"))) {
-            reader.lines().map(line -> {
-                StringSubstitutor ss = new StringSubstitutor(vars);
-                return ss.replace(line);
-            }).forEach(line -> {
-                try {
-                    writer.write(line);
-                    writer.newLine();
-                } catch (IOException e) {
-                    throw new SinetStreamIOException(e);
+        @Override
+        public String getBroker() {
+            return System.getenv().getOrDefault("KAFKA_BROKER", "broker:9092");
+        }
+    }
+
+
+    private String generateGroupId() {
+        return "group-java-" + RandomStringUtils.randomAlphanumeric(6);
+    }
+
+    class ReaderWriterTest implements ConfigFileAware {
+        @Test
+        void read() {
+            MessageReaderFactory<String> readerBuilder =
+                    MessageReaderFactory.<String>builder()
+                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .receiveTimeout(Duration.ofSeconds(3))
+                            .consistency(Consistency.AT_LEAST_ONCE)
+                            .build();
+
+            try (MessageReader<String> reader = readerBuilder.getReader()) {
+                //noinspection StatementWithEmptyBody
+                while (Objects.nonNull(reader.read())) {
+
+                }
+            }
+        }
+
+        @Test
+        void write() {
+            MessageWriterFactory<String> writerBuilder =
+                    MessageWriterFactory.<String>builder()
+                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .consistency(Consistency.AT_LEAST_ONCE)
+                            .build();
+
+            try (MessageWriter<String> writer = writerBuilder.getWriter()) {
+                final String data = RandomStringUtils.randomAlphabetic(10);
+                writer.write(data);
+            }
+        }
+
+        @Override
+        public String getBroker() {
+            return System.getenv().getOrDefault("KAFKA_SSL_BROKER", "broker:9093");
+        }
+    }
+
+    class AuthenticationErrorTest implements ConfigFileAware {
+
+        @Test
+        void read() {
+            MessageReaderFactory<String> readerBuilder =
+                    MessageReaderFactory.<String>builder()
+                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .receiveTimeout(Duration.ofSeconds(3))
+                            .consistency(Consistency.AT_LEAST_ONCE)
+                            .build();
+
+            assertThrows(AuthenticationException.class, () -> {
+                //noinspection EmptyTryBlock
+                try (MessageReader<String> reader = readerBuilder.getReader()) {
                 }
             });
         }
+
+        @Test
+        void write() {
+            MessageWriterFactory<String> writerBuilder =
+                    MessageWriterFactory.<String>builder()
+                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .consistency(Consistency.AT_LEAST_ONCE)
+                            .build();
+            assertThrows(AuthenticationException.class, () -> {
+                try (MessageWriter<String> writer = writerBuilder.getWriter()) {
+                    writer.write("xxx");
+                }
+            });
+        }
+
+        @Override
+        public String getBroker() {
+            return System.getenv().getOrDefault("KAFKA_SSL_BROKER_IP", "127.0.0.1:9093");
+        }
+
     }
 
-    private Path makeTempKeyStore(String name) throws IOException {
-        Path path = Files.createTempFile(null, ".p12");
-        try (InputStream in = ConfigFileAware.class.getResourceAsStream("/cert/" + name)) {
+    private Path makeTempCert(String name) throws IOException {
+        URL baseURL = new URL(System.getenv().getOrDefault("KAFKA_CERT_URL", "http://broker:18080"));
+        return makeTempCert(name, baseURL);
+    }
+
+    private Path makeTempCert(String name, URL baseURL) throws IOException {
+        Path path = Files.createTempFile(workdir, null, null);
+        URL url = new URL(baseURL, name);
+        try (InputStream in = url.openStream()) {
             Files.copy(in, path, StandardCopyOption.REPLACE_EXISTING);
         }
         path.toFile().deleteOnExit();
         return path;
-    }
-
-    private Path makeTempPemFile(String filename) throws IOException {
-        Path path = Files.createTempFile(null, ".pem");
-        try (InputStream in = ConfigFileAware.class.getResourceAsStream("/cert/" + filename)) {
-            Files.copy(in, path, StandardCopyOption.REPLACE_EXISTING);
-        }
-        path.toFile().deleteOnExit();
-        return path;
-    }
-
-    @AfterEach
-    void cleanupConfigFile() throws IOException {
-        Files.deleteIfExists(Paths.get(".sinetstream_config.yml"));
     }
 }

@@ -1,3 +1,5 @@
+**準備中** (2020-06-04 18:27:50 JST)
+
 <!--
 Copyright (C) 2020 National Institute of Informatics
 
@@ -19,13 +21,15 @@ specific language governing permissions and limitations
 under the License.
 --->
 
+[English](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/developer_guide/plugin_broker_python.html "google translate")
+
 # プラグイン開発ガイド(Messaging system / Python)
 
 新たなメッセージングシステムをSINETStream (Python)で扱えるようにするためのプラグインを開発する手順について説明します。
 
-## はじめに
+## 1. はじめに
 
-SINETStream v1.1では以下に示すメッセージングシステムに対応しています。
+SINETStream v1.2では以下に示すメッセージングシステムに対応しています。
 
 * [Apache Kafka](https://kafka.apache.org/)
 * [MQTT](http://mqtt.org/)
@@ -36,26 +40,26 @@ SINETStreamで扱えるようになります。
 
 このドキュメントでは新たなメッセージングシステムをサポートするためのプラグインを開発する手順について説明します。
 
-### 対象者
+### 1.1 対象者
 
 このドキュメントが対象としている読者を以下に示します。
 
 * SINETStreamで新たなメッセージングシステムを利用できるようにしたい開発者
 * SINETStream内部の詳細について理解したい開発者
 
-### 前提知識
+### 1.2 前提知識
 
 このドキュメントの説明は、以下の知識を有していることを前提としています。
 
 * Python 3
-* [setuptools](https://setuptools.readthedocs.io/en/latest/)による配布パッケージの作成手順
+* [setuptools](https://setuptools.readthedocs.io/en/latest/) による配布パッケージの作成手順
 * SINETStream の Python APIの利用方法、設定ファイルの記述方法
 
-## SINETStream の内部構造について
+## 2. SINETStream の内部構造について
 
 プラグインを開発する手順を説明する前に、開発の際に必要となるSINETStreamの内部構造について説明します。
 
-### モジュール構成
+### 2.1 モジュール構成
 
 SINETStreamのモジュール構成を以下の図に示します。
 
@@ -78,7 +82,7 @@ SINETStreamのモジュール構成を以下の図に示します。
         * メッセージングシステムから取得したバイト列をオブジェクトに変換する
     * メタデータの埋め込み
         * メッセージにメタデータを付加する
-        * SINETStream v1.1 ではメッセージ送信時のタイムスタンプを付加している
+        * SINETStream v1.2 ではメッセージ送信時のタイムスタンプを付加している
     * メタデータの取り出し
         * メッセージに付加されているメタデータを取り出す
     * 暗号化
@@ -92,16 +96,17 @@ SINETStreamのモジュール構成を以下の図に示します。
 * プラグイン
     * Kafkaプラグイン
         * Kafkaブローカとの間でメッセージの送受信を行う機能
-        * 実際の処理は[kafka-python](https://github.com/dpkp/kafka-python)の機能を呼び出すことで実現している
+        * 実際の処理は[kafka-python](https://github.com/dpkp/kafka-python) の機能を呼び出すことで実現している
     * MQTTプラグイン
         * MQTTブローカとの間でメッセージの送受信を行う機能
-        * 実際の処理は[eclipse paho](https://www.eclipse.org/paho/clients/python/)の機能を呼び出すことで実現している
+        * 実際の処理は[eclipse paho](https://www.eclipse.org/paho/clients/python/) の機能を呼び出すことで実現している
 
-### 処理シーケンス
+### 2.2 処理シーケンス
 
-SINETStreamでメッセージの送受信を行うためのクラスMessageReader, MesageWriterの処理シーケンスについて説明します。
+SINETStreamでメッセージの送受信を行うためのクラスMessageReader, MesageWriter, AsyncMessageReader, AsyncMessageWriter
+の処理シーケンスについて説明します。
 
-#### MessageReader
+#### 2.2.1 MessageReader
 
 以下に示すようなメッセージ受信処理を SINETStreamで行った場合のシーケンス図を示します。
 ここではKafkaブローカーからメッセージを受信することを想定しています。
@@ -109,7 +114,7 @@ SINETStreamでメッセージの送受信を行うためのクラスMessageReade
 ```python
 with MessageReader(service='kafka-service') as reader:
     for message in reader:
-        System.out.println(message)
+        print(f'value={message.value}')
 ```
 
 ![MessageReader](images/reader_sequence.png)
@@ -127,7 +132,7 @@ with MessageReader(service='kafka-service') as reader:
 * Registry
     * 登録されているプラグインを管理するクラス
     
-#### MessageWriter
+#### 2.2.2 MessageWriter
 
 以下に示すようなメッセージ送信処理を SINETStreamで行った場合のシーケンス図を示します。
 ここではKafkaブローカーにメッセージを送信することを想定しています。
@@ -151,9 +156,67 @@ with MessageWriter(service='kafka-service') as writer:
 * Registry
     * 登録されているプラグインを管理するクラス
 
-## プラグインの実装方法
+#### 2.2.3 AsyncMessageReader
 
-### 概要
+以下に示すようなメッセージ受信処理を SINETStreamの非同期APIで行った場合のシーケンス図を示します。
+ここではKafkaブローカーからメッセージを受信することを想定しています。
+
+```python
+def show_message(message):
+    print(f'value={message.value}')
+
+reader = AsyncMessageReader(service='kafka-service')
+reader.on_message = show_message
+reader.open()
+
+# 他の処理...
+
+reader.close()
+```
+
+![AsyncMessageReader](images/async_reader_sequence.png)
+
+図中のクラスについての簡単な説明を以下に記します。
+
+* UserProgram
+    * SINETStreamを利用するプログラム
+* AsyncMessageReader
+    * ブローカーからメッセージを非同期APIで受信するSINETStreamのクラス
+* KafkaAsyncReader
+    * Kafkaブローカーから非同期APIでメッセージを受信するKafkaプラグインのクラス
+* Registry
+    * 登録されているプラグインを管理するクラス
+    
+#### 2.2.4 AsyncMessageWriter
+
+以下に示すようなメッセージ送信処理をSINETStreamの非同期APIで行った場合のシーケンス図を示します。
+ここではKafkaブローカーにメッセージを送信することを想定しています。
+
+```python
+def on_publish(_):
+    print("success")
+
+with AsyncMessageWriter(service='kafka-service') as writer:
+    for message in messages:
+        writer.publish(message).then(on_publish)
+```
+
+![AsyncMessageWriter](images/async_writer_sequence.png)
+
+図中のクラスについての簡単な説明を以下に記します。
+
+* UserProgram
+    * SINETStreamを利用するプログラム
+* AsyncMessageWriter
+    * ブローカーにメッセージを非同期APIで送信するSINETStreamのクラス
+* KafkaAsyncWriter
+    * Kafkaブローカーに非同期APIでメッセージ送信を行うKafkaプラグインのクラス
+* Registry
+    * 登録されているプラグインを管理するクラス
+
+## 3. プラグインの実装方法
+
+### 3.1 概要
 
 [Python Packaging User Guide - Creating and discovering plugins](https://packaging.python.org/guides/creating-and-discovering-plugins/)
 にあるように Python でプラグインを作成する場合、主に３つの方法があります。
@@ -171,12 +234,12 @@ SINETStreamのプラグインを作成するためには以下の作業が必要
 
 それぞれの作業項目の詳細について以下に記します。
 
-### プラグインに定められているメソッドを実装したクラスの作成
+### 3.2 プラグインに定められているメソッドを実装したクラスの作成
 
 プラグインで必要となるメソッドはメッセージを受信するためのクラスと
 メッセージを送信するためのクラスで異なります。それぞれについて順に説明します。
 
-#### メッセージ受信のためのクラス
+#### 3.2.1 メッセージ受信のためのクラス
 
 メッセージ受信を行うプラグインで必要となるメソッドについて説明します。
 
@@ -188,7 +251,7 @@ SINETStreamのプラグインを作成するためには以下の作業が必要
     * ブローカーとの接続を切断するメソッド
 * `__iter__()`
     * ブローカーから受信したメッセージのイテレータを返すメソッド
-    * 返り値は[イテレータオブジェクト](https://docs.python.org/ja/3.8/library/stdtypes.html#typeiter)でなくてはならない
+    * 返り値は[イテレータオブジェクト](https://docs.python.org/ja/3.8/library/stdtypes.html#typeiter) でなくてはならない
     * イテレータが返す、個々のメッセージは次の３つの値からなるタプルでなくてはならない
         * メッセージのバイト列(メッセージングシステム依存のヘッダやメタデータを除いたペイロード部分の値。型は`bytes`)
         * 受信したメッセージに対応するトピック名
@@ -203,7 +266,7 @@ SINETStreamのプラグインを作成するためには以下の作業が必要
 SINETStreamの設定ファイル、あるいは`MessageReader`のコンストラクタで指定されたパラメータが
 `dict`型の変数として渡されます。
 
-#### メッセージ送信のためのクラス
+#### 3.2.2 メッセージ送信のためのクラス
 
 メッセージ送信を行うプラグインで必要となるインターフェースについて説明します。
 
@@ -224,9 +287,54 @@ SINETStreamの設定ファイル、あるいは`MessageReader`のコンストラ
 SINETStreamの設定ファイル、あるいは`MessageWriter`のコンストラクタで指定されたパラメータが
 `dict`型の変数として渡されます。
 
-### パッケージメタデータの作成
+#### 3.2.3 メッセージ受信(非同期API)のためのクラス
 
-[setuptools](http://setuptools.readthedocs.io/)のエントリポイントにクラスを
+非同期APIのメッセージ受信を行うプラグインで必要となるメソッドについて説明します。
+以下の２つのメソッドと２つのプロパティを実装する必要があります。
+
+* `open()`
+    * ブローカーに接続を行うメソッド
+* `close()`
+    * ブローカーとの接続を切断するメソッド
+* `.on_message`
+    * メッセージを受信した時に呼び出すコールバック関数
+    * 引数で受信したメッセージを渡す
+* `.on_failure`
+    * エラーが発生した時に呼び出すコールバック関数
+    * 引数でエラーの原因となった例外オブジェクトを渡す
+    
+プラグインが上記のメソッドを実装することを確認するために、抽象基底クラス `sinetstream.spi.PluginAsyncMessageReader`
+を利用することができます。`PluginAsyncMessageReader`では上記のメソッド、プロパティが抽象メソッドとして定義されています。
+    
+メッセージ受信を行うクラスのコンストラクタは引数から `params` を受け取ります。`params`には、
+SINETStreamの設定ファイル、あるいは`AsyncMessageReader`のコンストラクタで指定されたパラメータが
+`dict`型の変数として渡されます。
+
+#### 3.2.4 メッセージ送信(非同期API)のためのクラス
+
+非同期APIのメッセージ送信を行うプラグインで必要となるインターフェースについて説明します。
+以下の３つのメソッドを実装する必要があります。
+
+* `open()`
+    * ブローカーに接続を行うメソッド
+* `close()`
+    * ブローカーとの接続を切断するメソッド
+* `publish(message)`
+    * ブローカーにメッセージを送信するメソッド
+    * `message`の型は `bytes` でなくてはならない
+    * メソッドの呼び出しはブロックせずに直ぐに返ることを想定している
+    * 返り値は [`Promise`](https://github.com/syrusakbary/promise) オブジェクトでなくてはならない
+    
+プラグインが上記のメソッドを実装することを確認するために、抽象基底クラス `sinetstream.spi.PluginAsyncMessageWriter`
+を利用することができます。`PluginAsyncMessageWriter`では上記の３つのメソッドが抽象メソッドとして定義されています。
+
+メッセージ送信を行うクラスのコンストラクタは引数から `params` を受け取ります。`params`には、
+SINETStreamの設定ファイル、あるいは`AsyncMessageWriter`のコンストラクタで指定されたパラメータが
+`dict`型の変数として渡されます。
+
+### 3.3 パッケージメタデータの作成
+
+[setuptools](http://setuptools.readthedocs.io/) のエントリポイントにクラスを
 登録することで、SINETStreamがプラグインを見つけることができるようになります。
 これは登録されたエントリポイントをsetuptoolsが検出する機能を利用して実現して
 います。setuptoolsはPythonの配布パッケージのビルドなどを行うためのツールです。
@@ -235,14 +343,20 @@ SINETStreamの設定ファイル、あるいは`MessageWriter`のコンストラ
 ができるようにするためには、エントリポイントのグループと名前を適切に設定する
 必要があります。
 
-SINETStreamではグループを`MessageReader`, `MessageWriter`のどちらから利用する
-のかを識別するために用いています。以下に示すどちらかのグループを指定してくだ
-さい。
+SINETStreamではグループを`MessageReader`, `MessageWriter`, `AsyncMessageReader`, `AsyncMessageWriter`
+のうちどのクラスに対応するのかを識別するために用いています。以下に示すいずれかのグループを指定してください。
 
 * `sinetstream.reader`
     * `MessageReader`から呼び出されるメッセージ受信を行うプラグインのグループ
 * `sinetstream.writer`
     * `MessageWriter`から呼び出されるメッセージ送信を行うプラグインのグループ
+* `sinetstream.async_reader`
+    * `AsyncMessageReader`から呼び出されるメッセージ受信(非同期API)を行うプラグインのグループ
+* `sinetstream.async_writer`
+    * `AsyncMessageWriter`から呼び出されるメッセージ送信(非同期API)を行うプラグインのグループ
+    
+１つのプラグインで必ずしも上記全てのグループに対応する実装を提供する必要はありません。
+必要なグループに関する記述のみを行ってください。
     
 エントリポイントにはグループ内で識別するための名前がつけられます。SINETSteramでは
 エントリポイントに付けられた名前が、メッセージングシステムのタイプに対応づけられます。
@@ -265,14 +379,14 @@ sinetstream.writer =
 を参照してください。
 
 
-## プラグインの実装例
+## 4. プラグインの実装例
 
 プラグインを実装する具体的な手順を示すために、簡単な実装例を示します。
 
 ここで示す実装例では実際のブローカーにアクセスするのではなく、プロセス内で
 `queue.Queue`オブジェクトを利用したデータの受け渡しを行う処理をSINETStreamのプラグインとして実現します。
 
-### ファイル構成
+### 4.1 ファイル構成
 
 以下のファイルを作成します。
 
@@ -283,11 +397,11 @@ sinetstream.writer =
 * setup.cfg
     * `setup.py`の設定ファイル
 
-### プラグイン実装
+### 4.2 プラグイン実装
 
 プラグインの実装を行うモジュールファイル`queue.py`について説明します。
 
-#### モジュールレベル
+#### 4.2.1 モジュールレベル
 
 `queue.Queue`を格納するdict型変数をモジュールレベルで定義します。
 
@@ -299,7 +413,7 @@ queues = defaultdict(Queue)
 `defaultdict`を利用することで、トピック名に対応する値が `queues`に無い場合は
 自動的に作成された `Queue`オブジェクトが取得できます。
 
-#### メッセージ送信のためのクラス
+#### 4.2.2 メッセージ送信のためのクラス
 
 メッセージ送信を行うプラグインのクラス`QueueWriter`を実装します。
 
@@ -345,7 +459,7 @@ class QueueWriter(PluginMessageWriter):
 `publish(value)`では `open()`の際に格納した `Queue`オブジェクトにメッセージを`put()`します。
 `publish()`で送られたメッセージは `Queue`オブジェクトを通して受信側に受け渡されます。
 
-#### メッセージ受信のためのクラス
+#### 4.2.3 メッセージ受信のためのクラス
 
 メッセージ受信を行うプラグインのクラス`QueueReader`を実装します。
 
@@ -397,9 +511,143 @@ class QueueReader(PluginMessageReader):
 `__iter__(value)`は `open()`の際に格納した `Queue`オブジェクトからメッセージ取得するイテレータを返します。
 `MessageWriter`で送信されたメッセージは`Queue`オブジェクトを通して受け取ることができます。
 
-### パッケージング
+#### 4.2.4 メッセージ送信(非同期API)のためのクラス
 
-#### `setup.py`, `setup.cfg`の作成
+非同期APIでメッセージ送信を行うプラグインのクラス`QueueAsyncWriter`を実装します。
+
+まずクラス定義を行います。
+
+```python
+class QueueAsyncWriter(PluginAsyncMessageWriter):
+```
+
+ここでは抽象基底クラス`PluginAsyncMessageWriter`を継承したクラスを定義します。
+プラグインクラスの実装において`PluginAsyncMessageWriter`を継承することは必須ではありません。
+しかし開発環境によっては抽象基底クラスを継承することにより、
+プラグイン実装に必要となるメソッドに関する情報などの支援を受けられる場合があります。
+
+次にコンストラクタを定義します。
+
+```python
+    def __init__(self, params):
+        self._queue = None
+        self._topic = params.get('topic')
+        if self._topic is None or not isinstance(self._topic, str):
+            raise InvalidArgumentError()
+        self._executor = None
+```
+
+引数の`params`にはSINETStreamの設定ファイル、あるいは`MessageWriter`のコンストラクタで指定されたパラメータが
+`dict`型の変数として渡されます。ここでは、パラメータ`topic`の値を送信対象のトピック名としてインスタンス変数に
+格納しています。
+
+次にプラグインで実装する必要のあるメソッドを定義します。
+
+```python
+    def open(self):
+        self._executor = ThreadPoolExecutor()
+        self._queue = queues[self._topic]
+
+    def close(self):
+        self._queue = None
+        self._executor.shutdown()
+
+    def publish(self, value):
+        future = self._executor.submit(lambda: self._queue.put(value))
+        return Promise.cast(future)
+```
+
+`open()`の際に `queues`からトピック名に対応する `Queue`のオブジェクトを取得します。
+またメッセージ送信処理を行うスレッドプールを作成しておきます。
+`publish(value)`では `open()`の際に作成したスレッドプールに送信処理を行うタスクを実行するように依頼します。
+また送信処理を表す`Promise`オブジェクトを結果として返します。
+`close()`では`open()`の際に作成したスレッドプールの資源解放を行います。
+
+#### 4.2.5 メッセージ受信(非同期API)のためのクラス
+
+非同期APIでメッセージ受信を行うプラグインのクラス`QueueAsyncReader`を実装します。
+
+まずクラス定義を行います。
+
+```python
+class QueueAsyncReader(PluginAsyncMessageReader):
+```
+
+ここでは抽象基底クラス`PluginAsyncMessageReader`を継承したクラスを定義します。
+
+次にコンストラクタを定義します。
+
+```python
+    def __init__(self, params):
+        self._queue = None
+        self._topic = params.get('topic')
+        if self._topic is None or not isinstance(self._topic, str):
+            raise InvalidArgumentError()
+        self._on_message = None
+        self._on_failure = None
+        self._reader_executor = None
+        self._future = None
+        self._closed = True
+```
+
+引数の`params`にはSINETStreamの設定ファイル、あるいは`MessageReader`のコンストラクタで指定されたパラメータが
+`dict`型の変数として渡されます。ここでは、パラメータ`topic`の値を受信対象のトピック名としてインスタンス変数に
+格納しています。
+
+次にプラグインで実装する必要のあるメソッドを定義します。
+
+```python
+    def open(self):
+        if self._closed:
+            self._queue = queues[self._topic]
+            self._reader_executor = ThreadPoolExecutor(max_workers=1)
+            self._closed = False
+            self._future = self._reader_executor.submit(self._reader_loop)
+
+    def _reader_loop(self):
+        while not self._closed:
+            try:
+                value = self._queue.get(timeout=0.1)
+                raw = value
+                if self._on_message is not None:
+                    self._on_message(value, self._topic, raw),
+            except Empty:
+                pass
+
+    def close(self):
+        if not self._closed:
+            self._queue = None
+            self._future.cancel()
+            self._reader_executor.shutdown()
+            self._reader_executor = None
+            self._future = None
+            self._closed = True
+
+    @property
+    def on_message(self):
+        return self._on_message
+
+    @on_message.setter
+    def on_message(self, on_message):
+        self._on_message = on_message
+
+    @property
+    def on_failure(self):
+        return self._on_failure
+
+    @on_failure.setter
+    def on_failure(self, on_failure):
+        self._on_failure = on_failure
+```
+
+`open()`ではメッセージ受信を行うスレッドプールを作成し、受信処理ループを実行しています。
+受信処理ループでは、メッセージを受信するとコールバック関数`self._on_message()`を呼び出します。
+`.on_message`, `.on_failure` は、それぞれメッセージ受信時、エラー発生時のコールバック関数に対応するプロパティとなっています。
+`close()`では `open()`で起動した受信スレッドを停止しています。
+
+### 4.3 パッケージング
+
+#### 4.3.1 `setup.py`, `setup.cfg`の作成
 
 パッケージングを行う際のコマンドラインインタフェースとなる `setup.py` とその設定ファイル `setup.cfg` を作成します。
 
@@ -415,7 +663,7 @@ setup()
 ```
 [metadata]
 name = sinetstream-queue
-version = 1.0.0
+version = 1.2.0
 
 [options]
 package_dir=
@@ -425,7 +673,8 @@ zip_safe = False
 namespace_packages =
   ssplugin
 install_requires =
-  sinetstream>=1.1.0
+  sinetstream>=1.2.0
+  promise
 python_requires = >= 3.6
 
 [options.packages.find]
@@ -436,13 +685,18 @@ sinetstream.reader =
     queue = ssplugin.queue:QueueReader
 sinetstream.writer =
     queue = ssplugin.queue:QueueWriter
+sinetstream.async_reader =
+    queue = ssplugin.queue:QueueAsyncReader
+sinetstream.async_writer =
+    queue = ssplugin.queue:QueueAsyncWriter
 ```
 
 プラグインに直接関わる設定は `options.entry_points`セクションです。
 `sinetstream.reader`, `sinetstream.writer`がメッセージ受信、メッセージ送信のプラグインに対応するグループになります。
+また `sinetstream.async_reader`, `sinetstream.async_writer`が非同期APIのメッセージ受信、メッセージ送信のプラグインに対応するグループになります。
 各グループに対して (メッセージングシステムのタイプ名)=(パッケージ名:クラス名) を指定しています。
 
-#### パッケージの作成
+#### 4.3.2 パッケージの作成
 
 ```bash
 $ python setup.py bdist_wheel
@@ -451,10 +705,10 @@ running build
 running build_py
 (中略)
 $ ls dist/
-dist/sinetstream_queue-1.0.0-py3-none-any.whl
+dist/sinetstream_queue-1.2.0-py3-none-any.whl
 ```
 
-### ソースコード
+### 4.4 ソースコード
 ここまで記した実装例のファイルへのリンクを以下に示します。
 * [src/ssplugin/queue.py](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/docs/developer_guide/sample/messaging-system/python/src/ssplugin/queue.py)
 * [setup.py](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/docs/developer_guide/sample/messaging-system/python/setup.py)

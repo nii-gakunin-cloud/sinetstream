@@ -1,3 +1,5 @@
+**準備中** (2020-06-04 18:27:50 JST)
+
 ---
 permalink: README.html
 ---

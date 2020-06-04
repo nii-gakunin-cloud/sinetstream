@@ -26,8 +26,9 @@ generateLombokConfig.enabled = false
 
 dependencies {
     implementation project(':SINETStream-api')
-    compileOnly "org.projectlombok:lombok:1.18.10"
-    annotationProcessor "org.projectlombok:lombok:1.18.10"
-    testCompileOnly "org.projectlombok:lombok:1.18.10"
-    testAnnotationProcessor "org.projectlombok:lombok:1.18.10"
+    compileOnly "org.projectlombok:lombok:1.18.+"
+    annotationProcessor "org.projectlombok:lombok:1.18.+"
+    testCompileOnly "org.projectlombok:lombok:1.18.+"
+    testAnnotationProcessor "org.projectlombok:lombok:1.18.+"
+    testImplementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
 }

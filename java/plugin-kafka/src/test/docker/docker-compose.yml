@@ -1,0 +1,50 @@
+version: '3.7'
+services:
+  broker:
+    build: build
+    hostname: broker
+    ports:
+    - "9092:9092" # Kafka plain
+    - "9093:9093" # Kafka TLS
+    - "18080:8080" # certs
+    networks:
+      kafka_net:
+        ipv4_address: 192.168.64.10
+  broker2:
+    build: build2
+    hostname: broker2
+    ports:
+    - "9096:9096" # Kafka plain + SASL
+    - "9097:9097" # Kafka TLS   + SASL
+    - "28080:8080" # certs
+    networks:
+      kafka_net:
+        ipv4_address: 192.168.64.20
+  test:
+    image: openjdk:8-slim
+    volumes:
+    - ../../../..:/build
+    environment:
+      KAFKA_BROKER: broker:9092
+      KAFKA_BROKER_IP: 192.168.64.10:9092
+      KAFKA_SSL_BROKER: broker:9093
+      KAFKA_SSL_BROKER_IP: 192.168.64.10:9093
+      KAFKA_SASL_BROKER: broker2:9096
+      KAFKA_SASL_BROKER_IP: 192.168.64.20:9096
+      KAFKA_SASL_SSL_BROKER: broker2:9097
+      KAFKA_SASL_SSL_BROKER_IP: 192.168.64.20:9097
+      KAFKA_CERT_URL: http://broker:8080
+      KAFKA_SASL_CERT_URL: http://broker2:8080
+    working_dir: /build/plugin-kafka
+    command: ../gradlew check
+#    command: /bin/bash
+#    tty: true
+#    stdin_open: true
+    networks:
+      kafka_net: {}
+networks:
+  kafka_net:
+    ipam:
+      driver: default
+      config:
+      - subnet: 192.168.64.0/24

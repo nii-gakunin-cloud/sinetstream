@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 National Institute of Informatics
+ * Copyright (C) 2020 National Institute of Informatics
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -26,24 +26,20 @@ import jp.ad.sinet.stream.spi.PluginMessageReader;
 import jp.ad.sinet.stream.spi.PluginMessageWrapper;
 import jp.ad.sinet.stream.spi.ReaderParameters;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.extern.java.Log;
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 
 @Log
-public class MqttMessageReader extends MqttBaseIO implements PluginMessageReader {
+public class MqttMessageReader extends MqttSyncBaseIO implements PluginMessageReader, MqttReader {
 
     @Getter
     private final List<String> topics;
@@ -58,12 +54,12 @@ public class MqttMessageReader extends MqttBaseIO implements PluginMessageReader
         this.topics = Collections.unmodifiableList(parameters.getTopics());
         this.receiveTimeout = parameters.getReceiveTimeout();
         this.queue = new LinkedBlockingQueue<>();
-        this.client.setCallback(new SinetMqttCallback());
+        this.client.setCallback(new MqttReaderCallback(this));
         connect();
     }
 
     @Override
-    void connect() {
+    public void connect() {
         super.connect();
         try {
             int[] qos = new int[this.topics.size()];
@@ -76,6 +72,17 @@ public class MqttMessageReader extends MqttBaseIO implements PluginMessageReader
         reconnectDelay = reconnectMinDelay;
     }
 
+    @Override
+    public void disconnect() throws MqttException {
+        client.disconnect();
+    }
+
+    @SneakyThrows(InterruptedException.class)
+    @Override
+    public void onMessageArrived(SinetMqttMessage message) {
+        queue.put(message);
+    }
+
     private String getTopic() {
         return String.join(",", this.topics);
     }
@@ -86,50 +93,6 @@ public class MqttMessageReader extends MqttBaseIO implements PluginMessageReader
             return this.queue.poll(receiveTimeout.toNanos(), TimeUnit.NANOSECONDS);
         } catch (InterruptedException e) {
             throw new SinetStreamIOException(e);
-        }
-    }
-
-    private class SinetMqttCallback implements MqttCallback {
-        @Override
-        public void connectionLost(Throwable cause) {
-            log.log(Level.FINE, cause, () -> "MQTT connection lost: " + getClientId());
-            if (!connectOptions.isAutomaticReconnect()) {
-                return;
-            }
-            Executors.newSingleThreadScheduledExecutor().schedule(() -> {
-                updateReconnectDelay();
-                disconnectClient();
-                connect();
-            }, reconnectDelay, TimeUnit.SECONDS);
-        }
-
-        private void disconnectClient() {
-            try {
-                log.fine(() -> "Disconnect the broker: " + getClientId());
-                MqttMessageReader.this.client.disconnect();
-            } catch (MqttException e) {
-                log.log(Level.FINER, e, () -> "MQTT disconnect ERROR: " + getClientId());
-            }
-        }
-
-        private void updateReconnectDelay() {
-            if (reconnectDelay < connectOptions.getMaxReconnectDelay()) {
-                reconnectDelay *= 2;
-            }
-            if (reconnectDelay > connectOptions.getMaxReconnectDelay()) {
-                reconnectDelay = connectOptions.getMaxReconnectDelay();
-            }
-        }
-
-        @Override
-        public void messageArrived(String topic, MqttMessage message) throws Exception {
-            log.finer(() -> "MQTT message arrived: " + getClientId() + ": " + message.toString());
-            queue.put(new SinetMqttMessage(topic, message));
-        }
-
-        @Override
-        public void deliveryComplete(IMqttDeliveryToken token) {
-            log.finest(() -> "MQTT delivery completed: " + token.toString());
         }
     }
 }

@@ -51,12 +51,12 @@ public class TextConsumer {
                         .valueType(SimpleValueType.TEXT)
                         .receiveTimeout(Duration.ofSeconds(30))
                         .build();
-        try(MessageReader<String> reader = factory.getReader()) {
+        try (MessageReader<String> reader = factory.getReader()) {
             Message<String> msg;
             while (Objects.nonNull(msg = reader.read())) {
                 long ts = msg.getTimestampMicroseconds();
                 if (ts != 0) {
-                    Instant i = Instant.ofEpochMilli(ts/1000);
+                    Instant i = Instant.ofEpochMilli(ts / 1000);
                     ZoneId z = ZoneId.systemDefault();
                     String s = ZonedDateTime.ofInstant(i, z).toString();
                     System.out.print("[" + s + "] ");

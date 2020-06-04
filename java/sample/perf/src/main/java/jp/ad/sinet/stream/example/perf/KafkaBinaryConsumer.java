@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 National Institute of Informatics
+ * Copyright (C) 2020 National Institute of Informatics
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -21,38 +21,22 @@
 
 package jp.ad.sinet.stream.example.perf;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
+import org.apache.commons.cli.*;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
-import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.apache.kafka.common.serialization.StringSerializer;
 
-import org.apache.commons.cli.*;
-
-import java.time.Duration;
-import java.util.Objects;
-
-import jp.ad.sinet.stream.example.perf.Util;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.PrintWriter;
+import java.time.Duration;
+import java.util.Collections;
+import java.util.Properties;
 
-@SuppressWarnings({"WeakerAccess", "CodeBlock2Expr"})
+@SuppressWarnings({"WeakerAccess"})
 public class KafkaBinaryConsumer {
 
     private final String brokers;
@@ -77,22 +61,22 @@ public class KafkaBinaryConsumer {
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "foobar");
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
         switch (this.qos) {
-        case 0:
-            break;
-        case 1:
-            break;
-        case 2:
-            break;
+            case 0:
+                break;
+            case 1:
+                break;
+            case 2:
+                break;
         }
-        
+
         KafkaConsumer<String, byte[]> consumer =
-                        new KafkaConsumer<>(props, new StringDeserializer(), new ByteArrayDeserializer());
-        consumer.subscribe(Arrays.asList(this.topic_src));
+                new KafkaConsumer<>(props, new StringDeserializer(), new ByteArrayDeserializer());
+        consumer.subscribe(Collections.singletonList(this.topic_src));
         long[] ts = new long[this.nmsg];
         int[] ss = new int[this.nmsg];
         int n = 0;
         while (n < this.nmsg) {
-            ConsumerRecords<String, byte[]> recs = consumer.poll(this.timeout);
+            ConsumerRecords<String, byte[]> recs = consumer.poll(Duration.ofMillis(this.timeout));
             if (n == 0) {
                 System.err.println("receiving");
             }

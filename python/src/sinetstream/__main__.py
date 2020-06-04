@@ -20,10 +20,11 @@
 # specific language governing permissions and limitations
 # under the License.
 
-from .api import MessageReader, MessageWriter
-
+from .api import MessageReader, MessageWriter, AsyncMessageReader, AsyncMessageWriter
 
 print("==================================================")
 print("Default parameters:")
 print(MessageReader.usage())
 print(MessageWriter.usage())
+print(AsyncMessageReader.usage())
+print(AsyncMessageWriter.usage())

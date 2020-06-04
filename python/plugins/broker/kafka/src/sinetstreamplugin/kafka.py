@@ -21,13 +21,18 @@
 # under the License.
 
 import logging
+from concurrent.futures.thread import ThreadPoolExecutor
 from ssl import SSLError
+from sys import exc_info
+from threading import RLock
 from time import sleep
 
 from kafka import KafkaProducer, KafkaConsumer
 from kafka.errors import (
     KafkaError, TopicAuthorizationFailedError, GroupAuthorizationFailedError,
 )
+from promise import Promise
+
 from sinetstream import (
     AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE,
     ConnectionError, SinetError, AuthorizationError,
@@ -138,9 +143,8 @@ class KafkaClient(object):
             logger.error('kafka close() error')
 
 
-class KafkaReader(KafkaClient):
+class BaseKafkaReader(KafkaClient):
     def __init__(self, params):
-        logger.debug("KafkaReader:init")
         super().__init__(params)
         rtoms = self._params["receive_timeout_ms"]
         if rtoms != float("inf"):
@@ -174,19 +178,6 @@ class KafkaReader(KafkaClient):
             assert False  # NOT IMPLEMENTED
         return configs
 
-    def __iter__(self):
-        assert self._client is not None
-        return self
-
-    def __next__(self):
-        logger.debug("KafkaReader:next")
-        try:
-            rec = next(self._client)
-            return rec.value, rec.topic, rec
-        except (TopicAuthorizationFailedError,
-                GroupAuthorizationFailedError) as ex:
-            raise AuthorizationError(ex)
-
     def _wait_for_assignment(self, retry):
         count = 0
         while not self._client.assignment():
@@ -207,7 +198,96 @@ class KafkaReader(KafkaClient):
         self._client.seek_to_end()
 
 
-class KafkaWriter(KafkaClient):
+class KafkaReader(BaseKafkaReader):
+    def __iter__(self):
+        assert self._client is not None
+        return self
+
+    def __next__(self):
+        logger.debug("KafkaReader:next")
+        try:
+            rec = next(self._client)
+            return rec.value, rec.topic, rec
+        except (TopicAuthorizationFailedError,
+                GroupAuthorizationFailedError) as ex:
+            raise AuthorizationError(ex)
+
+
+class KafkaAsyncReader(BaseKafkaReader):
+    def __init__(self, params):
+        logger.debug("KafkaAsyncReader:init")
+        super().__init__(params)
+        self._executor = None
+        self._reader_executor = None
+        self._on_message = None
+        self._on_failure = None
+        self._closed = True
+        self._future = None
+
+    def open(self):
+        super().open()
+        self._closed = False
+        self._executor = ThreadPoolExecutor()
+        self._reader_executor = ThreadPoolExecutor(max_workers=1)
+        if self._is_set_callback():
+            self._future = self._reader_executor.submit(self._reader_loop)
+
+    def _poll(self):
+        try:
+            return self._client.poll(timeout_ms=100)
+        except (TopicAuthorizationFailedError, GroupAuthorizationFailedError) as ex:
+            tb = exc_info()[2]
+            e = AuthorizationError(ex)
+            if self._on_failure is not None:
+                self._executor.submit(lambda x, t: self._on_failure(x, traceback=tb), e, tb)
+            raise e
+
+    def _reader_loop(self):
+        assert self._client is not None
+        assert self._is_set_callback()
+        while not self._closed:
+            record_map = self._poll()
+            for tp, records in record_map.items():
+                for record in records:
+                    self._executor.submit(
+                        lambda r: self._on_message(r.value, r.topic, r),
+                        record)
+
+    def _is_set_callback(self):
+        return not (self._on_message is None and self._on_failure is None)
+
+    def close(self):
+        super().close()
+        self._closed = True
+        if self._reader_executor is not None:
+            self._reader_executor.shutdown()
+            self._reader_executor = None
+        if self._executor is not None:
+            self._executor.shutdown()
+            self._executor = None
+
+    @property
+    def on_message(self):
+        return self._on_message
+
+    @on_message.setter
+    def on_message(self, on_message):
+        self._on_message = on_message
+        if self._future is None and self._reader_executor is not None:
+            self._future = self._reader_executor.submit(self._reader_loop)
+
+    @property
+    def on_failure(self):
+        return self._on_failure
+
+    @on_failure.setter
+    def on_failure(self, on_failure):
+        self._on_failure = on_failure
+        if self._future is None and self._reader_executor is not None:
+            self._future = self._reader_executor.submit(self._reader_loop)
+
+
+class BaseKafkaWriter(KafkaClient):
     def _create_client(self):
         return KafkaProducer(**self._kafka_params)
 
@@ -225,9 +305,53 @@ class KafkaWriter(KafkaClient):
         return configs
 
     def publish(self, msg):
-        logger.debug("KafkaWriter:publish")
-        ret = self._client.send(self._params["topic"], msg)
+        return self._client.send(self._params["topic"], msg)
+
+
+class KafkaWriter(BaseKafkaWriter):
+    def publish(self, msg):
         try:
-            return ret.get()
+            return super().publish(msg).get()
         except TopicAuthorizationFailedError as ex:
             raise AuthorizationError(ex)
+
+
+class KafkaAsyncWriter(BaseKafkaWriter):
+    def __init__(self, params):
+        super().__init__(params)
+        self._lock = RLock()
+
+    def publish(self, msg):
+        future = super().publish(msg)
+
+        def executor(resolve, reject):
+            def on_success(r):
+                with self._lock:
+                    resolve(r)
+
+            def on_failure(e, traceback=None):
+                with self._lock:
+                    if isinstance(e, TopicAuthorizationFailedError):
+                        e = AuthorizationError(e)
+                    reject(e, traceback)
+
+            future.add_callback(on_success).add_errback(on_failure)
+
+        return KafkaAsyncWriter.AsyncWriterPromise(executor, lock=self._lock)
+
+    class AsyncWriterPromise(Promise):
+
+        def __init__(self, executor=None, scheduler=None, lock=None):
+            super().__init__(executor=executor, scheduler=scheduler)
+            self._lock = lock
+
+        def _then(
+                self,
+                did_fulfill=None,  # type: Optional[Callable[[T], S]]
+                did_reject=None,  # type: Optional[Callable[[Exception], S]]
+        ):
+            if self._lock is not None:
+                with self._lock:
+                    return super()._then(did_fulfill, did_reject)
+            else:
+                return super()._then(did_fulfill, did_reject)

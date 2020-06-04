@@ -22,6 +22,7 @@
 from argparse import ArgumentParser
 from datetime import datetime
 from sys import stderr
+
 from sinetstream import MessageReader
 
 

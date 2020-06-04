@@ -51,6 +51,24 @@ class PluginMessageWriter(metaclass=ABCMeta):
         return _subclasscheck(subclass, ['open', 'close', 'publish'])
 
 
+class PluginAsyncMessageWriter(metaclass=ABCMeta):
+    @abstractmethod
+    def open(self):
+        pass
+
+    @abstractmethod
+    def close(self):
+        pass
+
+    @abstractmethod
+    def publish(self, message):
+        pass
+
+    @classmethod
+    def __subclasshook__(cls, subclass):
+        return _subclasscheck(subclass, ['open', 'close', 'publish'])
+
+
 class PluginMessageReader(metaclass=ABCMeta):
     @abstractmethod
     def open(self):
@@ -67,6 +85,41 @@ class PluginMessageReader(metaclass=ABCMeta):
     @classmethod
     def __subclasshook__(cls, subclass):
         return _subclasscheck(subclass, ['open', 'close', '__iter__'])
+
+
+class PluginAsyncMessageReader(metaclass=ABCMeta):
+    @abstractmethod
+    def open(self):
+        pass
+
+    @abstractmethod
+    def close(self):
+        pass
+
+    @property
+    @abstractmethod
+    def on_message(self):
+        pass
+
+    @on_message.setter
+    @abstractmethod
+    def on_message(self, on_message):
+        pass
+
+    @property
+    @abstractmethod
+    def on_failure(self):
+        pass
+
+    @on_failure.setter
+    @abstractmethod
+    def on_failure(self, on_failure):
+        pass
+
+    @classmethod
+    def __subclasshook__(cls, subclass):
+        return _subclasscheck(
+            subclass, ['open', 'close', 'on_message', 'on_failure'])
 
 
 class PluginValueType(metaclass=ABCMeta):

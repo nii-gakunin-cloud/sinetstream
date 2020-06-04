@@ -21,52 +21,22 @@
 
 package jp.ad.sinet.stream.api;
 
-import jp.ad.sinet.stream.crypto.CryptoSerializerWrapper;
-import jp.ad.sinet.stream.marshal.Marshaller;
 import jp.ad.sinet.stream.spi.PluginMessageWriter;
 import jp.ad.sinet.stream.spi.WriterParameters;
-import jp.ad.sinet.stream.utils.Timestamped;
-import lombok.Getter;
 
-import java.util.Objects;
-
-public class SinetStreamMessageWriter<T> extends SinetStreamIO<PluginMessageWriter> implements MessageWriter<T> {
-
-    @Getter
-    private final String topic;
-
-    @Getter
-    private final Serializer<T> serializer;
-
-    private final Serializer<Timestamped<T>> compositeSerializer;
+public class SinetStreamMessageWriter<T> extends SinetStreamBaseWriter<T, PluginMessageWriter> implements MessageWriter<T> {
 
     public SinetStreamMessageWriter(PluginMessageWriter pluginWriter, WriterParameters parameters, Serializer<T> serializer) {
-        super(parameters, pluginWriter);
-        this.topic = parameters.getTopic();
-        this.serializer = setupSerializer(parameters, serializer);
-        this.compositeSerializer = generateSerializer(parameters);
-    }
-
-    @SuppressWarnings("unchecked")
-    private Serializer<T> setupSerializer(WriterParameters parameters, Serializer<T> serializer) {
-        if (Objects.isNull(serializer)) {
-            return parameters.getValueType().getSerializer();
-        }
-        return serializer;
-    }
-
-    private Serializer<Timestamped<T>> generateSerializer(WriterParameters parameters) {
-        final Marshaller marshaller = new Marshaller();
-        Serializer<Timestamped<T>> tsser = (data) -> {
-            byte[] bytes = this.serializer.serialize(data.getValue());
-            return marshaller.encode(data.getTstamp(), bytes);
-        };
-        return CryptoSerializerWrapper.getSerializer(parameters.getConfig(), tsser);
+        super(pluginWriter, parameters, serializer);
     }
 
     @Override
     public void write(T message) {
-        byte[] payload = compositeSerializer.serialize(new Timestamped<>(message));
-        target.write(payload);
+        target.write(toPayload(message));
+    }
+
+    @Override
+    public boolean isThreadSafe() {
+        return target.isThreadSafe();
     }
 }

@@ -1,0 +1,51 @@
+version: '3.7'
+services:
+  broker:
+    build: broker
+    hostname: broker
+    ports:
+    - "1883:1883" # MQTT
+    - "1884:1884" # MQTT password authentication
+    - "1885:1885" # MQTT WebSocket
+    - "8883:8883" # MQTT TLS
+    - "8884:8884" # MQTT TLS password authentication
+    - "8885:8885" # MQTT TLS client certificate
+    - "8886:8886" # MQTT Secure WebSocket
+    - "18080:8080" # certs
+    networks:
+      mqtt_net:
+        ipv4_address: 192.168.65.10
+  test:
+    image: openjdk:8-slim
+    volumes:
+    - ../../../..:/build
+    environment:
+      MQTT_BROKER: broker:1883
+      MQTT_USER_PASSWD_BROKER: broker:1884
+      MQTT_WS_BROKER: broker:1885
+      MQTT_SSL_BROKER: broker:8883
+      MQTT_SSL_USER_PASSWD_BROKER: broker:8884
+      MQTT_SSL_CERT_AUTH_BROKER: broker:8885
+      MQTT_SSL_WS_BROKER: broker:8886
+      MQTT_BROKER_IP: 192.168.65.10:1883
+      MQTT_USER_PASSWD_BROKER_IP: 192.168.65.10:1884
+      MQTT_WS_BROKER_IP: 192.168.65.10:1885
+      MQTT_SSL_BROKER_IP: 192.168.65.10:8883
+      MQTT_SSL_USER_PASSWD_BROKER_IP: 192.168.65.10:8884
+      MQTT_SSL_CERT_AUTH_BROKER_IP: 192.168.65.10:8885
+      MQTT_SSL_WS_BROKER_IP: 192.168.65.10:8886
+      MQTT_BROKER_HOSTNAME: broker
+      CERT_URL: http://broker:8080
+    working_dir: /build/plugin-mqtt
+    command: ../gradlew check
+#    command: /bin/bash
+#    tty: true
+#    stdin_open: true
+    networks:
+      mqtt_net: {}
+networks:
+  mqtt_net:
+    ipam:
+      driver: default
+      config:
+      - subnet: 192.168.65.0/24

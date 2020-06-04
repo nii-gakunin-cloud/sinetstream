@@ -23,21 +23,24 @@
 import logging
 import socket
 import ssl
+from collections import OrderedDict
 from math import inf
 from queue import Queue, Empty
-from threading import Condition
+from sys import exc_info
+from threading import Condition, Lock
 
 from paho.mqtt.client import (
     Client, MQTT_ERR_QUEUE_SIZE, MQTT_ERR_NO_CONN,
     connack_string, MQTTv31, MQTTv311, MQTTv5, WebsocketConnectionError,
-)
+    MQTT_ERR_SUCCESS)
+from promise import Promise
+
 from sinetstream import (
     AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE,
     InvalidArgumentError, ConnectionError,
-)
+    SinetError)
 
 logger = logging.getLogger(__name__)
-
 
 QOS_MAP = {
     AT_MOST_ONCE: 0,
@@ -118,7 +121,6 @@ _MQTT_NESTED_PARAMETER = [
     'reconnect_delay_set',
 ]
 
-
 PROTOCOL_MAP = {
     'MQTTv31': MQTTv31,
     'MQTTv311': MQTTv311,
@@ -173,7 +175,7 @@ def _translate_tls_params(params):
         mqtt_params = {'tls_set': tls_set}
         if 'check_hostname' in tls:
             mqtt_params['tls_insecure_set'] = {
-                'value': not(tls['check_hostname']),
+                'value': not (tls['check_hostname']),
             }
         return mqtt_params
     else:
@@ -188,8 +190,8 @@ def _replace_ssl_params(params):
         (
             key,
             (value
-             if not(key in ['cert_reqs', 'tls_version'] and
-                    isinstance(value, str) and hasattr(ssl, value))
+             if not (key in ['cert_reqs', 'tls_version'] and
+                     isinstance(value, str) and hasattr(ssl, value))
              else getattr(ssl, value))
         )
         for key, value in params['tls_set'].items()
@@ -266,15 +268,12 @@ class MqttClient(object):
             self._conn_cond.notify_all()
 
 
-class MqttReader(MqttClient):
+class BaseMqttReader(MqttClient):
     def __init__(self, params):
-        logger.debug("MqttReader:init")
         super().__init__(params)
-        self._rcvq = Queue()
         self.topics = self._get_topics()
         timeout_ms = self._params["receive_timeout_ms"]
         self._timeout = timeout_ms / 1000.0 if timeout_ms != inf else None
-        self._mqttc.on_message = self._on_message
 
     def _get_topics(self):
         topics = self._params.get('topics', [])
@@ -284,6 +283,14 @@ class MqttReader(MqttClient):
         super()._on_connect(client, userdata, flags, rc, properties)
         for topic in self.topics:
             client.subscribe(topic, self.qos)
+
+
+class MqttReader(BaseMqttReader):
+    def __init__(self, params):
+        logger.debug("MqttReader:init")
+        super().__init__(params)
+        self._rcvq = Queue()
+        self._mqttc.on_message = self._on_message
 
     def _on_message(self, client, userdata, message):
         logger.debug(f"MQTT:on_message: message={message}")
@@ -298,24 +305,90 @@ class MqttReader(MqttClient):
         return MqttReaderHandleIter(self)
 
 
-class MqttWriter(MqttClient):
+class MqttAsyncReader(BaseMqttReader):
+    def __init__(self, params):
+        logger.debug("MqttAsyncReader:init")
+        super().__init__(params)
+        self._mqttc.on_message = self._mqtt_callback
+        self._on_message = None
+
+    def _mqtt_callback(self, client, userdata, message):
+        logger.debug(f"MQTT:on_message: message={message}")
+        if self._on_message is not None:
+            self._on_message(message.payload, message.topic, message)
+
+    @property
+    def on_message(self):
+        return self._on_message
+
+    @on_message.setter
+    def on_message(self, on_message):
+        self._on_message = on_message
+
+    @property
+    def on_failure(self):
+        pass
+
+
+class BaseMqttWriter(MqttClient):
     def __init__(self, params):
         logger.debug("MqttWriter:init")
         super().__init__(params)
         self.topic = self._params['topic']
         self.retain = self._params.get('retain', False)
-        logger.debug(f'qos={self.qos} topic={self.topic} retain={self.retain}')
 
     def publish(self, msg):
-        logger.debug("MqttWriter:publish")
         if type(msg) != bytes:
             logger.error("MqttWriter: msg must be bytes")
             raise InvalidArgumentError("MqttWriter: msg must be bytes")
-        msginfo = self._mqttc.publish(
+        return self._mqttc.publish(
             self.topic, payload=msg, qos=self.qos, retain=self.retain)
-        logger.debug(f"publish => rc={msginfo.rc} mid={msginfo.mid}")
-        if msginfo.rc != MQTT_ERR_QUEUE_SIZE:
-            msginfo.wait_for_publish()
-        elif msginfo.rc == MQTT_ERR_NO_CONN:
+
+
+class MqttWriter(BaseMqttWriter):
+    def __init__(self, params):
+        super().__init__(params)
+
+    def publish(self, msg):
+        msg_info = super().publish(msg)
+        if msg_info.rc != MQTT_ERR_QUEUE_SIZE:
+            msg_info.wait_for_publish()
+        elif msg_info.rc == MQTT_ERR_NO_CONN:
             raise ConnectionError('client is not currently connected')
-        return msginfo
+        return msg_info
+
+
+class MqttAsyncWriter(BaseMqttWriter):
+    def __init__(self, params):
+        super().__init__(params)
+        self._callbacks = OrderedDict()
+        self._lock = Lock()
+        self._mqttc.on_publish = self._on_publish
+
+    def publish(self, msg):
+        msg_info = super().publish(msg)
+
+        def executor(resolve, reject):
+            if msg_info.rc == MQTT_ERR_NO_CONN:
+                reject(ConnectionError('client is not currently connected'))
+            try:
+                if msg_info.is_published():
+                    resolve(msg_info)
+                elif msg_info.rc != MQTT_ERR_SUCCESS:
+                    reject(SinetError(f'mqtt error: rc={msg_info.rc}'))
+                else:
+                    self._add_on_publish(msg_info, resolve)
+            except Exception as e:
+                tb = exc_info()[2]
+                reject(e, tb)
+
+        return Promise(executor)
+
+    def _on_publish(self, client, user_data, mid):
+        cb = self._callbacks.pop(mid)
+        if cb is not None:
+            cb[0](cb[1])
+
+    def _add_on_publish(self, msg_info, callback):
+        with self._lock:
+            self._callbacks[msg_info.mid] = (callback, msg_info)

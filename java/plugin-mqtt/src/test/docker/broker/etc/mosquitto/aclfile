@@ -1,0 +1,13 @@
+topic read $SYS/#
+topic readwrite #
+
+user user01
+topic readwrite mss-test/#
+
+
+user user02
+topic read mss-test/#
+
+user user03
+topic write mss-test/#
+

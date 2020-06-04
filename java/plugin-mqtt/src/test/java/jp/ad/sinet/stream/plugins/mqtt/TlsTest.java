@@ -21,157 +21,325 @@
 
 package jp.ad.sinet.stream.plugins.mqtt;
 
-import jp.ad.sinet.stream.api.Message;
-import jp.ad.sinet.stream.api.MessageReader;
-import jp.ad.sinet.stream.api.MessageWriter;
-import jp.ad.sinet.stream.api.SinetStreamIOException;
-import jp.ad.sinet.stream.api.valuetype.SimpleValueType;
-import jp.ad.sinet.stream.utils.MessageReaderFactory;
-import jp.ad.sinet.stream.utils.MessageWriterFactory;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.text.StringSubstitutor;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import lombok.SneakyThrows;
+import org.junit.jupiter.api.Nested;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.time.Duration;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.util.Optional;
 
 class TlsTest {
 
-    private String topic;
-
-    @ParameterizedTest
-    @ValueSource(strings = {"service-connect-by-tls", "service-connect-by-tls_set",
-            "service-connect-by-tls-ca_certs", "service-connect-by-tls-ca_certs_cert_key",
-            "service-connect-by-tls-no-hostname-check", "service-connect-by-tls_set-no-hostname-check",
-            "service-connect-by-tls-encrypted-key"})
-    void writeRead(String service) {
-        MessageWriterFactory<String> writerBuilder =
-                MessageWriterFactory.<String>builder().service(service)
-                        .topic(topic)
-                        .valueType(SimpleValueType.TEXT)
-                        .build();
-        MessageReaderFactory<String> readerBuilder =
-                MessageReaderFactory.<String>builder().service(service)
-                        .topic(topic)
-                        .valueType(SimpleValueType.TEXT)
-                        .build();
-
-        try (MessageWriter<String> writer = writerBuilder.getWriter();
-             MessageReader<String> reader = readerBuilder.getReader()) {
-
-            final String data = RandomStringUtils.randomAlphabetic(10);
-            writer.write(data);
-            Message<String> result = reader.read();
-            assertEquals(data, result.getValue());
+    @Nested
+    class TlsKeyStore extends ReaderWriterTest {
+        @SneakyThrows
+        @Override
+        public Map<String, Object> getParameters() {
+            Map<String, Object> params = new HashMap<>();
+            Map<String, Object> tls = new HashMap<>();
+            params.put("tls", tls);
+            tls.put("trustStore", makeTempCert("ca.p12").toAbsolutePath().toString());
+            tls.put("trustStoreType", "PKCS12");
+            tls.put("trustStorePassword", System.getenv().getOrDefault("TRUSTSTORE_PASSWORD", "ca-pass"));
+            tls.put("keyStore", makeTempCert("client0.p12").toAbsolutePath().toString());
+            tls.put("keyStoreType", "PKCS12");
+            tls.put("keyStorePassword", System.getenv().getOrDefault("KEYSTORE_PASSWORD", "client0-pass"));
+            return params;
         }
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"service-connect-by-tls", "service-connect-by-tls_set",
-            "service-connect-by-tls-ca_certs", "service-connect-by-tls-ca_certs_cert_key",
-            "service-connect-by-tls-no-hostname-check", "service-connect-by-tls_set-no-hostname-check",
-            "service-connect-by-tls-encrypted-key"})
-    void read(String service) {
-        MessageReaderFactory<String> readerBuilder =
-                MessageReaderFactory.<String>builder().service(service)
-                        .topic(topic)
-                        .receiveTimeout(Duration.ofSeconds(3))
-                        .build();
+    @Nested
+    class CaCerts extends ReaderWriterTest {
+        @SneakyThrows
+        @Override
+        public Map<String, Object> getParameters() {
+            Map<String, Object> params = new HashMap<>();
+            Map<String, Object> tls = new HashMap<>();
+            params.put("tls", tls);
+            tls.put("ca_certs", makeTempCert("cacert.pem").toAbsolutePath().toString());
+            tls.put("keyStore", makeTempCert("client0.p12").toAbsolutePath().toString());
+            tls.put("keyStoreType", "PKCS12");
+            tls.put("keyStorePassword", System.getenv().getOrDefault("KEYSTORE_PASSWORD", "client0-pass"));
+            return params;
+        }
+    }
 
-        try (MessageReader<String> reader = readerBuilder.getReader()) {
-            //noinspection StatementWithEmptyBody
-            while (Objects.nonNull(reader.read())) {
+    @Nested
+    class PemCert extends ReaderWriterTest {
+        @SneakyThrows
+        @Override
+        public Map<String, Object> getParameters() {
+            Map<String, Object> params = new HashMap<>();
+            Map<String, Object> tls = new HashMap<>();
+            params.put("tls", tls);
+            tls.put("ca_certs", makeTempCert("cacert.pem").toAbsolutePath().toString());
+            tls.put("certfile", makeTempCert("client0.crt").toAbsolutePath().toString());
+            tls.put("keyfile", makeTempCert("client0.key").toAbsolutePath().toString());
+            return params;
+        }
+    }
 
+    @Nested
+    class PemCertWithEncKey extends ReaderWriterTest {
+        @SneakyThrows
+        @Override
+        public Map<String, Object> getParameters() {
+            Map<String, Object> params = new HashMap<>();
+            Map<String, Object> tls = new HashMap<>();
+            params.put("tls", tls);
+            tls.put("ca_certs", makeTempCert("cacert.pem").toAbsolutePath().toString());
+            tls.put("certfile", makeTempCert("client0.crt").toAbsolutePath().toString());
+            tls.put("keyfile", makeTempCert("client0-enc.key").toAbsolutePath().toString());
+            tls.put("keyfilePassword", System.getenv().getOrDefault("CERT_PASSPHRASE", "client1-pass"));
+            return params;
+        }
+    }
+
+    @Nested
+    class KeyStoreMqttParams extends ReaderWriterTest {
+        @SneakyThrows
+        @Override
+        public Map<String, Object> getParameters() {
+            Map<String, Object> params = new HashMap<>();
+            Map<String, Object> tls = new HashMap<>();
+            params.put("tls_set", tls);
+            tls.put("trustStore", makeTempCert("ca.p12").toAbsolutePath().toString());
+            tls.put("trustStoreType", "PKCS12");
+            tls.put("trustStorePassword", System.getenv().getOrDefault("TRUSTSTORE_PASSWORD", "ca-pass"));
+            tls.put("keyStore", makeTempCert("client0.p12").toAbsolutePath().toString());
+            tls.put("keyStoreType", "PKCS12");
+            tls.put("keyStorePassword", System.getenv().getOrDefault("KEYSTORE_PASSWORD", "client0-pass"));
+            return params;
+        }
+    }
+
+    @Nested
+    class PemCertMqttParams extends ReaderWriterTest {
+        @SneakyThrows
+        @Override
+        public Map<String, Object> getParameters() {
+            Map<String, Object> params = new HashMap<>();
+            Map<String, Object> tls = new HashMap<>();
+            params.put("tls_set", tls);
+            tls.put("ca_certs", makeTempCert("cacert.pem").toAbsolutePath().toString());
+            tls.put("certfile", makeTempCert("client0.crt").toAbsolutePath().toString());
+            tls.put("keyfile", makeTempCert("client0.key").toAbsolutePath().toString());
+            return params;
+        }
+    }
+
+    @Nested
+    class PemCertMqttParamsWithEncKey extends ReaderWriterTest {
+        @SneakyThrows
+        @Override
+        public Map<String, Object> getParameters() {
+            Map<String, Object> params = new HashMap<>();
+            Map<String, Object> tls = new HashMap<>();
+            params.put("tls_set", tls);
+            tls.put("ca_certs", makeTempCert("cacert.pem").toAbsolutePath().toString());
+            tls.put("certfile", makeTempCert("client0.crt").toAbsolutePath().toString());
+            tls.put("keyfile", makeTempCert("client0-enc.key").toAbsolutePath().toString());
+            tls.put("keyfilePassword", System.getenv().getOrDefault("CERT_PASSPHRASE", "client1-pass"));
+            return params;
+        }
+    }
+
+    @Nested
+    class PemCertMqttParamsAndCommonTlsParam extends ReaderWriterTest {
+        @SneakyThrows
+        @Override
+        public Map<String, Object> getParameters() {
+            Map<String, Object> params = new HashMap<>();
+            Map<String, Object> tls = new HashMap<>();
+            params.put("tls_set", tls);
+            tls.put("ca_certs", makeTempCert("cacert.pem").toAbsolutePath().toString());
+            tls.put("certfile", makeTempCert("client0.crt").toAbsolutePath().toString());
+            tls.put("keyfile", makeTempCert("client0.key").toAbsolutePath().toString());
+            params.put("tls", false);
+            return params;
+        }
+    }
+
+    @Nested
+    class CheckHostname {
+        @Nested
+        class NoHostnameCheck extends ReaderWriterTest {
+            @SneakyThrows
+            @Override
+            public Map<String, Object> getParameters() {
+                Map<String, Object> params = new HashMap<>();
+                Map<String, Object> tls = new HashMap<>();
+                params.put("tls", tls);
+                tls.put("ca_certs", makeTempCert("cacert.pem").toAbsolutePath().toString());
+                tls.put("keyStore", makeTempCert("client0.p12").toAbsolutePath().toString());
+                tls.put("keyStoreType", "PKCS12");
+                tls.put("keyStorePassword", System.getenv().getOrDefault("KEYSTORE_PASSWORD", "client0-pass"));
+                tls.put("check_hostname", false);
+                return params;
+            }
+
+            @Override
+            public Optional<Object> getBroker() {
+                return Optional.of(
+                        System.getenv().getOrDefault("MQTT_SSL_CERT_AUTH_BROKER_IP", "127.0.0.1:8885"));
+            }
+        }
+
+        @Nested
+        class HostnameCheck extends ConfigFileAware.ErrorTest {
+            @SneakyThrows
+            @Override
+            public Map<String, Object> getParameters() {
+                Map<String, Object> params = new HashMap<>();
+                Map<String, Object> tls = new HashMap<>();
+                params.put("tls", tls);
+                tls.put("ca_certs", makeTempCert("cacert.pem").toAbsolutePath().toString());
+                tls.put("keyStore", makeTempCert("client0.p12").toAbsolutePath().toString());
+                tls.put("keyStoreType", "PKCS12");
+                tls.put("keyStorePassword", System.getenv().getOrDefault("KEYSTORE_PASSWORD", "client0-pass"));
+                return params;
+            }
+
+            @Override
+            public Optional<Object> getBroker() {
+                return Optional.of(System.getenv().getOrDefault("MQTT_SSL_CERT_AUTH_BROKER_IP", "127.0.0.1:8885"));
             }
         }
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"service-connect-by-tls", "service-connect-by-tls_set",
-            "service-connect-by-tls-ca_certs", "service-connect-by-tls-ca_certs_cert_key",
-            "service-connect-by-tls-no-hostname-check", "service-connect-by-tls_set-no-hostname-check",
-            "service-connect-by-tls-encrypted-key"})
-    void write(String service) {
-        MessageWriterFactory<String> writerBuilder =
-                MessageWriterFactory.<String>builder().service(service)
-                        .topic(topic)
-                        .valueType(SimpleValueType.TEXT)
-                        .build();
+    @Nested
+    class TlsInsecureSet {
 
-        try (MessageWriter<String> writer = writerBuilder.getWriter()) {
-            final String data = RandomStringUtils.randomAlphabetic(10);
-            writer.write(data);
+        @Nested
+        class NoHostnameCheckMqttParams extends ReaderWriterTest {
+            @SneakyThrows
+            @Override
+            public Map<String, Object> getParameters() {
+                Map<String, Object> params = new HashMap<>();
+                Map<String, Object> tls = new HashMap<>();
+                params.put("tls_set", tls);
+                tls.put("ca_certs", makeTempCert("cacert.pem").toAbsolutePath().toString());
+                tls.put("certfile", makeTempCert("client0.crt").toAbsolutePath().toString());
+                tls.put("keyfile", makeTempCert("client0.key").toAbsolutePath().toString());
+                Map<String, Object> insecure = new HashMap<>();
+                insecure.put("value", true);
+                params.put("tls_insecure_set", insecure);
+                return params;
+            }
+
+            @Override
+            public Optional<Object> getBroker() {
+                return Optional.of(
+                        System.getenv().getOrDefault("MQTT_SSL_CERT_AUTH_BROKER_IP", "127.0.0.1:8885"));
+            }
+        }
+
+        @Nested
+        class TlsParameters extends ReaderWriterTest {
+            @SneakyThrows
+            @Override
+            public Map<String, Object> getParameters() {
+                Map<String, Object> params = new HashMap<>();
+                Map<String, Object> tls = new HashMap<>();
+                params.put("tls", tls);
+                tls.put("ca_certs", makeTempCert("cacert.pem").toAbsolutePath().toString());
+                tls.put("certfile", makeTempCert("client0.crt").toAbsolutePath().toString());
+                tls.put("keyfile", makeTempCert("client0-enc.key").toAbsolutePath().toString());
+                tls.put("keyfilePassword", System.getenv().getOrDefault("CERT_PASSPHRASE", "client1-pass"));
+                Map<String, Object> insecure = new HashMap<>();
+                insecure.put("value", true);
+                params.put("tls_insecure_set", insecure);
+                return params;
+            }
+
+            @Override
+            public Optional<Object> getBroker() {
+                return Optional.of(
+                        System.getenv().getOrDefault("MQTT_SSL_CERT_AUTH_BROKER_IP", "127.0.0.1:8885"));
+            }
+        }
+
+        @Nested
+        class HostnameCheckMqttParams extends ConfigFileAware.ErrorTest {
+            @SneakyThrows
+            @Override
+            public Map<String, Object> getParameters() {
+                Map<String, Object> params = new HashMap<>();
+                Map<String, Object> tls = new HashMap<>();
+                params.put("tls_set", tls);
+                tls.put("ca_certs", makeTempCert("cacert.pem").toAbsolutePath().toString());
+                tls.put("certfile", makeTempCert("client0.crt").toAbsolutePath().toString());
+                tls.put("keyfile", makeTempCert("client0.key").toAbsolutePath().toString());
+                Map<String, Object> insecure = new HashMap<>();
+                insecure.put("value", false);
+                params.put("tls_insecure_set", insecure);
+                return params;
+            }
+
+            @Override
+            public Optional<Object> getBroker() {
+                return Optional.of(
+                        System.getenv().getOrDefault("MQTT_SSL_CERT_AUTH_BROKER_IP", "127.0.0.1:8885"));
+            }
         }
     }
 
-    @BeforeEach
-    void setupTopic() {
-        topic = "topic-ssl/" + RandomStringUtils.randomAlphabetic(5);
-    }
-
-    @BeforeEach
-    void makeConfigFile() throws IOException {
-        Map<String, String> vars = new HashMap<>();
-        for (String name: Arrays.asList("niica", "client0")) {
-            Path path = makeTempKeyStore(name + ".p12");
-            vars.put(name + "KeyStore", path.toAbsolutePath().normalize().toString());
-        }
-        for (String name: Arrays.asList("ca.pem", "client0.crt", "client0.key", "client1.crt", "client1.key")) {
-            Path path = makeTempPemFile(name);
-            vars.put(name, path.toAbsolutePath().normalize().toString());
+    @Nested
+    class NoTls extends ReaderWriterTest {
+        @Override
+        public Map<String, Object> getParameters() {
+            Map<String, Object> params = new HashMap<>();
+            params.put("tls", false);
+            return params;
         }
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                ConfigFileAware.class.getResourceAsStream("/sinetstream_config.yml"), StandardCharsets.UTF_8));
-             BufferedWriter writer = Files.newBufferedWriter(Paths.get(".sinetstream_config.yml"))) {
-            reader.lines().map(line -> {
-                StringSubstitutor ss = new StringSubstitutor(vars);
-                return ss.replace(line);
-            }).forEach(line -> {
-                try {
-                    writer.write(line);
-                    writer.newLine();
-                } catch (IOException e) {
-                    throw new SinetStreamIOException(e);
-                }
-            });
+        @Override
+        public Optional<Object> getBroker() {
+            return Optional.of(System.getenv().getOrDefault("MQTT_BROKER", "broker:1883"));
         }
     }
 
-    private Path makeTempKeyStore(String name) throws IOException {
-        Path path = Files.createTempFile(null, ".p12");
-        try (InputStream in = ConfigFileAware.class.getResourceAsStream("/cert/" + name)) {
+    @Nested
+    class EmptyMapTls extends ReaderWriterTest {
+        @Override
+        public Map<String, Object> getParameters() {
+            Map<String, Object> params = new HashMap<>();
+            params.put("tls", Collections.emptyMap());
+            return params;
+        }
+
+        @Override
+        public Optional<Object> getBroker() {
+            return Optional.of(System.getenv().getOrDefault("MQTT_BROKER", "broker:1883"));
+        }
+    }
+
+    class ReaderWriterTest extends ConfigFileAware.ReaderWriterTest {
+        @Override
+        public Optional<Object> getBroker() {
+            return Optional.of(System.getenv().getOrDefault("MQTT_SSL_CERT_AUTH_BROKER", "broker:8885"));
+        }
+    }
+
+    static Path makeTempCert(String name) throws IOException {
+        URL baseURL = new URL(System.getenv().getOrDefault("CERT_URL", "http://broker:18080"));
+        return makeTempCert(name, baseURL);
+    }
+
+    static Path makeTempCert(String name, URL baseURL) throws IOException {
+        Path path = Files.createTempFile(null, null);
+        URL url = new URL(baseURL, name);
+        try (InputStream in = url.openStream()) {
             Files.copy(in, path, StandardCopyOption.REPLACE_EXISTING);
         }
         path.toFile().deleteOnExit();
         return path;
-    }
-
-    private Path makeTempPemFile(String filename) throws IOException {
-        Path path = Files.createTempFile(null, ".pem");
-        try (InputStream in = ConfigFileAware.class.getResourceAsStream("/cert/" + filename)) {
-            Files.copy(in, path, StandardCopyOption.REPLACE_EXISTING);
-        }
-        path.toFile().deleteOnExit();
-        return path;
-    }
-
-    @AfterEach
-    void cleanupConfigFile() throws IOException {
-        Files.deleteIfExists(Paths.get(".sinetstream_config.yml"));
     }
 }

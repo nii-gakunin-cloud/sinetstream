@@ -50,7 +50,7 @@ public class ImageConsumer {
                         .consistency(Consistency.AT_LEAST_ONCE)
                         .valueType(new ValueTypeFactory().get("image"))
                         .build();
-        try(MessageReader<BufferedImage> reader = factory.getReader()) {
+        try (MessageReader<BufferedImage> reader = factory.getReader()) {
             reader.stream().forEach(msg -> {
                 show(msg.getValue());
             });

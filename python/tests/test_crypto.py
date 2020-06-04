@@ -21,10 +21,11 @@
 # under the License.
 
 import logging
+
 import pytest
+from conftest import SERVICE
 
 from sinetstream import MessageReader, MessageWriter, TEXT, BYTE_ARRAY
-from conftest import SERVICE, TOPIC
 
 logging.basicConfig(level=logging.ERROR)
 pytestmark = pytest.mark.usefixtures('setup_config', 'dummy_reader_plugin', 'dummy_writer_plugin')
@@ -36,34 +37,34 @@ msgs = ['test message 001',
 bmsgs = [x.encode() for x in msgs]
 
 
-def test_thru():
+def test_thru(config_topic):
     with MessageWriter(SERVICE, value_type=TEXT) as fw:
         for msg in msgs:
             fw.publish(msg)
     with MessageReader(SERVICE, value_type=TEXT) as fr:
         for expected, msg in zip(msgs, fr):
-            assert msg.topic == TOPIC
+            assert msg.topic == config_topic
             assert msg.value == expected
 
 
-def test_enc_bin():
+def test_enc_bin(config_topic):
     with MessageWriter(SERVICE, value_type=BYTE_ARRAY, data_encryption=True) as fw:
         for msg in bmsgs:
             fw.publish(msg)
     with MessageReader(SERVICE, value_type=BYTE_ARRAY, data_encryption=True) as fr:
         for expected, msg in zip(bmsgs, fr):
-            assert msg.topic == TOPIC
+            assert msg.topic == config_topic
             assert msg.value == expected
 
 
-def test_enc_text():
+def test_enc_text(config_topic):
     with MessageWriter(SERVICE, value_type=TEXT, data_encryption=True) as fw:
         for msg in msgs:
             fw.publish(msg)
 
     with MessageReader(SERVICE, value_type=TEXT, data_encryption=True) as fr:
         for expected, msg in zip(msgs, fr):
-            assert msg.topic == TOPIC
+            assert msg.topic == config_topic
             assert msg.value == expected
 
 
@@ -78,13 +79,13 @@ def test_enc_text():
         {"mode": "EAX",        "padding": "none"},
         {"mode": "GCM",        "padding": "none"},
     ])
-def test_enc_mode(crypto):
+def test_enc_mode(crypto, config_topic):
     with MessageWriter(SERVICE, value_type=TEXT, data_encryption=True, crypto=crypto) as fw:
         for msg in msgs:
             fw.publish(msg)
     with MessageReader(SERVICE, value_type=TEXT, data_encryption=True, crypto=crypto) as fr:
         for expected, msg in zip(msgs, fr):
-            assert msg.topic == TOPIC
+            assert msg.topic == config_topic
             assert msg.value == expected
 
 

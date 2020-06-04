@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 National Institute of Informatics
+ * Copyright (C) 2020 National Institute of Informatics
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -21,39 +21,18 @@
 
 package jp.ad.sinet.stream.example.perf;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
 import org.apache.commons.cli.*;
+import org.eclipse.paho.client.mqttv3.*;
 
-import java.time.Duration;
-import java.util.Objects;
-
-import jp.ad.sinet.stream.example.perf.Util;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.PrintWriter;
-
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.MqttCallback;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
-//import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
-
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.Condition;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
-@SuppressWarnings({"WeakerAccess", "CodeBlock2Expr"})
+@SuppressWarnings({"WeakerAccess"})
 public class MqttBinaryConsumer implements MqttCallback {
 
     private final String brokers;
@@ -86,13 +65,13 @@ public class MqttBinaryConsumer implements MqttCallback {
     public void run() throws Exception {
         String clientId = "perftest" + System.currentTimeMillis();
         MqttClient client = new MqttClient(this.brokers, clientId);
-        MqttConnectOptions  conOpt = new MqttConnectOptions();
+        MqttConnectOptions conOpt = new MqttConnectOptions();
         conOpt.setCleanSession(true);
         //conOpt.setPassword(this.password.toCharArray());
         //conOpt.setUserName(this.userName);
         client.setCallback(this);
         client.connect(conOpt);
-        
+
         client.subscribe(this.topic_src, this.qos);
         this.lock.lock();
         while (this.n < this.nmsg) {

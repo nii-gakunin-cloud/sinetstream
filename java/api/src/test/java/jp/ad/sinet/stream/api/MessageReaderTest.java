@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 National Institute of Informatics
+ * Copyright (C) 2020 National Institute of Informatics
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -29,7 +29,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -39,32 +38,28 @@ import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 class MessageReaderTest implements ConfigFileAware {
 
     private static final String SERVICE = "service-0";
-    private static final String TOPIC = "topic-002";
-    private final List<String> lines = new ArrayList<>();
+    private static final String TOPIC = "topic-" + RandomStringUtils.randomAlphabetic(5);
+    private List<String> lines;
 
     @Test
     void readerStream() {
         MessageReaderFactory<String> readerBuilder =
-                MessageReaderFactory.<String>builder().service(SERVICE)
-                        .topic(TOPIC)
-                        .receiveTimeout(Duration.ofMillis(100))
-                        .build();
-        try (MessageReader<String> reader = readerBuilder.getReader()) {
+                MessageReaderFactory.<String>builder().service(SERVICE).topic(TOPIC)
+                        .receiveTimeout(Duration.ofMillis(100)).build();
+        MessageWriterFactory<String> writerFactory =
+                MessageWriterFactory.<String>builder().service(SERVICE).topic(TOPIC).build();
+
+        try (MessageReader<String> reader = readerBuilder.getReader();
+             MessageWriter<String> writer = writerFactory.getWriter()) {
+            lines.forEach(writer::write);
             assertIterableEquals(lines, reader.stream().map(Message::getValue).collect(Collectors.toList()));
         }
     }
 
     @BeforeEach
-    void writeMessages() {
-        lines.clear();
-        MessageWriterFactory<String> writerBuilder =
-                MessageWriterFactory.<String>builder().service(SERVICE).topic(TOPIC).build();
-        try (MessageWriter<String> writer = writerBuilder.getWriter()) {
-            IntStream.range(0, 5).forEach(i -> {
-                final String data = RandomStringUtils.randomAlphabetic(10);
-                lines.add(data);
-                writer.write(data);
-            });
-        }
+    void setupMessages() {
+        lines = IntStream.range(0, 10)
+                .mapToObj(x -> RandomStringUtils.randomAlphabetic(10))
+                .collect(Collectors.toList());
     }
 }

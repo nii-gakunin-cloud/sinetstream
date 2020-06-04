@@ -41,9 +41,9 @@ public class TextProducer {
     public void run() {
         MessageWriterFactory<String> factory =
                 MessageWriterFactory.<String>builder()
-                .service(service)
-                .consistency(Consistency.AT_LEAST_ONCE).valueType(SimpleValueType.TEXT).build();
-        try(MessageWriter<String> writer = factory.getWriter(); Scanner scanner = new Scanner(System.in)) {
+                        .service(service)
+                        .consistency(Consistency.AT_LEAST_ONCE).valueType(SimpleValueType.TEXT).build();
+        try (MessageWriter<String> writer = factory.getWriter(); Scanner scanner = new Scanner(System.in)) {
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
                 writer.write(line);

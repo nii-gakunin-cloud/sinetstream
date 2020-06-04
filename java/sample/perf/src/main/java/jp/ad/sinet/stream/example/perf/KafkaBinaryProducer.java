@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 National Institute of Informatics
+ * Copyright (C) 2020 National Institute of Informatics
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -21,34 +21,18 @@
 
 package jp.ad.sinet.stream.example.perf;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.commons.cli.*;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
+import org.apache.kafka.common.serialization.StringSerializer;
 
-import org.apache.commons.cli.*;
-
-import java.util.concurrent.TimeUnit;
-import java.util.Random;
-
-import jp.ad.sinet.stream.example.perf.Util;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("WeakerAccess")
 public class KafkaBinaryProducer {
@@ -85,15 +69,15 @@ public class KafkaBinaryProducer {
         Properties props = new Properties();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, this.brokers);
         switch (this.qos) {
-        case 0:
-            props.put(ProducerConfig.ACKS_CONFIG, "0");
-            break;
-        case 1:
-            props.put(ProducerConfig.ACKS_CONFIG, "all");
-            break;
-        case 2:
-            System.err.println("warning: qos=2 is not implemented");
-            break;
+            case 0:
+                props.put(ProducerConfig.ACKS_CONFIG, "0");
+                break;
+            case 1:
+                props.put(ProducerConfig.ACKS_CONFIG, "all");
+                break;
+            case 2:
+                System.err.println("warning: qos=2 is not implemented");
+                break;
         }
         KafkaProducer<String, byte[]> producer = new KafkaProducer<>(props, new StringSerializer(), new ByteArraySerializer());
 
@@ -149,7 +133,7 @@ public class KafkaBinaryProducer {
                     Integer.parseInt(cmd.getOptionValue("fps", "15")),
                     Integer.parseInt(cmd.getOptionValue("nmsg", "5")),
                     cmd.getOptionValue("logfile")
-                    );
+            );
         } catch (ParseException e) {
             System.err.println("Parsing failed: " + e.getMessage());
             new HelpFormatter().printHelp(KafkaBinaryProducer.class.getSimpleName(), opts, true);

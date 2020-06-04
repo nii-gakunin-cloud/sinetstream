@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 National Institute of Informatics
+ * Copyright (C) 2020 National Institute of Informatics
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -26,16 +26,12 @@ import jp.ad.sinet.stream.spi.PluginMessageWriter;
 import jp.ad.sinet.stream.spi.WriterParameters;
 import lombok.Getter;
 import lombok.extern.java.Log;
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.util.Arrays;
-import java.util.logging.Level;
 
 @Log
-public class MqttMessageWriter extends MqttBaseIO implements PluginMessageWriter {
+public class MqttMessageWriter extends MqttSyncBaseIO implements PluginMessageWriter {
 
     @Getter
     private final String topic;
@@ -44,7 +40,6 @@ public class MqttMessageWriter extends MqttBaseIO implements PluginMessageWriter
         super(parameters.getService(), parameters.getConsistency(), parameters.getClientId(), parameters.getConfig(),
                 parameters.getValueType(), parameters.isDataEncryption());
         this.topic = parameters.getTopic();
-        this.client.setCallback(new MqttMessageWriter.SinetMqttCallback());
         connect();
     }
 
@@ -55,22 +50,6 @@ public class MqttMessageWriter extends MqttBaseIO implements PluginMessageWriter
             client.publish(topic, message, consistency.getQos(), retain);
         } catch (MqttException e) {
             throw new SinetStreamIOException(e);
-        }
-    }
-
-    private class SinetMqttCallback implements MqttCallback {
-        @Override
-        public void connectionLost(Throwable cause) {
-            log.log(Level.FINE, cause, () -> "MQTT connection lost: " + getClientId());
-        }
-
-        @Override
-        public void messageArrived(String topic, MqttMessage message) {
-        }
-
-        @Override
-        public void deliveryComplete(IMqttDeliveryToken token) {
-            log.finest(() -> "MQTT delivery completed: " + token.toString());
         }
     }
 }

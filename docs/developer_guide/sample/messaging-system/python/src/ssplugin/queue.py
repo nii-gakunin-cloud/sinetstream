@@ -18,11 +18,15 @@
 # under the License.
 
 from collections import defaultdict
+from concurrent.futures.thread import ThreadPoolExecutor
 from math import inf
 from queue import Queue, Empty
 
+from promise import Promise
 from sinetstream import InvalidArgumentError
-from sinetstream.spi import PluginMessageReader, PluginMessageWriter
+from sinetstream.spi import (
+    PluginMessageReader, PluginMessageWriter, PluginAsyncMessageReader, PluginAsyncMessageWriter,
+)
 
 queues = defaultdict(Queue)
 
@@ -67,3 +71,79 @@ class QueueWriter(PluginMessageWriter):
 
     def publish(self, value):
         self._queue.put(value)
+
+
+class QueueAsyncReader(PluginAsyncMessageReader):
+    def __init__(self, params):
+        self._queue = None
+        self._topic = params.get('topic')
+        if self._topic is None or not isinstance(self._topic, str):
+            raise InvalidArgumentError()
+        self._on_message = None
+        self._on_failure = None
+        self._reader_executor = None
+        self._future = None
+        self._closed = True
+
+    def open(self):
+        if self._closed:
+            self._queue = queues[self._topic]
+            self._reader_executor = ThreadPoolExecutor(max_workers=1)
+            self._closed = False
+            self._future = self._reader_executor.submit(self._reader_loop)
+
+    def _reader_loop(self):
+        while not self._closed:
+            try:
+                value = self._queue.get(timeout=0.1)
+                raw = value
+                if self._on_message is not None:
+                    self._on_message(value, self._topic, raw),
+            except Empty:
+                pass
+
+    def close(self):
+        if not self._closed:
+            self._queue = None
+            self._future.cancel()
+            self._reader_executor.shutdown()
+            self._reader_executor = None
+            self._future = None
+            self._closed = True
+
+    @property
+    def on_message(self):
+        return self._on_message
+
+    @on_message.setter
+    def on_message(self, on_message):
+        self._on_message = on_message
+
+    @property
+    def on_failure(self):
+        return self._on_failure
+
+    @on_failure.setter
+    def on_failure(self, on_failure):
+        self._on_failure = on_failure
+
+
+class QueueAsyncWriter(PluginAsyncMessageWriter):
+    def __init__(self, params):
+        self._queue = None
+        self._topic = params.get('topic')
+        if self._topic is None or not isinstance(self._topic, str):
+            raise InvalidArgumentError()
+        self._executor = None
+
+    def open(self):
+        self._executor = ThreadPoolExecutor()
+        self._queue = queues[self._topic]
+
+    def close(self):
+        self._queue = None
+        self._executor.shutdown()
+
+    def publish(self, value):
+        future = self._executor.submit(lambda: self._queue.put(value))
+        return Promise.cast(future)

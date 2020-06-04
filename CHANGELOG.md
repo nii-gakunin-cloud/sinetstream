@@ -1,4 +1,13 @@
+**準備中** (2020-06-04 18:27:50 JST)
+
 # Changelog
+
+## [v1.2.0] - 2020-06-XX
+
+### Added
+
+- Support async API
+- Broker setup instructions (Japanese only)
 
 ## [v1.1.0] - 2020-03-19
 

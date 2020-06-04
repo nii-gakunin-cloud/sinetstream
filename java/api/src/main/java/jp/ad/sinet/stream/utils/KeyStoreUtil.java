@@ -115,7 +115,7 @@ public class KeyStoreUtil {
         ks.setCertificateEntry(alias, cert);
 
         Path path = Files.createTempFile(null, ".jks");
-        try(OutputStream out = Files.newOutputStream(path)) {
+        try (OutputStream out = Files.newOutputStream(path)) {
             ks.store(out, password.toCharArray());
         }
         path.toFile().deleteOnExit();
@@ -136,7 +136,7 @@ public class KeyStoreUtil {
         ks.setEntry(alias, entry, new KeyStore.PasswordProtection(password.toCharArray()));
 
         Path path = Files.createTempFile(null, ".jks");
-        try(OutputStream out = Files.newOutputStream(path)) {
+        try (OutputStream out = Files.newOutputStream(path)) {
             ks.store(out, password.toCharArray());
         }
         path.toFile().deleteOnExit();

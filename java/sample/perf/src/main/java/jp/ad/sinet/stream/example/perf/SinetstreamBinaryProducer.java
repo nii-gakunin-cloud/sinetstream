@@ -72,7 +72,7 @@ public class SinetstreamBinaryProducer {
                         .consistency(consistency)
                         .valueType(SimpleValueType.BYTE_ARRAY)
                         .build();
-        try(MessageWriter<byte[]> writer = factory.getWriter()) {
+        try (MessageWriter<byte[]> writer = factory.getWriter()) {
             long[] ts = new long[this.nmsg];
             byte[] buf = new byte[this.bytes];
             Random rnd = new Random();
@@ -124,7 +124,7 @@ public class SinetstreamBinaryProducer {
                     Integer.parseInt(cmd.getOptionValue("fps", "15")),
                     Integer.parseInt(cmd.getOptionValue("nmsg", "5")),
                     cmd.getOptionValue("logfile")
-                    );
+            );
         } catch (ParseException e) {
             System.err.println("Parsing failed: " + e.getMessage());
             new HelpFormatter().printHelp(SinetstreamBinaryProducer.class.getSimpleName(), opts, true);

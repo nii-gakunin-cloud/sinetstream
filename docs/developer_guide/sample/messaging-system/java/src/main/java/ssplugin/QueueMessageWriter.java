@@ -33,19 +33,14 @@ import java.util.concurrent.BlockingQueue;
 public class QueueMessageWriter implements PluginMessageWriter {
     private final BlockingQueue<QueueMessage> queue;
     private final String topic;
-    private final String service;
     private final Map<String, Object> config;
-    private final ValueType valueType;
     private final Consistency consistency;
     private final String clientId;
 
     public QueueMessageWriter(WriterParameters params, BlockingQueue<QueueMessage> queue) {
         this.queue = queue;
         this.topic = params.getTopic();
-
-        this.service = params.getService();
         this.config = Collections.unmodifiableMap(params.getConfig());
-        this.valueType = params.getValueType();
         this.consistency = params.getConsistency();
         this.clientId = params.getClientId();
     }

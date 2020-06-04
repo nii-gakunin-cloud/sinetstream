@@ -23,10 +23,7 @@ package jp.ad.sinet.stream.utils;
 
 import jp.ad.sinet.stream.api.*;
 import jp.ad.sinet.stream.api.valuetype.SimpleValueType;
-import jp.ad.sinet.stream.spi.CryptoProvider;
-import jp.ad.sinet.stream.spi.MessageReaderProvider;
-import jp.ad.sinet.stream.spi.PluginMessageReader;
-import jp.ad.sinet.stream.spi.ReaderParameters;
+import jp.ad.sinet.stream.spi.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Singular;
@@ -117,6 +114,28 @@ public class MessageReaderFactory<T> {
         ReaderParameters params = new ReaderParameters(this);
         PluginMessageReader pluginReader = provider.getReader(params);
         return new SinetStreamMessageReader<>(pluginReader, params, deserializer);
+    }
+
+    @SuppressWarnings("unchecked")
+    public AsyncMessageReader<T> getAsyncReader() {
+        setupServiceParameters();
+        ProviderUtils<AsyncMessageReaderProvider> util = new ProviderUtils<>(AsyncMessageReaderProvider.class);
+        try {
+            AsyncMessageReaderProvider provider = util.getProvider(parameters);
+            if (dataEncryption) {
+                CryptoProvider cryptoProvider = util.getCryptoProvider(parameters);
+                Optional.ofNullable(parameters.get("crypto"))
+                        .filter(Map.class::isInstance)
+                        .map(Map.class::cast)
+                        .ifPresent(params -> params.put("provider", cryptoProvider.getCrypto(params)));
+            }
+            ReaderParameters params = new ReaderParameters(this);
+            PluginAsyncMessageReader pluginReader = provider.getAsyncReader(params);
+            return new SinetStreamAsyncMessageReader<>(pluginReader, params, deserializer);
+
+        } catch (UnsupportedServiceTypeException e) {
+            return new SinetStreamAsyncWrapperMessageReader<>(getReader());
+        }
     }
 
     private void setupServiceParameters() {

@@ -25,8 +25,11 @@ import jp.ad.sinet.stream.api.Consistency;
 import jp.ad.sinet.stream.api.MessageWriter;
 import jp.ad.sinet.stream.utils.MessageWriterFactory;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+
+import java.nio.file.Path;
 
 import static jp.ad.sinet.stream.api.Consistency.AT_MOST_ONCE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,14 +37,18 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class MessageWriterFactoryTest implements ConfigFileAware {
 
+    @TempDir
+    Path workdir;
+
     @Test
     void serviceAndTopic() {
-        String service = "service-1";
-        String topic = "test-topic-java-001";
-        MessageWriterFactory<String> builder = MessageWriterFactory.<String>builder().service(service).topic(topic).build();
+        String topic = generateTopic();
+        MessageWriterFactory<String> builder = MessageWriterFactory.<String>builder()
+                .config(getConfigFile(workdir)).service(getServiceName())
+                .topic(topic).build();
         try (MessageWriter<String> writer = builder.getWriter()) {
             assertNotNull(writer);
-            assertEquals(service, writer.getService());
+            assertEquals(getServiceName(), writer.getService());
             assertEquals(topic, writer.getTopic());
         }
     }
@@ -50,7 +57,8 @@ class MessageWriterFactoryTest implements ConfigFileAware {
     void clientId() {
         String clientId = "client-000";
         MessageWriterFactory<String> builder =
-                MessageWriterFactory.<String>builder().service("service-1").topic("test-topic-java-001")
+                MessageWriterFactory.<String>builder()
+                        .config(getConfigFile(workdir)).service(getServiceName())
                         .clientId(clientId).build();
         try (MessageWriter<String> writer = builder.getWriter()) {
             assertNotNull(writer);
@@ -61,7 +69,8 @@ class MessageWriterFactoryTest implements ConfigFileAware {
     @Test
     void defaultClientId() {
         MessageWriterFactory<String> builder =
-                MessageWriterFactory.<String>builder().service("service-1").topic("test-topic-java-001").build();
+                MessageWriterFactory.<String>builder()
+                        .config(getConfigFile(workdir)).service(getServiceName()).build();
         try (MessageWriter<String> writer = builder.getWriter()) {
             assertNotNull(writer);
             assertNotNull(writer.getClientId());
@@ -72,7 +81,8 @@ class MessageWriterFactoryTest implements ConfigFileAware {
     @EnumSource(Consistency.class)
     void consistency(Consistency consistency) {
         MessageWriterFactory<String> builder =
-                MessageWriterFactory.<String>builder().service("service-1").topic("test-topic-java-001")
+                MessageWriterFactory.<String>builder()
+                        .config(getConfigFile(workdir)).service(getServiceName())
                         .consistency(consistency).build();
         try (MessageWriter<String> writer = builder.getWriter()) {
             assertNotNull(writer);
@@ -83,7 +93,8 @@ class MessageWriterFactoryTest implements ConfigFileAware {
     @Test
     void defaultConsistency() {
         MessageWriterFactory<String> builder =
-                MessageWriterFactory.<String>builder().service("service-1").topic("test-topic-java-001").build();
+                MessageWriterFactory.<String>builder()
+                        .config(getConfigFile(workdir)).service(getServiceName()).build();
         try (MessageWriter<String> writer = builder.getWriter()) {
             assertNotNull(writer);
             assertEquals(AT_MOST_ONCE, writer.getConsistency());

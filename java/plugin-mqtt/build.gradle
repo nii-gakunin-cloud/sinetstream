@@ -26,10 +26,12 @@ generateLombokConfig.enabled = false
 
 dependencies {
     implementation project(':SINETStream-api')
-    implementation group: 'org.eclipse.paho', name: 'org.eclipse.paho.client.mqttv3', version: '1.2.2'
-    compileOnly "org.projectlombok:lombok:1.18.10"
-    annotationProcessor "org.projectlombok:lombok:1.18.10"
+    implementation group: 'org.eclipse.paho', name: 'org.eclipse.paho.client.mqttv3', version: '1.2.+'
+    implementation group: 'org.jdeferred.v2', name: 'jdeferred-core', version: '2.0.+'
+    compileOnly "org.projectlombok:lombok:1.18.+"
+    annotationProcessor "org.projectlombok:lombok:1.18.+"
     testImplementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
     testImplementation group: 'org.apache.commons', name: 'commons-text', version: '1.8'
-    testImplementation project(':SINETStream-type-image')
+    testImplementation group: 'org.yaml', name: 'snakeyaml', version: '1.+'
+    testRuntime group: 'org.slf4j', name: 'slf4j-nop', version: '1.7.+'
 }

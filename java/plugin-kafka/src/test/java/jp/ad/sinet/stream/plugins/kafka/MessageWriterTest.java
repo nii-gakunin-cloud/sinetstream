@@ -29,41 +29,28 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
-import org.junit.jupiter.params.provider.ValueSource;
+
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class MessageWriterTest implements ConfigFileAware {
 
-    private static final String SERVICE = "service-1";
-    private static final String TOPIC = "test-topic-java-001";
+    @TempDir
+    Path workdir;
 
     @Test
     void testGetWriter() {
         MessageWriterFactory<String> builder =
                 MessageWriterFactory.<String>builder()
-                        .service(SERVICE).topic(TOPIC)
-                        .valueType(SimpleValueType.TEXT).build();
+                        .config(getConfigFile(workdir)).service(getServiceName())
+                        .build();
         try (MessageWriter<String> writer = builder.getWriter()) {
             assertNotNull(writer);
-            writer.write("message-1");
-        }
-    }
-
-    @ParameterizedTest
-    @DisabledIfEnvironmentVariable(named="KAFKA_BROKER_REACHABLE", matches = "false")
-    @ValueSource(strings={SERVICE, "service-broker-by-string", "service-using-default-port",
-            "service-broker-by-string-using-default-port"})
-    void brokers(String service) {
-        MessageWriterFactory<String> builder =
-                MessageWriterFactory.<String>builder().service(service).topic(TOPIC)
-                        .valueType(SimpleValueType.TEXT)
-                        .consistency(Consistency.EXACTLY_ONCE).build();
-        try (MessageWriter<String> writer = builder.getWriter()) {
             writer.write("message-1");
         }
     }
@@ -71,22 +58,24 @@ class MessageWriterTest implements ConfigFileAware {
     @Test
     void configIsReadonly() {
         MessageWriterFactory<String> builder =
-                MessageWriterFactory.<String>builder().service(SERVICE).topic(TOPIC).build();
+                MessageWriterFactory.<String>builder()
+                        .config(getConfigFile(workdir)).service(getServiceName()).build();
         try (MessageWriter<String> writer = builder.getWriter()) {
             assertNotNull(writer);
-            assertThrows(UnsupportedOperationException.class, () -> writer.getConfig().put("type", "MQTT"));
+            assertThrows(UnsupportedOperationException.class,
+                    () -> writer.getConfig().put("type", "MQTT"));
         }
     }
 
     @Test
     void serviceType() {
         MessageWriterFactory<String> builder =
-                MessageWriterFactory.<String>builder().service(SERVICE).topic(TOPIC).build();
+                MessageWriterFactory.<String>builder()
+                        .config(getConfigFile(workdir)).service(getServiceName()).build();
         try (MessageWriter<String> writer = builder.getWriter()) {
             assertNotNull(writer);
-            assertEquals(SERVICE, writer.getService());
-            assertEquals(TOPIC, writer.getTopic());
-            assertEquals("kafka", writer.getConfig().get("type"));
+            assertEquals(getServiceName(), writer.getService());
+            assertEquals(getServiceType(), writer.getConfig().get("type"));
         }
     }
 
@@ -95,11 +84,14 @@ class MessageWriterTest implements ConfigFileAware {
 
         @Test
         void topic() {
+            String topic = generateTopic();
             MessageWriterFactory<String> builder =
-                    MessageWriterFactory.<String>builder().service(SERVICE).topic(TOPIC).build();
+                    MessageWriterFactory.<String>builder()
+                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .topic(topic).build();
             try (MessageWriter<String> writer = builder.getWriter()) {
                 writer.write("message-1");
-                assertEquals(TOPIC, writer.getTopic());
+                assertEquals(topic, writer.getTopic());
             }
         }
 
@@ -107,7 +99,8 @@ class MessageWriterTest implements ConfigFileAware {
         @EnumSource(Consistency.class)
         void consistency(Consistency consistency) {
             MessageWriterFactory<String> builder =
-                    MessageWriterFactory.<String>builder().service(SERVICE).topic(TOPIC)
+                    MessageWriterFactory.<String>builder()
+                            .config(getConfigFile(workdir)).service(getServiceName())
                             .consistency(consistency)
                             .build();
             try (MessageWriter<String> writer = builder.getWriter()) {
@@ -122,7 +115,8 @@ class MessageWriterTest implements ConfigFileAware {
             void clientId() {
                 String clientId = RandomStringUtils.randomAlphabetic(10);
                 MessageWriterFactory<String> builder =
-                        MessageWriterFactory.<String>builder().service(SERVICE).topic(TOPIC)
+                        MessageWriterFactory.<String>builder()
+                                .config(getConfigFile(workdir)).service(getServiceName())
                                 .clientId(clientId)
                                 .build();
                 try (MessageWriter<String> writer = builder.getWriter()) {
@@ -134,7 +128,8 @@ class MessageWriterTest implements ConfigFileAware {
             @Test
             void defaultClientId() {
                 MessageWriterFactory<String> builder =
-                        MessageWriterFactory.<String>builder().service(SERVICE).topic(TOPIC)
+                        MessageWriterFactory.<String>builder()
+                                .config(getConfigFile(workdir)).service(getServiceName())
                                 .build();
                 try (MessageWriter<String> writer = builder.getWriter()) {
                     writer.write("message-1");
@@ -146,7 +141,8 @@ class MessageWriterTest implements ConfigFileAware {
             @NullAndEmptySource
             void emptyAndNull(String clientId) {
                 MessageWriterFactory<String> builder =
-                        MessageWriterFactory.<String>builder().service(SERVICE).topic(TOPIC)
+                        MessageWriterFactory.<String>builder()
+                                .config(getConfigFile(workdir)).service(getServiceName())
                                 .clientId(clientId)
                                 .build();
                 try (MessageWriter<String> writer = builder.getWriter()) {
@@ -157,65 +153,17 @@ class MessageWriterTest implements ConfigFileAware {
             }
         }
 
-        /*
+        @SuppressWarnings("rawtypes")
         @ParameterizedTest
-        @EnumSource(ValueType.class)
-        void valueType(ValueType valueType) {
+        @EnumSource(SimpleValueType.class)
+        void valueType(SimpleValueType valueType) {
             MessageWriterFactory builder =
-                    MessageWriterFactory.builder().service(SERVICE).topic(TOPIC)
+                    MessageWriterFactory.builder()
+                            .config(getConfigFile(workdir)).service(getServiceName())
                             .valueType(valueType)
                             .build();
             try (MessageWriter writer = builder.getWriter()) {
                 assertEquals(valueType, writer.getValueType());
-            }
-        }
-         */
-
-        /*
-        @Nested
-        @SuppressWarnings("unchecked")
-        class SerializerTest {
-            @ParameterizedTest
-            @EnumSource(ValueType.class)
-            void serializer(ValueType valueType) {
-                KafkaSerdeWrapper wrapper = new KafkaSerdeWrapper(valueType.getSerializer());
-                KafkaSerializer ser = wrapper.serializer();
-                MessageWriterFactory builder =
-                        MessageWriterFactory.builder().service(SERVICE).topic(TOPIC)
-                                .serializer(ser)
-                                .build();
-                try (MessageWriter writer = builder.getWriter()) {
-                    // @Disabled XXX FIXME Timestamp breaks this test.
-                    // assertEquals(ser, writer.getSerializer());
-                }
-            }
-
-            @Test
-            void equality() {
-                Serializer<String> ser = ValueType.TEXT.getSerializer();
-                MessageWriterFactory<String> builder =
-                        MessageWriterFactory.<String>builder().service(SERVICE).topic(TOPIC)
-                                .serializer(ser)
-                                .build();
-                try (MessageWriter<String> writer = builder.getWriter()) {
-                    String text = RandomStringUtils.randomAlphabetic(24);
-                    // @Disable XXX FIXME Timestamp breaks this test.
-                    // assertArrayEquals(ser.serialize(text), writer.getSerializer().serialize(text));
-                }
-            }
-        }
-         */
-
-        @ParameterizedTest
-        @ValueSource(booleans = {true, false})
-        void dataEncryption(Boolean dataEncryption) {
-            MessageWriterFactory<String> builder =
-                    MessageWriterFactory.<String>builder().service("service-with-encrypt-eax").topic(TOPIC)
-                            .dataEncryption(dataEncryption)
-                            .build();
-            try (MessageWriter<String> writer = builder.getWriter()) {
-                writer.write("message-1");
-                assertEquals(dataEncryption, writer.isDataEncryption());
             }
         }
     }

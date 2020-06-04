@@ -63,7 +63,7 @@ public class SinetstreamBinaryConsumer {
                         .valueType(SimpleValueType.BYTE_ARRAY)
                         .receiveTimeout(Duration.ofSeconds(this.timeout / 1000))
                         .build();
-        try(MessageReader<byte[]> reader = factory.getReader()) {
+        try (MessageReader<byte[]> reader = factory.getReader()) {
             long[] ts = new long[this.nmsg];
             int[] ss = new int[this.nmsg];
             int n = 0;

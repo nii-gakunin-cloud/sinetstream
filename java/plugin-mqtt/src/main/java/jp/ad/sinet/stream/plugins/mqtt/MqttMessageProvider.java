@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 National Institute of Informatics
+ * Copyright (C) 2020 National Institute of Informatics
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -25,7 +25,7 @@ import jp.ad.sinet.stream.spi.*;
 import lombok.extern.java.Log;
 
 @Log
-public class MqttMessageProvider implements MessageWriterProvider, MessageReaderProvider {
+public class MqttMessageProvider implements MessageWriterProvider, MessageReaderProvider, AsyncMessageWriterProvider, AsyncMessageReaderProvider {
 
     @Override
     public PluginMessageWriter getWriter(WriterParameters params) {
@@ -37,6 +37,18 @@ public class MqttMessageProvider implements MessageWriterProvider, MessageReader
     public PluginMessageReader getReader(ReaderParameters params) {
         log.fine(() -> "MQTT getReader: " + params.toString());
         return new MqttMessageReader(params);
+    }
+
+    @Override
+    public PluginAsyncMessageWriter getAsyncWriter(WriterParameters params) {
+        log.fine(() -> "MQTT getAsyncWriter: " + params.toString());
+        return new MqttAsyncMessageWriter(params);
+    }
+
+    @Override
+    public PluginAsyncMessageReader getAsyncReader(ReaderParameters params) {
+        log.fine(() -> "MQTT getAsyncReader: " + params.toString());
+        return new MqttAsyncMessageReader(params);
     }
 
     @Override

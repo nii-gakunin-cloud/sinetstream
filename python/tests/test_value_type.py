@@ -23,8 +23,9 @@
 import logging
 
 import pytest
+from conftest import SERVICE
+
 from sinetstream import MessageReader, MessageWriter, BYTE_ARRAY, TEXT, InvalidArgumentError
-from conftest import SERVICE, TOPIC, TOPIC2
 
 logging.basicConfig(level=logging.ERROR)
 pytestmark = pytest.mark.usefixtures('setup_config', 'dummy_reader_plugin', 'dummy_writer_plugin')
@@ -36,23 +37,23 @@ tmsgs = ['test message 001',
          'test message 002']
 
 
-def test_text():
+def test_text(config_topic):
     with MessageWriter(SERVICE, value_type=TEXT) as fw:
         for msg in tmsgs:
             fw.publish(msg)
     with MessageReader(SERVICE, value_type=TEXT) as fr:
         for expected, msg in zip(tmsgs, fr):
-            assert msg.topic == TOPIC
+            assert msg.topic == config_topic
             assert msg.value == expected
 
 
-def test_byte_array():
+def test_byte_array(config_topic):
     with MessageWriter(SERVICE, value_type=BYTE_ARRAY) as fw:
         for msg in bmsgs:
             fw.publish(msg)
     with MessageReader(SERVICE, value_type=BYTE_ARRAY) as fr:
         for expected, msg in zip(bmsgs, fr):
-            assert msg.topic == TOPIC
+            assert msg.topic == config_topic
             assert msg.value == expected
 
 

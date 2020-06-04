@@ -1,3 +1,5 @@
+**準備中** (2020-06-04 18:27:50 JST)
+
 <!--
 Copyright (C) 2019 National Institute of Informatics
 
@@ -29,8 +31,10 @@ SINETStream ユーザガイド
 * Java API クラス一覧
     * MessageWriterFactory クラス
     * MessageWriter クラス
+    * AsyncMessageWriter クラス
     * MessageReaderFactory クラス
     * MessageReader クラス
+    * AsyncMessageReader クラス
     * 例外一覧
 * メッセージングシステム固有のパラメータ
     * Apache Kafka
@@ -81,7 +85,7 @@ MessageWriterFactory<String> factory =
         .consistency(AT_LEAST_ONCE)
         .build();
 
-try(MessageWriter<String> writer = factory.getWriter()) {
+try (MessageWriter<String> writer = factory.getWriter()) {
     writer.write("Hello! This is the 1st message.");
     writer.write("Hello! This is the 2nd message.");
 }
@@ -104,7 +108,7 @@ MessageReaderFactory<String> factory =
         .receiveTimeout(Duration.ofSeconds(60))
         .build();
 
-try(MessageReader<String> reader = factory.getReader()) {
+try (MessageReader<String> reader = factory.getReader()) {
     Message<String> msg;
     while (Objects.nonNull(msg = reader.read())) {
         System.out.println(msg.getValue());
@@ -117,15 +121,18 @@ try(MessageReader<String> reader = factory.getReader()) {
 その後、リーダーの `read()` を呼び出してブローカーからメッセージを受信する。
 リーダーの `read()` を呼び出したあと、`receiveTimeout` に指定した時間メッセージが取得できなかった場合、`read()` が `null` を返しループが終了する。
 
-
 ## Java API クラス一覧
 
 ### 主要クラス
 
 * jp.ad.sinet.stream.api.MessageWriter
     * メッセージを送信するクラス
+* jp.ad.sinet.stream.api.AsyncMessageWriter
+    * メッセージを送信するクラス(同非期API)
 * jp.ad.sinet.stream.api.MessageReader
     * メッセージを受信するクラス
+* jp.ad.sinet.stream.api.AsyncMessageReader
+    * メッセージを受信するクラス(非同期API)
 * jp.ad.sinet.stream.utils.MessageWriterFactory
     * `MessageWriter` オブジェクトを作成するためのファクトリクラス
 * jp.ad.sinet.stream.utils.MessageReaderFactory
@@ -188,9 +195,10 @@ MessageWriterFactory<String> factory =
 
 ブローカーにメッセージを送信するクラス。
 
-ファクトリクラスのインスタンスに対して `getWriter()` を呼び出すことで、ライタークラス
-`MessageWriter` のインスタンスが取得できる。
+ファクトリクラスのインスタンスに対して `getWriter()` を呼び出すことで、ライタークラス `MessageWriter` のインスタンスが取得できる。
 `MessageWriter` には `AutoCloseable` が実装されているので try-with-resources 文を利用できる。
+メッセージを送信するメソッド`write()`は送信処理が完了するまでブロックする。
+
 以下に例を示す。
 
 ```
@@ -201,6 +209,37 @@ try (MessageWriter<String> writer = factory.getWriter()) {
     writer.write("message-1");
 }
 ```
+
+### AsyncMessageWriter
+
+ブローカーにメッセージを送信するクラス。
+
+ファクトリクラスのインスタンスに対して `getAsyncWriter()` を呼び出すことで、ライタークラス `AsyncMessageWriter` のインスタンスが取得できる。
+`AsyncMessageWriter` には `AutoCloseable` が実装されているので try-with-resources 文を利用できる。
+メッセージを送信するメソッド`write()`は非同期処理であり [JDeferred](http://jdeferred.org/)の`Promise`オブジェクトを返す。
+
+以下に例を示す。
+
+```
+MessageWriterFactory<String> factory = MessageWriterFactory.<String>builder()
+        .service("service-1").build();
+
+try (AsyncMessageWriter<String> writer = factory.getAsyncWriter()) {
+    writer.write("message-1")
+          .done(result -> System.out.println("write task done")
+          .fail(result -> System.out.println("write task failed")
+}
+```
+
+`write()`メソッドが返す`Promise`オブジェクトのメソッド `.done()`, `.fail()`を用いることで、 
+送信結果（成功、失敗）に応じた処理を設定することができる。`Promise`の主なメソッドを以下に示す。
+
+* `done（）`
+   – 遅延オブジェクトの処理が正常に完了した場合にトリガーされる
+* `fail（）`
+   – 遅延オブジェクトの処理中に例外が発生したした場合にトリガーされる
+* `always（）` 
+   – 遅延オブジェクトの処理結果によらず全ての場合にトリガーされる
 
 ### MessageReaderFactory
 
@@ -266,11 +305,14 @@ MessageReaderFactory<String> factory =
 
 ファクトリクラスのインスタンスに対して `getReader()` を呼び出すことで、リーダークラス `MessageReader` のインスタンスが取得できる。
 `MessageReader` には `AutoCloseable` が実装されているので try-with-resources 文を利用できる。
+メッセージを受信するメソッド`read()`はメッセージを受信するか`receiveTimeout()`に指定されている
+タイムアウト時間が経過するまではブロックする。
+
 以下に例を示す。
 
 ```
 MessageReaderFactory<String> factory = MessageReaderFactory.<String>builder()
-        .service("service-1").receiveTimeout(Duration.ofSecondsG(60)).build();
+        .service("service-1").receiveTimeout(Duration.ofSeconds(60)).build();
 
 try (MessageReader<String> reader = factory.getReader()) {
     Message<String> msg;
@@ -281,6 +323,32 @@ try (MessageReader<String> reader = factory.getReader()) {
 ```
 
 `read()` メソッドの返り値は `Message<T>` クラスのインスタンスになる。
+
+### AsyncMessageReader
+
+ブローカーからメッセージを受信するクラス。
+
+ファクトリクラスのインスタンスに対して `getAsyncReader()` を呼び出すことで、
+リーダークラス `AsyncMessageReader` のインスタンスが取得できる。
+
+受信したメッセージを処理するには`addOnMessageCallback()`メソッドでメッセージを受信
+した際に呼び出されるコールバックを設定する。コールバックの引数によって受信したメッセージ
+が受け渡される。
+
+以下に例を示す。
+```
+MessageReaderFactory<String> factory = MessageReaderFactory.<String>builder()
+        .service("service-1").receiveTimeout(Duration.ofSeconds(60)).build();
+
+AsyncMessageReader<String> reader = factory.getAsyncReader();
+reader.addOnMessageCallback((msg) -> {
+    System.out.println("TOPIC: " + msg.getTopic() + " MESSAGE: " + msg.getValue());
+});
+
+// 他の処理など
+
+reader.close();
+```
 
 ### Message
 
@@ -301,15 +369,15 @@ try (MessageReader<String> reader = factory.getReader()) {
 
 | 例外名 | メソッド名 | |
 | ---  | --- | --- |
-| NoConfigException | MessageReaderFactory#getReader() MessageWriterFactory#getWriter() | 設定ファイルを読み込めない |
-| NoServiceException | MessageReaderFactory#getReader() MessageWriterFactory#getWriter() | 指定したサービス名に対応するエントリが設定ファイルに存在しない |
-| UnsupportedServiceException | MessageReaderFactory#getReader() MessageWriterFactory#getWriter() | サポートしていないメッセージングシステムが指定された |
-| ConnectionException | MessageReaderFactory#getReader() MessageWriterFactory#getWriter() | ブローカーに接続できない |
-| InvalidConfigurationException | MessageReaderFactory#getReader() MessageWriterFactory#getWriter()  | 設定ファイルの記述内容に誤りがある |
-| SinetStreamIOException | MessageReaderFactory#getReader() MessageWriterFactory#getWriter() MessageReader\<T\>#read() MessageReader\<T\>#close() MessageWriter\<T\>#write(T) MessageWriter\<T\>#close() | メッセージングシステムとのIOでエラーが発生した |
-| SinetStreamException | MessageReaderFactory#getReader() MessageWriterFactory#getWriter() MessageReader\<T\>#read() MessageReader\<T\>#close() MessageWriter\<T\>write(T) MessageWriter\<T\>close() | SINETStreamに関するその他のエラー |
+| NoConfigException | MessageReaderFactory#getReader() MessageReaderFactory#getAsyncReader() MessageWriterFactory#getWriter() MessageWriterFactory#getAsyncWriter()  | 設定ファイルを読み込めない |
+| NoServiceException | MessageReaderFactory#getReader() MessageReaderFactory#getAsyncReader() MessageWriterFactory#getWriter() MessageWriterFactory#getAsyncWriter() | 指定したサービス名に対応するエントリが設定ファイルに存在しない |
+| UnsupportedServiceException |MessageReaderFactory#getReader() MessageReaderFactory#getAsyncReader() MessageWriterFactory#getWriter() MessageWriterFactory#getAsyncWriter() | サポートしていないメッセージングシステムが指定された |
+| ConnectionException |MessageReaderFactory#getReader() MessageReaderFactory#getAsyncReader() MessageWriterFactory#getWriter() MessageWriterFactory#getAsyncWriter() | ブローカーに接続できない |
+| InvalidConfigurationException |MessageReaderFactory#getReader() MessageReaderFactory#getAsyncReader() MessageWriterFactory#getWriter() MessageWriterFactory#getAsyncWriter() | 設定ファイルの記述内容に誤りがある |
+| SinetStreamIOException | MessageReaderFactory#getReader() MessageReaderFactory#getAsyncReader() MessageWriterFactory#getWriter() MessageWriterFactory#getAsyncWriter()  MessageReader\<T\>#read() MessageReader\<T\>#close() MessageWriter\<T\>#write(T) MessageWriter\<T\>#close() | メッセージングシステムとのIOでエラーが発生した |
+| SinetStreamException | MessageReaderFactory#getReader() MessageReaderFactory#getAsyncReader() MessageWriterFactory#getWriter() MessageWriterFactory#getAsyncWriter() MessageReader\<T\>#read() MessageReader\<T\>#close() MessageWriter\<T\>write(T) MessageWriter\<T\>close() | SINETStreamに関するその他のエラー |
 | InvalidMessageException | MessageReader\<T\>#read() | メッセージのフォーマットが間違っている |
-| AuthenticationException | MessageReaderFactory#getReader() MessageWriterFactory#getWriter() | ブローカーとの接続で認証エラーになった |
+| AuthenticationException | MessageReaderFactory#getReader() MessageReaderFactory#getAsyncReader() MessageWriterFactory#getWriter() MessageWriterFactory#getAsyncWriter() | ブローカーとの接続で認証エラーになった |
 | AuthorizationException | MessageReader\<T\>#read() MessageWriter\<T\>#write() | 認可されない操作を行った(*) |
 
 (*) メッセージングシステムのタイプや`Consistency`のパラメータによっては認可されない操作を行っても例外が発生しない場合がある。

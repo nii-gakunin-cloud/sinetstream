@@ -21,6 +21,7 @@
 # under the License.
 
 import logging
+from math import inf
 
 import pytest
 from conftest import SERVICE, TOPIC, TOPIC2
@@ -112,9 +113,9 @@ def test_close_twice():
     f.close()
 
 
-def test_reader_topic_in_config_file():
+def test_reader_topic_in_config_file(config_topic):
     with MessageReader(SERVICE) as f:
-        assert f.topics == TOPIC
+        assert f.topics == config_topic
 
 
 @pytest.mark.parametrize('config_topic', [[TOPIC, TOPIC2]])
@@ -149,3 +150,19 @@ def test_reader_topics_in_config_file():
 def test_reader_topics_list_in_config_file():
     with MessageReader(SERVICE) as f:
         assert f.topics == [TOPIC, TOPIC2]
+
+
+def test_service():
+    with MessageReader(SERVICE) as f:
+        assert f.service == SERVICE
+
+
+def test_receive_timeout_ms():
+    timeout = 100
+    with MessageReader(SERVICE, receive_timeout_ms=timeout) as f:
+        assert f.receive_timeout_ms == timeout
+
+
+def test_default_receive_timeout_ms():
+    with MessageReader(SERVICE) as f:
+        assert f.receive_timeout_ms == inf

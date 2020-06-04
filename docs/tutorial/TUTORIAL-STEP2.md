@@ -1,3 +1,5 @@
+**準備中** (2020-06-04 18:27:50 JST)
+
 <!--
 Copyright (C) 2019 National Institute of Informatics
 
@@ -206,7 +208,7 @@ SINETStreamのPython3ライブラリをコンテナ環境にインストール�
 [user01@reader]$ pip3 install --user sinetstream-kafka sinetstream-mqtt
 Collecting sinetstream-kafka
 (中略)
-Successfully installed kafka-python-1.4.7 paho-mqtt-1.5.0 pycryptodome-3.9.4 sinetstream-1.1.0 sinetstream-kafka-1.1.0 sinetstream-mqtt-1.1.0
+Successfully installed avro-python3-1.9.2.1 kafka-python-2.0.1 paho-mqtt-1.5.0 promise-2.3 pycryptodome-3.9.7 pyyaml-5.3.1 sinetstream-1.2.0 sinetstream-kafka-1.2.0 sinetstream-mqtt-1.2.0 six-1.14.0 
 ```
 
 最後に `Successfully installed ...`と表示されていれば、ライブラリのインストールに成功しています。
@@ -216,15 +218,18 @@ Successfully installed kafka-python-1.4.7 paho-mqtt-1.5.0 pycryptodome-3.9.4 sin
 [user01@reader]$ pip3 list
 Package           Version
 ----------------- --------
-kafka-python      1.4.7
+avro-python3      1.9.2.1
+kafka-python      2.0.1
 paho-mqtt         1.5.0
 pip               19.3.1
-pycryptodome      3.9.4
-PyYAML            3.12
+promise           2.3
+pycryptodome      3.9.7
+PyYAML            5.3.1
 setuptools        42.0.2
-sinetstream       1.1.0
-sinetstream-kafka 1.1.0
-sinetstream-mqtt  1.1.0
+sinetstream       1.2.0
+sinetstream-kafka 1.2.0
+sinetstream-mqtt  1.2.0
+six               1.14.0
 supervisor        4.1.0
 ```
 
@@ -340,7 +345,7 @@ SINETStreamのPython3ライブラリをコンテナ環境にインストール�
 [user01@writer]$ pip3 install --user sinetstream-kafka sinetstream-mqtt
 Collecting sinetstream-kafka
 (中略)
-Successfully installed kafka-python-1.4.7 paho-mqtt-1.5.0 pycryptodome-3.9.4 sinetstream-1.1.0 sinetstream-kafka-1.1.0 sinetstream-mqtt-1.1.0
+Successfully installed avro-python3-1.9.2.1 kafka-python-2.0.1 paho-mqtt-1.5.0 promise-2.3 pycryptodome-3.9.7 pyyaml-5.3.1 sinetstream-1.2.0 sinetstream-kafka-1.2.0 sinetstream-mqtt-1.2.0 six-1.14.0 
 ```
 
 最後に `Successfully installed ...`と表示されていれば、ライブラリのインストールに成功しています。
@@ -350,15 +355,18 @@ Successfully installed kafka-python-1.4.7 paho-mqtt-1.5.0 pycryptodome-3.9.4 sin
 [user01@writer]$ pip3 list
 Package           Version
 ----------------- --------
-kafka-python      1.4.7
+avro-python3      1.9.2.1
+kafka-python      2.0.1
 paho-mqtt         1.5.0
 pip               19.3.1
-pycryptodome      3.9.4
-PyYAML            3.12
+promise           2.3
+pycryptodome      3.9.7
+PyYAML            5.3.1
 setuptools        42.0.2
-sinetstream       1.1.0
-sinetstream-kafka 1.1.0
-sinetstream-mqtt  1.1.0
+sinetstream       1.2.0
+sinetstream-kafka 1.2.0
+sinetstream-mqtt  1.2.0
+six               1.14.0
 supervisor        4.1.0
 ```
 
@@ -411,7 +419,7 @@ SINETStreamのPython3 APIを用いて作成された`Writer`のサンプルプ�
 
 `Reader`と`Writer`を実行して SINETStream を利用したメッセージの送受信が行えることを確認します。
 
-SINETStream v1.1では、利用可能なメッセージングシステムとして[Kafka](https://kafka.apache.org/) と [MQTT(Mosquitto)](https://mosquitto.org/)をサポートしています。
+SINETStream v1.2では、利用可能なメッセージングシステムとして[Kafka](https://kafka.apache.org/) と [MQTT(Mosquitto)](https://mosquitto.org/)をサポートしています。
 ここでは、まず Kafkaブローカーとメッセージの送受信が行えることを確認します。
 その後、設定変更のみでプログラムを変更することなくMQTTブローカーともメッセージの送受信が行えることを確認します。
 
@@ -625,7 +633,7 @@ service-tutorial-mqtt:
 
 * type
     - メッセージングシステムの種別を指定します
-    - SINETStream v1.1 で指定できる値は `kafka`, `mqtt` のどちらかになります
+    - SINETStream v1.2 で指定できる値は `kafka`, `mqtt` のどちらかになります
 * brokers
     - ブローカーのアドレスを指定します
     - アドレスの書式はホスト名とポート番号を `:` で繋げたものとします
@@ -681,3 +689,59 @@ with MessageWriter(service) as writer:
 with文が返した値 `writer` に対して `.publish(message)`を呼び出すことでメッセージをブローカーに送信することができます。
 
 SINETStreamのPython APIに関する詳細については[ユーザガイド](../userguide/api-python.md)を参照してください。
+
+### 4.3. SINETStream API(非同期API)
+
+SINETStream v1.2 では非同期APIを利用することができます。
+ここまで記してきたのと同様の処理を非同期APIで実行するサンプルプログラムをGithubに用意しています。
+
+* [Reader](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/python/sample/text_async/consumer.py)
+* [Writer](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/python/sample/text_async/producer.py)
+
+#### Reader(非同期API)
+
+非同期APIを用いた`Reader`のサンプルプログラムconsumer.py で
+SINETStream API を使用している箇所を以下に示します。
+
+```python
+reader = AsyncMessageReader(service)
+reader.on_message = show_message
+reader.open()
+```
+
+はじめにメッセージを受信するための `AsyncMessageReader` のオブジェクトを
+作成します。その際、引数としてサービス名を指定します。
+
+次に`.on_message`プロパティにメッセージを受信した際に呼び出すコールバック関数
+を指定します。コールバック関数は引数から受信したメッセージを受け取ることができます。
+サンプルプログラムでは以下のようなコールバック関数を用いています。
+
+```python
+def show_message(message):
+    ts = datetime.fromtimestamp(message.timestamp)
+    print(f"[{ts}] topic={message.topic} value='{message.value}'")
+```
+
+最後に`reader.open()`を呼び出すことでブローカーに接続されます。
+
+#### Writer(非同期API)
+
+非同期APIを用いた`Writer`のサンプルプログラムproducer.py で
+SINETStream API を使用している箇所を以下に示します。
+
+```python
+with AsyncMessageWriter(service) as writer:
+    while True:
+        message = get_message()
+        writer.publish(message)
+```
+
+メッセージを送信するための `AsyncMessageWriter` のオブジェクトを作成します。
+その際、引数としてサービス名を指定します。
+`AsyncMessageWriter`は通常Pythonのwith文で実行します。
+これにより、ブローカーとの接続、切断が with文のブロックの境界で実行されます。
+with文が返した値 `writer` に対して `.publish(message)`を呼び出すことでメッセージをブローカーに送信することができます。
+
+同期APIでは`.publish()`が送信処理の完了までブロックしますが、非同期APIの場合は
+ブロックすることなく返ります。また非同期APIの`.publish()`は処理結果が確定した
+後の処理を指定するための[Promiseオブジェクト](https://github.com/syrusakbary/promise)を返します。

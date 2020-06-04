@@ -21,7 +21,11 @@
 # under the License.
 
 import logging
+from contextlib import contextmanager
+from queue import Queue
+
 import pytest
+from conftest import SERVICE, qedit
 
 from sinetstream import (
     MessageReader, MessageWriter, TEXT, InvalidMessageError,
@@ -31,9 +35,6 @@ from sinetstream.marshal import (
     avro_signle_object_format_marker,
     message_schema_fingerprint,
 )
-
-from conftest import SERVICE, TOPIC, qedit
-
 
 logging.basicConfig(level=logging.ERROR)
 pytestmark = pytest.mark.usefixtures(
@@ -77,14 +78,14 @@ crypto_params = {
 
 
 @pytest.mark.parametrize("config_params", [crypto_params])
-def test_timestamp():
+def test_timestamp(config_topic):
     with MessageWriter(SERVICE) as fw:
         for msg in msgs:
             fw.publish(msg)
 
-    with MessageReader(SERVICE) as fr:
+    with MessageReader(SERVICE, receive_timeout_ms=100) as fr:
         for msg, orig in zip(fr, msgs):
-            assert msg.topic == TOPIC
+            assert msg.topic == config_topic
             assert msg.value == orig
             assert msg.timestamp != 0
 
@@ -99,9 +100,8 @@ def test_header_size():
 
 
 @pytest.mark.parametrize("pos", list(range(HDRLEN)) + [HDRLEN+TSLEN])
-def test_brokenbit(pos, write_messages):
-    break_message_one_byte(pos)
-
+def test_brokenbit(pos, write_messages, config_topic):
+    break_message_one_byte(pos, config_topic)
     with MessageReader(SERVICE) as fr:
         with pytest.raises(InvalidMessageError):
             for msg in fr:
@@ -109,46 +109,64 @@ def test_brokenbit(pos, write_messages):
 
 
 @pytest.mark.parametrize("length", range(HDRLEN + TSLEN + 3))
-def test_tooshort(length, write_messages):
-    chop_message(length)
-
+def test_tooshort(length, write_messages, config_topic):
+    chop_message(length, config_topic)
     with MessageReader(SERVICE) as fr:
         with pytest.raises(InvalidMessageError):
             for msg in fr:
                 pass
 
 
-def test_toolong(write_messages):
-    expand_message()
-
+def test_toolong(write_messages, config_topic):
+    expand_message(config_topic)
     # trailing garbage should be ignored.
-    with MessageReader(SERVICE) as fr:
+    with MessageReader(SERVICE, receive_timeout_ms=100) as fr:
         for msg, orig in zip(fr, bmsgs):
-            assert msg.topic == TOPIC
+            assert msg.topic == config_topic
             assert msg.value == orig
             assert msg.timestamp != 0
 
 
-def break_message_one_byte(pos, topic=TOPIC):
-    q = qedit(topic, None)
-    m = q[0]
-    assert type(m) == bytes
-    x = bytearray(m)
-    x[pos] = x[pos] ^ 0xff  # BREAK
-    q[0] = bytes(x)
-    qedit(topic, q)
+def queue2list(q):
+    ret = []
+    while not q.empty():
+        ret.append(q.get())
+    return ret
 
 
-def chop_message(length, topic=TOPIC):
-    q = qedit(topic, None)
-    q[0] = q[0][0:length]
-    qedit(topic, q)
+def list2queue(l):
+    q = Queue()
+    for x in l:
+        q.put(x)
+    return q
 
 
-def expand_message(topic=TOPIC):
-    q = qedit(topic, None)
-    q[0] = q[0] + b"G"  # GOMI
-    qedit(topic, q)
+@contextmanager
+def edit_queue(topic):
+    q = queue2list(qedit(topic, None))
+    try:
+        yield q
+    finally:
+        qedit(topic, list2queue(q))
+
+
+def break_message_one_byte(pos, topic):
+    with edit_queue(topic) as q:
+        m = q[0]
+        assert type(m) == bytes
+        x = bytearray(m)
+        x[pos] = x[pos] ^ 0xff  # BREAK
+        q[0] = bytes(x)
+
+
+def chop_message(length, topic):
+    with edit_queue(topic) as q:
+        q[0] = q[0][0:length]
+
+
+def expand_message(topic):
+    with edit_queue(topic) as q:
+        q[0] = q[0] + b"G"  # GOMI
 
 
 @pytest.fixture

@@ -26,4 +26,8 @@ public interface MessageWriter<T> extends MessageIO {
     void write(T message);
 
     Serializer<T> getSerializer();
+
+    default boolean isThreadSafe() {
+        return false;
+    }
 }

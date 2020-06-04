@@ -21,26 +21,69 @@
 
 package jp.ad.sinet.stream.plugins.kafka;
 
-import org.junit.jupiter.api.AfterEach;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.io.TempDir;
+import org.yaml.snakeyaml.Yaml;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Paths;
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import java.nio.file.Path;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 public interface ConfigFileAware {
 
     @BeforeEach
-    default void makeConfigFile() throws IOException {
-        try (InputStream in = ConfigFileAware.class.getResourceAsStream("/sinetstream_config.yml")) {
-            Files.copy(in, Paths.get(".sinetstream_config.yml"), REPLACE_EXISTING );
+    default void makeConfigFile(@TempDir Path workdir) throws IOException {
+        Map<String, Map<String, ?>> config = new HashMap<>();
+        Map<String, Object> params = new HashMap<>();
+        config.put(getServiceName(), params);
+
+        params.put("type", getServiceType());
+        params.put("brokers", getBroker());
+        getTopic().ifPresent(x -> params.put("topic", x));
+        getValueType().ifPresent(x -> params.put("value_type", x));
+        params.putAll(getParameters());
+
+        Yaml yaml = new Yaml();
+        try (BufferedWriter writer = Files.newBufferedWriter(getConfigFile(workdir))) {
+            yaml.dump(config, writer);
         }
     }
 
-    @AfterEach
-    default void cleanupConfigFile() throws IOException {
-        Files.deleteIfExists(Paths.get(".sinetstream_config.yml"));
+    default Path getConfigFile(Path workdir) {
+        return workdir.resolve(".sinetstream_config.yml");
+    }
+
+    default Object getBroker() {
+        return System.getenv().getOrDefault("KAFKA_BROKER", "broker:9092");
+    }
+
+    default String getServiceName() {
+        return "service-1";
+    }
+
+    default String getServiceType() {
+        return "kafka";
+    }
+
+    default Optional<String> getTopic() {
+        return Optional.of(generateTopic());
+    }
+
+    default String generateTopic() {
+        return "topic-" + RandomStringUtils.randomAlphabetic(10);
+    }
+
+    default Optional<String> getValueType() {
+        return Optional.of("text");
+    }
+
+    default Map<String, Object> getParameters() {
+        return Collections.emptyMap();
     }
 }

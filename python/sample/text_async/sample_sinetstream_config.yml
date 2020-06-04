@@ -1,0 +1,13 @@
+text-1:
+  type: kafka
+  brokers: kafka.example.org:9092
+  topic: test-text-topic-1
+  consistency: AT_LEAST_ONCE
+  value_type: text
+
+text-2:
+  type: mqtt
+  brokers: mqtt.example.org:1883
+  topic: test-text-topic-2
+  consistency: AT_LEAST_ONCE
+  value_type: text

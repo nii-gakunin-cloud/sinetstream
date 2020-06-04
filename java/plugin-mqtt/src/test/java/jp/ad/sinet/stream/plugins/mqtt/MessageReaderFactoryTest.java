@@ -25,27 +25,34 @@ import jp.ad.sinet.stream.api.Consistency;
 import jp.ad.sinet.stream.api.MessageReader;
 import jp.ad.sinet.stream.utils.MessageReaderFactory;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
+import java.nio.file.Path;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static jp.ad.sinet.stream.api.Consistency.AT_MOST_ONCE;
 import static org.junit.jupiter.api.Assertions.*;
 
 class MessageReaderFactoryTest implements ConfigFileAware {
 
+    @TempDir
+    Path workdir;
+
     @Test
     void serviceAndTopic() {
-        String service = "service-1";
-        String topic = "test-topic-java-001";
-        MessageReaderFactory<String> builder = MessageReaderFactory.<String>builder().service(service).topic(topic).build();
+        String topic = generateTopic();
+        MessageReaderFactory<String> builder = MessageReaderFactory.<String>builder()
+                .config(getConfigFile(workdir)).service(getServiceName())
+                .topic(topic).build();
         try (MessageReader<String> reader = builder.getReader()) {
             assertNotNull(reader);
-            assertEquals(service, reader.getService());
+            assertEquals(getServiceName(), reader.getService());
             assertEquals(topic, reader.getTopic());
             assertIterableEquals(Collections.singletonList(topic), reader.getTopics());
         }
@@ -53,8 +60,10 @@ class MessageReaderFactoryTest implements ConfigFileAware {
 
     @Test
     void topics() {
-        List<String> topics = Arrays.asList("test-topic-java-001", "test-topic-java-002");
-        MessageReaderFactory<String> builder = MessageReaderFactory.<String>builder().service("service-1").topics(topics).build();
+        List<String> topics = IntStream.range(0, 5).mapToObj(x -> generateTopic()).collect(Collectors.toList());
+        MessageReaderFactory<String> builder = MessageReaderFactory.<String>builder()
+                .config(getConfigFile(workdir)).service(getServiceName())
+                .topics(topics).build();
         try (MessageReader<String> reader = builder.getReader()) {
             assertNotNull(reader);
             assertEquals(String.join(",", topics), reader.getTopic());
@@ -66,7 +75,8 @@ class MessageReaderFactoryTest implements ConfigFileAware {
     void clientId() {
         String clientId = "client-000";
         MessageReaderFactory<String> builder =
-                MessageReaderFactory.<String>builder().service("service-1").topic("test-topic-java-001")
+                MessageReaderFactory.<String>builder()
+                        .config(getConfigFile(workdir)).service(getServiceName())
                         .clientId(clientId).build();
         try (MessageReader<String> reader = builder.getReader()) {
             assertNotNull(reader);
@@ -78,7 +88,8 @@ class MessageReaderFactoryTest implements ConfigFileAware {
     @EnumSource(Consistency.class)
     void consistency(Consistency consistency) {
         MessageReaderFactory<String> builder =
-                MessageReaderFactory.<String>builder().service("service-1").topic("test-topic-java-001")
+                MessageReaderFactory.<String>builder()
+                        .config(getConfigFile(workdir)).service(getServiceName())
                         .consistency(consistency).build();
         try (MessageReader<String> reader = builder.getReader()) {
             assertNotNull(reader);
@@ -89,7 +100,8 @@ class MessageReaderFactoryTest implements ConfigFileAware {
     @Test
     void defaultConsistency() {
         MessageReaderFactory<String> builder =
-                MessageReaderFactory.<String>builder().service("service-1").topic("test-topic-java-001").build();
+                MessageReaderFactory.<String>builder()
+                        .config(getConfigFile(workdir)).service(getServiceName()).build();
         try (MessageReader<String> reader = builder.getReader()) {
             assertNotNull(reader);
             assertEquals(AT_MOST_ONCE, reader.getConsistency());
@@ -100,7 +112,8 @@ class MessageReaderFactoryTest implements ConfigFileAware {
     void receiveTimeout() {
         Duration timeout = Duration.ofSeconds(30);
         MessageReaderFactory<String> builder =
-                MessageReaderFactory.<String>builder().service("service-1").topic("test-topic-java-001")
+                MessageReaderFactory.<String>builder()
+                        .config(getConfigFile(workdir)).service(getServiceName())
                         .receiveTimeout(timeout).build();
         try (MessageReader<String> reader = builder.getReader()) {
             assertNotNull(reader);
@@ -111,7 +124,8 @@ class MessageReaderFactoryTest implements ConfigFileAware {
     @Test
     void defaultReceiveTimeout() {
         MessageReaderFactory<String> builder =
-                MessageReaderFactory.<String>builder().service("service-1").topic("test-topic-java-001").build();
+                MessageReaderFactory.<String>builder()
+                        .config(getConfigFile(workdir)).service(getServiceName()).build();
         try (MessageReader<String> reader = builder.getReader()) {
             assertNotNull(reader);
             assertEquals(Duration.ofNanos(Long.MAX_VALUE), reader.getReceiveTimeout());

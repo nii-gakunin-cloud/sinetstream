@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 National Institute of Informatics
+ * Copyright (C) 2020 National Institute of Informatics
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -25,7 +25,7 @@ import jp.ad.sinet.stream.spi.*;
 import lombok.extern.java.Log;
 
 @Log
-public class KafkaMessageProvider implements MessageWriterProvider, MessageReaderProvider {
+public class KafkaMessageProvider implements MessageWriterProvider, MessageReaderProvider, AsyncMessageWriterProvider, AsyncMessageReaderProvider {
 
     @Override
     public PluginMessageWriter getWriter(WriterParameters params) {
@@ -37,6 +37,18 @@ public class KafkaMessageProvider implements MessageWriterProvider, MessageReade
     public PluginMessageReader getReader(ReaderParameters params) {
         log.fine(() -> "KAFKA getReader: " + params.toString());
         return new KafkaMessageReader(params);
+    }
+
+    @Override
+    public PluginAsyncMessageWriter getAsyncWriter(WriterParameters params) {
+        log.fine(() -> "KAFKA getAsyncWriter: " + params.toString());
+        return new KafkaAsyncMessageWriter(params);
+    }
+
+    @Override
+    public PluginAsyncMessageReader getAsyncReader(ReaderParameters params) {
+        log.fine(() -> "KAFKA getAsyncReader: " + params.toString());
+        return new KafkaAsyncMessageReader(params);
     }
 
     @Override

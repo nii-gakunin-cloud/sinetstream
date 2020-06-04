@@ -21,25 +21,172 @@
 
 package jp.ad.sinet.stream.plugins.mqtt;
 
-import org.junit.jupiter.api.AfterEach;
+import jp.ad.sinet.stream.api.ConnectionException;
+import jp.ad.sinet.stream.api.Consistency;
+import jp.ad.sinet.stream.api.MessageReader;
+import jp.ad.sinet.stream.api.MessageWriter;
+import jp.ad.sinet.stream.utils.MessageReaderFactory;
+import jp.ad.sinet.stream.utils.MessageWriterFactory;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.yaml.snakeyaml.Yaml;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public interface ConfigFileAware {
 
     @BeforeEach
-    default void makeConfigFile() throws IOException {
-        try (InputStream in = ConfigFileAware.class.getResourceAsStream("/sinetstream_config.yml")) {
-            Files.copy(in, Paths.get(".sinetstream_config.yml"));
+    default void makeConfigFile(@TempDir Path workdir) throws IOException {
+        Map<String, Map<String, ?>> config = new HashMap<>();
+        Map<String, Object> params = new HashMap<>();
+        config.put(getServiceName(), params);
+
+        params.put("type", getServiceType());
+        getBroker().ifPresent(x -> params.put("brokers", x));
+        getTopic().ifPresent(x -> params.put("topic", x));
+        getValueType().ifPresent(x -> params.put("value_type", x));
+        params.putAll(getParameters());
+
+        Yaml yaml = new Yaml();
+        try (BufferedWriter writer = Files.newBufferedWriter(getConfigFile(workdir))) {
+            yaml.dump(config, writer);
         }
     }
 
-    @AfterEach
-    default void cleanupConfigFile() throws IOException {
-        Files.deleteIfExists(Paths.get(".sinetstream_config.yml"));
+    default Path getConfigFile(Path workdir) {
+        return workdir.resolve(".sinetstream_config.yml");
+    }
+
+    default Optional<Object> getBroker() {
+        return Optional.of(System.getenv().getOrDefault("MQTT_BROKER", "broker:1883"));
+    }
+
+    default String getServiceName() {
+        return "service-mqtt";
+    }
+
+    default String getServiceType() {
+        return "mqtt";
+    }
+
+    default Optional<String> getTopic() {
+        return Optional.of(generateTopic());
+    }
+
+    default String generateTopic() {
+        return "topic-" + RandomStringUtils.randomAlphabetic(10);
+    }
+
+    default Optional<String> getValueType() {
+        return Optional.of("text");
+    }
+
+    default Map<String, Object> getParameters() {
+        return Collections.emptyMap();
+    }
+
+    @Disabled
+    class ReaderWriterTest implements ConfigFileAware {
+
+        @TempDir
+        Path workdir;
+
+        @Test
+        void read() {
+            MessageReaderFactory<String> readerBuilder =
+                    MessageReaderFactory.<String>builder()
+                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .receiveTimeout(Duration.ofSeconds(3))
+                            .consistency(Consistency.AT_LEAST_ONCE)
+                            .build();
+
+            try (MessageReader<String> reader = readerBuilder.getReader()) {
+                //noinspection StatementWithEmptyBody
+                while (Objects.nonNull(reader.read())) {
+
+                }
+            }
+        }
+
+        @Test
+        void write() {
+            MessageWriterFactory<String> writerBuilder =
+                    MessageWriterFactory.<String>builder()
+                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .consistency(Consistency.AT_LEAST_ONCE)
+                            .build();
+
+            try (MessageWriter<String> writer = writerBuilder.getWriter()) {
+                final String data = RandomStringUtils.randomAlphabetic(10);
+                writer.write(data);
+            }
+        }
+    }
+
+    @Disabled
+    class ErrorTest implements ConfigFileAware {
+
+        @TempDir
+        Path workdir;
+        protected Class<? extends Throwable> error;
+
+        @Test
+        void read() {
+            MessageReaderFactory<String> builder =
+                    MessageReaderFactory.<String>builder()
+                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .receiveTimeout(Duration.ofSeconds(3))
+                            .consistency(Consistency.AT_LEAST_ONCE)
+                            .build();
+
+            assertThrows(error, builder::getReader);
+        }
+
+        @Test
+        void asyncRead() {
+            MessageReaderFactory<String> builder =
+                    MessageReaderFactory.<String>builder()
+                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .receiveTimeout(Duration.ofSeconds(3))
+                            .consistency(Consistency.AT_LEAST_ONCE)
+                            .build();
+
+            assertThrows(error, builder::getAsyncReader);
+        }
+
+        @Test
+        void write() {
+            MessageWriterFactory<String> builder =
+                    MessageWriterFactory.<String>builder()
+                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .consistency(Consistency.AT_LEAST_ONCE)
+                            .build();
+            assertThrows(error, builder::getWriter);
+        }
+
+        @Test
+        void asyncWrite() {
+            MessageWriterFactory<String> builder =
+                    MessageWriterFactory.<String>builder()
+                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .consistency(Consistency.AT_LEAST_ONCE)
+                            .build();
+            assertThrows(error, builder::getAsyncWriter);
+        }
+
+        @BeforeEach
+        void setupError() {
+            error = ConnectionException.class;
+        }
     }
 }

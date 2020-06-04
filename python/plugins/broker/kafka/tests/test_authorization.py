@@ -21,16 +21,18 @@
 # under the License.
 
 import logging
-from pathlib import Path
-from sinetstream import (
-    MessageReader, MessageWriter, ConnectionError, AuthorizationError,
-    AT_LEAST_ONCE, AT_MOST_ONCE,
-)
+from threading import Condition
+
 import pytest
 from conftest import (
-    SERVICE, TOPIC, USER_PASSWD_BROKER, KAFKA_READ_USER, KAFKA_READ_PASSWD,
+    SERVICE, USER_PASSWD_BROKER, KAFKA_READ_USER, KAFKA_READ_PASSWD,
     KAFKA_WRITE_USER, KAFKA_WRITE_PASSWD,
 )
+
+from sinetstream import (
+    MessageReader, MessageWriter, AuthorizationError,
+    AT_LEAST_ONCE, AT_MOST_ONCE,
+    AsyncMessageWriter, AsyncMessageReader)
 
 logging.basicConfig(level=logging.CRITICAL)
 logger = logging.getLogger(__name__)
@@ -64,6 +66,79 @@ def test_no_auth_write_no_ack(setup_config):
 
 
 @pytest.mark.skipif(
+    KAFKA_READ_USER is None or KAFKA_READ_PASSWD is None,
+    reason='USER/PASSWD is not set.')
+def test_no_auth_async_write(setup_config):
+    params = {
+        'sasl_plain_username': KAFKA_READ_USER,
+        'sasl_plain_password': KAFKA_READ_PASSWD,
+    }
+    error = 0
+    countdown = 1
+    cv = Condition()
+
+    def on_error(e):
+        nonlocal countdown, error
+        with cv:
+            countdown -= 1
+            if isinstance(e, AuthorizationError):
+                error += 1
+            cv.notify_all()
+
+    def on_success(_):
+        nonlocal countdown
+        with cv:
+            countdown -= 1
+            cv.notify_all()
+
+    def wait_done():
+        with cv:
+            while countdown > 0:
+                cv.wait()
+
+    with AsyncMessageWriter(SERVICE, consistency=AT_LEAST_ONCE, **params) as f:
+        f.publish(b'message-001').catch(on_error).then(on_success)
+        wait_done()
+    assert error == 1
+
+
+@pytest.mark.skipif(
+    KAFKA_READ_USER is None or KAFKA_READ_PASSWD is None,
+    reason='USER/PASSWD is not set.')
+def test_no_auth_async_write_no_ack(setup_config):
+    params = {
+        'sasl_plain_username': KAFKA_READ_USER,
+        'sasl_plain_password': KAFKA_READ_PASSWD,
+    }
+    error = 0
+    countdown = 1
+    cv = Condition()
+
+    def on_error(e):
+        nonlocal countdown, error
+        with cv:
+            countdown -= 1
+            error += 1
+            cv.notify_all()
+
+    def on_success(_):
+        nonlocal countdown
+        with cv:
+            countdown -= 1
+            cv.notify_all()
+
+    def wait_done():
+        with cv:
+            while countdown > 0:
+                cv.wait()
+
+    with AsyncMessageWriter(SERVICE, consistency=AT_MOST_ONCE, **params) as f:
+        f.publish(b'message-001').catch(on_error).then(on_success)
+        wait_done()
+    assert error == 0
+
+
+@pytest.mark.skipif(
     KAFKA_WRITE_USER is None or KAFKA_WRITE_PASSWD is None,
     reason='USER/PASSWD is not set.')
 def test_no_auth_read(setup_config):
@@ -73,8 +148,64 @@ def test_no_auth_read(setup_config):
     }
     with pytest.raises(AuthorizationError):
         with MessageReader(SERVICE, **params) as f:
-            for msg in f:
+            for _ in f:
                 pass
+
+
+@pytest.mark.skipif(
+    KAFKA_WRITE_USER is None or KAFKA_WRITE_PASSWD is None,
+    reason='USER/PASSWD is not set.')
+def test_no_auth_async_read(setup_config):
+    params = {
+        'sasl_plain_username': KAFKA_WRITE_USER,
+        'sasl_plain_password': KAFKA_WRITE_PASSWD,
+    }
+    error = 0
+    countdown = 1
+    cv = Condition()
+
+    def error_handler(e, traceback=None):
+        nonlocal countdown, error
+        with cv:
+            countdown -= 1
+            if isinstance(e, AuthorizationError):
+                error += 1
+            cv.notify_all()
+
+    reader = AsyncMessageReader(SERVICE, **params)
+    reader.on_failure = error_handler
+    reader.open()
+    with cv:
+        cv.wait(10)
+    reader.close()
+    assert error == 1
+
+
+@pytest.mark.skipif(
+    KAFKA_WRITE_USER is None or KAFKA_WRITE_PASSWD is None,
+    reason='USER/PASSWD is not set.')
+def test_no_auth_async_read_with_stmt(setup_config):
+    params = {
+        'sasl_plain_username': KAFKA_WRITE_USER,
+        'sasl_plain_password': KAFKA_WRITE_PASSWD,
+    }
+    error = 0
+    countdown = 1
+    cv = Condition()
+
+    def error_handler(e, traceback=None):
+        nonlocal countdown, error
+        with cv:
+            countdown -= 1
+            if isinstance(e, AuthorizationError):
+                error += 1
+            cv.notify_all()
+
+    with AsyncMessageReader(SERVICE, **params) as reader:
+        reader.on_failure = error_handler
+        with cv:
+            cv.wait(10)
+    assert error == 1
 
 
 @pytest.fixture()

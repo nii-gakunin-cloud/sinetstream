@@ -23,6 +23,7 @@
 import logging
 import os
 import time
+from concurrent.futures import ThreadPoolExecutor
 from copy import copy
 from enum import Enum, auto
 from threading import RLock
@@ -32,7 +33,10 @@ from sinetstream.error import (
     InvalidArgumentError, NoConfigError, NoServiceError,
     UnsupportedServiceTypeError, InvalidMessageError, AlreadyConnectedError)
 from sinetstream.marshal import Marshaller, Unmarshaller
-from sinetstream.spi import PluginMessageReader, PluginMessageWriter
+from sinetstream.spi import (
+    PluginMessageReader, PluginMessageWriter, PluginAsyncMessageReader,
+    PluginAsyncMessageWriter,
+)
 from sinetstream.utils import Registry
 from sinetstream.value_type import BYTE_ARRAY, value_type_registry
 
@@ -75,7 +79,7 @@ def load_config(config_file=None):
     if config_file is not None:
         ret = load_config_from_file(config_file)
         if ret is None:
-            logger.error(f"No configuration file exist: {config_file}")
+            logger.error("No configuration file exist: {config_file}")
             raise NoConfigError(f"No configuration file exist: {config_file}")
         return ret
 
@@ -151,8 +155,8 @@ class Message(object):
 
     def __repr__(self):
         return (
-            f'Message(value={self._value!r}, topic={self._topic!r},' +
-            f'tstamp={self._tstamp}, raw={self._raw!r})')
+                f'Message(value={self._value!r}, topic={self._topic!r}, ' +
+                f'tstamp={self._tstamp}, raw={self._raw!r})')
 
     @property
     def value(self):
@@ -288,6 +292,10 @@ class MessageIO(object):
 
     def __enter__(self):
         logger.debug("MessageIO:enter")
+        return self.open()
+
+    def open(self):
+        logger.debug("MessageIO:open")
         with self._lock:
             if self._opened:
                 logger.error(f"already connected")
@@ -295,8 +303,6 @@ class MessageIO(object):
             self._plugin.open()
             self._opened = True
             return self
-
-    open = __enter__
 
     def __exit__(self, ex_type, ex_value, trace):
         logger.debug("MessageIO:exit")
@@ -328,44 +334,26 @@ class MessageIO(object):
         return self.params["value_type"]
 
 
-READER_USAGE = '''MessageReader(
-    service=SERVICE,                 # Service name defined in the configuration file. (REQUIRED)
-    topics=TOPICS,                   # The topic to receive.
-    consistency=AT_MOST_ONCE,        # consistency: AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE
-    client_id=DEFAULT_CLIENT_ID,     # If not specified, the value is automatically generated.
-    value_type=byte_array,           # The type of message.
-    value_deserializer=None          # If not specified, use default deserializer according to valueType.
-)'''
-
-
-class MessageReader(MessageIO):
-    registry = Registry("sinetstream.reader", PluginMessageReader)
-
-    @staticmethod
-    def usage():
-        return READER_USAGE
-
+class BaseMessageReader(MessageIO):
     default_params = {
         **default_params,
         "receive_timeout_ms": float("inf"),
     }
 
-    def __init__(self, service, topics=None, config_file=None, **kwargs):
-        logger.debug("MessageReader:init")
-        params = merge_parameter(service, kwargs, MessageReader.default_params, config_file=config_file)
+    def __init__(self, registry, service, topics=None, config_file=None, **kwargs):
+        params = merge_parameter(service, kwargs, BaseMessageReader.default_params, config_file=config_file)
         params["topics"] = _setup_topics(params, topics)
-        super().__init__(service, params, MessageReader.registry)
+        super().__init__(service, params, registry)
         self.unmarshaller = Unmarshaller()
         self.value_deserializer = self._setup_deserializer()
 
-    def __iter__(self):
-        logger.debug("MessageReader:iter")
-        self._iter = self._plugin.__iter__()
-        return self
+    @property
+    def topics(self):
+        return copy(self.params["topics"])
 
-    def __next__(self):
-        message, topic, raw = next(self._iter)
-        return self._make_message(message, topic, raw)
+    @property
+    def receive_timeout_ms(self):
+        return self.params["receive_timeout_ms"]
 
     def _make_message(self, value, topic, raw):
         assert type(value) == bytes
@@ -379,12 +367,6 @@ class MessageReader(MessageIO):
             value = self.value_deserializer(value)
         return Message(value, topic, tstamp, raw)
 
-    def seek_to_beginning(self):
-        self._plugin.seek_to_beginning()
-
-    def seek_to_end(self):
-        self._plugin.seek_to_end()
-
     def _setup_deserializer(self):
         if 'value_deserializer' in self.params:
             return self.params['value_deserializer']
@@ -394,13 +376,51 @@ class MessageReader(MessageIO):
             raise InvalidArgumentError(f'invalid value_type: {value_type}')
         return value_type_class().deserializer
 
-    @property
-    def topics(self):
-        return copy(self.params["topics"])
+    def seek_to_beginning(self):
+        self._plugin.seek_to_beginning()
 
-    @property
-    def receive_timeout_ms(self):
-        return self.params["receive_timeout_ms"]
+    def seek_to_end(self):
+        self._plugin.seek_to_end()
+
+
+READER_USAGE = '''MessageReader(
+    service=SERVICE,                 # Service name defined in the configuration file. (REQUIRED)
+    topics=TOPICS,                   # The topic to receive.
+    consistency=AT_MOST_ONCE,        # consistency: AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE
+    client_id=DEFAULT_CLIENT_ID,     # If not specified, the value is automatically generated.
+    value_type=byte_array,           # The type of message.
+    value_deserializer=None          # If not specified, use default deserializer according to valueType.
+)'''
+
+ASYNC_READER_USAGE = '''ASYNC_MessageReader(
+    service=SERVICE,                 # Service name defined in the configuration file. (REQUIRED)
+    topics=TOPICS,                   # The topic to receive.
+    consistency=AT_MOST_ONCE,        # consistency: AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE
+    client_id=DEFAULT_CLIENT_ID,     # If not specified, the value is automatically generated.
+    value_type=byte_array,           # The type of message.
+    value_deserializer=None          # If not specified, use default deserializer according to valueType.
+)'''
+
+
+class MessageReader(BaseMessageReader):
+    registry = Registry("sinetstream.reader", PluginMessageReader)
+
+    @staticmethod
+    def usage():
+        return READER_USAGE
+
+    def __init__(self, service, topics=None, config_file=None, **kwargs):
+        logger.debug("MessageReader:init")
+        super().__init__(MessageReader.registry, service, topics, config_file, **kwargs)
+
+    def __iter__(self):
+        logger.debug("MessageReader:iter")
+        self._iter = self._plugin.__iter__()
+        return self
+
+    def __next__(self):
+        message, topic, raw = next(self._iter)
+        return self._make_message(message, topic, raw)
 
 
 WRITER_USAGE = '''MessageWriter(
@@ -412,44 +432,32 @@ WRITER_USAGE = '''MessageWriter(
     value_serializer=None            # If not specified, use default serializer according to valueType.
 )'''
 
+ASYNC_WRITER_USAGE = '''AsyncMessageWriter(
+    service=SERVICE,                 # Service name defined in the configuration file. (REQUIRED)
+    topic=TOPIC,                     # The topic to send.
+    consistency=AT_MOST_ONCE,        # consistency: AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE
+    client_id=DEFAULT_CLIENT_ID,     # If not specified, the value is automatically generated.
+    value_type=byte_array,           # The type of message.
+    value_serializer=None            # If not specified, use default serializer according to valueType.
+)'''
 
-class MessageWriter(MessageIO):
 
-    registry = Registry("sinetstream.writer", PluginMessageWriter)
-
-    @staticmethod
-    def usage():
-        return WRITER_USAGE
-
+class BaseMessageWriter(MessageIO):
     default_params = {
         **default_params
     }
 
-    def __init__(self, service, topic=None, config_file=None, **kwargs):
+    def __init__(self, registry, service, topic=None, config_file=None, **kwargs):
         logger.debug("MessageWriter:init")
         params = merge_parameter(service, kwargs, MessageWriter.default_params, config_file=config_file)
         params["topic"] = _setup_topic(params, topic)
-        super().__init__(service, params, MessageWriter.registry)
+        super().__init__(service, params, registry)
         self.marshaller = Marshaller()
         self.value_serializer = self._setup_serializer()
 
     def publish(self, msg):
-        tstamp = int(time.time() * 1000000)
-        logger.debug(f"MessageWriter:publish:type(msg)={type(msg)}")
-        if self.value_serializer is not None:
-            msg = self.value_serializer(msg)
-            if type(msg) != bytes:
-                logger.error(f"value_serializer must return byte: type(msg)={type(msg)}")
-                raise InvalidMessageError("value_serializer doesn't return bytes")
-        else:
-            if type(msg) != bytes:
-                logger.error(f"value_serializer must be specified: type(msg)={type(msg)}")
-                raise InvalidMessageError("non-bytes message is passed to publish")
-        msg = self.marshaller.marshal(msg, tstamp)
-        if self.cipher:
-            msg = self.cipher.encrypt(msg)
-        assert type(msg) == bytes
-        return self._plugin.publish(msg)
+        tstamp = int(time.time() * 1000_000)
+        return self._plugin.publish(self._to_bytes(msg, tstamp))
 
     @property
     def topic(self):
@@ -463,6 +471,36 @@ class MessageWriter(MessageIO):
         if value_type_class is None:
             raise InvalidArgumentError(f'invalid value_type: {value_type}')
         return value_type_class().serializer
+
+    def _invalid_message(self, msg_type):
+        if self.value_serializer is not None:
+            logger.error(f"value_serializer must return byte: type(msg)={msg_type}")
+            return InvalidMessageError("value_serializer doesn't return bytes")
+        else:
+            logger.error(f"value_serializer must be specified: type(msg)={msg_type}")
+            return InvalidMessageError("non-bytes message is passed to publish")
+
+    def _to_bytes(self, msg, tstamp):
+        if self.value_serializer is not None:
+            msg = self.value_serializer(msg)
+        if type(msg) != bytes:
+            raise self._invalid_message(type(msg))
+        msg = self.marshaller.marshal(msg, tstamp)
+        if self.cipher:
+            msg = self.cipher.encrypt(msg)
+        assert type(msg) == bytes
+        return msg
+
+
+class MessageWriter(BaseMessageWriter):
+    registry = Registry("sinetstream.writer", PluginMessageWriter)
+
+    @staticmethod
+    def usage():
+        return WRITER_USAGE
+
+    def __init__(self, service, topic=None, config_file=None, **kwargs):
+        super().__init__(MessageWriter.registry, service, topic, config_file, **kwargs)
 
 
 def _setup_topic(params, topic):
@@ -497,3 +535,60 @@ def _setup_topics(params, topics):
     if isinstance(ret, list) and len(ret) == 0:
         raise InvalidArgumentError("You must specify several topics.")
     return ret
+
+
+class AsyncMessageWriter(BaseMessageWriter):
+    registry = Registry("sinetstream.async_writer", PluginAsyncMessageWriter)
+
+    @staticmethod
+    def usage():
+        return ASYNC_WRITER_USAGE
+
+    def __init__(self, service, topic=None, config_file=None, **kwargs):
+        super().__init__(AsyncMessageWriter.registry, service, topic, config_file, **kwargs)
+
+
+class AsyncMessageReader(BaseMessageReader):
+    registry = Registry("sinetstream.async_reader", PluginAsyncMessageReader)
+
+    @staticmethod
+    def usage():
+        return ASYNC_READER_USAGE
+
+    def __init__(self, service, topics=None, config_file=None, **kwargs):
+        logger.debug("AsyncMessageReader:init")
+        super().__init__(AsyncMessageReader.registry, service, topics, config_file, **kwargs)
+        self._executor = None
+        self._on_message = None
+
+    def open(self):
+        ret = super().open()
+        self._executor = ThreadPoolExecutor(max_workers=1)
+        return ret
+
+    def close(self):
+        super().close()
+        if self._executor is not None:
+            self._executor.shutdown()
+        self._executor = None
+
+    @property
+    def on_message(self):
+        return self._on_message
+
+    @on_message.setter
+    def on_message(self, on_message):
+        self._on_message = on_message
+
+        def callback(value, topic, raw):
+            self._on_message(self._make_message(value, topic, raw))
+
+        self._plugin.on_message = callback
+
+    @property
+    def on_failure(self):
+        return self._plugin.on_failure
+
+    @on_failure.setter
+    def on_failure(self, on_failure):
+        self._plugin.on_failure = on_failure

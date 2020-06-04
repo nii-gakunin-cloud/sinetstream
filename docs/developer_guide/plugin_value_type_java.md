@@ -1,3 +1,5 @@
+**準備中** (2020-06-04 18:27:50 JST)
+
 <!--
 Copyright (C) 2020 National Institute of Informatics
 
@@ -19,11 +21,13 @@ specific language governing permissions and limitations
 under the License.
 --->
 
+[English](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/developer_guide/plugin_value_type_java.html "google translate")
+
 # プラグイン開発ガイド(message type/ Java)
 
 * 新たなメッセージタイプをSINETStream (Java)で扱えるようにするためのプラグインを開発する手順について説明します。
 
-## はじめに
+## 1. はじめに
 
 SINETStream では設定ファイルあるいはコンストラクタのパラメータで指定する
 `value_type`の値に応じて、メッセージのシリアライズ、デシリアライズを行います。
@@ -48,13 +52,13 @@ SINETStream v1.1 では以下の `value_type` をサポートしています。
 新たなプラグインを実装することで、上記に示した`value_type`以外のタイプを
 SINETStreamのメッセージとして扱えるようになります。
 
-### 対象者
+### 1.1 対象者
 
 このドキュメントが対象としている読者を以下に示します。
 
 * SINETStreamで新たなメッセージタイプを利用できるようにしたい開発者
 
-### 前提知識
+### 1.2 前提知識
 
 このドキュメントの説明は、以下の知識を有している読者を前提としています。
 
@@ -62,9 +66,9 @@ SINETStreamのメッセージとして扱えるようになります。
 * [ServiceLoader](https://docs.oracle.com/javase/jp/8/docs/api/java/util/ServiceLoader.html)の利用方法
 * SINETStream の Java APIの利用方法、設定ファイルの記述方法
 
-## プラグインの実装方法
+## 2. プラグインの実装方法
 
-### 概要
+### 2.1 概要
 
 SINETStreamのプラグインを作成するためには以下の作業が必要となります。
 
@@ -73,7 +77,7 @@ SINETStreamのプラグインを作成するためには以下の作業が必要
 
 それぞれの作業項目の詳細について以下に記します。
 
-### プロバイダ構成ファイルの作成
+### 2.2 プロバイダ構成ファイルの作成
 
 プロバイダ構成ファイルにサービスプロバイダを登録することで、
 ServiceLoaderがプラグインを見つけることができるようになります。  
@@ -93,7 +97,7 @@ SINETStreamに`value_type`を追加するためのサービスプロバイダの
 jp.ad.sinet.stream.api.valuetype.ImageValueTypeProvider
 ```
 
-### サービスプロバイダの実装
+### 2.3 サービスプロバイダの実装
 
 `value_type`を追加するサービスプロバイダを作成するには、
 以下に示すインターフェースを実装したクラスが必要となります。
@@ -120,14 +124,14 @@ jp.ad.sinet.stream.api.valuetype.ImageValueTypeProvider
     * `value_type`のタイプを表す名前を返す
     
 
-## プラグインの実装例
+## 3. プラグインの実装例
 
 プラグイン実装の具体的な手順を示すために実装例を示します。
 
 ここでは `java.util.Map`のオブジェクトをSINETStreamのメッセージとして扱えるようにするための
 `value_type`プラグインを実装します。
 
-### ファイル構成
+### 3.1 ファイル構成
 
 以下のファイルを作成します。
 
@@ -140,11 +144,11 @@ jp.ad.sinet.stream.api.valuetype.ImageValueTypeProvider
 * build.gradle
 * settings.gradle
 
-### 実装クラス
+### 3.2 実装クラス
 
 プラグインとして実装するクラスについて説明します。
 
-#### MapTypeProviderクラス
+#### 3.2.1 MapTypeProviderクラス
 
 プラグインのプロバイダインタフェース`ValueTypeProvider`を実装したクラスになります。
 
@@ -167,7 +171,7 @@ public class MapTypeProvider implements ValueTypeProvider {
 }
 ```
 
-#### MapYamlTypeクラス
+#### 3.2.2 MapYamlTypeクラス
 
 このプラグインの`ValueType`実装になります。
 
@@ -198,7 +202,7 @@ class MapYamlType implements ValueType {
 `getName()`はvalue_typeのタイプ名を返します。
 `getSerializer()`, `getDeserializer()`はそれぞれシリアライザ、デシリアライザを返します。
 
-#### MapYamlSerializerクラス
+#### 3.2.3 MapYamlSerializerクラス
 
 `Map`のシリアライザの実装になります。`Map`をYAMLフォーマットのバイト列に変換する処理を行っています。
 
@@ -212,7 +216,7 @@ class MapYamlSerializer implements Serializer<Map> {
  }
 ```
 
-#### MapYamlDeserializerクラス
+#### 3.2.4 MapYamlDeserializerクラス
 
 `Map`のデシリアライザの実装になります。YAMLフォーマットのバイト列をMapに変換する処理を行っています。
 
@@ -226,7 +230,7 @@ class MapYamlDeserializer implements Deserializer<Map> {
 }
 ```
 
-### プロバイダ構成ファイルの作成
+### 3.3 プロバイダ構成ファイルの作成
 
 リソースディレクトリの`META-INF/services/`に構成ファイル`jp.ad.sinet.stream.spi.ValueTypeProvider`を以下の内容で作成します。
 
@@ -234,7 +238,7 @@ class MapYamlDeserializer implements Deserializer<Map> {
 ssplugin.MapTypeProvider
 ```
 
-### jarファイルの作成
+### 3.4 jarファイルの作成
 
 プラグインのjarファイルを作成する手順を以下に示します。
 
@@ -250,7 +254,7 @@ $ ls build/libs/
 SINETStream-type-map-yaml-1.0.0.jar
 ```
 
-### ソースコード
+### 3.5 ソースコード
 プラグインの実装例となるファイルへのリンクを以下に示します。
 
 * src/main/java/ssplugin/

@@ -1,3 +1,5 @@
+**準備中** (2020-06-04 18:27:50 JST)
+
 <!--
 Copyright (C) 2020 National Institute of Informatics
 
@@ -41,7 +43,7 @@ Specifically, one container is started in the execution environment of the tutor
 ### Prerequisite
 
 Docker Engine must be installed on the machine where you run the tutorial.
-You can find information about installing Docker Engine in [Links to Docker Engine installation instructions](index.md#links-to-docker-engine-installation-instructions).
+You can find information about installing Docker Engine in [Links to Docker Engine installation instructions](index.en.md#links-to-docker-engine-installation-instructions).
 
 ### Notational conventions
 

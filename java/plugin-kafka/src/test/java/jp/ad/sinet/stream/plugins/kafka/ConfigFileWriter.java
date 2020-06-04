@@ -27,6 +27,7 @@ import jp.ad.sinet.stream.api.MessageWriter;
 import jp.ad.sinet.stream.api.SinetStreamIOException;
 import jp.ad.sinet.stream.utils.MessageReaderFactory;
 import jp.ad.sinet.stream.utils.MessageWriterFactory;
+import lombok.extern.java.Log;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.junit.jupiter.api.io.TempDir;
@@ -34,199 +35,181 @@ import org.junit.jupiter.api.io.TempDir;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.util.*;
+import java.util.logging.Level;
 
 import static org.apache.commons.lang3.reflect.TypeUtils.isInstance;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-// @Log
-// @Slf4j
+@Log
 public abstract class ConfigFileWriter {
 
-	@TempDir
-	protected static Path tmpDir;
+    @TempDir
+    protected static Path tmpDir;
 
-	static final String SERVICE_TYPE = "kafka";
-	static final String CONFIG_NAME = ".sinetstream_config.yml";
-	static final String BROKER_HOST = "vcc3058.vcp-handson.org";
-	static final String BROKER_IP = "54.250.199.86";
-//	static final String invalidHost	= "vcc3058.vcp-handson.xxx";
-//	static final String invalidIP	= "54.250.199.250";
-	static final Object BROKERS;
-	
-	static private String module = "";
-	static private String method = "";
-	static private int testNo = 0;
+    static final String SERVICE_TYPE = "kafka";
+    private static final String CONFIG_NAME = ".sinetstream_config.yml";
 
-	static {
-		BROKERS = Collections.singletonList(System.getenv("KAFKA_BROKER"));
-	}
+    private static String method = "";
+    private static int testNo = 0;
 
-//	ConfigFileWriter() {
-//	}
+    protected Map<String, URL> certUrl = Collections.emptyMap();
 
-	/**
-	 * コンフィグをテンポラリに書き込む
-	 */
-	protected void writeConfigFile(List<String> lines) throws IOException {
+    /**
+     * コンフィグをテンポラリに書き込む
+     */
+    protected void writeConfigFile(List<String> lines) throws IOException {
 
-		// 試験番号を設定する
-		String c = Thread.currentThread().getStackTrace()[2].getClassName();
-		module = c.substring(c.lastIndexOf('.') + 1);
+        // 試験番号を設定する
+        String c = Thread.currentThread().getStackTrace()[2].getClassName();
+        String module = c.substring(c.lastIndexOf('.') + 1);
 
-	//	this.module = new Object(){}.getClass().getEnclosingClass().getName();
-	//	this.module = Thread.currentThread().getStackTrace()[2].getClassName();
-	//	this.module = this.getClass().getEnclosingClass().getName();
-		String m = Thread.currentThread().getStackTrace()[2].getMethodName();
+        String m = Thread.currentThread().getStackTrace()[2].getMethodName();
 
-		if (!method.equals(m)) {
-			method = m;
-			testNo = 0;
-		}
-		testNo++;
+        if (!method.equals(m)) {
+            method = m;
+            testNo = 0;
+        }
+        testNo++;
 
-		// キーファイル等を resources から TempDir にコピーする
-		for (String name: Arrays.asList("niica.p12", "client0.p12", "ca.pem", "client0.crt", "client0.key", "client1.crt", "client1.key")) {
-			Path path = this.getFilePath(name);
-			try (InputStream in = ConfigFileAware.class.getResourceAsStream("/cert/" + name)) {
-				Files.copy(in, path, StandardCopyOption.REPLACE_EXISTING);
-			}
-		}
+        // キーファイル等の MAP<ファイル名, 絶対パス> を作成する
+        Map<String, String> vars = new HashMap<>();
+        for (String name : certUrl.keySet()) {
+            Path path = name.endsWith(".p12") ? makeTempKeyStore(name) : makeTempPemFile(name);
+            vars.put(name, path.toAbsolutePath().normalize().toString());
+        }
 
-		// キーファイル等の MAP<ファイル名, 絶対パス> を作成する
-		Map<String, String> vars = new HashMap<>();
-		for (String name: Arrays.asList("niica.p12", "client0.p12", "ca.pem", "client0.crt", "client0.key", "client1.crt", "client1.key")) {
-			Path path = this.getFilePath(name);
-			vars.put(name, path.toAbsolutePath().normalize().toString());
-		}
+        // コンフィグに MAP の情報を埋め込む
+        System.out.println("--------------------------------------------------------");
+        System.out.println("■ " + module + "." + method + "() : Test No." + testNo);
+        try (BufferedWriter writer = Files.newBufferedWriter(this.getFilePath(CONFIG_NAME))) {
+            lines.stream().map(line -> {
+                StringSubstitutor ss = new StringSubstitutor(vars);
+                return ss.replace(line);
+            }).forEach(line -> {
+                try {
+                    System.out.println(line);
+                    writer.write(line);
+                    writer.newLine();
+                } catch (IOException e) {
+                    log.log(Level.FINE, "write config file", e);
+                    throw new SinetStreamIOException(e);
+                }
+            });
+        }
+    }
 
-		// コンフィグに MAP の情報を埋め込む
-		System.out.println("--------------------------------------------------------");
-		System.out.println("■ " + module + "." + method + "() : Test No." + testNo);
-		try (BufferedWriter writer = Files.newBufferedWriter(this.getFilePath(CONFIG_NAME))) {
-			lines.stream().map(line -> {
-				StringSubstitutor ss = new StringSubstitutor(vars);
-				return ss.replace(line);
-			}).forEach(line -> {
-				try {
-					System.out.println(line);
-					writer.write(line);
-					writer.newLine();
-				} catch (IOException e) {
-					System.out.println(e.toString());
-					throw new SinetStreamIOException(e);
-				}
-			});
-		}
-	}
+    private Path makeTempKeyStore(String filename) throws IOException {
+        Path path = Files.createTempFile(null, ".p12");
+        try (InputStream in = certUrl.get(filename).openStream()) {
+            Files.copy(in, path, StandardCopyOption.REPLACE_EXISTING);
+        }
+        path.toFile().deleteOnExit();
+        return path;
+    }
 
-	/**
-	 * 試験用の通信メソッド
-	 */
-	protected void execWriteRead(String service) {
+    private Path makeTempPemFile(String filename) throws IOException {
+        Path path = Files.createTempFile(null, ".pem");
+        try (InputStream in = certUrl.get(filename).openStream()) {
+            Files.copy(in, path, StandardCopyOption.REPLACE_EXISTING);
+        }
+        path.toFile().deleteOnExit();
+        return path;
+    }
 
-		// コンフィグパス取得
-		Path config = this.getFilePath(CONFIG_NAME);
+    /**
+     * 試験用の通信メソッド
+     */
+    protected void execWriteRead(String service) {
 
-		// ファクトリ初期化
-		MessageWriterFactory<String> writerBuilder =
-				MessageWriterFactory.<String>builder()
-					.config(config)
-					.service(service)
-					.build();
+        // コンフィグパス取得
+        Path config = this.getFilePath(CONFIG_NAME);
 
-		MessageReaderFactory<String> readerBuilder =
-				MessageReaderFactory.<String>builder()
-					.config(config)
-					.service(service)
-					.receiveTimeout(Duration.ofSeconds(1))
-					.build();
+        // ファクトリ初期化
+        MessageWriterFactory<String> writerBuilder =
+                MessageWriterFactory.<String>builder()
+                        .config(config)
+                        .service(service)
+                        .build();
 
-		// 正常に通信ができればＯＫ
-		try (MessageWriter<String> writer = writerBuilder.getWriter();
-			 MessageReader<String> reader = readerBuilder.getReader()) {
-			reader.read();
-			final String data = RandomStringUtils.randomAlphabetic(10);
-			writer.write(data);
-			Message<String> result = reader.read();
-			assertEquals(data, result.getValue());
-		}
-	}
+        MessageReaderFactory<String> readerBuilder =
+                MessageReaderFactory.<String>builder()
+                        .config(config)
+                        .service(service)
+                        .receiveTimeout(Duration.ofSeconds(1))
+                        .build();
 
-	/**
-	 * 試験実行
-	 */
-	protected void execTest(String service, Class<Throwable> expected) {
+        // 正常に通信ができればＯＫ
+        try (MessageWriter<String> writer = writerBuilder.getWriter();
+             MessageReader<String> reader = readerBuilder.getReader()) {
+            reader.read();
+            final String data = RandomStringUtils.randomAlphabetic(10);
+            writer.write(data);
+            Message<String> result = reader.read();
+            assertEquals(data, result.getValue());
+        }
+    }
 
-		// 試験を実行する
-		if (Objects.isNull(expected)) {
-			// 正常終了が予想される時
-			try {
-				this.execWriteRead(service);
+    /**
+     * 試験実行
+     */
+    protected void execTest(String service, Class<Throwable> expected) {
 
-				System.out.println("expected Normal End");
-				System.out.println("result   Normal End");
-				System.out.println("Test No." + testNo + ": OK");
-			} catch (Throwable e) {
-				System.out.println("expected Normal End");
-				System.out.println("result  " + e.toString());
-				System.out.println("Test No." + testNo + ": NG");
-				throw e;
-			}
-		} else {
-			// 異常終了が予想される時
-			assertThrows(expected, ()->{
-				try {
-					this.execWriteRead(service);
+        // 試験を実行する
+        if (Objects.isNull(expected)) {
+            // 正常終了が予想される時
+            try {
+                this.execWriteRead(service);
 
-					System.out.println("expected " + expected.toString().replace("class ",""));
-					System.out.println("result   Normal End");
-					System.out.println("Test No." + testNo + ": NG");
-				} catch (Throwable e) {
-					System.out.println("expected " + expected.toString().replace("class ",""));
-					System.out.println("result   " + e.toString());
-					System.out.println("Test No."  + testNo + ": " + ((isInstance(e, expected)) ? "OK" : "NG"));
-					throw e;
-				}
-			});
-		}
-	}
+                System.out.println("expected Normal End");
+                System.out.println("result   Normal End");
+                System.out.println("Test No." + testNo + ": OK");
+            } catch (Throwable e) {
+                System.out.println("expected Normal End");
+                System.out.println("result  " + e.toString());
+                System.out.println("Test No." + testNo + ": NG");
+                throw e;
+            }
+        } else {
+            // 異常終了が予想される時
+            assertThrows(expected, () -> {
+                try {
+                    this.execWriteRead(service);
 
-	/**
-	 * 指定されたフィアルを削除する
-	 */
-	protected void cleanupConfigFile(String filename) throws IOException {
-		Files.deleteIfExists(this.getFilePath(filename));
-	}
+                    System.out.println("expected " + expected.toString().replace("class ", ""));
+                    System.out.println("result   Normal End");
+                    System.out.println("Test No." + testNo + ": NG");
+                } catch (Throwable e) {
+                    System.out.println("expected " + expected.toString().replace("class ", ""));
+                    System.out.println("result   " + e.toString());
+                    System.out.println("Test No." + testNo + ": " + ((isInstance(e, expected)) ? "OK" : "NG"));
+                    throw e;
+                }
+            });
+        }
+    }
 
-	/**
-	 * 指定されたフィアルのパスを取得する
-	 */
-	protected Path getFilePath(String filename) {
-		return tmpDir.resolve(filename);
-	}
+    /**
+     * 指定されたフィアルのパスを取得する
+     */
+    private Path getFilePath(String filename) {
+        return tmpDir.resolve(filename);
+    }
 
-	/**
-	 * トピックを作成する (ラベル指定なし)
-	 */
-	protected String getTopic() {
-		// ラベルを付与しないトピック名を生成する
-		return this.getTopic(null);
-	}
-
-	/**
-	 * トピックを作成する (ラベル指定あり)
-	 */
-	protected String getTopic(String label) {
-		// ラベルを付与したトピック名を生成する
-		return	"topic-"
-				+ SERVICE_TYPE + "-"
-				+ (label == null ? "" : (label + "-"))
-				+ RandomStringUtils.randomNumeric(5);
-	}
+    /**
+     * トピックを作成する (ラベル指定あり)
+     */
+    protected String getTopic(String label) {
+        // ラベルを付与したトピック名を生成する
+        return "topic-"
+                + SERVICE_TYPE + "-"
+                + (label == null ? "" : (label + "-"))
+                + RandomStringUtils.randomNumeric(5);
+    }
 }

@@ -29,6 +29,7 @@ import org.apache.commons.beanutils.PropertyUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Log
 public class SinetStreamIO<T extends PluginMessageIO> {
@@ -47,6 +48,8 @@ public class SinetStreamIO<T extends PluginMessageIO> {
 
     protected final T target;
 
+    private final AtomicBoolean closed = new AtomicBoolean(false);
+
     public SinetStreamIO(SinetStreamParameters parameters, T target) {
         this.target = target;
         this.config = new PluginWrapperMap(parameters.getConfig());
@@ -64,7 +67,9 @@ public class SinetStreamIO<T extends PluginMessageIO> {
     }
 
     public void close() {
-        target.close();
+        if (!closed.getAndSet(true)) {
+            target.close();
+        }
     }
 
     @SuppressWarnings("NullableProblems")

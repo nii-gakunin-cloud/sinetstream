@@ -30,14 +30,17 @@ version = '1.1.0'
 
 repositories {
     jcenter()
+    maven {
+        url  "https://dl.bintray.com/nii-gakunin-cloud/maven"
+    }
 }
 
 dependencies {
     implementation 'commons-cli:commons-cli:1.4'
-    implementation 'jp.ad.sinet.sinetstream:SINETStream-api:1.1.+'
-    implementation 'jp.ad.sinet.sinetstream:SINETStream-kafka:1.1.+'
-    implementation 'jp.ad.sinet.sinetstream:SINETStream-mqtt:1.1.+'
-    implementation 'jp.ad.sinet.sinetstream:SINETStream-type-image:1.1.+'
+    implementation 'jp.ad.sinet.sinetstream:SINETStream-api:1.+'
+    implementation 'jp.ad.sinet.sinetstream:SINETStream-kafka:1.+'
+    implementation 'jp.ad.sinet.sinetstream:SINETStream-mqtt:1.+'
+    implementation 'jp.ad.sinet.sinetstream:SINETStream-type-image:1.+'
     implementation group: 'org.bytedeco', name: 'javacv-platform', version: '1.5.2'
     runtimeOnly 'org.slf4j:slf4j-nop:1.7.30'
 }

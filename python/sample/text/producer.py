@@ -21,6 +21,7 @@
 
 from argparse import ArgumentParser
 from sys import stdin, stderr
+
 from sinetstream import MessageWriter
 
 

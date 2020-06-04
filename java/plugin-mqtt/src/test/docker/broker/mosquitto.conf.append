@@ -1,0 +1,5 @@
+persistence true
+persistence_location /var/lib/mosquitto/
+per_listener_settings true
+
+include_dir /etc/mosquitto/conf.d

@@ -23,10 +23,7 @@ package jp.ad.sinet.stream.utils;
 
 import jp.ad.sinet.stream.api.*;
 import jp.ad.sinet.stream.api.valuetype.SimpleValueType;
-import jp.ad.sinet.stream.spi.CryptoProvider;
-import jp.ad.sinet.stream.spi.MessageWriterProvider;
-import jp.ad.sinet.stream.spi.PluginMessageWriter;
-import jp.ad.sinet.stream.spi.WriterParameters;
+import jp.ad.sinet.stream.spi.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Singular;
@@ -109,6 +106,26 @@ public class MessageWriterFactory<T> {
         WriterParameters params = new WriterParameters(this);
         PluginMessageWriter pluginWriter = provider.getWriter(params);
         return new SinetStreamMessageWriter<>(pluginWriter, params, serializer);
+    }
+
+    @SuppressWarnings("unchecked")
+    public AsyncMessageWriter<T> getAsyncWriter() {
+        setupServiceParameters();
+        ProviderUtils<AsyncMessageWriterProvider> util = new ProviderUtils<>(AsyncMessageWriterProvider.class);
+        try {
+            AsyncMessageWriterProvider provider = util.getProvider(parameters);
+            if (dataEncryption) {
+                CryptoProvider cryptoProvider = util.getCryptoProvider(parameters);
+                Optional.ofNullable(parameters.get("crypto"))
+                        .filter(Map.class::isInstance).map(Map.class::cast)
+                        .ifPresent(params -> params.put("provider", cryptoProvider.getCrypto(params)));
+            }
+            WriterParameters params = new WriterParameters(this);
+            PluginAsyncMessageWriter pluginWriter = provider.getAsyncWriter(params);
+            return new SinetStreamAsyncMessageWriter<>(pluginWriter, params, serializer);
+        } catch (UnsupportedServiceTypeException e) {
+            return new SinetStreamAsyncWrapperMessageWriter<>(getWriter());
+        }
     }
 
     private void setupServiceParameters() {

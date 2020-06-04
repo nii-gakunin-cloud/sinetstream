@@ -20,18 +20,28 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import collections
 import os
+from collections import defaultdict
+from concurrent.futures.thread import ThreadPoolExecutor
 from logging import getLogger
+from math import inf
 from pathlib import Path
+from queue import Queue, Empty
+from random import choices
+from string import ascii_letters
 
 import pytest
-import sinetstream
 import yaml
-from sinetstream.spi import PluginMessageReader, PluginMessageWriter
+from promise import Promise
 
-que = None
+import sinetstream
+from sinetstream.spi import (
+    PluginMessageReader, PluginMessageWriter, PluginAsyncMessageReader,
+    PluginAsyncMessageWriter,
+)
+
 logger = getLogger(__name__)
+que = defaultdict(Queue)
 SERVICE = 'service-1'
 TOPIC = 'mss-test-001'
 TOPIC2 = 'mss-test-002'
@@ -40,17 +50,14 @@ BROKER = 'broker'
 
 
 def qwrite(topic, value):
+    global que
     assert type(value) is bytes
-    que[topic].append(value)
+    que[topic].put(value)
 
 
-def qread(topic):
-    if topic not in que:
-        return None
-    q = que[topic]
-    if len(q) == 0:
-        return None
-    return q.popleft()
+def qread(topic, timeout=None):
+    global que
+    return que[topic].get(timeout=timeout)
 
 
 def qedit(topic, nque):
@@ -63,6 +70,10 @@ def qedit(topic, nque):
 class DummyReader(PluginMessageReader):
     def __init__(self, params):
         self._params = params
+        self._timeout = (
+            self._params['receive_timeout_ms'] / 1000.0
+            if self._params['receive_timeout_ms'] != inf
+            else None)
 
     def open(self):
         pass
@@ -78,11 +89,12 @@ class DummyReader(PluginMessageReader):
         if type(topics) != list:
             topics = [topics]
         for topic in topics:
-            value = qread(topic)
-            if value is not None:
+            try:
+                value = qread(topic, timeout=self._timeout)
                 raw = {"topic": topic, "value": value}
                 return value, topic, raw
-        raise StopIteration()
+            except Empty:
+                raise StopIteration()
 
 
 class DummyReaderEntryPoint(object):
@@ -91,15 +103,70 @@ class DummyReaderEntryPoint(object):
         return DummyReader
 
 
+class DummyAsyncReader(PluginAsyncMessageReader):
+
+    def __init__(self, params):
+        self._params = params
+        self._executor = None
+        self._reader_executor = None
+        self._on_message = None
+        self._closed = True
+
+    def open(self):
+        self._closed = False
+        self._reader_executor = ThreadPoolExecutor(max_workers=1)
+        self._reader_executor.submit(self._read_messages)
+        self._executor = ThreadPoolExecutor()
+
+    def close(self):
+        self._closed = True
+        if self._reader_executor is not None:
+            self._reader_executor.shutdown()
+        self._reader_executor = None
+        if self._executor is not None:
+            self._executor.shutdown()
+        self._executor = None
+
+    def _read_messages(self):
+        topics = self._params.get("topics")
+        if type(topics) != list:
+            topics = [topics]
+        while not self._closed:
+            for topic in topics:
+                try:
+                    value = qread(topic, timeout=0.1)
+                except Empty:
+                    continue
+                raw = {"topic": topic, "value": value}
+                self._executor.submit(self._on_message, value, topic, raw)
+
+    @property
+    def on_message(self):
+        return self._on_message
+
+    @on_message.setter
+    def on_message(self, on_message):
+        self._on_message = on_message
+
+    @property
+    def on_failure(self):
+        pass
+
+
+class DummyAsyncReaderEntryPoint(object):
+    @classmethod
+    def load(cls):
+        return DummyAsyncReader
+
+
 @pytest.fixture(scope='session')
 def dummy_reader_plugin():
     sinetstream.MessageReader.registry.register(SERVICE_TYPE, DummyReaderEntryPoint)
+    sinetstream.AsyncMessageReader.registry.register(SERVICE_TYPE, DummyAsyncReaderEntryPoint)
 
 
 class DummyWriter(PluginMessageWriter):
     def __init__(self, params):
-        global que
-        que = collections.defaultdict(collections.deque)
         self._params = params
 
     def open(self):
@@ -118,9 +185,34 @@ class DummyWriterEntryPoint(object):
         return DummyWriter
 
 
+class DummyAsyncWriter(PluginAsyncMessageWriter):
+    def __init__(self, params):
+        self._params = params
+        self._executor = None
+
+    def open(self):
+        self._executor = ThreadPoolExecutor()
+
+    def close(self):
+        if self._executor is not None:
+            self._executor.shutdown()
+            self._executor = None
+
+    def publish(self, value):
+        future = self._executor.submit(qwrite, self._params.get("topic"), value)
+        return Promise.cast(future)
+
+
+class DummyAsyncWriterEntryPoint(object):
+    @classmethod
+    def load(cls):
+        return DummyAsyncWriter
+
+
 @pytest.fixture(scope='session')
 def dummy_writer_plugin():
     sinetstream.MessageWriter.registry.register(SERVICE_TYPE, DummyWriterEntryPoint)
+    sinetstream.AsyncMessageWriter.registry.register(SERVICE_TYPE, DummyAsyncWriterEntryPoint)
 
 
 @pytest.fixture()
@@ -130,7 +222,7 @@ def config_brokers():
 
 @pytest.fixture()
 def config_topic():
-    return TOPIC
+    return ''.join(choices(ascii_letters, k=10))
 
 
 @pytest.fixture()
