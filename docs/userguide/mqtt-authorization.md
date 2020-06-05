@@ -21,7 +21,7 @@ under the License.
 
 [English](mqtt-authorization.en.md)
 
-**準備中** (2020-06-05 18:05:13 JST)
+**準備中** (2020-06-05 18:35:01 JST)
 
 # SINETStreamから認可の設定が行われているMQTTブローカーを利用する
 

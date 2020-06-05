@@ -19,7 +19,7 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-**準備中** (2020-06-05 18:05:13 JST)
+**準備中** (2020-06-05 18:35:01 JST)
 
 # SINETStream example
 

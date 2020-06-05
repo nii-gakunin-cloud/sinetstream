@@ -21,7 +21,7 @@ under the License.
 
 [日本語](kafka-authentication-sasl-scram.md)
 
-**準備中** (2020-06-05 18:05:13 JST)
+**準備中** (2020-06-05 18:35:01 JST)
 
 # How to use a Kafka broker with SASL/SCRAM authentication
 

@@ -21,7 +21,7 @@ under the License.
 
 [English](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/developer_guide/plugin_broker_java.html "google translate")
 
-**準備中** (2020-06-05 18:05:13 JST)
+**準備中** (2020-06-05 18:35:01 JST)
 
 # プラグイン開発ガイド(Messaging system / Java)
 

@@ -21,7 +21,7 @@ under the License.
 
 [English](index.en.md)
 
-**準備中** (2020-06-05 18:05:13 JST)
+**準備中** (2020-06-05 18:35:01 JST)
 
 # SINETStream性能測定結果
 
