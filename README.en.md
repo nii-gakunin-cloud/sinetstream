@@ -1,4 +1,4 @@
-**準備中** (2020-06-04 18:27:50 JST)
+**準備中** (2020-06-05 14:26:44 JST)
 
 <!--
 Copyright (C) 2020 National Institute of Informatics
@@ -77,7 +77,7 @@ Writers and Readers send/receive a message specifying a topic, allowing differen
     * tutorial/
         * [Tutorial](docs/tutorial/index.en.md)
     * developer_guide/
-	* [Developer guide](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/developer_guide/index.html)
+        * [Developer guide](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/developer_guide/index.html)
 
 ## Operating environment
 

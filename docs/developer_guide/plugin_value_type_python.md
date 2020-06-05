@@ -1,4 +1,4 @@
-**準備中** (2020-06-04 18:27:50 JST)
+**準備中** (2020-06-05 14:26:44 JST)
 
 <!--
 Copyright (C) 2020 National Institute of Informatics
@@ -32,7 +32,7 @@ under the License.
 SINETStream では設定ファイルあるいはコンストラクタのパラメータで指定する
 `value_type`の値に応じて、メッセージのシリアライズ、デシリアライズを行います。
 
-SINETStream v1.1 では以下の `value_type` をサポートしています。
+SINETStream v1.1 以降では以下の `value_type` をサポートしています。
 
 * `byte_array`
     * `bytes`型のメッセージに対応するタイプ

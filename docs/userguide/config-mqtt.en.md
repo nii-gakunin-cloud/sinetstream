@@ -1,4 +1,4 @@
-**準備中** (2020-06-04 18:27:50 JST)
+**準備中** (2020-06-05 14:26:44 JST)
 
 <!--
 Copyright (C) 2020 National Institute of Informatics
@@ -46,37 +46,37 @@ SINETStream User Guide
 * ws_set_options
     * Options for the WebSocket connection.
     * The following parameters can be specified.
-	* path
-	    * The WebSocket path.
-	* headers
-	    * The additional header to the standard WebSocket header. Specify by a mapping.
+        * path
+            * The WebSocket path.
+        * headers
+            * The additional header to the standard WebSocket header. Specify by a mapping.
 * tls_set
     * Parameters for TLS connection. Specify by a mapping.
     * The following parameters can be specified.
-	* ca_certs
-	    * The path of the CA certificate file (PEM).
-	* certfile
-	    * The path of the client certificate file (PEM).
-	* keyfile
-	    * The path of the private key file of the client certificate (PEM).
-	* keyfilePassword
-	    * The password of the private key file of the client certificate (PEM).
-	* tls_version
-	    * The TLS protocol version.
-	* ciphers
-	    * The ciphers allowed for this connection.
-	* trustStore (*)
-	    * The path of the trust store.
-	* trustStoreType (*)
-	    * The file format of the trust store, e.g., jks, pkcs12, etc.
-	* trustStorePassword (*)
-	    * The password of the trust store.
-	* keyStore (*)
-	    * The path of the keyStore.
-	* keyStoreType (*)
-	    * The file format of the keyStore, e.g., jks, pkcs12, etc.
-	* keyStorePassword (*)
-	    * The password of the keyStore.
+        * ca_certs
+            * The path of the CA certificate file (PEM).
+        * certfile
+            * The path of the client certificate file (PEM).
+        * keyfile
+            * The path of the private key file of the client certificate (PEM).
+        * keyfilePassword
+            * The password of the private key file of the client certificate (PEM).
+        * tls_version
+            * The TLS protocol version.
+        * ciphers
+            * The ciphers allowed for this connection.
+        * trustStore (*)
+            * The path of the trust store.
+        * trustStoreType (*)
+            * The file format of the trust store, e.g., jks, pkcs12, etc.
+        * trustStorePassword (*)
+            * The password of the trust store.
+        * keyStore (*)
+            * The path of the keyStore.
+        * keyStoreType (*)
+            * The file format of the keyStore, e.g., jks, pkcs12, etc.
+        * keyStorePassword (*)
+            * The password of the keyStore.
 > (*) `trustStore`, `trustStoreType`, `trustStorePassword`, `keyStore`, `keyStoreType`, `keyStorePassword`, and `keyfilePassword`
 > are valid only in the Java API.
 * tls_insecure_set
@@ -86,32 +86,32 @@ SINETStream User Guide
 * username_pw_set
     * The user and the password for authentication. Specify by a mapping.
     * The following parameters can be specified.
-	* username
-	* password
+        * username
+        * password
 * will_set
     * Parameters related to Last Will and Testament (LWT). Specify by a mapping.
     * If the client is disconnected unexpectedly, instead the broker issues the message set in LWT.
     * The following parameters can be specified.
-	* topic (required)
-	* payload (required)
-	* qos
-	* retain
+        * topic (required)
+        * payload (required)
+        * qos
+        * retain
 * reconnect_delay_set
     * Parameters related to the waiting time before reconnecting. Specify by a mapping.
     * The following parameters can be specified.
-	* max_delay
-	    * Maximum waiting time (in seconds).
-	* min_delay
-	    * Minimum waiting time (in seconds).
+        * max_delay
+            * Maximum waiting time (in seconds).
+        * min_delay
+            * Minimum waiting time (in seconds).
 * connect
     * Connection parameters. Specify by a mapping.
     * The following parameters can be specified.
-	* keepalive
-	    * The keep alive interval (in seconds).
-	* automatic_reconnect (*)
-	    * Whether to automatically reconnect when connection is lost.
-	* connection_timeout (*)
-	    * The timeout value of connection (in seconds).
+        * keepalive
+            * The keep alive interval (in seconds).
+        * automatic_reconnect (*)
+            * Whether to automatically reconnect when connection is lost.
+        * connection_timeout (*)
+            * The timeout value of connection (in seconds).
 > (*) `automatic_reconnect` and `connection_timeout`
 > are valid only in the Java API.
 

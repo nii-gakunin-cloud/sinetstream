@@ -1,4 +1,4 @@
-**準備中** (2020-06-04 18:27:50 JST)
+**準備中** (2020-06-05 14:26:44 JST)
 
 <!--
 Copyright (C) 2019 National Institute of Informatics

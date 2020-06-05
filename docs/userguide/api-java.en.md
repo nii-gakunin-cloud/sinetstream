@@ -1,4 +1,4 @@
-**準備中** (2020-06-04 18:27:50 JST)
+**準備中** (2020-06-05 14:26:44 JST)
 
 <!--
 Copyright (C) 2020 National Institute of Informatics
@@ -157,7 +157,7 @@ The following parameters can be specified in the builder class.
         * Set `SimpleValueType.BYTE_ARRAY` (default) to treat the payload as `byte[]`.
         * Set `SimpleValueType.TEXT` to treat the payload as `java.lang.String`.
     * When using a plugin pacakge, other types may be supported.
-    * When using the image type plugin provided with SINETStream v1.1, the following type is supported.
+    * When using the image type plugin provided with SINETStream v1.1 (or later) , the following type is supported.
         * Set `new ValueTypeFactory().get("image")` to treat the payload as `java.awt.image.BufferedImage`.
 * serializer(Serializer\<T\>)
     * Message serializer.
@@ -228,7 +228,7 @@ The following parameters can be specified in the builder class.
         * Set `SimpleValueType.BYTE_ARRAY` (default) to treat the payload as `byte[]`.
         * Set `SimpleValueType.TEXT` to treat the payload as `java.lang.String`.
     * When using a plugin pacakge, other types may be supported.
-    * When using the image type plugin provided with SINETStream v1.1, the following type is supported.
+    * When using the image type plugin provided with SINETStream v1.1 (or later), the following type is supported.
         * Set `new ValueTypeFactory().get("image")` to treat the payload as `java.awt.image.BufferedImage`.
 * deserializer(Serializer\<T\>)
     * Message deserializer.

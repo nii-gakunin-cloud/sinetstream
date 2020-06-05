@@ -1,4 +1,4 @@
-**準備中** (2020-06-04 18:27:50 JST)
+**準備中** (2020-06-05 14:26:44 JST)
 
 <!--
 Copyright (C) 2020 National Institute of Informatics
@@ -165,7 +165,7 @@ If a parameter is not specified in the API function, the value specified in the 
         * `text`
             * Set `"text"` to treat the payload as `str`.
     * When using a plugin pacakge, other type names may be supported.
-    * When using the image type plugin provided with SINETStream v1.1, the following type name is supported.
+    * When using the image type plugin provided with SINETStream v1.1 (or later), the following type name is supported.
         * Set `"image"` to treat the payload as `numpy.ndarray`, which is the image data type in OpenCV.
         * The color order in `numpy.ndarray` is BGR, which is consistent with OpenCV.
 * value_serializer

@@ -1,4 +1,4 @@
-**準備中** (2020-06-04 18:27:50 JST)
+**準備中** (2020-06-05 14:26:44 JST)
 
 <!--
 Copyright (C) 2019 National Institute of Informatics
@@ -178,7 +178,7 @@ MessageReader(
         * `"byte_array"`(デフォルト値)を指定した場合、ペイロードの型は `bytes` となる
         * `"text"`を指定した場合、ペイロードの型は `str` となる
     * 追加パッケージをインストールすることにより、`value_type`に指定できるタイプ名を増やすことができる
-        * SINETStream v1.1 では画像タイプを追加するパッケージを提供している
+        * SINETStream v1.1 以降では画像タイプを追加するパッケージを提供している
         * 追加されるタイプ名は `"image"` となる
         * `"image"`を指定し当た場合、ペイロードの型は `numpy.ndarray`（OpenCVの画像データ） となる
         * `numpy.ndarray`の画像データにおける色順序は OpenCV のもの（青、緑、赤）となる
@@ -199,7 +199,7 @@ MessageReader(
 `service` 以外の引数は、設定ファイルにデフォルト値を記述することができる。
 設定ファイルとコンストラクタの引数の両方に同じパラメータの値を指定した場合は、コンストラクタの引数に指定した値が優先する。
 
-**制限事項: SINETStream v1.1 では、Kafka の `consistency` に `EXACTLY_ONCE` を指定しても `AT_LEAST_ONCE` にダウングレードする。**
+**制限事項: Kafka の `consistency` に `EXACTLY_ONCE` を指定しても `AT_LEAST_ONCE` にダウングレードする。**
 
 ##### 例外
 
@@ -303,7 +303,7 @@ AsyncMessageReader(
         * `"byte_array"`(デフォルト値)を指定した場合、ペイロードの型は `bytes` となる
         * `"text"`を指定した場合、ペイロードの型は `str` となる
     * 追加パッケージをインストールすることにより、`value_type`に指定できるタイプ名を増やすことができる
-        * SINETStream v1.1 では画像タイプを追加するパッケージを提供している
+        * SINETStream v1.1 以降では画像タイプを追加するパッケージを提供している
         * 追加されるタイプ名は `"image"` となる
         * `"image"`を指定し当た場合、ペイロードの型は `numpy.ndarray`（OpenCVの画像データ） となる
         * `numpy.ndarray`の画像データにおける色順序は OpenCV のもの（青、緑、赤）となる
@@ -321,7 +321,7 @@ AsyncMessageReader(
 `service` 以外の引数は、設定ファイルにデフォルト値を記述することができる。
 設定ファイルとコンストラクタの引数の両方に同じパラメータの値を指定した場合は、コンストラクタの引数に指定した値が優先する。
 
-**制限事項: SINETStream v1.1 では、Kafka の `consistency` に `EXACTLY_ONCE` を指定しても `AT_LEAST_ONCE` にダウングレードする。**
+**制限事項: Kafka の `consistency` に `EXACTLY_ONCE` を指定しても `AT_LEAST_ONCE` にダウングレードする。**
 
 ##### 例外
 
@@ -363,7 +363,7 @@ AsyncMessageReader(
 メッセージングシステムのブローカーとの通信を切断する。通常は明示的に呼び出すことはなく AsyncMessageReaderをwith文で
 用いた場合に、暗黙的に呼び出されることを想定している。
 
-#### プロパティ: `MessageReader.on_message`
+#### プロパティ: `AsyncMessageReader.on_message`
 
 メッセージを受信した際に呼び出されるコールバック関数を設定する。
 
@@ -410,7 +410,7 @@ MessageWriterクラスのコンストラクタ。
         * `"byte_array"`(デフォルト値)を指定した場合、ペイロードの型は `bytes` となる
         * `"text"`を指定した場合、ペイロードの型は `str` となる
     * 追加パッケージをインストールすることにより、`value_type`に指定できるタイプ名を増やすことができる
-        * SINETStream v1.1 では画像タイプを追加するパッケージを提供している
+        * SINETStream v1.1 以降では画像タイプを追加するパッケージを提供している
         * 追加されるタイプ名は `"image"` となる
         * `"image"`を指定し当た場合、ペイロードの型は `numpy.ndarray` （OpenCVの画像データ）となる
         * `numpy.ndarray`の画像データにおける色順序は OpenCV のもの（青、緑、赤）となる
@@ -428,7 +428,7 @@ MessageWriterクラスのコンストラクタ。
 `service` 以外の引数は、設定ファイルにデフォルト値を記述することができる。
 設定ファイルとコンストラクタの引数の両方に同じパラメータの値を指定した場合はコンストラクタの引数に指定した値が優先する。
 
-**制限事項: SINETStream v1.1 では、Kafka の `consistency` に `EXACTLY_ONCE` を指定しても `AT_LEAST_ONCE` にダウングレードする。**
+**制限事項: Kafka の `consistency` に `EXACTLY_ONCE` を指定しても `AT_LEAST_ONCE` にダウングレードする。**
 
 ##### 例外
 
@@ -535,7 +535,7 @@ AsyncMessageWriterクラスのコンストラクタ。
         * `"byte_array"`(デフォルト値)を指定した場合、ペイロードの型は `bytes` となる
         * `"text"`を指定した場合、ペイロードの型は `str` となる
     * 追加パッケージをインストールすることにより、`value_type`に指定できるタイプ名を増やすことができる
-        * SINETStream v1.1 では画像タイプを追加するパッケージを提供している
+        * SINETStream v1.1 以降では画像タイプを追加するパッケージを提供している
         * 追加されるタイプ名は `"image"` となる
         * `"image"`を指定し当た場合、ペイロードの型は `numpy.ndarray` （OpenCVの画像データ）となる
         * `numpy.ndarray`の画像データにおける色順序は OpenCV のもの（青、緑、赤）となる
@@ -553,7 +553,7 @@ AsyncMessageWriterクラスのコンストラクタ。
 `service` 以外の引数は、設定ファイルにデフォルト値を記述することができる。
 設定ファイルとコンストラクタの引数の両方に同じパラメータの値を指定した場合はコンストラクタの引数に指定した値が優先する。
 
-**制限事項: SINETStream v1.1 では、Kafka の `consistency` に `EXACTLY_ONCE` を指定しても `AT_LEAST_ONCE` にダウングレードする。**
+**制限事項: Kafka の `consistency` に `EXACTLY_ONCE` を指定しても `AT_LEAST_ONCE` にダウングレードする。**
 
 ##### 例外
 

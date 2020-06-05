@@ -1,4 +1,4 @@
-**準備中** (2020-06-04 18:27:50 JST)
+**準備中** (2020-06-05 14:26:44 JST)
 
 <!--
 Copyright (C) 2019 National Institute of Informatics
@@ -164,7 +164,7 @@ try (MessageReader<String> reader = factory.getReader()) {
         * `SimpleValueType.BYTE_ARRAY`(デフォルト値)を指定した場合、ペイロードの型は `byte[]` として処理する
         * `SimpleValueType.TEXT`を指定した場合、ペイロードの型は `java.lang.String` として処理する
     * 追加パッケージをインストールすることにより、サポートする`ValueType`の種類を増やすことができる
-        * SINETStream v1.1 では画像タイプを追加するパッケージを提供している
+        * SINETStream v1.1 以降では画像タイプを追加するパッケージを提供している
         * 画像タイプを指定する場合は`valueType()`の引数に `new ValueTypeFactory().get("image")` を設定する
         * 画像タイプを指定した場合、ペイロードの型は `java.awt.image.BufferedImage` として処理する
 * serializer(Serializer\<T\>)
@@ -270,7 +270,7 @@ try (AsyncMessageWriter<String> writer = factory.getAsyncWriter()) {
         * `SimpleValueType.BYTE_ARRAY`(デフォルト値)を指定した場合、ペイロードの型は `byte[]` として処理する
         * `SimpleValueType.TEXT`を指定した場合、ペイロードの型は `java.lang.String` として処理する
     * 追加パッケージをインストールすることにより、サポートする`ValueType`の種類を増やすことができる
-        * SINETStream v1.1 では画像タイプを追加するパッケージを提供している
+        * SINETStream v1.1 以降では画像タイプを追加するパッケージを提供している
         * 画像タイプを指定する場合は`valueType()`の引数に `new ValueTypeFactory().get("image")` を設定する
         * 画像タイプを指定した場合、ペイロードの型は `java.awt.image.BufferedImage` として処理する
 * deserializer(Serializer\<T\>)

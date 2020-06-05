@@ -1,4 +1,4 @@
-**準備中** (2020-06-04 18:27:50 JST)
+**準備中** (2020-06-05 14:26:44 JST)
 
 <!--
 Copyright (C) 2020 National Institute of Informatics
@@ -170,7 +170,7 @@ MessageReader(
         * Set `"byte_array"` (default) to treat the payload as `bytes`.
         * Set `"text"` to treat the payload as `str`.
     * When using a plugin pacakge, other type names may be supported.
-    * When using the image type plugin provided with SINETStream v1.1, the following type name is supported.
+    * When using the image type plugin provided with SINETStream v1.1 (or later), the following type name is supported.
         * Set `"image"` to treat the payload as `numpy.ndarray`, which is the image data type in OpenCV.
         * The color order in `numpy.ndarray` is BGR, which is consistent with OpenCV.
 * value_deserializer
@@ -190,7 +190,7 @@ Please refer to the [Messaging system-specific parameters](#messaging-system-spe
 For the arguments other than `service`, their default values can be specified in the configuration file.
 If the same parameter is specified in both the configuration file and the constructor argument, the value specified in the constructor argument takes precedence.
 
-** Limitation: SINETStream v1.1 downgrades to `AT_LEAST_ONCE` even if `EXACTLY_ONCE` is specified for Kafka `consistency`. **
+** Limitation: SINETStream downgrades to `AT_LEAST_ONCE` even if `EXACTLY_ONCE` is specified for Kafka `consistency`. **
 
 ##### Exception
 
@@ -292,7 +292,7 @@ The constructor of MessageWriter class
         * Set `"byte_array"` (default) to treat the payload as `bytes`.
         * Set `"text"` to treat the payload as `str`.
     * When using a plugin pacakge, other type names may be supported.
-    * When using the image type plugin provided with SINETStream v1.1, the following type name is supported.
+    * When using the image type plugin provided with SINETStream v1.1 or laster, the following type name is supported.
         * Set `"image"` to treat the payload as `numpy.ndarray`, which is the image data type in OpenCV.
         * The color order in `numpy.ndarray` is BGR, which is consistent with OpenCV.
 * value_serializer
@@ -309,7 +309,7 @@ Please refer to the [Messaging system-specific parameters](#messaging-system-spe
 For the arguments other than `service`, their default values can be specified in the configuration file.
 If the same parameter is specified in both the configuration file and the constructor argument, the value specified in the constructor argument takes precedence.
 
-** Limitations: SINETStream v1.1 downgrades to `AT_LEAST_ONCE` even if `EXACTLY_ONCE` is specified for Kafka `consistency`. **
+** Limitations: SINETStream downgrades to `AT_LEAST_ONCE` even if `EXACTLY_ONCE` is specified for Kafka `consistency`. **
 
 ##### Exception
 
