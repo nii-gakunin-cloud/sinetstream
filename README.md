@@ -1,5 +1,3 @@
-**準備中** (2020-06-05 14:26:44 JST)
-
 ---
 permalink: README.html
 ---
@@ -25,6 +23,8 @@ under the License.
 --->
 
 [English](README.en.md)
+
+**準備中** (2020-06-05 18:05:13 JST)
 
 ## メッセージングシステムの概念
 
@@ -126,6 +126,7 @@ dockerコンテナをつかった[チュートリアル](docs/tutorial/index.md)
 * [ユーザガイド](docs/userguide/index.md)
 * [SINETStream性能測定結果](docs/performance/index.md)
 * [プラグイン開発ガイド](docs/developer_guide/index.md)
+* [SINETStreamサーバ構築手順](server/brokers/README.md)
 * [更新履歴](CHANGELOG.md)
 
 ## ライセンス

@@ -1,5 +1,3 @@
-**準備中** (2020-06-05 14:26:44 JST)
-
 <!--
 Copyright (C) 2020 National Institute of Informatics
 
@@ -22,6 +20,8 @@ under the License.
 --->
 
 [English](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/developer_guide/plugin_value_type_python.html "google translate")
+
+**準備中** (2020-06-05 18:05:13 JST)
 
 # プラグイン開発ガイド(message type/ Python)
 

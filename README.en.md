@@ -1,5 +1,3 @@
-**準備中** (2020-06-05 14:26:44 JST)
-
 <!--
 Copyright (C) 2020 National Institute of Informatics
 
@@ -22,6 +20,8 @@ under the License.
 --->
 
 [日本語](README.md)
+
+**準備中** (2020-06-05 18:05:13 JST)
 
 ## Concept of messaging system
 
@@ -120,6 +120,8 @@ Please Refer to the [tutorial](docs/tutorial/index.en.md) using docker container
 * [Tutorial](docs/tutorial/index.en.md)
 * [User Guide](docs/userguide/index.en.md)
 * [Performance measurement of SINETStream](docs/performance/index.en.md)
+* [Developer guide](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/developer_guide/index.html)
+* [Build SINETStream server](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/server/brokers/README.html)
 * [Update log](CHANGELOG.md)
 
 ## License

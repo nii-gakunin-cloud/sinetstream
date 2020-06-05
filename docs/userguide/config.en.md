@@ -1,5 +1,3 @@
-**準備中** (2020-06-05 14:26:44 JST)
-
 <!--
 Copyright (C) 2020 National Institute of Informatics
 
@@ -24,6 +22,8 @@ under the License.
 [日本語](config.md)
 
 SINETStream User Guide
+
+**準備中** (2020-06-05 18:05:13 JST)
 
 # Configuration files
 

@@ -1,5 +1,3 @@
-**準備中** (2020-06-05 14:26:44 JST)
-
 <!--
 Copyright (C) 2020 National Institute of Informatics
 
@@ -20,6 +18,8 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 --->
+
+**準備中** (2020-06-05 18:05:13 JST)
 
 # テストスクリプトについて
 

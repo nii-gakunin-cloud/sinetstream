@@ -1,5 +1,3 @@
-**準備中** (2020-06-05 14:26:44 JST)
-
 <!--
 Copyright (C) 2020 National Institute of Informatics
 
@@ -22,6 +20,8 @@ under the License.
 -->
 
 [English](mqtt-authentication-password.en.md)
+
+**準備中** (2020-06-05 18:05:13 JST)
 
 # SINETStreamからMQTTのパスワード認証を利用する
 
