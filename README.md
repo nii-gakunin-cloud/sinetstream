@@ -24,7 +24,7 @@ under the License.
 
 [English](README.en.md)
 
-**準備中** (2020-06-05 18:35:01 JST)
+**準備中** (2020-06-05 19:08:22 JST)
 
 ## メッセージングシステムの概念
 
@@ -126,7 +126,7 @@ dockerコンテナをつかった[チュートリアル](docs/tutorial/index.md)
 * [ユーザガイド](docs/userguide/index.md)
 * [SINETStream性能測定結果](docs/performance/index.md)
 * [プラグイン開発ガイド](docs/developer_guide/index.md)
-* [SINETStreamサーバ構築手順](server/brokers/README.md)
+* [SINETStreamサーバ構築手順](server/brokers/index.md)
 * [更新履歴](CHANGELOG.md)
 
 ## ライセンス

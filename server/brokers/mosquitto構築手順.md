@@ -21,7 +21,7 @@ under the License.
 
 [English](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/server/brokers/mosquitto構築手順.html "google translate")
 
-**準備中** (2020-06-05 18:35:01 JST)
+**準備中** (2020-06-05 19:08:22 JST)
 
 # mosquitto(MQTT broker)の構築手順
 

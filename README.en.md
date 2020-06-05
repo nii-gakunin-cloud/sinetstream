@@ -21,7 +21,7 @@ under the License.
 
 [日本語](README.md)
 
-**準備中** (2020-06-05 18:35:01 JST)
+**準備中** (2020-06-05 19:08:22 JST)
 
 ## Concept of messaging system
 
@@ -121,7 +121,7 @@ Please Refer to the [tutorial](docs/tutorial/index.en.md) using docker container
 * [User Guide](docs/userguide/index.en.md)
 * [Performance measurement of SINETStream](docs/performance/index.en.md)
 * [Developer guide](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/developer_guide/index.html)
-* [Build SINETStream server](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/server/brokers/README.html)
+* [Build SINETStream server](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/server/brokers/index.html)
 * [Update log](CHANGELOG.md)
 
 ## License

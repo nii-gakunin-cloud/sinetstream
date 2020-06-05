@@ -21,7 +21,7 @@ under the License.
 
 [English](kafka-authentication-sasl-plain.en.md)
 
-**準備中** (2020-06-05 18:35:01 JST)
+**準備中** (2020-06-05 19:08:22 JST)
 
 # SINETStreamからKafkaのSASL/PLAIN認証を利用する
 

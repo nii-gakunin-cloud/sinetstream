@@ -21,7 +21,7 @@ under the License.
 
 [日本語](kafka-authentication-ssl.md)
 
-**準備中** (2020-06-05 18:35:01 JST)
+**準備中** (2020-06-05 19:08:22 JST)
 
 # How to use a Kafka broker with SSL/TLS authentication (client authentication)
 

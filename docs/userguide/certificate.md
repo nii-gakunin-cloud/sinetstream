@@ -21,7 +21,7 @@ under the License.
 
 [English](certificate.en.md)
 
-**準備中** (2020-06-05 18:35:01 JST)
+**準備中** (2020-06-05 19:08:22 JST)
 
 # プライベート認証局で証明書を作成する
 

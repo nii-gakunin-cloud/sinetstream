@@ -21,7 +21,7 @@ under the License.
 
 [English](TUTORIAL-STEP2.en.md)
 
-**準備中** (2020-06-05 18:35:01 JST)
+**準備中** (2020-06-05 19:08:22 JST)
 
 # チュートリアル - STEP2
 

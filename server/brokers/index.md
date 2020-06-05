@@ -19,11 +19,16 @@ specific language governing permissions and limitations
 under the License.
 --->
 
-[English](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/server/README.html "google translate")
+[English](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/server/brokers/index.html "google translate")
 
-**準備中** (2020-06-05 18:35:01 JST)
+**準備中** (2020-06-05 19:08:22 JST)
 
-# SINETStream Server Configuration
+# SINETStreamサーバ構築手順
 
-* [SINETStreamサーバ構築手順](brokers/README.md)
-* [Kafka Connectのセットアップ手順](kafka-connect/README.md)
+## 目次
+
+* [サーバ構築手順](サーバ構築手順.md)
+    * [プライベート認証局で証明書を作成する](プライベート認証局で証明書を作成.md)
+    * [Kafka brokerの構築手順](Kafka%20brokerの構築手順.md)
+    * [mosquitto(MQTT broker)の構築手順](mosquitto構築手順.md)
+

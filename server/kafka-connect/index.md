@@ -19,9 +19,9 @@ specific language governing permissions and limitations
 under the License.
 --->
 
-[English](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/server/kafka-connect/README.html "google translate")
+[English](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/server/kafka-connect/index.html "google translate")
 
-**準備中** (2020-06-05 18:35:01 JST)
+**準備中** (2020-06-05 19:08:22 JST)
 
 # Kafka Connect
 
