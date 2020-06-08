@@ -7,6 +7,15 @@
 - Support async API
 - Broker setup instructions (Japanese only)
 
+### Changed
+
+- MQTT's MqttClientPersistence directory is now `~/.mqtt-persistence`(Java).
+
+### Fixed
+
+- Fixed TLS connection setup problem, caused by MQTT-specific parameter "tls_set" (Java)
+
+
 ## [v1.1.0] - 2020-03-19
 
 ### Added
