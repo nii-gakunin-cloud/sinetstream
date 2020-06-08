@@ -24,8 +24,6 @@ under the License.
 
 [English](README.en.md)
 
-**準備中** (2020-06-05 19:08:22 JST)
-
 ## メッセージングシステムの概念
 
 SINETStreamは

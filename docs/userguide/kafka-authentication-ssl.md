@@ -21,8 +21,6 @@ under the License.
 
 [English](kafka-authentication-ssl.en.md)
 
-**準備中** (2020-06-05 19:08:22 JST)
-
 # SINETStreamからKafkaのSSL/TLS認証（クライアント認証）を利用する
 
 ## 概要

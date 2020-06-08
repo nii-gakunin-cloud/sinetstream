@@ -23,8 +23,6 @@ under the License.
 
 SINETStream ユーザガイド
 
-**準備中** (2020-06-05 19:08:22 JST)
-
 # 認証と認可
 
 ## 概要

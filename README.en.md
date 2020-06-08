@@ -21,8 +21,6 @@ under the License.
 
 [日本語](README.md)
 
-**準備中** (2020-06-05 19:08:22 JST)
-
 ## Concept of messaging system
 
 SINETStream is a messaging system that adopts a [topic-based publish/subscribe model](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern).

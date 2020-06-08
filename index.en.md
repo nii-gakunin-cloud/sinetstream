@@ -21,8 +21,6 @@ under the License.
 
 [日本語](index.md)
 
-**準備中** (2020-06-05 19:08:22 JST)
-
 ## What is SINETStream
 
 It is required to collect data from sensors and other devices distributed over a wide area network without loss for reliable analysis in such research areas as environmental measurement, biological observation, and Internet of things (IoT).

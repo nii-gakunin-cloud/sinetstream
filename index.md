@@ -21,8 +21,6 @@ under the License.
 
 [English](index.en.md)
 
-**準備中** (2020-06-05 19:08:22 JST)
-
 ## SINETStreamとは
 
 環境測定、生体観測、IoTなど、広域に分散したデータを活用する研究では、広域ネットワークを介して、センサー等から取得されるデータを欠損なく確実に収集し、解析に用いることが求められます。
@@ -38,6 +36,10 @@ SINETStreamは、広域ネットワークを介してデータを欠損なく確
 また、研究に用いられるデータには機微な情報が含まれる場合もありますが、SINETStreamには通信やデータの暗号化、センサー等のデバイスの認証を行う機能も含んでいるため、安全な広域データ収集を実現できます。
 
 ![SINETStreamの概観](docs/images/sinetstream-00.png)
+
+### [広域データ収集基盤・SINETStream紹介ビデオ](https://www.youtube.com/watch?v=Z0wlUi4lr6c)
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/Z0wlUi4lr6c" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 ## SINETStreamの利用
 

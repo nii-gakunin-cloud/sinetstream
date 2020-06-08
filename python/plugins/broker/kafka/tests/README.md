@@ -19,8 +19,6 @@ specific language governing permissions and limitations
 under the License.
 --->
 
-**準備中** (2020-06-05 19:08:22 JST)
-
 # テストスクリプトについて
 
 ## テストスクリプトを実行するための準備

@@ -21,8 +21,6 @@ under the License.
 
 [日本語](TUTORIAL-STEP2.md)
 
-**準備中** (2020-06-05 19:08:22 JST)
-
 # Tutorial - STEP2
 
 ## 1. Overview

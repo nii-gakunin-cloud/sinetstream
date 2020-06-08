@@ -21,8 +21,6 @@ under the License.
 
 [日本語](index.md)
 
-**準備中** (2020-06-05 19:08:22 JST)
-
 # SINETStream User Guide
 
 ## What is SINETStream

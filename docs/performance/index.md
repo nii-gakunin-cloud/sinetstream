@@ -21,8 +21,6 @@ under the License.
 
 [English](index.en.md)
 
-**準備中** (2020-06-05 19:08:22 JST)
-
 # SINETStream性能測定結果
 
 公開日: 2019年12月13日

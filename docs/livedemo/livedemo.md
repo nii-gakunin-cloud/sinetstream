@@ -21,8 +21,6 @@ under the License.
 
 [English](livedemo.en.md)
 
-**準備中** (2020-06-05 19:08:22 JST)
-
 # SINETStream のライブデモ
 
 ## 温湿度センサーデータの収集・可視化

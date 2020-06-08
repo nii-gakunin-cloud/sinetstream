@@ -21,8 +21,6 @@ under the License.
 
 [English](index.en.md)
 
-**準備中** (2020-06-05 19:08:22 JST)
-
 # SINETStream ユーザガイド
 
 ## SINETStream とは

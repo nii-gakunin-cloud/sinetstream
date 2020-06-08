@@ -23,8 +23,6 @@ under the License.
 
 SINETStream User Guide
 
-**準備中** (2020-06-05 19:08:22 JST)
-
 # Kafka-specific parameters
 
 ## Parameters for `MessageWriter`

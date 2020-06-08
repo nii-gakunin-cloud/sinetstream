@@ -21,8 +21,6 @@ under the License.
 
 [English](kafka-authorization.en.md)
 
-**準備中** (2020-06-05 19:08:22 JST)
-
 # SINETStreamから認可の設定が行われているKafkaブローカーを利用する
 
 ## 概要

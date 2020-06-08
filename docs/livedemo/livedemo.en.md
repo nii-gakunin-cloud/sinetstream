@@ -21,8 +21,6 @@ under the License.
 
 [日本語](livedemo.md)
 
-**準備中** (2020-06-05 19:08:22 JST)
-
 # Live demo of SINETStream
 
 ## Collection and visualization of temperature and humidity sensor data

@@ -21,8 +21,6 @@ under the License.
 
 [English](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/developer_guide/index.html "google translate")
 
-**準備中** (2020-06-05 19:08:22 JST)
-
 # 開発者ガイド
 
 ## プラグイン開発ガイド
