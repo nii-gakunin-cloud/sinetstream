@@ -21,6 +21,10 @@ under the License.
 
 [English](index.en.md)
 
+## News
+
+**お知らせ** `2020-06-09` [SINETStreamの1.2版を公開](docs/news/20200609-release_v12.md)いたしました。  
+
 ## SINETStreamとは
 
 環境測定、生体観測、IoTなど、広域に分散したデータを活用する研究では、広域ネットワークを介して、センサー等から取得されるデータを欠損なく確実に収集し、解析に用いることが求められます。
