@@ -33,6 +33,13 @@ public class SinetStreamAsyncMessageWriter<T> extends SinetStreamBaseWriter<T, P
 
     @Override
     public Promise<?, ? extends Throwable, ?> write(T message) {
-        return target.write(toPayload(message));
+        try {
+            return target.write(toPayload(message))
+                    .fail((e) -> this.updateMetricsErr());
+        }
+        catch (Exception e) {
+            this.updateMetricsErr();
+            throw e;
+        }
     }
 }

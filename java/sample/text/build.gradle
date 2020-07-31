@@ -29,10 +29,11 @@ sourceCompatibility = 1.8
 version = '1.2.0'
 
 repositories {
-    jcenter()
     maven {
-        url  "https://dl.bintray.com/nii-gakunin-cloud/maven"
+        url  "https://niidp.pages.vcp-handson.org/sinetstream-java/"
     }
+    jcenter()
+    mavenCentral()
 }
 
 dependencies {

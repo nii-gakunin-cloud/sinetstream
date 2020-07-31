@@ -39,5 +39,11 @@ public interface MessageIO extends AutoCloseable {
 
     boolean isDataEncryption();
 
+    Metrics getMetrics();
+
+    void resetMetrics(boolean reset_raw);
+
+    default void resetMetrics() { resetMetrics(false); }
+
     void close();
 }

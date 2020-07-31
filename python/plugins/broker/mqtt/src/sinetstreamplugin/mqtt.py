@@ -256,6 +256,9 @@ class MqttClient(object):
         except Exception:
             logger.error("mqtt close() error")
 
+    def metrics(self, reset):
+        return None
+
     def _is_connected(self):
         return self._connection_result is not None
 

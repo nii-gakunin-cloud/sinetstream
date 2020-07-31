@@ -32,7 +32,13 @@ public class SinetStreamMessageWriter<T> extends SinetStreamBaseWriter<T, Plugin
 
     @Override
     public void write(T message) {
-        target.write(toPayload(message));
+        try {
+            target.write(toPayload(message));
+        }
+        catch (Exception e) {
+            updateMetricsErr();
+            throw e;
+        }
     }
 
     @Override

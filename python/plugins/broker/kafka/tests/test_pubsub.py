@@ -49,6 +49,7 @@ def reader(que, len_msgs, *args, **kwargs):
         with MessageReader(*args, **kwargs) as f:
             ev.set()
             logger.debug("start message reading")
+            f.seek_to_beginning()
             for idx, msg in zip(range(len_msgs), f):
                 logger.info(f"read message: {msg.raw}")
                 que.put(msg)
@@ -65,17 +66,24 @@ def writer(msgs, *args, **kwargs):
             f.publish(msg)
 
 
+def new_topic():
+    from random import choices
+    from string import ascii_letters
+    return TOPIC + '-' + ''.join(choices(ascii_letters, k=10))
+
+
 @pytest.fixture()
 def pubsub():
     q = Queue()
     msgs = copy.copy(text_msgs)
+    topic = new_topic()
     reader_params = {
         'service': SERVICE,
-        'topics': TOPIC,
+        'topics': topic,
     }
     writer_params = {
         'service': SERVICE,
-        'topic': TOPIC,
+        'topic': topic,
     }
     yield msgs, reader_params, writer_params
 
@@ -91,7 +99,7 @@ def pubsub():
 
     for expected in msgs:
         msg = q.get_nowait()
-        assert msg.topic == TOPIC
+        assert msg.topic == topic
         assert msg.value == expected
 
 
@@ -143,8 +151,9 @@ def create_topic():
         try:
             os.chdir(str(work_dir))
             create_config_file(brokers=[BROKER])
-            with MessageWriter(SERVICE, TOPIC) as f:
-                logger.debug(f"create topic: {TOPIC}")
+            topic = new_topic()
+            with MessageWriter(SERVICE, topic) as f:
+                logger.debug(f"create topic: {topic}")
                 f.publish(b"message 000")
         finally:
             os.chdir(str(cwd))

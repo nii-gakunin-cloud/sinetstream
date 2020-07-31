@@ -136,4 +136,14 @@ public class SinetStreamAsyncWrapperMessageReader<T> implements AsyncMessageRead
     public boolean isDataEncryption() {
         return syncReader.isDataEncryption();
     }
+
+    @Override
+    public Metrics getMetrics() {
+        return syncReader.getMetrics();
+    }
+
+    @Override
+    public void resetMetrics(boolean reset_raw) {
+        syncReader.resetMetrics(reset_raw);
+    }
 }

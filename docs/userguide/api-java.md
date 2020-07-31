@@ -33,10 +33,10 @@ SINETStream ユーザガイド
     * MessageReaderFactory クラス
     * MessageReader クラス
     * AsyncMessageReader クラス
+    * Message クラス
+    * Metrics クラス
     * 例外一覧
 * メッセージングシステム固有のパラメータ
-    * Apache Kafka
-    * MQTT (Eclipse Paho)
 * チートシートの表示方法
 
 
@@ -224,8 +224,8 @@ MessageWriterFactory<String> factory = MessageWriterFactory.<String>builder()
 
 try (AsyncMessageWriter<String> writer = factory.getAsyncWriter()) {
     writer.write("message-1")
-          .done(result -> System.out.println("write task done")
-          .fail(result -> System.out.println("write task failed")
+          .done(result -> System.out.println("write task done"))
+          .fail(result -> System.out.println("write task failed"))
 }
 ```
 
@@ -362,6 +362,117 @@ reader.close();
 * getTimestampMicroseconds()
     * メッセージ送信時刻(Unix時間;単位はマイクロ秒単位)を取得する。
     * 値 `0` は時刻が設定されてないことを示す。
+
+### Metrics
+
+メトリクス情報のクラス。
+Reader/Writerオブジェクトに対してgetMetrics()メソッドを呼び出すと得られる。
+
+* MessageReader#getMetrics()
+* AsyncMessageReader#getMetrics()
+* MessageWriter#getMetrics()
+* AsyncMessageWriter#getMetrics()
+
+Reader/Writerオブジェクトに対してresetMetrics()メソッドを呼び出すと
+Reader/Writerの統計情報がリセットされる。
+引数 `reset_raw` にtrueを指定した場合に限り、SINETStreamの統計情報だけでなく
+メッセージングシステム固有の統計情報もリセットされる(可能であれば)。
+
+* MessageReader#resetMetrics(boolean reset_raw)
+* MessageWriter#resetMetrics(boolean reset_raw)
+* AsyncMessageReader#resetMetrics(boolean reset_raw)
+* AsyncMessageWriter#resetMetrics(boolean reset_raw)
+
+引数 `reset_raw` なしのresetMetrics()メソッドはreset_raw=falseを指定したのと同じである。
+
+* MessageReader#resetMetrics()
+* MessageWriter#resetMetrics()
+* AsyncMessageReader#resetMetrics()
+* AsyncMessageWriter#resetMetrics()
+
+> Eclipse Paho(SINETStreamのMQTTプラグインで使用しているMQTTクライアントライブラリ)は統計情報を提供してない。
+> Kafkaにはメッセージングシステム固有の統計情報があるがリセット機能はない。
+
+統計情報はSINETStreamメインライブラリとメッセージングシステムプラグインの境界で測定した値が使われる。
+したがって、SINETStreamの暗号化機能が有効の場合は暗号化されたメッセージが測定される。
+
+#### プロパティ
+
+* getStartTime(), getStartTimeMillis()
+    * 測定を開始した時刻(Unix時間)
+        * getStartTime()が返す時刻の単位は秒
+        * getStartTimeMillis()が返す時刻の単位はミリ秒
+    * Reader/Writerオブジェクトを作成した時刻、またはリセットした時刻。
+* getEndTime(), getEndTimeMillis()
+    * 測定を終了した時刻(Unix時間)
+        * getEndTime()が返す時刻の単位は秒
+        * getEndTimeMillis()が返す時刻の単位はミリ秒
+    * getMetrics()メソッドを呼んだ時刻
+* getTime(), getTimeMillis()
+    * 測定時間 (= EndTime - StartTime)
+        * getTime()が返す時間の単位は秒
+        * getTimeMillis()が返す時間の単位はミリ秒
+* getMsgCountTotal()
+    * 累積送受信メッセージ数
+* getMsgCountRate()
+    * 送受信メッセージ数レート
+    * = msg_count_total / time
+* getMsgBytesTotal()
+    * 累積送受信メッセージ量(bytes)
+* getMsgBytesRate()
+    * 送受信メッセージ量レート
+    * = msg_bytes_total / time
+* getMsgSizeMin()
+    * 最小送受信メッセージサイズ(bytes)
+* getMsgSizeAvg()
+    * 平均送受信メッセージサイズ(bytes)
+    * = msg_bytes_total / msg_count_total
+* getMsgSizeMax()
+    * 最大送受信メッセージサイズ(bytes)
+* getErrorCountTotal()
+    * 累積エラー数
+* getErrorCountRate()
+    * エラーレート
+    * = error_count_total / time
+
+* getRaw()
+    * メッセージングシステム固有の統計情報
+
+#### 使用例
+
+受信したメッセージ数・バイト数を表示する。
+
+```
+try (MessageReader<String> reader = factory.getReader()) {
+    // (1)
+    Message<String> msg;
+    while (Objects.nonNull(msg = reader.read())) {
+        ;
+    }
+    Metrics metrics = reader.getMetrics();  // (1) からの累積の統計情報が得られる
+    System.out.println("COUNT: " + metrics.getMsgCountTotal());
+    System.out.println("BYTES: " + metrics.getMsgBytesTotal());
+}
+```
+
+10メッセージごとに受信レートを表示する。
+
+```
+try (MessageReader<String> reader = factory.getReader()) {
+    Message<String> msg;
+    int count = 0;
+    while (Objects.nonNull(msg = reader.read())) {
+        count++;
+        if (count == 10) {
+            count = 0;
+            Metrics metrics = reader.getMetrics();
+            reader.resetMetrics();
+            System.out.println("COUNT/s: " + metrics.getMsgCountRate());
+            System.out.println("BYTES/s: " + metrics.getMsgBytesRate());
+        }
+    }
+}
+```
 
 ### 例外一覧
 

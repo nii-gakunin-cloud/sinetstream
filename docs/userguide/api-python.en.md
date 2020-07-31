@@ -30,10 +30,13 @@ SINETStream User Guide
     * MessageReader Class
     * MessageWriter Class
     * Message Class
+    * Metrics Class
+    * Summary of exception
 * Messaging system-specific parameters
     * Apache Kafka
     * MQTT (Eclipse Paho)
 * How to show a cheat sheet
+
 
 ## Example
 
@@ -400,6 +403,118 @@ All the properties are read only.
     * `0` indicates no time is set
 * raw
     * The message object provided by the messaging system.
+
+### Metrics Class
+
+Metrics class
+You can get metrics information by referencing the metrics property for Reader/Writer objects.
+
+* MessageReader.metrics
+* MessageWriter.metrics
+* AsyncMessageReader.metrics
+* AsyncMessageWriter.metrics
+
+The Reader/Writer metrics are reset when the reset_metrics() method was called from the Reader/Writer class.
+If the `reset_raw` argument is set to True, the metrics of the backend messaging system will also be reset if possible.
+
+* MessageReader.reset_metrics(reset_raw=False)
+* MessageWriter.reset_metrics(reset_raw=False)
+* AsyncMessageReader.reset_metrics(reset_raw=False)
+* AsyncMessageWriter.reset_metrics(reset_raw=False)
+
+> Eclipse Paho, an MQTT client library used in the SINETStream MQTT plugin, does not provide metrics collection capability.
+> The Kafka client library has the capability, but does not provide the reset function.
+
+The metrics are measured at the boundary of the SINETStream main library and the specified messaging system plugin.
+Therefore, a stream of encrypted massages will be measured if the data encryption function provided by SINETStream is used.
+
+#### Property
+
+* start_time, start_time_ms
+    * float
+    * The Unix time when the measurement was started.
+        * The unit of the start_time is seconds.
+        * The unit of the start_time_ms is milliseconds.
+    * The time when the Reader/Writer object was created or reset.
+* end_time, end_time_ms
+    * float
+    * The Unix time when the measurement was completed.
+        * The unit of the end_time is seconds.
+        * The unit of the end_time_ms is milliseconds.
+    * The time referenced in the metrics property.
+* time, time_ms
+    * float
+    * Measurement time (= EndTime - StartTime).
+        * The unit of the time is seconds.
+        * The unit of the time_ms is milliseconds.
+    * = end_time - start_time
+* msg_count_total
+    * int
+    * The cumulative number of messages sent and received.
+* msg_count_rate
+    * float
+    * The rate of the number of messages sent and received.
+    * = msg_count_total / time
+* msg_bytes_total
+    * int
+    * The Cumulative amount of messages sent and received in bytes.
+* msg_bytes_rate
+    * float
+    * The rate of the amount of messages sent and received.
+    * = msg_bytes_total / time
+* msg_size_min
+    * int
+    * The minimum size of messages sent and received in bytes.
+* msg_size_avg
+    * float
+    * The average size of messages sent and received in bytes.
+* msg_size_max
+    * int
+    * The maximum size of messages sent and received in bytes.
+* error_count_total
+    * int
+    * The cumulative number of errors.
+* error_count_rate
+    * float
+    * The error rate.
+    * = error_count_total / time
+* raw
+    * The metrics provided by the specified messaging system client library.
+
+#### Examples
+
+Display the number of received messages and its amount in bytes:
+
+```python
+from sinetstream import MessageReader
+
+reader = MessageReader('service-1', 'topic-001')
+# (1)
+with reader as f:
+    for msg in f:
+        pass
+    m = reader.metrics  # Statistics on the accumulation from (1)
+    print(f'COUNT: {m.msg_count_total}')
+    print(f'BYTES: {m.msg_bytes_total}')
+```
+
+Display the receive rate for every 10 messages:
+
+```python
+from sinetstream import MessageReader
+
+reader = MessageReader('service-1', 'topic-001')
+with reader as f:
+    count = 0
+    for msg in f:
+        count += 1
+        if (count == 10):
+            count = 0
+            m = reader.metrics
+            reader.reset_metrics()
+            print(f'COUNT/s: {m.msg_count_rate}')
+            print(f'BYTES/s: {m.msg_bytes_rate}')
+```
 
 ### Summary of exception
 

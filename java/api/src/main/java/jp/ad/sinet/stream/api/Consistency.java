@@ -43,7 +43,7 @@ public enum Consistency {
 
     public static Consistency valueOf(int value) {
         return Optional.ofNullable(valueMap.get(value)).orElseGet(() -> {
-            log.warning("dos not exist: " + value);
+            log.warning("does not exist: " + value);
             return null;
         });
     }

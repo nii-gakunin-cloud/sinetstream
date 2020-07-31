@@ -29,13 +29,13 @@ sourceCompatibility = 1.8
 version = '1.2.0'
 
 repositories {
-    jcenter()
     flatDir {
         dirs "libs"
     }
     maven {
         url  "https://niidp.pages.vcp-handson.org/sinetstream-java/"
     }
+    jcenter()
     mavenCentral()
 }
 

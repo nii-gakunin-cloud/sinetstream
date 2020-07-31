@@ -28,10 +28,12 @@ SINETStream ユーザガイド
 * 使用例
 * Python API クラス一覧
     * MessageReader クラス
-    * MessageWriter クラス
     * AsyncMessageReader クラス
+    * MessageWriter クラス
     * AsyncMessageWriter クラス
     * Message クラス
+    * Metrics クラス
+    * 例外一覧
 * メッセージングシステム固有のパラメータ
     * Apache Kafka
     * MQTT (Eclipse Paho)
@@ -651,6 +653,121 @@ with AsyncMessageWriter('service-1') as writer:
     * 値 `0` は時刻が設定されてないことを示す
 * raw
     * メッセージングシステムのメッセージオブジェクト
+
+### Metricsクラス
+
+メトリクス情報のクラス。
+Reader/Writerオブジェクトに対してmetricsプロパティを参照すると得られる。
+
+* MessageReader.metrics
+* MessageWriter.metrics
+* AsyncMessageReader.metrics
+* AsyncMessageWriter.metrics
+
+Reader/Writerオブジェクトに対してreset_metrics()メソッドを呼び出すと
+Reader/Writerの統計情報がリセットされる。
+引数 `reset_raw` にTrueを指定した場合に限り、SINETStreamの統計情報だけでなく
+メッセージングシステム固有の統計情報もリセットされる(可能であれば)。
+
+* MessageReader.reset_metrics(reset_raw=False)
+* MessageWriter.reset_metrics(reset_raw=False)
+* AsyncMessageReader.reset_metrics(reset_raw=False)
+* AsyncMessageWriter.reset_metrics(reset_raw=False)
+
+> Eclipse Paho(SINETStreamのMQTTプラグインで使用しているMQTTクライアントライブラリ)は統計情報を提供してない。
+> Kafkaにはメッセージングシステム固有の統計情報があるがリセット機能はない。
+
+統計情報はSINETStreamメインライブラリとメッセージングシステムプラグインの境界で測定した値が使われる。
+したがって、SINETStreamの暗号化機能が有効の場合は暗号化されたメッセージが測定される。
+
+#### プロパティ
+
+* start_time, start_time_ms
+    * float
+    * 測定を開始した時刻(Unix時間)
+        * start_timeの単位は秒
+        * start_time_msの単位はミリ秒
+    * Reader/Writerオブジェクトを作成した時刻、またはリセットした時刻。
+* end_time, end_time_ms
+    * float
+    * 測定を終了した時刻(Unix時間)
+        * end_timeの単位は秒
+        * end_time_msの単位はミリ秒
+    * metricsプロパティを参照した時刻
+* time, time_ms
+    * float
+    * 測定時間
+        * timeの単位は秒
+        * time_msの単位はミリ秒
+    * = end_time - start_time
+* msg_count_total
+    * int
+    * 累積送受信メッセージ数
+* msg_count_rate
+    * float
+    * 送受信メッセージ数レート
+    * = msg_count_total / time
+* msg_bytes_total
+    * int
+    * 累積送受信メッセージ量(bytes)
+* msg_bytes_rate
+    * float
+    * 送受信メッセージ量レート
+    * = msg_bytes_total / time
+* msg_size_min
+    * int
+    * 最小送受信メッセージサイズ(bytes)
+* msg_size_avg
+    * float
+    * 平均送受信メッセージサイズ(bytes)
+* msg_size_max
+    * int
+    * 最大送受信メッセージサイズ(bytes)
+* error_count_total
+    * int
+    * 累積エラー数
+* error_count_rate
+    * float
+    * エラーレート
+    * = error_count_total / time
+
+* raw
+    * メッセージングシステム固有の統計情報
+
+#### 使用例
+
+受信したメッセージ数・バイト数を表示する。
+
+```python
+from sinetstream import MessageReader
+
+reader = MessageReader('service-1', 'topic-001')
+# (1)
+with reader as f:
+    for msg in f:
+        pass
+    m = reader.metrics  # (1)からの累積の統計情報が得られる
+    print(f'COUNT: {m.msg_count_total}')
+    print(f'BYTES: {m.msg_bytes_total}')
+```
+
+10メッセージごとに受信レートを表示する。
+
+```python
+from sinetstream import MessageReader
+
+reader = MessageReader('service-1', 'topic-001')
+with reader as f:
+    count = 0
+    for msg in f:
+        count += 1
+        if (count == 10):
+            count = 0
+            m = reader.metrics
+            reader.reset_metrics()
+            print(f'COUNT/s: {m.msg_count_rate}')
+            print(f'BYTES/s: {m.msg_bytes_rate}')
+```
 
 ### 例外一覧
 

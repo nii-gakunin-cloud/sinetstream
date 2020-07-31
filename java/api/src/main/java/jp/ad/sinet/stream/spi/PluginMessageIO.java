@@ -33,4 +33,8 @@ public interface PluginMessageIO {
     Consistency getConsistency();
 
     String getClientId();
+
+    default Object getMetrics() { return null; }
+
+    default void resetMetrics() {}
 }

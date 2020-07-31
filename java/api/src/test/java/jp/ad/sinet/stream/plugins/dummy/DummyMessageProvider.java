@@ -35,6 +35,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.*;
 
+import java.lang.Exception;
+
 public class DummyMessageProvider implements MessageWriterProvider, MessageReaderProvider {
     @Override
     public PluginMessageWriter getWriter(WriterParameters params) {
@@ -86,6 +88,8 @@ public class DummyMessageProvider implements MessageWriterProvider, MessageReade
             config = Collections.unmodifiableMap(params.getConfig());
             topic = String.join(",", params.getTopics());
         }
+
+        public Object getMetrics() { return "this is a dummy metrics"; }
     }
 
     public class DummyWriter extends DummyIO implements PluginMessageWriter {
@@ -101,6 +105,8 @@ public class DummyMessageProvider implements MessageWriterProvider, MessageReade
         @SneakyThrows
         @Override
         public void write(byte[] message) {
+            if (config.get("test_dummy_writer_write_fail") != null)
+                throw new Exception("test_dummy_writer_write_fail");
             queue.put(message);
         }
     }
@@ -124,6 +130,8 @@ public class DummyMessageProvider implements MessageWriterProvider, MessageReade
         @SneakyThrows
         @Override
         public PluginMessageWrapper read() {
+            if (config.get("test_dummy_reader_read_fail") != null)
+                throw new Exception("test_dummy_reader_read_fail");
             byte[] bytes = queue.poll(receiveTimeout.toNanos(), TimeUnit.NANOSECONDS);
             if (Objects.isNull(bytes)) {
                 return null;

@@ -1,0 +1,23 @@
+#!/bin/sh
+rot1() {
+    local F="$1"
+    local I="$2"
+    local N="$3"
+    local II=${I:-0}
+    if [ $II -ge $N ]; then
+        return
+    fi
+    local J=$((II + 1))
+    if [ -f "$F.$J" ]; then
+        rot1 "$F" "$J" "$N"
+    fi
+    mv "$F${I:+.$I}" "$F.$J"
+}
+rot() {
+    if [ -f "$1" ]; then
+        rot1 "$1" "" "$2"
+    fi
+}
+for F; do
+    rot "$F" "9"
+done

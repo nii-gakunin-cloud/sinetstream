@@ -2,6 +2,7 @@ version: '3.7'
 services:
   broker:
     build: build
+    image: kafka_test_broker
     hostname: broker
     ports:
     - "9092:9092" # Kafka plain
@@ -12,6 +13,7 @@ services:
         ipv4_address: 192.168.64.10
   broker2:
     build: build2
+    image: kafka_test_broker2
     hostname: broker2
     ports:
     - "9096:9096" # Kafka plain + SASL
@@ -37,6 +39,7 @@ services:
       KAFKA_SASL_CERT_URL: http://broker2:8080
     working_dir: /build/plugin-kafka
     command: ../gradlew check
+#    command: ../gradlew --no-daemon --debug --console plain
 #    command: /bin/bash
 #    tty: true
 #    stdin_open: true

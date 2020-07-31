@@ -266,4 +266,10 @@ public abstract class KafkaBaseReader extends KafkaBaseIO {
         producer = new KafkaProducer<>(props, Serdes.ByteArray().serializer(), Serdes.ByteArray().serializer());
         producer.initTransactions();
     }
+
+    public Object getMetrics() {
+        return consumer.metrics();
+    }
+    public void resetMetrics() {
+    }
 }

@@ -73,4 +73,7 @@ public class MqttSyncBaseIO extends AbstractMqttIO<MqttClient> {
             throw new SinetStreamIOException(e);
         }
     }
+
+    public Object getMetrics() { return null; }
+    public void resetMetrics() { }
 }

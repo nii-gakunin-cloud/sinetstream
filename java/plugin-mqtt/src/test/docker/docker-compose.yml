@@ -2,6 +2,7 @@ version: '3.7'
 services:
   broker:
     build: broker
+    image: mqtt_test_broker
     hostname: broker
     ports:
     - "1883:1883" # MQTT

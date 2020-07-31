@@ -32,6 +32,7 @@ import java.util.function.Consumer;
 public class SinetStreamAsyncMessageReader<T> extends SinetStreamBaseReader<T, PluginAsyncMessageReader> implements AsyncMessageReader<T> {
 
     private Map<Consumer<Message<T>>, Consumer<PluginMessageWrapper>> onMessageCallbacks = new HashMap<>();
+    private Map<Consumer<Throwable>, Consumer<Throwable>> onFailureCallbacks = new HashMap<>();
 
     public SinetStreamAsyncMessageReader(PluginAsyncMessageReader pluginReader, ReaderParameters parameters, Deserializer<T> deserializer) {
         super(pluginReader, parameters, deserializer);
@@ -44,18 +45,28 @@ public class SinetStreamAsyncMessageReader<T> extends SinetStreamBaseReader<T, P
             callback = (msg) -> onMessage.accept(toMessage(msg));
             onMessageCallbacks.put(onMessage, callback);
         }
-        target.addOnMessageCallback(callback, onFailure);
+        Consumer<Throwable> callback2 = null;
+        if (!onFailureCallbacks.containsKey(onFailure)) {
+            callback2 = (e) -> {
+                this.updateMetricsErr();
+                onFailure.accept(e);
+            };
+            onFailureCallbacks.put(onFailure, callback2);
+        }
+        target.addOnMessageCallback(callback, callback2);
     }
 
     @Override
     public synchronized void removeOnMessageCallback(Consumer<Message<T>> onMessage, Consumer<Throwable> onFailure) {
         Consumer<PluginMessageWrapper> callback = onMessageCallbacks.remove(onMessage);
-        target.removeOnMessageCallback(callback, onFailure);
+        Consumer<Throwable> callback2 = onFailureCallbacks.remove(onFailure);
+        target.removeOnMessageCallback(callback, callback2);
     }
 
     @Override
     public synchronized void clearOnMessageCallback() {
         onMessageCallbacks.clear();
+        onFailureCallbacks.clear();
         target.clearOnMessageCallback();
     }
 }

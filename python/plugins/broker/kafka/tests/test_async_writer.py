@@ -52,32 +52,33 @@ def test_write_message(setup_messages, consistency, config_topic):
         nonlocal count
         with cv:
             while count > 0:
-                cv.wait(10)
+                cv.wait(1)
 
     def on_success(r):
         nonlocal count, check
         with cv:
             count -= 1
             check += 1
-            if count == 0:
-                cv.notify_all()
+            cv.notify_all()
 
     def on_failure(e, traceback=None):
         nonlocal count
         logger.error(f"failure: {e}")
         with cv:
             count -= 1
-            if count == 0:
-                cv.notify_all()
+            cv.notify_all()
 
     with AsyncMessageWriter(
             service=SERVICE, topic=config_topic, value_type=TEXT,
             consistency=consistency) as writer:
         for msg in setup_messages:
             writer.publish(msg).then(on_success, on_failure)
+            import time
+            time.sleep(0.001)  # XXX slowlife
         wait_on_messages()
-    assert check == len(setup_messages)
-    assert count == 0
+    with cv:
+        assert check == len(setup_messages)
+        assert count == 0
 
 
 @pytest.fixture()

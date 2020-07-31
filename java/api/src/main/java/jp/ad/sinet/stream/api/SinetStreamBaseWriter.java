@@ -65,6 +65,8 @@ public class SinetStreamBaseWriter<T, U extends PluginMessageIO> extends SinetSt
     }
 
     byte[] toPayload(T message) {
-        return compositeSerializer.serialize(new Timestamped<>(message));
+        byte[] payload = compositeSerializer.serialize(new Timestamped<>(message));
+        updateMetrics(payload.length);
+        return payload;
     }
 }

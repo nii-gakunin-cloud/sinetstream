@@ -42,6 +42,8 @@ from sinetstream.spi import (
 
 logger = getLogger(__name__)
 que = defaultdict(Queue)
+test_qwrite_failure = []
+test_qread_failure = []
 SERVICE = 'service-1'
 TOPIC = 'mss-test-001'
 TOPIC2 = 'mss-test-002'
@@ -50,12 +52,22 @@ BROKER = 'broker'
 
 
 def qwrite(topic, value):
+    if len(test_qwrite_failure) > 0:
+        logger.info(f"XXX test_qwrite_failure={len(test_qwrite_failure)}")
+        test_qwrite_failure.pop()
+        if len(test_qwrite_failure) == 0:
+            raise Exception("TEST QRITE FAILURE")
     global que
     assert type(value) is bytes
     que[topic].put(value)
 
 
 def qread(topic, timeout=None):
+    if len(test_qread_failure) > 0:
+        logger.info(f"XXX test_qread_failure={len(test_qread_failure)}")
+        test_qread_failure.pop()
+        if len(test_qread_failure) == 0:
+            raise Exception("TEST QREAD FAILURE")
     global que
     return que[topic].get(timeout=timeout)
 
@@ -80,6 +92,9 @@ class DummyReader(PluginMessageReader):
 
     def close(self):
         pass
+
+    def metrics(self, reset):
+        return "this is a dummy metrics"
 
     def __iter__(self):
         return self
@@ -110,6 +125,7 @@ class DummyAsyncReader(PluginAsyncMessageReader):
         self._executor = None
         self._reader_executor = None
         self._on_message = None
+        self._on_failure = None
         self._closed = True
 
     def open(self):
@@ -127,6 +143,9 @@ class DummyAsyncReader(PluginAsyncMessageReader):
             self._executor.shutdown()
         self._executor = None
 
+    def metrics(self, reset):
+        return "this is a dummy metrics"
+
     def _read_messages(self):
         topics = self._params.get("topics")
         if type(topics) != list:
@@ -135,10 +154,12 @@ class DummyAsyncReader(PluginAsyncMessageReader):
             for topic in topics:
                 try:
                     value = qread(topic, timeout=0.1)
+                    raw = {"topic": topic, "value": value}
+                    self._executor.submit(self._on_message, value, topic, raw)
                 except Empty:
                     continue
-                raw = {"topic": topic, "value": value}
-                self._executor.submit(self._on_message, value, topic, raw)
+                except Exception as e:
+                    self._executor.submit(self._on_failure, e)
 
     @property
     def on_message(self):
@@ -150,7 +171,11 @@ class DummyAsyncReader(PluginAsyncMessageReader):
 
     @property
     def on_failure(self):
-        pass
+        return self._on_failure
+
+    @on_failure.setter
+    def on_failure(self, on_failure):
+        self._on_failure = on_failure
 
 
 class DummyAsyncReaderEntryPoint(object):
@@ -175,6 +200,9 @@ class DummyWriter(PluginMessageWriter):
     def close(self):
         pass
 
+    def metrics(self, reset):
+        return "this is a dummy metrics"
+
     def publish(self, value):
         qwrite(self._params.get("topic"), value)
 
@@ -197,6 +225,9 @@ class DummyAsyncWriter(PluginAsyncMessageWriter):
         if self._executor is not None:
             self._executor.shutdown()
             self._executor = None
+
+    def metrics(self, reset):
+        return "this is a dummy metrics"
 
     def publish(self, value):
         future = self._executor.submit(qwrite, self._params.get("topic"), value)

@@ -31,6 +31,8 @@ SINETStream User Guide
     * MessageWriter Class
     * MessageReaderFactory Class
     * MessageReader Class
+    * Message Class
+    * Metrics Class
     * The summary of exception
 * Messaging system-specific parameters
     * Apache Kafka
@@ -291,6 +293,114 @@ The class to represent a message received from the brokers.
     * The time the message was sent (UNIX time) in microsecond.
     * `0` indicates no timestamp is set
 
+### Metrics
+
+Metrics class
+You can get metrics information by invoking the getMetrics() method for Reader/Writer objects.
+
+* MessageReader#getMetrics()
+* AsyncMessageReader#getMetrics()
+* MessageWriter#getMetrics()
+* AsyncMessageWriter#getMetrics()
+
+The Reader/Writer metrics are reset when the resetMetrics() method was called from the Reader/Writer class.
+If the `reset_raw` argument is set to True, the metrics of the backend messaging system will also be reset if possible.
+
+* MessageReader#resetMetrics(boolean reset_raw)
+* MessageWriter#resetMetrics(boolean reset_raw)
+* AsyncMessageReader#resetMetrics(boolean reset_raw)
+* AsyncMessageWriter#resetMetrics(boolean reset_raw)
+
+The resetMetrics() method without the argument `reset_raw` is the same as specifying reset_raw=false.
+
+* MessageReader#resetMetrics()
+* MessageWriter#resetMetrics()
+* AsyncMessageReader#resetMetrics()
+* AsyncMessageWriter#resetMetrics()
+
+> Eclipse Paho, an MQTT client library used in the SINETStream MQTT plugin, does not provide metrics collection capability.
+> The Kafka client library has the capability, but does not provide the reset function.
+
+The metrics are measured at the boundary of the SINETStream main library and the specified messaging system plugin.
+Therefore, a stream of encrypted massages will be measured if the data encryption function provided by SINETStream is used.
+
+#### Property
+
+* getStartTime(), getStartTimeMillis()
+    * The Unix time when the measurement was started.
+	* The unit of time returned by getStartTime() is seconds.
+	* The unit of time returned by getStartTimeMillis() is milliseconds.
+    * The time when the Reader/Writer object was created or reset.
+* getEndTime(), getEndTimeMillis()
+    * The Unix time when the measurement was completed.
+	* The unit of time returned by getEndTime() is seconds.
+	* The unit of time returned by getEndTimeMillis() is milliseconds.
+    * The time when the getMetrics() method was called.
+* getTime(), getTimeMillis()
+    * Measurement time (= EndTime - StartTime).
+	* The unit of time returned by getTime() is seconds.
+	* The unit of time returned by getTimeMillis() is milliseconds.
+* getMsgCountTotal()
+    * The cumulative number of messages sent and received.
+* getMsgCountRate()
+    * The rate of the number of messages sent and received.
+    * = msg_count_total / time
+* getMsgBytesTotal()
+    * The Cumulative amount of messages sent and received in bytes.
+* getMsgBytesRate()
+    * The rate of the amount of messages sent and received.
+    * = msg_bytes_total / time
+* getMsgSizeMin()
+    * The minimum size of messages sent and received in bytes.
+* getMsgSizeAvg()
+    * The average size of messages sent and received in bytes.
+    * = msg_bytes_total / msg_count_total
+* getMsgSizeMax()
+    * The maximum size of messages sent and received in bytes.
+* getErrorCountTotal()
+    * The cumulative number of errors.
+* getErrorCountRate()
+    * The error rate.
+    * = error_count_total / time
+* getRaw()
+    * The metrics provided by the specified messaging system client library.
+
+#### Examples
+
+Display the number of received messages and its amount in bytes:
+
+```
+try (MessageReader<String> reader = factory.getReader()) {
+    // (1)
+    Message<String> msg;
+    while (Objects.nonNull(msg = reader.read())) {
+        ;
+    }
+    Metrics metrics = reader.getMetrics();  // Metrics on the accumulation from (1)
+    System.out.println("COUNT: " + metrics.getMsgCountTotal());
+    System.out.println("BYTES: " + metrics.getMsgBytesTotal());
+}
+```
+
+Display the receive rate for every 10 messages:
+
+```
+try (MessageReader<String> reader = factory.getReader()) {
+    Message<String> msg;
+    int count = 0;
+    while (Objects.nonNull(msg = reader.read())) {
+        count++;
+        if (count == 10) {
+            count = 0;
+            Metrics metrics = reader.getMetrics();
+            reader.resetMetrics();
+            System.out.println("COUNT/s: " + metrics.getMsgCountRate());
+            System.out.println("BYTES/s: " + metrics.getMsgBytesRate());
+        }
+    }
+}
+```
+
 ### The summary of exception
 
 | Exception name | Method name | |
@@ -298,13 +408,13 @@ The class to represent a message received from the brokers.
 | NoConfigException | MessageReaderFactory#getReader() MessageWriterFactory#getWriter() | The configuration file does not exist or cannot be read. |
 | NoServiceException | MessageReaderFactory#getReader() MessageWriterFactory#getWriter() | The specified service name is not defined in the configuration file. |
 | UnsupportedServiceException | MessageReaderFactory#getReader() MessageWriterFactory#getWriter() | The specified service is not supported. |
-| ConnectionException | MessageReaderFactory#getReader() MessageWriterFactory#getWriter() | Error connecting to the broker |
+| ConnectionException | MessageReaderFactory#getReader() MessageWriterFactory#getWriter() | Error connecting to the broker. |
 | InvalidConfigurationException | MessageReaderFactory#getReader() MessageWriterFactory#getWriter() | The content of the configuration file is invalid. |
-| SinetStreamIOException | MessageReaderFactory#getReader() MessageWriterFactory#getWriter() MessageReader\<T\>#read() MessageReader\<T\>#close() MessageWriter\<T\>#write(T) MessageWriter\<T\>#close() | Error in IO between the messaging system and SINETStream. |
-| SinetStreamException | MessageReaderFactory#getReader() MessageWriterFactory#getWriter() MessageReader\<T\>#read() MessageReader\<T\>#close() MessageWriter\<T\>write(T) MessageWriter\<T\>close() | Other SINETStream errors |
-| InvalidMessageException | MessageReader\<T\>#read() | The type of message does not match `valueType` |
+| SinetStreamIOException | MessageReaderFactory#getReader() MessageWriterFactory#getWriter() MessageReader\<T\>#read() MessageReader\<T\>#close() MessageWriter\<T\>#write(T) MessageWriter\<T\>#close() | IO Error between the messaging system and SINETStream. |
+| SinetStreamException | MessageReaderFactory#getReader() MessageWriterFactory#getWriter() MessageReader\<T\>#read() MessageReader\<T\>#close() MessageWriter\<T\>write(T) MessageWriter\<T\>close() | Other SINETStream errors. |
+| InvalidMessageException | MessageReader\<T\>#read() | The message type does not match `valueType`. |
 | AuthenticationException | MessageReaderFactory#getReader() MessageWriterFactory#getWriter() | Error authenticating with the broker |
-| AuthorizationException | MessageReader\<T\>#read() MessageWriter\<T\>#write() | Error in unauthorized operation (see note below) |
+| AuthorizationException | MessageReader\<T\>#read() MessageWriter\<T\>#write() | Error in unauthorized operation. (see note below) |
 
 Note: AuthorizationException may not raise in the following cases:
 

@@ -50,12 +50,75 @@ public class SinetStreamIO<T extends PluginMessageIO> {
 
     private final AtomicBoolean closed = new AtomicBoolean(false);
 
+    protected class IOMetrics {
+        protected long startTimeMillis;
+        protected long endTimeMillis;       // XXX This is most likely unnecessary.
+        protected long msgCountTotal;
+        protected long msgBytesTotal;
+        protected long msgSizeMin;
+        protected long msgSizeMax;
+        protected long errorCountTotal;
+        public synchronized String toString() {
+            return "IOMetrics"
+                + "{startTimeMillis=" + startTimeMillis
+                + ",endTimeMillis="   + endTimeMillis
+                + ",msgCountTotal="   + msgCountTotal
+                + ",msgBytesTotal="   + msgBytesTotal
+                + ",msgSizeMin="      + msgSizeMin
+                + ",msgSizeMax="      + msgSizeMax
+                + ",errorCountTotal=" + errorCountTotal
+                + "}";
+        }
+        public IOMetrics() {
+            resetMetrics();
+        }
+        public synchronized void updateMetrics(int len) {
+            this.endTimeMillis = System.currentTimeMillis();
+            this.msgCountTotal++;
+            this.msgBytesTotal += len;
+            this.msgSizeMin = Math.min(this.msgSizeMin, len);
+            this.msgSizeMax = Math.max(this.msgSizeMax, len);
+        }
+        public synchronized void updateMetricsErr() {
+            this.errorCountTotal++;
+        }
+        public synchronized void resetMetrics() {
+            this.startTimeMillis = this.endTimeMillis = System.currentTimeMillis();
+            this.msgCountTotal = 0;
+            this.msgBytesTotal = 0;
+            this.msgSizeMin = Long.MAX_VALUE;
+            this.msgSizeMax = -1;
+            this.errorCountTotal = 0;
+        }
+    }
+    IOMetrics ioMetrics;
+    protected void updateMetrics(int len) { ioMetrics.updateMetrics(len); }
+    protected void updateMetricsErr() { ioMetrics.updateMetricsErr(); }
+    public Metrics getMetrics() {
+        Metrics metrics = new Metrics();
+        metrics.setStartTimeMillis(this.ioMetrics.startTimeMillis);
+        metrics.setEndTimeMillis(this.ioMetrics.endTimeMillis);
+        metrics.setMsgCountTotal(this.ioMetrics.msgCountTotal);
+        metrics.setMsgBytesTotal(this.ioMetrics.msgBytesTotal);
+        metrics.setMsgSizeMin(this.ioMetrics.msgSizeMin != Long.MAX_VALUE ? this.ioMetrics.msgSizeMin : -1);
+        metrics.setMsgSizeMax(this.ioMetrics.msgSizeMax);
+        metrics.setErrorCountTotal(this.ioMetrics.errorCountTotal);
+        metrics.setRaw(target.getMetrics());
+        return metrics;
+    }
+    public void resetMetrics(boolean reset_raw) {
+        this.ioMetrics.resetMetrics();
+        if (reset_raw)
+            target.resetMetrics();
+    }
+
     public SinetStreamIO(SinetStreamParameters parameters, T target) {
         this.target = target;
         this.config = new PluginWrapperMap(parameters.getConfig());
         this.service = parameters.getService();
         this.isDataEncryption = parameters.isDataEncryption();
         this.valueType = parameters.getValueType();
+        this.ioMetrics = new IOMetrics();
     }
 
     public String getClientId() {

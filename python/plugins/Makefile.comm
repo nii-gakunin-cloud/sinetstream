@@ -30,7 +30,20 @@ reinstall:
 	$(MAKE) install
 
 test:
-	-$(SETUP) test
+	cd ../../.. && make bdist_wheel-local
+	cd tests/docker_* && docker-compose down && docker-compose up -d && docker-compose logs -ft test
+	../../../tests/rot test.log
+	(cd tests/docker_* && docker-compose logs --no-color test) >test.log
+	cd tests/docker_* && docker-compose down
+
+test-shell:
+	cd ../../.. && make bdist_wheel-local
+	cd tests/docker_* && sed '/command: bash\|tty: true/{s/^#//}' docker-compose.yml >docker-compose-shell.yml
+	cd tests/docker_* && docker-compose down && docker-compose -f docker-compose-shell.yml up -d
+	rm tests/docker_*/docker-compose-shell.yml
+	sleep 3  # XXX wait for docker_*_test_1
+	docker exec -it docker_$$(basename $$(pwd))_test_1 bash || true
+	cd tests/docker_* && docker-compose down
 
 tags::
 	uctags -R --exclude=".*" --exclude="*.css" --exclude="*.js" src tests ../../../src $(HOME)/.local/lib

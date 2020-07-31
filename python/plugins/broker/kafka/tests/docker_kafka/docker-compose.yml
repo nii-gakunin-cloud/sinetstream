@@ -30,6 +30,8 @@ services:
       KAFKA_SSL_BROKER_BAD_HOSTNAME: bad-broker:9093
 #    command: bash
 #    tty: true
+    # command: python setup.py test --addopts '-vv --log-level=warning'
+    # command: python setup.py test --addopts '-vv --log-level=debug tests/test_pubsub.py'
     networks:
     - other-name-kafka
 networks:

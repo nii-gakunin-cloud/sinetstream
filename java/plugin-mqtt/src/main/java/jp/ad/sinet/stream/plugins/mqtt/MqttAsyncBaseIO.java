@@ -75,4 +75,7 @@ public class MqttAsyncBaseIO extends AbstractMqttIO<MqttAsyncClient> {
             throw new SinetStreamIOException(e);
         }
     }
+
+    public Object getMetrics() { return null; }
+    public void resetMetrics() { }
 }

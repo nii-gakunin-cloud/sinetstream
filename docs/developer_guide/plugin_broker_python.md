@@ -256,6 +256,11 @@ SINETStreamのプラグインを作成するためには以下の作業が必要
         * メッセージングシステム依存のメッセージオブジェクト
     * コンストラクタの`params['receive_timeout_ms']`で指定された時間(ミリ秒)の間にメッセージが受信できなかった場合は、イテレータは`StopIterator`の例外を送出しなくてはならない
     * `params['receive_timeout_ms']`が指定されていなかった場合はメッセージを受信するまでブロックする
+* `metrics()`
+    * プラグイン固有のメトリクス情報を返すメソッド
+    * 固有の情報がなければNoneを返す
+* `reset_metrics()`
+    * サービスプロバイダ固有のメトリクス情報をリセットするメソッド
     
 プラグインが上記のメソッドを実装することを確認するために、抽象基底クラス `sinetstream.spi.PluginMessageReader`
 を利用することができます。`PluginMessageReader`では上記の３つのメソッドが抽象メソッドとして定義されています。
@@ -277,6 +282,9 @@ SINETStreamの設定ファイル、あるいは`MessageReader`のコンストラ
 * `publish(message)`
     * ブローカーにメッセージを送信するメソッド
     * `message`の型は `bytes` でなくてはならない
+* `metrics()`
+    * プラグイン固有のメトリクス情報を返すメソッド
+    * 固有の情報がなければNoneを返す
     
 プラグインが上記のメソッドを実装することを確認するために、抽象基底クラス `sinetstream.spi.PluginMessageWriter`
 を利用することができます。`PluginMessageWriter`では上記の３つのメソッドが抽象メソッドとして定義されています。
@@ -294,6 +302,9 @@ SINETStreamの設定ファイル、あるいは`MessageWriter`のコンストラ
     * ブローカーに接続を行うメソッド
 * `close()`
     * ブローカーとの接続を切断するメソッド
+* `metrics()`
+    * プラグイン固有のメトリクス情報を返すメソッド
+    * 固有の情報がなければNoneを返す
 * `.on_message`
     * メッセージを受信した時に呼び出すコールバック関数
     * 引数で受信したメッセージを渡す
@@ -322,6 +333,9 @@ SINETStreamの設定ファイル、あるいは`AsyncMessageReader`のコンス�
     * `message`の型は `bytes` でなくてはならない
     * メソッドの呼び出しはブロックせずに直ぐに返ることを想定している
     * 返り値は [`Promise`](https://github.com/syrusakbary/promise) オブジェクトでなくてはならない
+* `metrics()`
+    * プラグイン固有のメトリクス情報を返すメソッド
+    * 固有の情報がなければNoneを返す
     
 プラグインが上記のメソッドを実装することを確認するために、抽象基底クラス `sinetstream.spi.PluginAsyncMessageWriter`
 を利用することができます。`PluginAsyncMessageWriter`では上記の３つのメソッドが抽象メソッドとして定義されています。

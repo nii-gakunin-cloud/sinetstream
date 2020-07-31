@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.logging.Level;
 
 @Log
 public class KafkaBaseWriter extends KafkaBaseIO {
@@ -141,5 +142,11 @@ public class KafkaBaseWriter extends KafkaBaseIO {
             producer.abortTransaction();
             log.finer(() -> "KAFKA abort transaction: " + getClientId());
         }
+    }
+
+    public Object getMetrics() {
+        return producer.metrics();
+    }
+    public void resetMetrics() {
     }
 }

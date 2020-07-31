@@ -1,5 +1,11 @@
 # Changelog
 
+## [v1.3.0] - 2020-07-31
+
+### Added
+
+- Support metrics API
+
 ## [v1.2.0] - 2020-06-08
 
 ### Added
@@ -14,7 +20,6 @@
 ### Fixed
 
 - Fixed TLS connection setup problem, caused by MQTT-specific parameter "tls_set" (Java)
-
 
 ## [v1.1.0] - 2020-03-19
 

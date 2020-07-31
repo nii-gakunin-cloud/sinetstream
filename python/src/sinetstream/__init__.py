@@ -20,6 +20,7 @@
 from .api import (
     MessageReader, MessageWriter, AsyncMessageWriter, AsyncMessageReader,
     AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE, DEFAULT_CLIENT_ID,
+    Metrics
 )
 from .error import (
     SinetError, NoServiceError, NoConfigError, InvalidArgumentError,

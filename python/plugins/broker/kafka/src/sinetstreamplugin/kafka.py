@@ -142,6 +142,13 @@ class KafkaClient(object):
         except Exception:
             logger.error('kafka close() error')
 
+    def metrics(self, reset):
+        if self._client is None:
+            return None
+        if reset:
+            logger.info("Kafka:metrics: reset is not supported")
+        return self._client.metrics(raw=True)
+
 
 class BaseKafkaReader(KafkaClient):
     def __init__(self, params):

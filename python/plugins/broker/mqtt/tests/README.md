@@ -117,6 +117,31 @@ SINETStreamライブラリ(プラグインでないほう)に修正があり、�
 事前に`../../../../dist/`にwheelパッケージを作成しておくとコンテナ起動時に自動的
 にパッケージがインストールされます。
 
+### テストを追加するとき
+
+テストコードを追加するときにテストするたびにコンテナを作成すると時間がかかるので、コンテナの中で作業すると効率がよいです。
+
+`docker-compose.yml` を編集して次の2行を追加します。
+
+```
+services:
+  test:
+    command: bash  # この行を追加
+    tty: true      # この行を追加
+```
+
+`docker-compose up -d` でコンテナを立ち上げたあと、コンテナの中に入ってテストを実行します。
+
+```
+$ docker exec -it docker_mqtt_test_1 bash
+root@1234567890ab:/opt/ss_test# cd /opt/ss_test
+root@1234567890ab:/opt/ss_test# python setup.py test
+running pytest
+(途中略)
+root@1234567890ab:/opt/ss_test# exit
+$ 
+```
+
 ## 外部のMQTTブローカーを利用する場合
 
 テストに利用するブローカーのアドレスを環境変数に設定してください。テストに必要

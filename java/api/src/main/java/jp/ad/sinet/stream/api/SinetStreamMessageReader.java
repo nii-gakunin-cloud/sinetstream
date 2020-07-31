@@ -39,22 +39,41 @@ public class SinetStreamMessageReader<T> extends SinetStreamBaseReader<T, Plugin
 
     @Override
     public Message<T> read() {
-        return toMessage(target.read());
+        try {
+            return toMessage(target.read());
+        }
+        catch (Exception e) {
+            updateMetricsErr();
+            throw e;
+        }
     }
 
     @Override
     public Stream<Message<T>> stream() {
+        SinetStreamMessageReader<T> reader = this;
         Iterator<Message<T>> iterator = new Iterator<Message<T>>() {
             private Iterator<PluginMessageWrapper> it = target.stream().iterator();
 
             @Override
             public boolean hasNext() {
-                return it.hasNext();
+                try {
+                    return it.hasNext();
+                }
+                catch (Exception e) {
+                    reader.updateMetricsErr();
+                    throw e;
+                }
             }
 
             @Override
             public Message<T> next() {
-                return toMessage(it.next());
+                try {
+                    return toMessage(it.next());
+                }
+                catch (Exception e) {
+                    reader.updateMetricsErr();
+                    throw e;
+                }
             }
         };
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED | Spliterator.NONNULL), false);

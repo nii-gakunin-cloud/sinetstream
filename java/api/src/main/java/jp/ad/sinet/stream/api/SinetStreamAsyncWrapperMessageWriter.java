@@ -98,4 +98,14 @@ public class SinetStreamAsyncWrapperMessageWriter<T> implements AsyncMessageWrit
     public boolean isDataEncryption() {
         return syncWriter.isDataEncryption();
     }
+
+    @Override
+    public Metrics getMetrics() {
+        return syncWriter.getMetrics();
+    }
+
+    @Override
+    public void resetMetrics(boolean reset_raw) {
+        syncWriter.resetMetrics(reset_raw);
+    }
 }

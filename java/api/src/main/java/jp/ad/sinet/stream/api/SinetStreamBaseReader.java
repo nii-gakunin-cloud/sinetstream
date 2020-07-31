@@ -77,7 +77,9 @@ public class SinetStreamBaseReader<T, U extends PluginMessageIO> extends SinetSt
         if (Objects.isNull(pluginMessage)) {
             return null;
         }
-        Timestamped<T> tsRecord = compositeDeserializer.deserialize(pluginMessage.getValue());
+        byte[] payload = pluginMessage.getValue();
+        updateMetrics(payload.length);
+        Timestamped<T> tsRecord = compositeDeserializer.deserialize(payload);
         return new Message<>(tsRecord.getValue(), pluginMessage.getTopic(), tsRecord.getTstamp(), pluginMessage.getRaw());
     }
 

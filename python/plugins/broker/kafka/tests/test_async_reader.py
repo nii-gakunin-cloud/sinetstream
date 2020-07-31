@@ -81,14 +81,19 @@ def template_on_message(setup_messages, consistency, config_topics, reader_test)
 
     def assert_messages(message):
         nonlocal count, check
+        # with cv:
         count, check = check_message(
             message, setup_messages, config_topics, cv, count, check)
 
     def wait_on_messages():
         nonlocal count
+        import time
+        deadline = time.time() + 20
         with cv:
             while count > 0:
-                cv.wait(10)
+                if time.time() >= deadline:
+                    raise Exception("TIMEOUT")
+                cv.wait(1)
 
     reader_test(
         config_topics, consistency, setup_messages,
@@ -102,8 +107,7 @@ def check_message(message, messages, topics, cv, count, check):
         assert message.value == messages[-(count + 1)]
         assert message.topic == topics
         check += 1
-        if count == 0:
-            cv.notify_all()
+        cv.notify_all()
     return count, check
 
 

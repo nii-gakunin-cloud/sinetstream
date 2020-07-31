@@ -26,7 +26,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from copy import copy
 from enum import Enum, auto
-from threading import RLock
+from threading import Lock, RLock
 
 from sinetstream.crypto import CipherAES
 from sinetstream.error import (
@@ -273,6 +273,93 @@ default_params = {
 }
 
 
+class Metrics(object):
+    def __init__(self):
+        pass
+        # self.start_time
+        # self.end_time
+        # self.msg_count_total
+        # self.msg_bytes_total
+        # self.msg_size_min
+        # self.msg_size_max
+        # self.error_count_total
+
+    @property
+    def time(self):
+        return self.end_time - self.start_time
+
+    @property
+    def msg_count_rate(self):
+        return self.msg_count_total / self.time
+
+    @property
+    def msg_bytes_rate(self):
+        return self.msg_bytes_total / self.time
+
+    @property
+    def msg_size_avg(self):
+        return self.msg_bytes_total / self.msg_count_total
+
+    @property
+    def error_count_rate(self):
+        return self.error_count_total / self.time
+
+    def __str__(self):
+        return (f"time={self.time},"
+                f"start_time={self.start_time},"
+                f"end_time={self.end_time},"
+                f"msg_count_total={self.msg_count_total},"
+                f"msg_count_rate={self.msg_count_rate},"
+                f"msg_bytes_total={self.msg_bytes_total},"
+                f"msg_bytes_rate={self.msg_bytes_rate},"
+                f"msg_size_min={self.msg_size_min},"
+                f"msg_size_max={self.msg_size_max},"
+                f"msg_size_avg={self.msg_size_avg},"
+                f"error_count_total={self.error_count_total},"
+                f"error_count_rate={self.error_count_rate}")
+
+
+class IOMetrics(object):
+    MAXSIZE = (1 << 63) - 1
+
+    def __init__(self):
+        self._lock = Lock()
+        self._metrics = Metrics()
+        self.reset()
+
+    def reset(self):
+        with self._lock:
+            self._metrics.start_time = time.time()
+            self._metrics.end_time = self._metrics.start_time  # XXX This is most likely unnecessary.
+            self._metrics.msg_count_total = 0
+            self._metrics.msg_bytes_total = 0
+            self._metrics.msg_size_min = IOMetrics.MAXSIZE
+            self._metrics.msg_size_max = -1
+            self._metrics.error_count_total = 0
+
+    def update(self, length):
+        with self._lock:
+            self._metrics.end_time = time.time()
+            self._metrics.msg_count_total += 1
+            self._metrics.msg_bytes_total += length
+            self._metrics.msg_size_min = min(length, self._metrics.msg_size_min)
+            self._metrics.msg_size_max = max(length, self._metrics.msg_size_max)
+
+    def update_err(self):
+        with self._lock:
+            self._metrics.end_time = time.time()
+            self._metrics.error_count_total += 1
+
+    def get_metrics(self):
+        with self._lock:
+            r = copy(self._metrics)
+        if r.msg_size_min == IOMetrics.MAXSIZE:
+            r.msg_size_min = None
+        if r.msg_size_max == -1:
+            r.msg_size_max = None
+        return r
+
+
 class MessageIO(object):
 
     def __init__(self, service, params, registry):
@@ -282,6 +369,7 @@ class MessageIO(object):
         self._plugin = self._find_plugin(registry, params["type"])
         self.cipher = make_cipher(params["crypto"]) if params["data_encryption"] else None
         self._opened = False
+        self.iometrics = IOMetrics()
         self._lock = RLock()
 
     def _find_plugin(self, registry, service_type):
@@ -333,6 +421,13 @@ class MessageIO(object):
     def value_type(self):
         return self.params["value_type"]
 
+    def metrics(self, reset=False):
+        metrics = self.iometrics.get_metrics()
+        metrics.raw = self._plugin.metrics(reset)
+        if reset:
+            self.iometrics = IOMetrics()
+        return metrics
+
 
 class BaseMessageReader(MessageIO):
     default_params = {
@@ -356,6 +451,7 @@ class BaseMessageReader(MessageIO):
         return self.params["receive_timeout_ms"]
 
     def _make_message(self, value, topic, raw):
+        self.iometrics.update(len(value))
         assert type(value) == bytes
         if self.cipher is not None:
             value = self.cipher.decrypt(value)
@@ -419,8 +515,12 @@ class MessageReader(BaseMessageReader):
         return self
 
     def __next__(self):
-        message, topic, raw = next(self._iter)
-        return self._make_message(message, topic, raw)
+        try:
+            message, topic, raw = next(self._iter)
+            return self._make_message(message, topic, raw)
+        except:
+            self.iometrics.update_err()
+            raise
 
 
 WRITER_USAGE = '''MessageWriter(
@@ -455,7 +555,7 @@ class BaseMessageWriter(MessageIO):
         self.marshaller = Marshaller()
         self.value_serializer = self._setup_serializer()
 
-    def publish(self, msg):
+    def _publish(self, msg):
         tstamp = int(time.time() * 1000_000)
         return self._plugin.publish(self._to_bytes(msg, tstamp))
 
@@ -489,6 +589,7 @@ class BaseMessageWriter(MessageIO):
         if self.cipher:
             msg = self.cipher.encrypt(msg)
         assert type(msg) == bytes
+        self.iometrics.update(len(msg))
         return msg
 
 
@@ -501,6 +602,13 @@ class MessageWriter(BaseMessageWriter):
 
     def __init__(self, service, topic=None, config_file=None, **kwargs):
         super().__init__(MessageWriter.registry, service, topic, config_file, **kwargs)
+
+    def publish(self, msg):
+        try:
+            return super()._publish(msg)
+        except:
+            self.iometrics.update_err()
+            raise
 
 
 def _setup_topic(params, topic):
@@ -547,6 +655,14 @@ class AsyncMessageWriter(BaseMessageWriter):
     def __init__(self, service, topic=None, config_file=None, **kwargs):
         super().__init__(AsyncMessageWriter.registry, service, topic, config_file, **kwargs)
 
+    def _err(self, e):
+        self.iometrics.update_err()
+        raise e
+
+    def publish(self, msg):
+        promise = super()._publish(msg)
+        return promise.catch(lambda e: self._err(e))
+
 
 class AsyncMessageReader(BaseMessageReader):
     registry = Registry("sinetstream.async_reader", PluginAsyncMessageReader)
@@ -560,6 +676,7 @@ class AsyncMessageReader(BaseMessageReader):
         super().__init__(AsyncMessageReader.registry, service, topics, config_file, **kwargs)
         self._executor = None
         self._on_message = None
+        self._on_failure = None
 
     def open(self):
         ret = super().open()
@@ -587,8 +704,14 @@ class AsyncMessageReader(BaseMessageReader):
 
     @property
     def on_failure(self):
-        return self._plugin.on_failure
+        return self._on_failure
 
     @on_failure.setter
     def on_failure(self, on_failure):
-        self._plugin.on_failure = on_failure
+        self._on_failure = on_failure
+
+        def callback(e, traceback=None):
+            self.iometrics.update_err()
+            self._on_failure(e, traceback)
+
+        self._plugin.on_failure = callback

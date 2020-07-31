@@ -86,6 +86,8 @@ public class DummyMessageProvider implements MessageWriterProvider, MessageReade
             config = Collections.unmodifiableMap(params.getConfig());
             topic = String.join(",", params.getTopics());
         }
+
+        public Object getMetrics(boolean reset) { return "this is a dummy metrics"; }
     }
 
     public class DummyWriter extends DummyIO implements PluginMessageWriter {
