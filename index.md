@@ -23,7 +23,7 @@ under the License.
 
 ## News
 
-**お知らせ** `2020-07-31` SINETStreamの1.3版を公開いたしました。  
+**お知らせ** `2020-07-31` [SINETStreamの1.3版を公開](docs/news/20200731-release_v13.md)いたしました。  
 お知らせ `2020-06-09` [SINETStreamの1.2版を公開](docs/news/20200609-release_v12.md)いたしました。  
 
 ## SINETStreamとは
