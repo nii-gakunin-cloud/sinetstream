@@ -57,10 +57,20 @@ FAQのご紹介等の情報提供をさせていただきます。
 
 * [ユーザ登録・問い合わせ先](https://reg.nii.ac.jp/m/sinetstream_user_registration)
 
-## SINETStreamの仕組み
+## キュメント
 
 SINETStreamの仕組みや動作環境などの詳細については以下のリンク先を参照してください。
-* [SINETStreamの仕組みについて](README.md)
+* [ドキュメント](README.md)
+
+## チュートリアル
+
+* [クイックスタートガイド](docs/tutorial/index.md)
+
+<div align="center">
+<br/>
+<a href="https://www.youtube.com/watch?v=4fOJZ-Z4Q8Q">SINETStreamチュートリアルデモ動画</a>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/4fOJZ-Z4Q8Q" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
 
 ## SINETStreamを利用したライブデモ
 

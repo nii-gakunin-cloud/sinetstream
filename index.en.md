@@ -52,11 +52,15 @@ Please register from the link below.
 
 * [User registration & contact](https://reg.nii.ac.jp/m/sinetstream_user_registration)
 
-## How SINETStream works
+## Documents
 
 Please refer to the following link for details on the structure and operating environment of SINETStream.
 
-* [Structure of SINETStream](README.en.md)
+* [Documents](README.en.md)
+
+## Tutorial
+
+* [Quick Start Guide](docs/tutorial/index.en.md)
 
 ## Live demo using SINETStream
 
