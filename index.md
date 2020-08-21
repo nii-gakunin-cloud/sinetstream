@@ -45,6 +45,7 @@ SINETStreamは、広域ネットワークを介してデータを欠損なく確
 <div align="center">
 <br/>
 <a href="https://www.youtube.com/watch?v=Z0wlUi4lr6c">広域データ収集基盤・SINETStream紹介ビデオ</a>
+<br/>
 <iframe width="560" height="315" src="https://www.youtube.com/embed/Z0wlUi4lr6c" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </div>
 
@@ -69,6 +70,7 @@ SINETStreamの仕組みや動作環境などの詳細については以下のリ
 <div align="center">
 <br/>
 <a href="https://www.youtube.com/watch?v=4fOJZ-Z4Q8Q">SINETStreamチュートリアルデモ動画</a>
+<br/>
 <iframe width="560" height="315" src="https://www.youtube.com/embed/4fOJZ-Z4Q8Q" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </div>
 
