@@ -58,7 +58,7 @@ FAQのご紹介等の情報提供をさせていただきます。
 
 * [ユーザ登録・問い合わせ先](https://reg.nii.ac.jp/m/sinetstream_user_registration)
 
-## キュメント
+## ドキュメント
 
 SINETStreamの仕組みや動作環境などの詳細については以下のリンク先を参照してください。
 * [ドキュメント](README.md)
