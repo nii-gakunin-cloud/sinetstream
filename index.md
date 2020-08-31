@@ -69,9 +69,9 @@ SINETStreamの仕組みや動作環境などの詳細については以下のリ
 
 <div align="center">
 <br/>
-<a href="https://www.youtube.com/watch?v=4fOJZ-Z4Q8Q">SINETStreamチュートリアルデモ動画（音声なし）</a>
+<a href="https://www.youtube.com/watch?v=2Wjjvs3fJ9g">SINETStreamチュートリアルデモ動画</a>
 <br/>
-<iframe width="560" height="315" src="https://www.youtube.com/embed/4fOJZ-Z4Q8Q" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/2Wjjvs3fJ9g" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </div>
 
 ## SINETStreamを利用したライブデモ
