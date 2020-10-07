@@ -63,9 +63,11 @@ SINETStreamのモジュール構成を以下の図に示します。
 
 ![モジュール構成](images/SINETStream-module.png)
 
-青枠で示した部分がSINETStream本体です。この部分はメッセージングシステムによらない機能を提供
-しています。 緑枠で示した部分がSINETStreamのプラグインです。メッセージングシステムとのインター
-フェイスはこの部分に閉じた実装となります。
+青枠で示した部分がSINETStream本体です。
+この部分はメッセージングシステムによらない機能を提供しています。
+緑枠で示した部分がSINETStreamのプラグインです。
+メッセージングシステムとのインターフェイスはこの部分に閉じた実装となります。
+各メッセージングシステムに対する操作は、SPIを実装したプラグインを介して行われます。
 
 モジュールの各部分についての簡単な説明を以下に記します。
 
@@ -80,7 +82,7 @@ SINETStreamのモジュール構成を以下の図に示します。
         * メッセージングシステムから取得したバイト列をオブジェクトに変換する機能
     * メタデータの埋め込み
         * メッセージにメタデータを付加する機能
-        * SINETStream v1.2 で付加するメタデータはメッセージ送信のタイムスタンプとなる
+        * SINETStream v1.1 で付加するメタデータはメッセージ送信のタイムスタンプとなる
     * メタデータの取り出し
         * メッセージに付加されているメタデータを取り出す機能
     * 暗号化
@@ -97,7 +99,7 @@ SINETStreamのモジュール構成を以下の図に示します。
         * 実際の処理はApache Kafka [Producer](https://kafka.apache.org/24/javadoc/index.html?org/apache/kafka/clients/producer/KafkaProducer.html), [Consumer](https://kafka.apache.org/24/javadoc/index.html?org/apache/kafka/clients/consumer/KafkaConsumer.html)の機能を呼び出すことで実現している
     * MQTTプラグイン
         * MQTTブローカとの間でメッセージの送受信を行う機能
-        * 実際の処理は[eclipse paho](https://www.eclipse.org/paho/clients/java/)の機能を呼び出すことで実現している
+        * 実際の処理は[Eclipse Paho](https://www.eclipse.org/paho/clients/java/)の機能を呼び出すことで実現している
 
 ### 2.2 処理シーケンス
 

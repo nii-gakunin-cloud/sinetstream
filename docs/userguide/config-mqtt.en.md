@@ -31,7 +31,7 @@ SINETStream User Guide
     * MQTT Version.
     * Choose either `MQTTv31`, `MQTTv311`, or `MQTTv5`.
 * transport
-    * Choose either `tcp` or `websocket`.
+    * Choose either `tcp` or `websockets`.
 * qos
     * The QoS for sending and receiving messages.
     * Choose one of 0, 1, or 2, which correspond to `AT_MOST_ONCE`, `AT_LEAST_ONCE`, `EXACTLY_ONCE` of `Consistency`, respectively.

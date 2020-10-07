@@ -22,53 +22,51 @@
 package jp.ad.sinet.stream.example.perf;
 
 import org.apache.commons.cli.*;
+import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.common.MetricName;
+import org.apache.kafka.common.Metric;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
-import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.PrintWriter;
-import java.util.Properties;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.Map;
+import java.util.Properties;
 
 @SuppressWarnings("WeakerAccess")
 public class KafkaBinaryProducer {
 
-    private final String brokers;
-    private final String topic_dst;
-    private final int qos;
-    private final int bytes;
-    private final int fps;
-    private final int nmsg;
-    private final String logfile;
+    private final Util.ProducerOptions opts;
 
-    public KafkaBinaryProducer(String brokers, String topic_dst, int qos, int bytes, int fps, int nmsg, String logfile) {
-        this.brokers = brokers;
-        this.topic_dst = topic_dst;
-        this.qos = qos;
-        this.bytes = bytes;
-        this.fps = fps;
-        this.nmsg = nmsg;
-        this.logfile = logfile;
+    public KafkaBinaryProducer(Util.ProducerOptions opts) {
+        this.opts = opts;
     }
 
     public void run() throws Exception {
-        int interval;
-        if (this.fps > 0) {
-            interval = 1000 / this.fps;
+        AtomicInteger errcnt = new AtomicInteger();
+        int interval; // [ns]
+        if (opts.fps > 0) {
+            interval = 1000000000 / opts.fps;
             if (interval == 0) {
-                System.err.println("fps " + this.fps + " is too short");
+                System.err.println("fps " + opts.fps + " is too short");
             }
         } else {
             interval = 0;
         }
 
         Properties props = new Properties();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, this.brokers);
-        switch (this.qos) {
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, opts.brokers);
+        switch (opts.qos) {
             case 0:
                 props.put(ProducerConfig.ACKS_CONFIG, "0");
                 break;
@@ -81,65 +79,99 @@ public class KafkaBinaryProducer {
         }
         KafkaProducer<String, byte[]> producer = new KafkaProducer<>(props, new StringSerializer(), new ByteArraySerializer());
 
-        long[] ts = new long[this.nmsg];
-        byte[] buf = new byte[this.bytes];
-        //Random rnd = new Random();
-        //rnd.nextBytes(buf);
-        ProducerRecord<String, byte[]> record = new ProducerRecord<>(this.topic_dst, buf);
-        long next = System.currentTimeMillis() + interval;
-        for (int i = 0; i < this.nmsg; i++) {
-            //producer.send(record).get();
-            producer.send(record);
-            long t = System.currentTimeMillis();
-            ts[i] = t;
+        CountDownLatch done = new CountDownLatch(opts.nmsg);
+        long tstart = System.currentTimeMillis();
+        long[] ts = new long[opts.nmsg];
+	/*
+        Future<RecordMetadata>[] fus = new Future[opts.nmsg];
+	*/
+        Util.DataList dataList = new Util.DataList(opts.nmsg, opts.bytes);
+        long next = System.nanoTime() + interval;
+        int n = 0;
+        String error = null;
+        for (int i = 0; i < opts.nmsg; i++) {
+            if (System.currentTimeMillis() - tstart > opts.timeout2) {
+                error = "pub:timedout2";
+                System.err.println(error);
+                break;
+            }
+            ProducerRecord<String, byte[]> record = new ProducerRecord<>(opts.topic_dst, dataList.getData(i));
+            if (opts.sync_mode) {
+                Future<RecordMetadata> fu = producer.send(record);
+                fu.get(opts.timeout1, TimeUnit.MILLISECONDS);
+                long t = System.currentTimeMillis();
+                ts[n] = t;
+            } else {
+                final int nn = n;
+                Callback cb = new Callback() {
+                    public void onCompletion(RecordMetadata metadata, Exception e) {
+                        long t = System.currentTimeMillis();
+                        if(e != null) {
+                            errcnt.getAndIncrement();
+                            // e.printStackTrace();
+                            ts[nn] = -t;
+                        } else {
+                            ts[nn] = t;
+                        }
+                        done.countDown();
+                    }
+                };
+                producer.send(record, cb);
+                /*
+                Future<RecordMetadata> fu = producer.send(record);
+                fus[i] = fu;
+                */
+            }
+            n++;
             if (interval > 0) {
-                long rest = next - System.currentTimeMillis();
+                long rest = next - System.nanoTime();
                 if (rest > 0) {
-                    TimeUnit.MILLISECONDS.sleep(rest);
+                    TimeUnit.NANOSECONDS.sleep(rest);
                 } else {
-                    System.err.println("SLOW " + rest);
+                    //System.err.println("SLOW " + rest);
                 }
                 next += interval;
             }
         }
-        FileWriter file = new FileWriter(this.logfile);
-        PrintWriter pw = new PrintWriter(new BufferedWriter(file));
-        for (int i = 0; i < this.nmsg; i++) {
-            pw.println(ts[i] + "," + this.bytes);
+        if (!opts.sync_mode) {
+            for (int i = 0; i < opts.nmsg - n; i++)
+                done.countDown();
+            boolean ok = done.await(opts.timeout2, TimeUnit.MILLISECONDS);
+            if (!ok) {
+                error = "pub:timeout2";
+                System.err.println(error);
+            }
+            /*
+            for (int i = 0; i < n; i++) {
+                fus[i].get(opts.timeout1, TimeUnit.MILLISECONDS);
+                long t = System.currentTimeMillis();
+                ts[i] = t;
+            }
+            */
         }
-        pw.close();
+        Map<MetricName,? extends Metric> metrics = producer.metrics();
+
+        try (PrintWriter pw = new PrintWriter(Files.newBufferedWriter(Paths.get(opts.logfile)))) {
+            pw.println("#comp,size,seq,send");
+            for (int i = 0; i < n; i++) {
+                long t = ts[i];
+                int bytes = opts.bytes;
+                if (t < 0) {
+                    t = -t;
+                    bytes = 0;
+                }
+                pw.println(t + "," + bytes + "," + Util.extractMetadata(dataList.peekData(i)).str());
+            }
+            pw.println("#errcnt " + errcnt.get());
+            if (error != null)
+                pw.println("# " + error);
+            pw.println("#record-retry-total " + Util.get_kafka_metric(metrics, "record-retry-total", "producer-metrics"));
+        }
     }
 
     public static void main(String[] args) {
-        //String logfile = "kafkaJava.produced." + Util.getTime() + "." + Util.getHostName() + ".csv";
-        Options opts = new Options();
-        opts.addOption(Option.builder("b").required().hasArg().longOpt("brokers").build());
-        opts.addOption(Option.builder("d").required().hasArg().longOpt("topic_dst").build());
-        opts.addOption(Option.builder("Q").required().hasArg().longOpt("qos").build());
-        opts.addOption(Option.builder("B").hasArg().longOpt("bytes").build());
-        opts.addOption(Option.builder("F").hasArg().longOpt("fps").build());
-        opts.addOption(Option.builder("N").hasArg().longOpt("nmsg").build());
-        opts.addOption(Option.builder("f").required().hasArg().longOpt("logfile").build());
-
-        CommandLineParser parser = new DefaultParser();
-        KafkaBinaryProducer producer = null;
         try {
-            CommandLine cmd = parser.parse(opts, args);
-            producer = new KafkaBinaryProducer(
-                    cmd.getOptionValue("brokers"),
-                    cmd.getOptionValue("topic_dst"),
-                    Integer.parseInt(cmd.getOptionValue("qos")),
-                    Integer.parseInt(cmd.getOptionValue("bytes", "40")),
-                    Integer.parseInt(cmd.getOptionValue("fps", "15")),
-                    Integer.parseInt(cmd.getOptionValue("nmsg", "5")),
-                    cmd.getOptionValue("logfile")
-            );
-        } catch (ParseException e) {
-            System.err.println("Parsing failed: " + e.getMessage());
-            new HelpFormatter().printHelp(KafkaBinaryProducer.class.getSimpleName(), opts, true);
-            System.exit(1);
-        }
-        try {
+            KafkaBinaryProducer producer = new KafkaBinaryProducer(Util.parseProducerOptions("KafkaBinaryProducer", args));
             producer.run();
         } catch (Exception e) {
             e.printStackTrace();

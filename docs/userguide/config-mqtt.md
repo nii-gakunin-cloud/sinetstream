@@ -31,7 +31,7 @@ SINETStream ユーザガイド
     * MQTTバージョン
     * 指定できる値は `MQTTv31`, `MQTTv311`, `MQTTv5` のどれか
 * transport
-    * 指定できる値は `tcp`, `websocket` のどちらか
+    * 指定できる値は `tcp`, `websockets` のどちらか
 * qos
     * メッセージを送受信する際の QoS
     * 0, 1, 2 が指定でき、それぞれ `Consistency` の `AT_MOST_ONCE`, `AT_LEAST_ONCE`, `EXACTLY_ONCE` に対応する

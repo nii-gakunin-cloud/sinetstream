@@ -27,111 +27,120 @@ import jp.ad.sinet.stream.api.valuetype.SimpleValueType;
 import jp.ad.sinet.stream.utils.MessageWriterFactory;
 import org.apache.commons.cli.*;
 
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 public class SinetstreamBinaryAsyncProducer {
 
-    private final String service;
-    private final String topic_dst;
-    private final int qos;
-    private final int bytes;
-    private final int fps;
-    private final int nmsg;
-    private final String logfile;
+    private final Util.ProducerOptions opts;
 
-    public SinetstreamBinaryAsyncProducer(String service, String topic_dst, int qos, int bytes, int fps, int nmsg, String logfile) {
-        this.service = service;
-        this.topic_dst = topic_dst;
-        this.qos = qos;
-        this.bytes = bytes;
-        this.fps = fps;
-        this.nmsg = nmsg;
-        this.logfile = logfile;
+    public SinetstreamBinaryAsyncProducer(Util.ProducerOptions opts) {
+        this.opts = opts;
     }
 
     public void run() throws Exception {
-        CountDownLatch done = new CountDownLatch(this.nmsg);
-        AtomicInteger error = new AtomicInteger();
-        int interval;
-        if (this.fps > 0) {
-            interval = 1000 / this.fps;
+        CountDownLatch done = new CountDownLatch(opts.nmsg);
+        AtomicInteger errcnt = new AtomicInteger();
+        List<Throwable> errlst = Collections.synchronizedList(new LinkedList<Throwable>());
+        int interval; // [ns]
+        if (opts.fps > 0) {
+            interval = 1000000000 / opts.fps;
             if (interval == 0) {
-                System.err.println("fps " + this.fps + " is too short");
+                System.err.println("fps " + opts.fps + " is too short");
             }
         } else {
             interval = 0;
         }
-        Consistency consistency = Consistency.valueOf(this.qos);
+        Consistency consistency = Consistency.valueOf(opts.qos);
         MessageWriterFactory<byte[]> factory =
                 MessageWriterFactory.<byte[]>builder()
-                        .service(service)
-                        .topic(topic_dst)
+                        .service(opts.service)
+                        .topic(opts.topic_dst)
                         .consistency(consistency)
                         .valueType(SimpleValueType.BYTE_ARRAY)
                         .build();
-        long[] ts = new long[this.nmsg + 1];
-        byte[] buf = new byte[this.bytes];
+        long[] ts = new long[opts.nmsg];
+        Util.DataList dataList = new Util.DataList(opts.nmsg, opts.bytes);
+        int n = 0;
+        String error = null;
+        Object metrics = null;
         try (AsyncMessageWriter<byte[]> writer = factory.getAsyncWriter()) {
-//            Random rnd = new Random();
-            long next = System.currentTimeMillis() + interval;
-            for (int i = 0; i < this.nmsg; i++) {
-                //rnd.nextBytes(buf);
-                writer.write(buf).fail((ex) -> error.getAndIncrement()).always((s, r, e) -> done.countDown());
-                long t = System.currentTimeMillis();
-                ts[i] = t;
+            long next = System.nanoTime() + interval;
+            for (int i = 0; i < opts.nmsg; i++) {
+                final int nn = n;
+                writer.write(dataList.getData(i))
+                        .fail((ex) -> { long t = System.currentTimeMillis();
+                                        ts[nn] = -t;
+                                        errcnt.getAndIncrement();
+                                        synchronized (errlst) { errlst.add(ex); } })
+                        .done((r) -> { long t = System.currentTimeMillis();
+                                       ts[nn] = t; })
+                        .always((s, r, e) -> { done.countDown(); });
+                n++;
                 if (interval > 0) {
-                    long rest = next - System.currentTimeMillis();
+                    long rest = next - System.nanoTime();
                     if (rest > 0) {
-                        TimeUnit.MILLISECONDS.sleep(rest);
+                        TimeUnit.NANOSECONDS.sleep(rest);
                     } else {
-                        System.err.println("SLOW " + rest);
+                        //System.err.println("SLOW " + rest);
                     }
                     next += interval;
                 }
             }
-            done.await();
-            ts[this.nmsg] = System.currentTimeMillis();
+            boolean ok = done.await(opts.timeout2, TimeUnit.MILLISECONDS);
+            if (!ok) {
+                error = "pub:timedout2";
+                System.err.println(error);
+            }
+            try {
+                metrics = writer.getMetrics().getRaw();
+            }
+            catch (Exception e) {
+            }
         }
-        Files.write(Paths.get(this.logfile),
-                Arrays.stream(ts).mapToObj(t -> String.format("%d,%d", t, this.bytes)).collect(Collectors.toList()));
+        try (PrintWriter pw = new PrintWriter(Files.newBufferedWriter(Paths.get(opts.logfile)))) {
+            pw.println("#comp,size,seq,send");
+            for (int i = 0; i < n; i++) {
+                /*
+                if (i >= opts.nmsg) {
+                        pw.println(ts[i] + "," + opts.bytes);
+                        continue;
+                }
+                */
+                long t = ts[i];
+                int bytes = opts.bytes;
+                if (t < 0) {
+                    t = -t;
+                    bytes = 0;
+                }
+                pw.println(t + "," + bytes + "," + Util.extractMetadata(dataList.peekData(i)).str());
+            }
+            pw.println("#errcnt " + errcnt.get());
+            synchronized (errlst) {
+                for (Throwable ex : errlst) {
+                    pw.println("#error " + ex);
+                }
+            }
+            if (error != null)
+                pw.println("# " + error);
+            if (metrics != null) {
+                pw.println("#record-retry-total " + Util.get_kafka_metric(metrics, "record-retry-total", "producer-metrics"));
+            }
+        }
     }
 
     public static void main(String[] args) {
-        //String logfile = "sinetstreamJava.produced." + Util.getTime() + "." + Util.getHostName() + ".csv";
-        Options opts = new Options();
-        opts.addOption(Option.builder("s").required().hasArg().longOpt("service").build());
-        opts.addOption(Option.builder("d").required().hasArg().longOpt("topic_dst").build());
-        opts.addOption(Option.builder("Q").required().hasArg().longOpt("qos").build());
-        opts.addOption(Option.builder("B").hasArg().longOpt("bytes").build());
-        opts.addOption(Option.builder("F").hasArg().longOpt("fps").build());
-        opts.addOption(Option.builder("N").hasArg().longOpt("nmsg").build());
-        opts.addOption(Option.builder("f").required().hasArg().longOpt("logfile").build());
-
-        CommandLineParser parser = new DefaultParser();
-        SinetstreamBinaryAsyncProducer producer = null;
         try {
-            CommandLine cmd = parser.parse(opts, args);
-            producer = new SinetstreamBinaryAsyncProducer(
-                    cmd.getOptionValue("service"),
-                    cmd.getOptionValue("topic_dst"),
-                    Integer.parseInt(cmd.getOptionValue("qos")),
-                    Integer.parseInt(cmd.getOptionValue("bytes", "40")),
-                    Integer.parseInt(cmd.getOptionValue("fps", "15")),
-                    Integer.parseInt(cmd.getOptionValue("nmsg", "5")),
-                    cmd.getOptionValue("logfile")
-            );
-        } catch (ParseException e) {
-            System.err.println("Parsing failed: " + e.getMessage());
-            new HelpFormatter().printHelp(SinetstreamBinaryAsyncProducer.class.getSimpleName(), opts, true);
-            System.exit(1);
-        }
-        try {
+            SinetstreamBinaryAsyncProducer producer = new SinetstreamBinaryAsyncProducer(Util.parseProducerOptions("SinetstreamBinaryAsyncProducer", args));
             producer.run();
         } catch (Exception e) {
             e.printStackTrace();

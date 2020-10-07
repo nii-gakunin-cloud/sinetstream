@@ -29,8 +29,10 @@ SINETStream User Guide
 * The summary of Java API Class
     * MessageWriterFactory Class
     * MessageWriter Class
+    * AsyncMessageWriter Class
     * MessageReaderFactory Class
     * MessageReader Class
+    * AsyncMessageReader Class
     * Message Class
     * Metrics Class
     * The summary of exception
@@ -82,7 +84,7 @@ MessageWriterFactory<String> factory =
         .topic("topic-1")
         .consistency(AT_LEAST_ONCE)
         .build();
-try(MessageWriter<String> writer = factory.getWriter()) {
+try (MessageWriter<String> writer = factory.getWriter()) {
     writer.write("Hello! This is the 1st message.");
     writer.write("Hello! This is the 2nd message.");
 }
@@ -105,7 +107,7 @@ MessageReaderFactory<String> factory =
         .receiveTimeout(Duration.ofSeconds(60))
         .build();
 
-try(MessageReader<String> reader = factory.getReader()) {
+try (MessageReader<String> reader = factory.getReader()) {
     Message<String> msg;
     while (Objects.nonNull(msg = reader.read())) {
         System.out.println(msg.getValue());
@@ -124,8 +126,12 @@ If it receives no message for the time specified by the `receiveTimeout` paramet
 
 * jp.ad.sinet.stream.api.MessageWriter
     * The class to send messages to the messaging system.
+* jp.ad.sinet.stream.api.AsyncMessageWriter
+    * The class to send messages to the messaging system. (asynchronous API)
 * jp.ad.sinet.stream.api.MessageReader
     * The class to receive messages from the messaging system.
+* jp.ad.sinet.stream.api.AsyncMessageReader
+    * The class to receive messages from the messaging system. (asynchronous API)
 * jp.ad.sinet.stream.utils.MessageWriterFactory
     * The factory class to create the MessageWriter objects.
 * jp.ad.sinet.stream.utils.MessageReaderFactory
@@ -189,6 +195,7 @@ The class to send messages to the broker.
 
 Invoke the `getWriter()` method of the factory instance to get an instance of `MessageWriter`.
 Since `MessageWrite` implements `AutoCloseable`, the try-with-resources statement can be used.
+The method `write()` that sends a message blocks the sending process until it completed.
 Below is an example.
 
 ```
@@ -199,6 +206,42 @@ try (MessageWriter<String> writer = factory.getWriter()) {
     writer.write("message-1");
 }
 ```
+
+### AsyncMessageWriter
+
+The class to send messages to the broker.
+
+Invoke the `getAsyncWriter()` method of the factory instance to get an instance of `AsyncMessageWriter`.
+Since ` AsyncMessageWriter ` implements `AutoCloseable`, the try-with-resources statement can be used.
+The method 'write()' that sends a message is an asynchronous process and returns a [JDeferred](http://jdeferred.org/) Promise object.
+
+Below is an example.
+
+```
+MessageWriterFactory<String> factory = MessageWriterFactory.<String>builder()
+        .service("service-1").build();
+
+try (AsyncMessageWriter<String> writer = factory.getAsyncWriter()) {
+    writer.write("message-1")
+          .done(result -> System.out.println("write task done")
+          .fail(result -> System.out.println("write task failed")
+}
+```
+
+By using the Promise object methods '.done()' and '.fail()' that returned by the 'write()' method, it is possible to set processing according to the transmission result (success or failure).
+
+The main methods of Promise are shown below.
+
+* 'done()'
+   – Triggered when the deferred object process completes successfully
+
+* 'fail()'
+   – Triggered when an exception occurs while processing a deferred object
+
+* 'always()'
+   – Triggered in all cases even if regardless of the processing result of the deferred object
+
+
 
 ### MessageReaderFactory
 
@@ -212,6 +255,7 @@ The following parameters can be specified in the builder class.
     * The name must be defined in the configuration file.
 * topic(String)
     * Topic name for receiving the messages from.
+    * If topics is specified, topic is ignored.
 * topics(Collection\<String\>)
     * Collection of topics for receiving the messages from.
     * MessageReader can receive messages from multiple topics.
@@ -262,11 +306,14 @@ The class to receive messages from the brokers.
 
 Invoke the `getReader()` method of the factory instance to get an instance of `MessageReader`.
 Since `MessageReader` implements `AutoCloseable`, the try-with-resources statement can be used.
+The method 'read()' that receives the message receives the message or is specified in 'receiveTimeout()'.
+Block until the timeout expires.
+
 Below is an example.
 
 ```
 MessageReaderFactory<String> factory = MessageReaderFactory.<String>builder()
-        .service("service-1").receiveTimeout(Duration.ofSecondsG(60)).build();
+        .service("service-1").receiveTimeout(Duration.ofSeconds(60)).build();
 try (MessageReader<String> reader = factory.getReader()) {
     Message<String> msg;
     while (Objects.nonNull(msg = reader.read())) {
@@ -277,6 +324,31 @@ try (MessageReader<String> reader = factory.getReader()) {
 
 The return value of the `read()` method is an instance of the `Message<T>` class.
 The topic name can be obtained by the `getTopic()` method and the message value can be obtained by the `getValue()` method.
+
+### AsyncMessageReader
+
+The class to receive messages from the brokers.
+
+Invoke the `getAsyncReader()` method of the factory instance to get an instance of `AsyncMessageReader`.
+Set a callback to be invoked when processing the received message by using 'addOnMessageCallback()' method.
+The received message is passed by the argument of the callback.
+
+Below is an example.
+
+```
+MessageReaderFactory<String> factory = MessageReaderFactory.<String>builder()
+        .service("service-1").receiveTimeout(Duration.ofSeconds(60)).build();
+
+AsyncMessageReader<String> reader = factory.getAsyncReader();
+reader.addOnMessageCallback((msg) -> {
+    System.out.println("TOPIC: " + msg.getTopic() + " MESSAGE: " + msg.getValue());
+});
+
+// other processing
+
+reader.close();
+```
+
 
 ### Message
 
@@ -328,18 +400,18 @@ Therefore, a stream of encrypted massages will be measured if the data encryptio
 
 * getStartTime(), getStartTimeMillis()
     * The Unix time when the measurement was started.
-	* The unit of time returned by getStartTime() is seconds.
-	* The unit of time returned by getStartTimeMillis() is milliseconds.
+        * The unit of time returned by getStartTime() is seconds.
+        * The unit of time returned by getStartTimeMillis() is milliseconds.
     * The time when the Reader/Writer object was created or reset.
 * getEndTime(), getEndTimeMillis()
     * The Unix time when the measurement was completed.
-	* The unit of time returned by getEndTime() is seconds.
-	* The unit of time returned by getEndTimeMillis() is milliseconds.
+        * The unit of time returned by getEndTime() is seconds.
+        * The unit of time returned by getEndTimeMillis() is milliseconds.
     * The time when the getMetrics() method was called.
 * getTime(), getTimeMillis()
     * Measurement time (= EndTime - StartTime).
-	* The unit of time returned by getTime() is seconds.
-	* The unit of time returned by getTimeMillis() is milliseconds.
+        * The unit of time returned by getTime() is seconds.
+        * The unit of time returned by getTimeMillis() is milliseconds.
 * getMsgCountTotal()
     * The cumulative number of messages sent and received.
 * getMsgCountRate()
@@ -405,16 +477,16 @@ try (MessageReader<String> reader = factory.getReader()) {
 
 | Exception name | Method name | |
 | ---  | --- | --- |
-| NoConfigException | MessageReaderFactory#getReader() MessageWriterFactory#getWriter() | The configuration file does not exist or cannot be read. |
-| NoServiceException | MessageReaderFactory#getReader() MessageWriterFactory#getWriter() | The specified service name is not defined in the configuration file. |
-| UnsupportedServiceException | MessageReaderFactory#getReader() MessageWriterFactory#getWriter() | The specified service is not supported. |
-| ConnectionException | MessageReaderFactory#getReader() MessageWriterFactory#getWriter() | Error connecting to the broker. |
-| InvalidConfigurationException | MessageReaderFactory#getReader() MessageWriterFactory#getWriter() | The content of the configuration file is invalid. |
-| SinetStreamIOException | MessageReaderFactory#getReader() MessageWriterFactory#getWriter() MessageReader\<T\>#read() MessageReader\<T\>#close() MessageWriter\<T\>#write(T) MessageWriter\<T\>#close() | IO Error between the messaging system and SINETStream. |
-| SinetStreamException | MessageReaderFactory#getReader() MessageWriterFactory#getWriter() MessageReader\<T\>#read() MessageReader\<T\>#close() MessageWriter\<T\>write(T) MessageWriter\<T\>close() | Other SINETStream errors. |
-| InvalidMessageException | MessageReader\<T\>#read() | The message type does not match `valueType`. |
-| AuthenticationException | MessageReaderFactory#getReader() MessageWriterFactory#getWriter() | Error authenticating with the broker |
-| AuthorizationException | MessageReader\<T\>#read() MessageWriter\<T\>#write() | Error in unauthorized operation. (see note below) |
+| NoConfigException | MessageReaderFactory#getReader() MessageReaderFactory#getAsyncReader() MessageWriterFactory#getWriter() MessageWriterFactory#getAsyncWriter() | The configuration file does not exist or cannot be read.|
+| NoServiceException | MessageReaderFactory#getReader() MessageReaderFactory#getAsyncReader() MessageWriterFactory#getWriter() MessageWriterFactory#getAsyncWriter() | The specified service name is not defined in the configuration file. |
+| UnsupportedServiceException |MessageReaderFactory#getReader() MessageReaderFactory#getAsyncReader() MessageWriterFactory#getWriter() MessageWriterFactory#getAsyncWriter() | The specified service is not supported. |
+| ConnectionException |MessageReaderFactory#getReader() MessageReaderFactory#getAsyncReader() MessageWriterFactory#getWriter() MessageWriterFactory#getAsyncWriter() | Error connecting to the broker |
+| InvalidConfigurationException |MessageReaderFactory#getReader() MessageReaderFactory#getAsyncReader() MessageWriterFactory#getWriter() MessageWriterFactory#getAsyncWriter() | The content of the configuration file is invalid. |
+| SinetStreamIOException | MessageReaderFactory#getReader() MessageReaderFactory#getAsyncReader() MessageWriterFactory#getWriter() MessageWriterFactory#getAsyncWriter()  MessageReader\<T\>#read() MessageReader\<T\>#close() MessageWriter\<T\>#write(T) MessageWriter\<T\>#close() | Error in IO between the messaging system and SINETStream. |
+| SinetStreamException | MessageReaderFactory#getReader() MessageReaderFactory#getAsyncReader() MessageWriterFactory#getWriter() MessageWriterFactory#getAsyncWriter() MessageReader\<T\>#read() MessageReader\<T\>#close() MessageWriter\<T\>write(T) MessageWriter\<T\>close() | Other SINETStream errors|
+| InvalidMessageException | MessageReader\<T\>#read() | The type of message does not match `valueType` |
+| AuthenticationException | MessageReaderFactory#getReader() MessageReaderFactory#getAsyncReader() MessageWriterFactory#getWriter() MessageWriterFactory#getAsyncWriter() | Error authenticating with the broker |
+| AuthorizationException | MessageReader\<T\>#read() MessageWriter\<T\>#write() | Error in unauthorized operation (see note below) |
 
 Note: AuthorizationException may not raise in the following cases:
 

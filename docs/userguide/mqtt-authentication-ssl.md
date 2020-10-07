@@ -170,7 +170,7 @@ service-mqtt-ssl:
 SINETStreamを利用するプログラム自体は、SSL/TLS認証を行うMQTTブローカーを利用する場合
 と認証なしのMQTTブローカーを利用する場合で変わりはない。
 
-Python APIの　`MessageWriter` を利用する場合の例を以下に示す。認証に関わる処理は存在していない。
+Python APIの `MessageWriter` を利用する場合の例を以下に示す。認証に関わる処理は存在していない。
 
 ```python
 with sinetstream.MessageWriter(service='service-mqtt-ssl') as writer:

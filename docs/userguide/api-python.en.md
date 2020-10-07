@@ -29,6 +29,8 @@ SINETStream User Guide
 * Summary of Python API classes
     * MessageReader Class
     * MessageWriter Class
+    * AsyncMessageReader Class
+    * AsyncMessageWriter Class
     * Message Class
     * Metrics Class
     * Summary of exception
@@ -117,8 +119,12 @@ To exit the `for` loop, specify the `receive_timeout_ms` parameter in the constr
 
 * sinetstream.MessageReader
     * The class to receive messages from the messaging system.
+* sinetstream.AsyncMessageReader
+    * The class to receive messages from the messaging system. (Asynchronous API)
 * sinetstream.MessageWriter
     * The class to send messages to the messaging system.
+* sinetstream. AsyncMessageWriter
+    * The class to send messages to the messaging system. (Asynchronous API)
 * sinetstream.Message
     * The class to represent a message.
 * sinetstream.SinetError
@@ -251,6 +257,114 @@ AuthorizationError does not occur in the following cases:
 1. When using MQTT (Mosquitto)
     * Because the MQTT broker raises no error for unauthorized operation.
 
+### AsyncMessageReader Class
+#### `AsyncMessageReader()`
+
+The constructor of the AsyncMessageReader class
+
+```
+AsyncMessageReader(
+    service,
+    topics=None,
+    consistency=AT_MOST_ONCE,
+    client_id=DEFAULT_CLIENT_ID,
+    value_type="byte_array",
+    value_deserializer=None,
+    **kwargs)
+```
+
+##### Parameters
+
+* service
+    * Service name.
+    * The name must be defined in the configuration file.
+* topics
+    * Topic name.
+    * Specify a str or a list for a single topic.
+    * Specify a list when subscribing for multiple topics.
+    * If not specified, the value specified in the configuration file will be used as default.
+* consistency
+    * The reliability of the message delivery.
+    * AT_MOST_ONCE (=0)
+        * A message may not arrive.
+    * AT_LEAST_ONCE (=1)
+        * A message always arrives but may arrive many times.
+    * EXACTLY_ONCE (=2)
+        * A message always arrives only once.
+* client_id
+    * Client name
+    * If any of DEFAULT_CLIENT_ID, None, or an empty string is specified, the library will automatically generate a value.
+    * The generated value can be obtained as a property of this object.
+* value_type
+    * The type name of message payload.
+    * AsyncMessageReader will treat the payload as the type specified here.
+    * When using the standard package, the following two type names are supported.
+        * Set '"byte_array"' (default) to treat the payload as bytes.
+        * Set '"text"' to treat the payload as str.
+    * When using a plugin pacakge, other type names may be supported.
+    * When using the image type plugin provided with SINETStream, the following type name is supported.
+        * Set '"image"' to treat the payload as 'numpy.ndarray', which is the image data type in OpenCV.
+        * The color order in 'numpy.ndarray' is BGR, which is consistent with OpenCV.
+* value_deserializer
+    * The function used to decode the value from the byte array in the message.
+    * If not specified, an appropriate deserializer function will be used according to value_type.
+* data_encryption
+    * Enable or disable message encryption and decryption.
+* kwargs
+    * Specify the messaging system-specific parameters as YAML mappings.
+
+The parameters specified in 'kwargs' are passed to the constructor of the backend messaging system.
+Please refer to the  [Messaging system-specific parameters](#messaging-system-specific-parameters) for details.
+
+For the arguments other than 'service', their default values can be specified in the configuration file.
+If the same parameter is specified in both the configuration file and the constructor argument, the value specified in the constructor argument takes precedence.
+
+** Limitation: SINETStream downgrades to 'AT_LEAST_ONCE' even if 'EXACTLY_ONCE' is specified for Kafka 'consistency'. **
+
+##### Exception
+
+* NoServiceError
+    * The specified service name is not defined in the configuration file.
+* NoConfigError
+    * The configuration file does not exist or cannot be read
+* InvalidArgumentError
+    * The format of the specified argument is incorrect,
+      e.g., the value of consistency is out of range or the topic name includes invalid character, etc.
+* UnsupportedServiceTypeError
+    * The plugin for the specified service type is not installed.
+
+#### Properties
+
+The following properties can be used to get the parameter value specified in the configuration file or in the constructor.
+
+* `client_id`
+* `consistency`
+* `topics`
+* `value_type`
+
+#### `AsyncMessageReader.open()`
+
+Connects to the broker of the messaging system.
+
+##### Returned value
+
+A handler that mentains the connection status with the messaging system.
+
+##### Exception
+
+* ConnectionError
+    * Error connecting to the broker.
+* AlreadyConnectedError
+    * 'open()' is called again for an object that is already connected.
+
+#### `AsyncMessageReader.close()`
+
+Disconnects from the broker of the messaging system.
+Implicitly invoked when using AsyncMessageReader in a 'with' statement; not intended for explicit invocation.
+
+#### Property: 'AsyncMessageReader.on_message'
+Set the callback function to be invoked when the message is received.
+
 ### MessageWriter Class
 
 #### `MessageWriter()`
@@ -293,7 +407,7 @@ The constructor of MessageWriter class
         * Set `"byte_array"` (default) to treat the payload as `bytes`.
         * Set `"text"` to treat the payload as `str`.
     * When using a plugin pacakge, other type names may be supported.
-    * When using the image type plugin provided with SINETStream v1.1 or laster, the following type name is supported.
+    * When using the image type plugin provided with SINETStream v1.1 (or later), the following type name is supported.
         * Set `"image"` to treat the payload as `numpy.ndarray`, which is the image data type in OpenCV.
         * The color order in `numpy.ndarray` is BGR, which is consistent with OpenCV.
 * value_serializer
@@ -336,7 +450,7 @@ The following properties can be used to get the parameter value specified in the
 #### `MessageWriter.open()`
 
 Connects to the broker of the messaging system.
-Implicitly invoked when using MessageReader in a `with` statement; not intended for explicit invocation.
+Implicitly invoked when using MessageWriter in a `with` statement; not intended for explicit invocation.
 
 ##### Returned value
 
@@ -374,6 +488,140 @@ AuthorizationError does not occur in the following cases:
     * Because the client does not wait for a response from the broker after sending a message.
       Therefore, the client cannot detect an error on the broker side.
 
+### AsyncMessageWriter Class
+
+#### `AsyncMessageWriter()`
+
+```
+AsyncMessageWriter(
+    service,
+    topic,
+    consistency=AT_MOST_ONCE,
+    client_id=DEFAULT_CLIENT_ID,
+    value_type="byte_array",
+    value_serializer=None,
+    **kwargs)
+```
+
+The constructor of MessageWriter class
+
+##### Parameters
+
+* service
+    * Service name
+    * The name must be defined in the configuration file.
+* topic
+    * Topic name
+    * If not specified, the value specified in the configuration file will be used as default.
+* consistency
+    * Specify the reliability of message delivery.
+    * AT_MOST_ONCE (=0)
+        * A message may not be delivered.
+    * AT_LEAST_ONCE (=1)
+        * A message is always delivered but may be delivered many times.
+    * EXACTLY_ONCE (=2)
+        * A message is always delivered only once.
+* client_id
+    * Client name.
+    * If any of DEFAULT_CLIENT_ID, None, or an empty string is specified, the library will automatically generate a value.
+* value_type
+    * The type name of message payload.
+    * 'MessageWriter.publish()' will treat the given data as the type specified here.
+    * When using the standard package, the following two type names are supported.
+        * Set '"byte_array"' (default) to treat the payload as 'bytes'.
+        * Set '"text"' to treat the payload as 'str'.
+    * When using a plugin pacakge, other type names may be supported.
+    * When using the image type plugin provided with SINETStream, the following type name is supported.
+        * Set '"image"' to treat the payload as 'numpy.ndarray', which is the image data type in OpenCV.
+        * The color order in 'numpy.ndarray' is BGR, which is consistent with OpenCV.
+* value_serializer
+    * The function used to encode the value to the byte array in the message.
+    * If not specified, an appropriate serializer function will be used according to 'value_type'.
+* data_encryption
+    * Enable or disable message encryption and decryption.
+* kwargs
+    * Specify the messaging system-specific parameters as YAML mappings.
+
+The parameters specified in 'kwargs' are passed to the constructor of the backend messaging system.
+Please refer to the  [Messaging system-specific parameters](#messaging-system-specific-parameters) for details.
+
+For the arguments other than service, their default values can be specified in the configuration file.
+If the same parameter is specified in both the configuration file and the constructor argument, the value specified in the constructor argument takes precedence.
+
+** Limitations: SINETStream downgrades to 'AT_LEAST_ONCE' even if 'EXACTLY_ONCE' is specified for Kafka 'consistency'. **
+
+##### Exception
+
+* NoServiceError
+    * The service corresponding to the value specified for service does not exist in the configuration file
+* NoConfigError
+    * The configuration file does not exist or cannot be read
+* InvalidArgumentError
+    * The format of the specified argument is incorrect.
+      When the value of consistency is out of range or a character string that is not allowed as a topic name
+* UnsupportedServiceTypeError
+    * The plugin for the messaging system corresponding to type specified in the configuration file is not installed
+
+#### Properties
+
+The following properties can be used to get the parameter value specified in the configuration file or in the constructor.
+
+* `client_id`
+* `consistency`
+* `topic`
+* `value_type`
+
+#### `AsyncMessageWriter.open()`
+
+Connects to the broker of the messaging system.
+Implicitly invoked when using 'AsyncMessageWriter' in a with statement; not intended for explicit invocation.
+
+##### Returned value
+
+A handler that mentains the connection status with the messaging system
+
+##### Exception
+
+* ConnectionError
+    * Error connecting to the broker
+* AlreadyConnectedError
+    * 'open()' is called again for an object that is already connected
+
+#### 'AsyncMessageWriter.close()'
+
+Disconnects from the broker of the messaging system.
+Implicitly invoked when using 'AsyncMessageWriter' in a with statement; not intended for explicit invocation.
+
+#### 'AsyncMessageWriter.publish(message)'
+
+Sends a message to the broker of the messaging system.
+The message is serialized according to the ‘value_type’ parameter or using the function specified by ‘value_serializer’ of AsyncMessageWriter and then sent it to broker.
+
+'publish(message)' is an asynchronous process and returns a promise object of promise.
+By using the methods '.then()' and '.catch()' of the Promise object,
+It is possible to set processing according to the transmission result (success or failure).
+A usage example is shown as below.
+
+```python
+with AsyncMessageWriter('service-1') as writer:
+    writer.publish("message 1").then(lambda _: print("success")).catch(lambda _: print("failure"))
+```
+
+##### Exception
+
+* InvalidMessageError
+    * The type of message does not match 'value_type' or the function specified by 'value_serializer'.
+* AuthorizationError
+    * Tried to send messages to an unauthorized topic.
+
+Depending on the messaging system, even if an unauthorized operation is performed, an AuthorizationError Exception may not occur in the following cases:
+
+1. When using MQTT (Mosquitto)
+    * Because the MQTT broker raises no error for unauthorized operation.
+2. When using Kafka with 'Consistency' set to 'AT_MOST_ONCE'
+    * Because the client does not wait for a response from the broker after sending a message.
+      Therefore, the client cannot detect an error on the broker side.
+
 ### Message class
 
 The wrapper class for the message object provided by the messaging system.
@@ -385,7 +633,7 @@ All the properties are read only.
 * value
     * The payload of the message (given by `Raw.value` for Kafka and `raw.payload` for MQTT).
     * By default, a byte sequence is obtained.
-    * The type of `value` depends on the `value_type` parameter or the `value_deserializer` function specified in MessageReader.
+    * The type of `value` depends on the `value_type` parameter or the `value_deserializer` function specified in MessageWriter.
         * If `value_type` is `"byte_array"` (default), the type is `bytes`.
         * If `value_type` is `"text"`, the type is `str`.
         * If `value_deserializer` is specified, an object converted by this function is obtained.
@@ -520,12 +768,15 @@ with reader as f:
 
 | exception | origin method | reason |
 |---|---|---|
-| `NoServiceError` | `MessageReader()`,`MessageWriter()` | The specified service name is not defined in the configuration file. |
-| `UnsupportedServiceTypeError` | `MessageReader()`, `MessageWriter()` | The specified service type is not supported or the corresponding plugin is not installed. |
-|` NoConfigError` | `MessageReader()`, `MessageWriter()` | The configuration file does not exist. |
-| `InvalidArgumentError` | `MessageReader()`, `MessageWriter()`, `MqttReader.open()`, `MqttWriter.open()`, `MqttWriter.publish()` |  The argument is incorrect. |
-| `ConnectionError` | `KafkaReader.open()`, `KafkaWriter.open()`, `MqttReader.open()`, `MqttWriter.open()`, `MqttWriter.publish()` |  Error connecting to the broker. |
-| `AlreadyConnectedError` | `KafkaReader.open()`, `KafkaWriter.open()`, `MqttReader.open()`, `MqttWriter.open()` |  Already connected to a broker. |
+|`NoServiceError`|`MessageReader()`, `MessageWriter()`, `AsyncMessageReader()`, `AsyncMessageWriter()`|The specified service name is not defined in the configuration file.|
+|`UnsupportedServiceTypeError`|`MessageReader()`, `MessageWriter()`, `AsyncMessageReader()`, `AsyncMessageWriter()`|The specified service type is not supported or the corresponding plugin is not installed. |
+|`NoConfigError`|`MessageReader()`, `MessageWriter()`, `AsyncMessageReader()`, `AsyncMessageWriter()`|The configuration file does not exist.|
+|`InvalidArgumentError`|`MessageReader()`, `MessageWriter()`, `AsyncMessageReader()`, `AsyncMessageWriter()`, `MessageReader.open()`, `MessageWriter.open()`, `MessageWriter.publish()`, `AsyncMessageReader().open()`, `AsyncMessageWriter().open()`|The argument is incorrect. |
+|`ConnectionError`|`MessageReader.open()`, `MessageWriter.open()`, `MessageWriter.publish()`, `AsyncMessageReader().open()`, `AsyncMessageWriter().open()`|Error connecting to the broker. |
+|`AlreadyConnectedError`|`MessageReader.open()`, `MessageWriter.open()`, `AsyncMessageReader().open()`, `AsyncMessageWriter().open()`|Already connected to a broker. |
+|`InvalidMessageError`|`MessageWriter.publish()`, `MessageReader.__iter__().__next__()`|The message format is incorrect.|
+|`AuthorizationError`|`MessageWriter.publish()`, `MessageReader.__iter__().__next__()`| An unauthorized operation was conducted|
+
 
 ## Messaging system-specific parameters
 

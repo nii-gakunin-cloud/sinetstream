@@ -182,6 +182,8 @@ The meanings of the above settings are:
 * `ssl.keystore.type`
     * Format of the key store
 
+###  Restart the Kafka broker
+
 Restart the Kafka broker to apply the changes in the properties file.
 
 ```bash

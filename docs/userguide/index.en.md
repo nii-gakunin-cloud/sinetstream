@@ -35,12 +35,16 @@ SINETStream is a wrapper library that provides functions to unify the following 
 Currently, SINETStream supports Apache Kafka and MQTT Broker as backend messaging systems.
 The backend is extensible as plugins to support other messaging systems.
 
-SINETStream provides two API versions, i.e., Python API and Java API.
+SINETStream provides three API versions, i.e., Python API, Java API and Android API (MQTT only). 
 
 ## Contents
 
-* [Python API](api-python.en.md)
-* [Java API](api-java.en.md)
+* [User Guide for Python](api-python.en.md)
+* [User Guide for Java](api-java.en.md)
+* [User Guide for Android](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/userguide/android.html)
+    * [Android API](api-android.en.md)
+    * Android API(Javadoc) (under preparation)
+    * [Configuration file for Android](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/userguide/config-android.html)
 * [Configuration file](config.en.md)
 * [Authentication and authorization](auth.en.md)
 

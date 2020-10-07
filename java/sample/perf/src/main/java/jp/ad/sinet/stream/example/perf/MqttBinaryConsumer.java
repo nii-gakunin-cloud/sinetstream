@@ -24,74 +24,80 @@ package jp.ad.sinet.stream.example.perf;
 import org.apache.commons.cli.*;
 import org.eclipse.paho.client.mqttv3.*;
 
-import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.PrintWriter;
-import java.util.concurrent.TimeUnit;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings({"WeakerAccess"})
 public class MqttBinaryConsumer implements MqttCallback {
 
-    private final String brokers;
-    private final String topic_src;
-    private final int qos;
-    private final int nmsg;
-    private final int timeout;
-    private final String logfile;
+    private final Util.ConsumerOptions opts;
 
     private Lock lock;
     private Condition progress;
     private Long[] ts;
     private Integer[] ss;
+    private int hdrlen;
+    private byte[][] hdr;
     private int n;
 
-    public MqttBinaryConsumer(String brokers, String topic_src, int qos, int nmsg, int timeout, String logfile) {
-        this.brokers = brokers;
-        this.topic_src = topic_src;
-        this.qos = qos;
-        this.nmsg = nmsg;
-        this.timeout = timeout;
-        this.logfile = logfile;
+    public MqttBinaryConsumer(Util.ConsumerOptions opts) {
+        this.opts = opts;
+
         this.lock = new ReentrantLock();
         this.progress = lock.newCondition();
-        this.ts = new Long[this.nmsg];
-        this.ss = new Integer[this.nmsg];
+        this.ts = new Long[opts.nmsg];
+        this.ss = new Integer[opts.nmsg];
+        this.hdrlen = 4 + 8; // int+long
+        this.hdr = new byte[opts.nmsg][hdrlen];
         this.n = 0;
     }
 
     public void run() throws Exception {
         String clientId = "perftest" + System.currentTimeMillis();
-        MqttClient client = new MqttClient(this.brokers, clientId);
+        MqttClient client = new MqttClient(opts.brokers, clientId);
         MqttConnectOptions conOpt = new MqttConnectOptions();
         conOpt.setCleanSession(true);
-        //conOpt.setPassword(this.password.toCharArray());
-        //conOpt.setUserName(this.userName);
+        //conOpt.setPassword(opts.password.toCharArray());
+        //conOpt.setUserName(opts.userName);
         client.setCallback(this);
         client.connect(conOpt);
 
-        client.subscribe(this.topic_src, this.qos);
+        client.subscribe(opts.topic_src, opts.qos);
+        String error = null;
+        long tstart = System.currentTimeMillis();
         this.lock.lock();
-        while (this.n < this.nmsg) {
-            boolean ok = this.progress.await(timeout, TimeUnit.MILLISECONDS);
+        while (this.n < opts.nmsg) {
+            if (System.currentTimeMillis() - tstart > opts.timeout2) {
+                error = "sub:timedout2";
+                System.err.println(error);
+                break;
+            }
+            boolean ok = this.progress.await(opts.timeout1, TimeUnit.MILLISECONDS);
             if (!ok) {
-                System.err.println("timedout");
+                error = "sub:timedout1";
+                System.err.println(error);
                 break;
             }
         }
         this.lock.unlock();
         client.disconnect();
 
-        FileWriter file = new FileWriter(this.logfile);
-        PrintWriter pw = new PrintWriter(new BufferedWriter(file));
-        this.lock.lock();
-        for (int i = 0; i < this.n; i++) {
-            pw.println(this.ts[i] + "," + this.ss[i]);
+        try (PrintWriter pw = new PrintWriter(Files.newBufferedWriter(Paths.get(opts.logfile)))) {
+            pw.println("#recv,size,seq,send");
+            this.lock.lock();
+            for (int i = 0; i < this.n; i++) {
+                pw.println(this.ts[i] + "," + this.ss[i] + "," + Util.extractMetadata(this.hdr[i]).str());
+            }
+            this.lock.unlock();
+            if (error != null)
+                pw.println("# " + error);
         }
-        this.lock.unlock();
-        pw.close();
     }
 
     public void connectionLost(Throwable x) {
@@ -115,8 +121,9 @@ public class MqttBinaryConsumer implements MqttCallback {
         }
         this.ts[this.n] = t;
         this.ss[this.n] = msg.getPayload().length;
-        this.n += 1;
-        if (this.nmsg <= this.n) {
+        System.arraycopy(msg.getPayload(), 0, this.hdr[n], 0, this.hdrlen);
+        this.n++;
+        if (opts.nmsg <= this.n) {
             System.err.println("done");
         }
         this.progress.signal();
@@ -124,33 +131,8 @@ public class MqttBinaryConsumer implements MqttCallback {
     }
 
     public static void main(String[] args) {
-        //String logfile = "mqttJava.consumed." + Util.getTime() + "." + Util.getHostName() + ".csv";
-        Options opts = new Options();
-        opts.addOption(Option.builder("b").required().hasArg().longOpt("brokers").build());
-        opts.addOption(Option.builder("S").required().hasArg().longOpt("topic_src").build());
-        opts.addOption(Option.builder("Q").required().hasArg().longOpt("qos").build());
-        opts.addOption(Option.builder("N").hasArg().longOpt("nmsg").build());
-        opts.addOption(Option.builder("T").hasArg().longOpt("timeout").build());
-        opts.addOption(Option.builder("f").required().hasArg().longOpt("logfile").build());
-
-        CommandLineParser parser = new DefaultParser();
-        MqttBinaryConsumer consumer = null;
         try {
-            CommandLine cmd = parser.parse(opts, args);
-            consumer = new MqttBinaryConsumer(
-                    cmd.getOptionValue("brokers"),
-                    cmd.getOptionValue("topic_src"),
-                    Integer.parseInt(cmd.getOptionValue("qos")),
-                    Integer.parseInt(cmd.getOptionValue("nmsg")),
-                    Integer.parseInt(cmd.getOptionValue("timeout")),
-                    cmd.getOptionValue("logfile")
-            );
-        } catch (ParseException e) {
-            System.err.println("Parsing failed: " + e.getMessage());
-            new HelpFormatter().printHelp(MqttBinaryConsumer.class.getSimpleName(), opts, true);
-            System.exit(1);
-        }
-        try {
+            MqttBinaryConsumer consumer = new MqttBinaryConsumer(Util.parseConsumerOptions("MqttBinaryConsumer", args));
             consumer.run();
         } catch (Exception e) {
             e.printStackTrace();

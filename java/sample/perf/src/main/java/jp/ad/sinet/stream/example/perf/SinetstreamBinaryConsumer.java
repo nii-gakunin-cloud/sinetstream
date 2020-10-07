@@ -28,47 +28,48 @@ import jp.ad.sinet.stream.api.valuetype.SimpleValueType;
 import jp.ad.sinet.stream.utils.MessageReaderFactory;
 import org.apache.commons.cli.*;
 
-import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Objects;
 
 @SuppressWarnings({"WeakerAccess"})
 public class SinetstreamBinaryConsumer {
 
-    private final String service;
-    private final String topic_src;
-    private final int qos;
-    private final int nmsg;
-    private final int timeout;
-    private final String logfile;
+    private final Util.ConsumerOptions opts;
 
-    public SinetstreamBinaryConsumer(String service, String topic_src, int qos, int nmsg, int timeout, String logfile) {
-        this.service = service;
-        this.topic_src = topic_src;
-        this.qos = qos;
-        this.nmsg = nmsg;
-        this.timeout = timeout;
-        this.logfile = logfile;
+    public SinetstreamBinaryConsumer(Util.ConsumerOptions opts) {
+        this.opts = opts;
     }
 
     public void run() throws Exception {
-        Consistency consistency = Consistency.valueOf(this.qos);
+        Consistency consistency = Consistency.valueOf(opts.qos);
         MessageReaderFactory<byte[]> factory =
                 MessageReaderFactory.<byte[]>builder()
-                        .service(service)
-                        .topic(topic_src)
+                        .service(opts.service)
+                        .topic(opts.topic_src)
                         .consistency(consistency)
                         .valueType(SimpleValueType.BYTE_ARRAY)
-                        .receiveTimeout(Duration.ofSeconds(this.timeout / 1000))
+                        .receiveTimeout(Duration.ofSeconds(opts.timeout1 / 1000))
                         .build();
         try (MessageReader<byte[]> reader = factory.getReader()) {
-            long[] ts = new long[this.nmsg];
-            int[] ss = new int[this.nmsg];
+            long tstart = System.currentTimeMillis();
+            long[] ts = new long[opts.nmsg];
+            int[] ss = new int[opts.nmsg];
+            int hdrlen = 4 + 8; // int+long
+            byte[][] hdr = new byte[opts.nmsg][hdrlen];
             int n = 0;
+            String error = null;
             Message<byte[]> msg;
             while (Objects.nonNull(msg = reader.read())) {
+                if (System.currentTimeMillis() - tstart > opts.timeout2) {
+                    error = "sub:timedout2";
+                    System.err.println(error);
+                    break;
+                }
                 if (n == 0) {
                     System.err.println("receiving");
                 }
@@ -76,50 +77,31 @@ public class SinetstreamBinaryConsumer {
                 long t = System.currentTimeMillis();
                 ts[n] = t;
                 ss[n] = bytes.length;
+                System.arraycopy(bytes, 0, hdr[n], 0, hdrlen);
                 n += 1;
-                if (this.nmsg <= n)
+                if (opts.nmsg <= n)
                     break;
             }
-            if (n < this.nmsg) {
-                System.err.println("timedout");
+            if (n < opts.nmsg) {
+                error = "sub:timedout1";
+                System.err.println(error);
+            } else {
+                System.err.println("done");
             }
-            FileWriter file = new FileWriter(this.logfile);
-            PrintWriter pw = new PrintWriter(new BufferedWriter(file));
-            for (int i = 0; i < n; i++) {
-                pw.println(ts[i] + "," + ss[i]);
+            try (PrintWriter pw = new PrintWriter(Files.newBufferedWriter(Paths.get(opts.logfile)))) {
+                pw.println("#recv,size,seq,send");
+                for (int i = 0; i < n; i++) {
+                    pw.println(ts[i] + "," + ss[i] + "," + Util.extractMetadata(hdr[i]).str());
+                }
+                if (error != null)
+                    pw.println("# " + error);
             }
-            pw.close();
         }
     }
 
     public static void main(String[] args) {
-        //String logfile = "sinetstreamJava.consumed." + Util.getTime() + "." + Util.getHostName() + ".csv";
-        Options opts = new Options();
-        opts.addOption(Option.builder("s").required().hasArg().longOpt("service").build());
-        opts.addOption(Option.builder("S").required().hasArg().longOpt("topic_src").build());
-        opts.addOption(Option.builder("Q").required().hasArg().longOpt("qos").build());
-        opts.addOption(Option.builder("N").hasArg().longOpt("nmsg").build());
-        opts.addOption(Option.builder("T").hasArg().longOpt("timeout").build());
-        opts.addOption(Option.builder("f").required().hasArg().longOpt("logfile").build());
-
-        CommandLineParser parser = new DefaultParser();
-        SinetstreamBinaryConsumer consumer = null;
         try {
-            CommandLine cmd = parser.parse(opts, args);
-            consumer = new SinetstreamBinaryConsumer(
-                    cmd.getOptionValue("service"),
-                    cmd.getOptionValue("topic_src"),
-                    Integer.parseInt(cmd.getOptionValue("qos")),
-                    Integer.parseInt(cmd.getOptionValue("nmsg")),
-                    Integer.parseInt(cmd.getOptionValue("timeout")),
-                    cmd.getOptionValue("logfile")
-            );
-        } catch (ParseException e) {
-            System.err.println("Parsing failed: " + e.getMessage());
-            new HelpFormatter().printHelp(SinetstreamBinaryConsumer.class.getSimpleName(), opts, true);
-            System.exit(1);
-        }
-        try {
+            SinetstreamBinaryConsumer consumer = new SinetstreamBinaryConsumer(Util.parseConsumerOptions("SinetstreamBinaryConsumer", args));
             consumer.run();
         } catch (Exception e) {
             e.printStackTrace();

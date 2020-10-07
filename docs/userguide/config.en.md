@@ -128,13 +128,12 @@ Below are the common parameters that can be specified regardless of the messagin
         * Enumerate as a YAML sequence.
             ```
             brokers:
-              -{host name 1}:{port number 1}
-              -{host name 2}:{port number 2}
+              - {host name 1}:{port number 1}
+              - {host name 2}:{port number 2}
             ```
         * Concatenate with commas `,`.
             ```
-            brokers:
-              -{host name 1}:{port number 1}, {host name 2}:{port number 2}
+            brokers: {host name 1}:{port number 1},{host name 2}:{port number 2}
             ```
 
 ### API parameters

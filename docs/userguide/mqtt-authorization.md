@@ -132,6 +132,8 @@ ACLファイルの記述内容について以下に簡単な説明を行う。
 
 ACLファイルの詳細についてはMosquittoのドキュメント「[mosquitto.conf man page](https://mosquitto.org/man/mosquitto-conf-5.html)」を参照のこと。
 
+### 設定ファイルの再読み込み
+
 最後に、設定ファイルの再読み込みを行わせるために`SIGHUP`シグナルを送る。
 
 ```bash
@@ -192,7 +194,7 @@ service-mqtt:
 SINETStreamを利用するプログラム自体は、認可を行うMQTTブローカーを利用する場合
 と認可なしのMQTTブローカーを利用する場合で変わりはない。
 
-Python APIの　`MessageWriter` を利用する場合の例を以下に示す。認可に関わる処理は存在していない。
+Python APIの `MessageWriter` を利用する場合の例を以下に示す。認可に関わる処理は存在していない。
 
 ```python
 with sinetstream.MessageWriter(service='service-mqtt') as writer:

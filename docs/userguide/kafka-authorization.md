@@ -258,7 +258,7 @@ SASL認証、SSL/TLS接続に関するパラメータの設定内容について
 SINETStreamを利用するプログラム自体は、認可を行うKafkaブローカーを利用する場合
 と認可なしのKafkaブローカーを利用する場合で変わりはない。
 
-Python APIの　`MessageWriter` を利用する場合の例を以下に示す。認可に関わる処理は存在していない。
+Python APIの `MessageWriter` を利用する場合の例を以下に示す。認可に関わる処理は存在していない。
 
 ```python
 with sinetstream.MessageWriter(service='service-kafka') as writer:

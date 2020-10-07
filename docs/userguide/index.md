@@ -35,12 +35,16 @@ SINETStream は、Apache Kafka や MQTT Broker などの多様なメッセージ
 SINETStream は現在、バックエンドのメッセージングシステムとして Apache Kafka と MQTT Broker をサポートしている。
 他のメッセージングシステムをサポートできるよう、バックエンドはプラグインとして拡張可能になっている。
 
-SINETStream は Python API と Java API を提供している。
+SINETStream は Python API と Java API 、および Android API (MQTTのみ) を提供している。
 
 ## 目次
 
-* [Python API](api-python.md)
-* [Java API](api-java.md)
+* [Python版ユーザガイド](api-python.md)
+* [Java版ユーザガイド](api-java.md)
+* [Android版ユーザガイド](android.md)
+    * [Android API](api-android.md)
+    * Android API(Javadoc) (準備中)
+    * [Android版設定ファイル](config-android.md)
 * [設定ファイル](config.md)
 * [認証と認可](auth.md)
 

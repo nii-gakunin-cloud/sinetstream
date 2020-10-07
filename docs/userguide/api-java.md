@@ -252,6 +252,7 @@ try (AsyncMessageWriter<String> writer = factory.getAsyncWriter()) {
     * 対応するサービスが設定ファイルに記述されている必要がある
 * topic(String)
     * メッセージの受信元となるトピック名
+    * topicsパラメータが指定されているときは無視される
 * topics(Collection\<String\>)
     * メッセージの受信元となるトピックのコレクション
     * `MessageReader` では複数のトピックからメッセージを受信することができる

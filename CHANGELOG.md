@@ -1,5 +1,13 @@
 # Changelog
 
+## [v1.4.0] - 2020-10-07 XXX
+
+### Added
+
+- Support Android
+    - Limitations:
+        - Data encryption is not implemented.
+
 ## [v1.3.0] - 2020-07-31
 
 ### Added

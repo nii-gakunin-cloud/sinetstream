@@ -101,7 +101,7 @@ Next, install the library of SINETStream on the container environment. Please ex
 [user01@broker]$ pip3 install --user sinetstream-kafka sinetstream-mqtt
 Collecting sinetstream-kafka
 (omit)
-Successfully installed kafka-python-1.4.7 paho-mqtt-1.5.0 pycryptodome-3.9.4 sinetstream-1.0.0 sinetstream-kafka-1.0.0 sinetstream-mqtt-1.0.0
+Successfully installed avro-python3-1.9.2.1 kafka-python-2.0.1 paho-mqtt-1.5.0 promise-2.3 pycryptodome-3.9.7 pyyaml-5.3.1 sinetstream-1.2.0 sinetstream-kafka-1.2.0 sinetstream-mqtt-1.2.0 six-1.14.0
 ```
 
 Finally, if the message `Successfully installed ...` is shown, the library has been successfully installed.
@@ -111,15 +111,18 @@ To show the list of installed Python 3 libraries, use the following command.
 [user01@broker]$ pip3 list
 Package           Version
 ----------------- --------
-kafka-python      1.4.7
+avro-python3      1.9.2.1
+kafka-python      2.0.1
 paho-mqtt         1.5.0
 pip               19.3.1
-pycryptodome      3.9.4
-PyYAML            3.12
+promise           2.3
+pycryptodome      3.9.7
+PyYAML            5.3.1
 setuptools        42.0.2
-sinetstream       1.0.0
-sinetstream-kafka 1.0.0
-sinetstream-mqtt  1.0.0
+sinetstream       1.2.0
+sinetstream-kafka 1.2.0
+sinetstream-mqtt  1.2.0
+six               1.14.0
 supervisor        4.1.0
 ```
 
@@ -213,7 +216,7 @@ Make sure that the directories and files are the same as in the example below.
 
 Run `Reader` and `Writer` to confirm that messages can be sent and received via SINETStream.
 
-SINETStream v1.* supports [Kafka](https://kafka.apache.org/) and [MQTT(Mosquitto)](https://mosquitto.org/) as backend messaging systems.
+SINETStream supports [Kafka](https://kafka.apache.org/) and [MQTT(Mosquitto)](https://mosquitto.org/) as backend messaging systems.
 First, make sure that you can send and receive messages to/from the Kafka broker.
 After that, confirm that you can send and receive messages to/from the MQTT broker by changing the settings (without changing the program).
 
@@ -248,7 +251,7 @@ Press ctrl-c to exit the program.
 
 The service name specified in the command line is shown after the colon(`:`).
 
-### Run Writer
+#### Run Writer
 
 In the terminal for `Writer`, log in to the container environment from the host environment.
 Please execute the following command.
@@ -390,7 +393,7 @@ Below is a brief description of each parameter.
 
 * type
     - Specify the type of the messaging system.
-    - In SINETStream v1.*, use either `kafka` or `mqtt`.
+    - In SINETStream, use either `kafka` or `mqtt`.
 * brokers
     - Specify the address(es) of the broker(s).
     - The format of the address is the host name and port number concatenated by a colon(`:`).
@@ -444,3 +447,48 @@ As a result, connection and disconnection to/from the broker are executed at the
 Send a message to the broker by invoking the `publish(message)` method of the object named `writer` given by the `with` statement.
 
 Please refer to the [user guide](../userguide/api-python.en.md) for more information about SINETStream Python API.
+
+### 4.3 SINETStream API (asynchronous API)
+
+SINETStream v1.2 now supports asynchronous API. We have prepared sample programs on Github that executes the same processing as described above with asynchronous API.
+
+*[Reader](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/python/sample/text_async/consumer.py)
+*[Writer](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/python/sample/text_async/producer.py)
+
+#### Reader (asynchronous API)
+In the sample program consumer.py of the ‘Reader’ of the asynchronous API,
+We use the following example to show how to use SINETStream API.
+
+```python
+reader = AsyncMessageReader(service)
+reader.on_message = show_message
+reader.open()
+```
+
+First, let's create an ‘AsyncMessageReader’ object to receive the message. At that time, please specify the service name as an argument.
+
+Next, specify the callback function to be called when a message is received in the ‘.on_message’ property. The callback function can receive the messages from the argument. The sample program uses the following callback function.
+
+```python
+def show_message(message):
+    ts = datetime.fromtimestamp(message.timestamp)
+    print(f"[{ts}] topic={message.topic} value='{message.value}'")
+```
+
+Finally, you call reader ’.open()’ to connect to the broker.
+
+#### Writer (asynchronous API)
+
+In the sample program producer.py of the ‘Writer’ of the asynchronous API, we use the following example to show how to use SINETStream API.
+
+```python
+with AsyncMessageWriter(service) as writer:
+    while True:
+        message = get_message()
+        writer.publish(message)
+```
+
+First, create an ‘AsyncMessageWriter’ object for sending messages. At that time, specify the service name as an argument. ‘AsyncMessageWriter’ is usually executed by with statement of Python. This will connect to and disconnect from the broker within the block of the with statement. You can send a message to the broker by calling ‘.publish(message)’ on the value ‘writer’ which returned by the with statement.
+
+In synchronous API, ‘.publish()’ blocks the sending process until it completed, but in asynchronous API, it returns without blocking the process. In addition, ‘.publish()’ of asynchronous API returns a [Promise Object](https://github.com/syrusakbary/promise) to specify the processing after the processing result is confirmed.
+

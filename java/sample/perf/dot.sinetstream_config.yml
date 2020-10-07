@@ -1,14 +1,14 @@
-service-kafka-aws:
+service-kafka-aws-plain:
   type: kafka
   brokers:
     - kafka-aws:9092
 
-service-mqtt-aws:
+service-mqtt-aws-plain:
   type: mqtt
   brokers:
     - mqtt-aws:1883
 
-service-kafka-aws-crypto:
+service-kafka-aws-aes:
   type: kafka
   brokers:
     - kafka-aws:9092
@@ -19,7 +19,7 @@ service-kafka-aws-crypto:
     password: asdfghjkl
   data_encryption: true
 
-service-mqtt-aws-crypto:
+service-mqtt-aws-aes:
   type: mqtt
   brokers:
     - mqtt-aws:1883
@@ -45,3 +45,31 @@ service-mqtt-aws-tls:
   tls:
     ca_certs: /var/tmp/mqtt-ca.crt
     check_hostname: off
+
+service-kafka-aws-tlsaes:
+  type: kafka
+  brokers:
+    - kafka-aws:9093
+  tls:
+    ca_certs: /var/tmp/ca-cert
+    check_hostname: off
+  crypto:
+    algorithm: AES
+    key_length: 256
+    mode: GCM
+    password: asdfghjkl
+  data_encryption: true
+
+service-mqtt-aws-tlsaes:
+  type: mqtt
+  brokers:
+    - mqtt-aws:8883
+  tls:
+    ca_certs: /var/tmp/mqtt-ca.crt
+    check_hostname: off
+  crypto:
+    algorithm: AES
+    key_length: 256
+    mode: GCM
+    password: asdfghjkl
+  data_encryption: true
