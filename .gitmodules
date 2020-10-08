@@ -1,3 +1,6 @@
 [submodule "android"]
 	path = android
 	url = https://github.com/nii-gakunin-cloud/sinetstream-android.git
+[submodule "android-helper"]
+	path = android-helper
+	url = https://github.com/nii-gakunin-cloud/sinetstream-android-helper.git
