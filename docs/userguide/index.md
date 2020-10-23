@@ -43,7 +43,7 @@ SINETStream は Python API と Java API 、および Android API (MQTTのみ) �
 * [Java版ユーザガイド](api-java.md)
 * [Android版ユーザガイド](android.md)
     * [Android API](api-android.md)
-    * [Android API(Javadoc)](http://javadoc.android.sinetstream.net/)
+    * [Android API (Javadoc)](http://javadoc.android.sinetstream.net/)
     * [Android版設定ファイル](config-android.md)
 * [設定ファイル](config.md)
 * [認証と認可](auth.md)
