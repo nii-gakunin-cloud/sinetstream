@@ -9,8 +9,6 @@
     - sinetstream-android-echo
     - sinetstream-android-sensor-publisher
 
-### Changed
-
 ### Fixed
 
 - Bugfix for data encryption. (Python, Java)
