@@ -603,7 +603,7 @@ AsyncMessageWriterクラスのコンストラクタ。
 ブローカーに送信される。
 
 `publish(message)`は非同期処理であり [promise](https://github.com/syrusakbary/promise)の`Promise`オブジェクトを返す。
-`Promise`オブジェクトのメソッド `.then()`, `.catch()`を用いることで、 
+`Promise`オブジェクトのメソッド `.then()`, `.catch()`を用いることで、
 送信結果（成功、失敗）に応じた処理を設定することができる。使用例を以下に示す。
 
 ```python

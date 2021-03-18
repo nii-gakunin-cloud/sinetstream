@@ -23,7 +23,8 @@
 import logging
 
 import pytest
-from conftest import SERVICE, test_qwrite_failure, test_qread_failure
+from conftest import SERVICE
+from conftest import test_qwrite_failure, test_qread_failure  # noqa
 from threading import Condition
 
 from sinetstream import (
@@ -66,8 +67,13 @@ def equal_metrics(a, b):
 def assert_metrics(m):
     assert m.raw == "this is a dummy metrics"
     assert m.start_time > 0
+    assert m.start_time_ms > 0
+    assert int(m.start_time * 1000) == int(m.start_time_ms)
     assert m.end_time > 0
+    assert m.end_time_ms > 0
+    assert int(m.end_time * 1000) == int(m.end_time_ms)
     assert m.end_time >= m.start_time
+    assert m.end_time_ms >= m.start_time_ms
     assert m.msg_count_total == nmsg
     assert m.msg_count_rate > 0
     assert m.msg_bytes_total >= sum_len
@@ -84,9 +90,10 @@ def test_sync_thru(config_topic):
     with MessageWriter(SERVICE, value_type=TEXT) as fw:
         for msg in msgs:
             fw.publish(msg)
-        m = fw.metrics()
-        m2 = fw.metrics(reset=True)
-        m3 = fw.metrics()
+        m = fw.metrics
+        m2 = fw.metrics
+        fw.reset_metrics()
+        m3 = fw.metrics
         logger.info(f"writer.metrics: {m}")
 
         assert_metrics(m)
@@ -96,9 +103,10 @@ def test_sync_thru(config_topic):
         for expected, msg in zip(msgs, fr):
             assert msg.topic == config_topic
             assert msg.value == expected
-        m = fr.metrics()
-        m2 = fr.metrics(reset=True)
-        m3 = fr.metrics()
+        m = fr.metrics
+        m2 = fr.metrics
+        fr.reset_metrics()
+        m3 = fr.metrics
         logger.info(f"reader.metrics: {m}")
 
         assert_metrics(m)
@@ -113,9 +121,9 @@ def test_sync_write_err(config_topic):
         for msg in msgs:
             try:
                 fw.publish(msg)
-            except:
+            except Exception:
                 logger.info("caught")
-        m = fw.metrics()
+        m = fw.metrics
         logger.info(f"writer.metrics: {m}")
         assert m.error_count_total == 1
 
@@ -132,9 +140,9 @@ def test_sync_read_err(config_topic):
             for expected, msg in zip(msgs, fr):
                 assert msg.topic == config_topic
                 assert msg.value == expected
-        except:
+        except Exception:
             logger.info("caught")
-        m = fr.metrics()
+        m = fr.metrics
         logger.info(f"reader.metrics: {m}")
         assert m.msg_count_total == 2
         assert m.error_count_total == 1
@@ -162,9 +170,10 @@ def test_async_thru(config_topic):
         with MessageWriter(SERVICE, value_type=TEXT) as writer:
             for msg in msgs:
                 writer.publish(msg)
-            m = writer.metrics()
-            m2 = writer.metrics(reset=True)
-            m3 = writer.metrics()
+            m = writer.metrics
+            m2 = writer.metrics
+            writer.reset_metrics()
+            m3 = writer.metrics
             logger.info(f"writer.metrics: {m}")
 
             assert_metrics(m)
@@ -176,9 +185,10 @@ def test_async_thru(config_topic):
                 cv.wait(1)
             assert called == nmsg
 
-        m = reader.metrics()
-        m2 = reader.metrics(reset=True)
-        m3 = reader.metrics()
+        m = reader.metrics
+        m2 = reader.metrics
+        reader.reset_metrics()
+        m3 = reader.metrics
         logger.info(f"reader.metrics: {m}")
 
         assert_metrics(m)
@@ -197,7 +207,7 @@ def test_async_write_err(config_topic):
             ret = fw.publish(msg).then(lambda _: count.append(1), lambda _: err.append(1))
             from promise import Promise
             assert isinstance(ret, Promise)
-        m = fw.metrics()
+        m = fw.metrics
         logger.info(f"writer.metrics: {m}")
         assert len(count) == len(test_err)
         assert len(err) == 1
@@ -248,7 +258,7 @@ def test_async_read_err(config_topic):
                 cv.wait(1)
             assert called == nmsg
 
-        m = reader.metrics()
+        m = reader.metrics
         logger.info(f"reader.metrics: {m}")
         assert err == 1
         assert m.msg_count_total == 2

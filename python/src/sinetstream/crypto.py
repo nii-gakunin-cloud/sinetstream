@@ -23,11 +23,11 @@
 import binascii
 import logging
 
-from Crypto.Cipher import AES
-from Crypto.Hash import SHA256, SHA384, SHA512
-from Crypto.Protocol.KDF import PBKDF2
-from Crypto.Random import get_random_bytes
-from Crypto.Util.Padding import pad, unpad
+from Cryptodome.Cipher import AES
+from Cryptodome.Hash import SHA256, SHA384, SHA512
+from Cryptodome.Protocol.KDF import PBKDF2
+from Cryptodome.Random import get_random_bytes
+from Cryptodome.Util.Padding import pad, unpad
 
 from .error import InvalidArgumentError
 
@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 #     padding:    none
 #     password:   XXX (MUST)
 #     key_derivation:
-#         algorithm:  XXX (MUST)
+#         algorithm:  XXX
 #         salt_bytes: 8
 #         iteration:  10000
 #         prf:        HMAC-SHA256
@@ -82,6 +82,7 @@ def conv_param(s, d, kwd):
 
 def make_key(crypto_params, salt=None):
     kd_params = crypto_params["key_derivation"]
+    algorithm = kd_params["algorithm"]
     salt_bytes = kd_params["salt_bytes"]
     iteration = kd_params["iteration"]
     prf = kd_params["prf"]
@@ -96,7 +97,7 @@ def make_key(crypto_params, salt=None):
                                   },
                                   "crypto:key_derivation:prf")
 
-    if kd_params["algorithm"] == "pbkdf2":
+    if algorithm == "pbkdf2" or algorithm == "PBKDF2WithHmacSHA256":
         if salt is None:
             salt = get_random_bytes(salt_bytes)
         else:
@@ -165,6 +166,7 @@ class CipherAES(object):
                              {
                                  None: None,
                                  "none": None,
+                                 "NoPadding": None,
                                  "pkcs7": "pkcs7",
                              },
                              "crypto:padding")
@@ -227,6 +229,7 @@ class CipherAES(object):
             tag = b''
         else:
             assert False
+        logger.debug(f"XXX:enc: enc_key={hexlify(self.enc_key)}")
         logger.debug(f"XXX:enc: salt={hexlify(self.enc_salt)}")
         logger.debug(f"XXX:enc: ivnonce.len={len(ivnonce)}")
         logger.debug(f"XXX:enc: ivnonce={hexlify(ivnonce)}")
@@ -237,7 +240,7 @@ class CipherAES(object):
     def decrypt(self, cmsg):
         assert type(cmsg) is bytes
         salt_bytes = self.crypto_params["key_derivation"]["salt_bytes"]
-        dummy_key = b"0123456789abcdef"         # XXX Crypto/Cipher/AES.py: key_size = (16, 24, 32)
+        dummy_key = b"0123456789abcdef"         # XXX Cryptodome/Cipher/AES.py: key_size = (16, 24, 32)
 
         salt, rem = split_bytes(cmsg, salt_bytes)
         logger.debug(f"XXX:dec: salt={hexlify(salt)}")

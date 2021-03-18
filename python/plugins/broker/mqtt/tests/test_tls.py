@@ -21,12 +21,11 @@
 # under the License.
 
 import logging
-from pathlib import Path
 from itertools import product
 from sinetstream import MessageReader, MessageWriter, ConnectionError
 import pytest
 from conftest import (
-    SERVICE, TOPIC, BROKER, SSL_BROKER, SSL_BROKER_BAD_HOSTNAME, CACERT_PATH,
+    SERVICE, TOPIC, SSL_BROKER, SSL_BROKER_BAD_HOSTNAME, CACERT_PATH,
 )
 import ssl
 
@@ -38,7 +37,7 @@ pytestmark = pytest.mark.skipif(
 
 @pytest.mark.parametrize("io", [MessageReader, MessageWriter])
 def test_tls(io, setup_config):
-    with io(SERVICE, TOPIC) as f:
+    with io(SERVICE, TOPIC) as _:
         pass
 
 
@@ -54,7 +53,7 @@ tls_set_params = {
     pytest.param(MessageWriter, tls_set_params),
 ])
 def test_tls_set(io, setup_config):
-    with io(SERVICE, TOPIC) as f:
+    with io(SERVICE, TOPIC) as _:
         pass
 
 
@@ -107,7 +106,7 @@ check_hostname_params = [
 ))
 def test_tls_bad_hostname(io, setup_config):
     with pytest.raises(ConnectionError):
-        with io(SERVICE, TOPIC) as f:
+        with io(SERVICE, TOPIC) as _:
             pass
 
 
@@ -133,7 +132,7 @@ no_check_hostname_params = [
     no_check_hostname_params,
 ))
 def test_tls_no_check_hostname(io, setup_config):
-    with io(SERVICE, TOPIC) as f:
+    with io(SERVICE, TOPIC) as _:
         pass
 
 
@@ -153,7 +152,7 @@ cert_reqs_params = [
     cert_reqs_params,
 ))
 def test_tls_cert_reqs(io, setup_config):
-    with io(SERVICE, TOPIC) as f:
+    with io(SERVICE, TOPIC) as _:
         pass
 
 
@@ -173,7 +172,7 @@ tls_version_params = [
     tls_version_params,
 ))
 def test_tls_version(io, setup_config):
-    with io(SERVICE, TOPIC) as f:
+    with io(SERVICE, TOPIC) as _:
         pass
 
 

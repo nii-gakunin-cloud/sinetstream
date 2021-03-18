@@ -21,11 +21,12 @@
 # under the License.
 
 import logging
+import time
 
 import pytest
 from conftest import SERVICE
 
-from sinetstream import MessageReader, MessageWriter, TEXT, BYTE_ARRAY
+from sinetstream import MessageReader, MessageWriter, AsyncMessageReader, TEXT, BYTE_ARRAY
 
 logging.basicConfig(level=logging.ERROR)
 pytestmark = pytest.mark.usefixtures('setup_config', 'dummy_reader_plugin', 'dummy_writer_plugin')
@@ -66,6 +67,44 @@ def test_enc_text(config_topic):
         for expected, msg in zip(msgs, fr):
             assert msg.topic == config_topic
             assert msg.value == expected
+
+
+def test_injection(config_topic):
+    injected = []
+    with MessageWriter(SERVICE, topic=config_topic+"-W", value_type=TEXT, data_encryption=True) as fw:
+        fw.debug_last_msg_bytes = True
+        for msg in msgs:
+            fw.publish(msg)
+            injected.append((msg, fw.debug_last_msg_bytes))
+
+    with MessageReader(SERVICE, topic=config_topic+"-R", value_type=TEXT, data_encryption=True) as fr:
+        for expected, b in injected:
+            fr.debug_inject_msg_bytes = (b, config_topic, None)
+            msg = next(fr)
+            assert msg.topic == config_topic
+            assert msg.value == expected
+
+
+def test_injection_async(config_topic):
+    injected = {}
+    recved = []
+
+    with MessageWriter(SERVICE, topic=config_topic+"-W", value_type=TEXT, data_encryption=True) as fw:
+        fw.debug_last_msg_bytes = True
+        for msg in msgs:
+            fw.publish(msg)
+            injected[msg] = fw.debug_last_msg_bytes
+
+    def recv_msg(msg):
+        recved.append(msg)
+    with AsyncMessageReader(SERVICE, topic=config_topic+"-R", value_type=TEXT) as fr:
+        fr.on_message = recv_msg
+        for b in injected.values():
+            fr.debug_inject_msg_bytes(b, config_topic+"-R", None)
+    time.sleep(1)  # wait to receive.
+    assert len(recved) == len(msgs)
+    for rec in recved:
+        assert rec.value in injected
 
 
 @pytest.mark.parametrize(

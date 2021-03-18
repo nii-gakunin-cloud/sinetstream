@@ -1,14 +1,14 @@
-FROM centos:7.7.1908
+FROM centos:7.9.2009
 
 # Install Apache Kafka
-ARG KAFKA_VERSION=2.4.0
+ARG KAFKA_VERSION=2.6.0
 ENV KAFKA_VERSION $KAFKA_VERSION
-ARG KAFKA_URL=http://ftp.riken.jp/net/apache/kafka/${KAFKA_VERSION}/kafka_2.12-${KAFKA_VERSION}.tgz
+ARG KAFKA_URL=http://ftp.riken.jp/net/apache/kafka/${KAFKA_VERSION}/kafka_2.13-${KAFKA_VERSION}.tgz
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN curl -s $KAFKA_URL | tar xzf - -C /srv \
- && yum -y install java-1.8.0-openjdk-headless \
+ && yum -y install java-11-openjdk-headless \
  && yum clean all \
- && ln -sf /srv/kafka_2.12-${KAFKA_VERSION} /srv/kafka
+ && ln -sf /srv/kafka_2.13-${KAFKA_VERSION} /srv/kafka
 
 
 # Install Eclipse Mosquitto

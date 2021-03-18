@@ -1,5 +1,21 @@
 # Changelog
 
+## [v1.5.0] - 2021-03-18
+
+### Added
+
+- Tutorial for Android
+- 2 sample applications for Android
+    - sinetstream-android-echo
+    - sinetstream-android-sensor-publisher
+
+### Changed
+
+### Fixed
+
+- Bugfix for data encryption. (Python, Java)
+- Bugfix for metrics API (Python)
+
 ## [v1.4.0] - 2020-10-08
 
 ### Added
@@ -52,14 +68,14 @@
 ### Added
 
 - Tutorial
-- open/close method for MessageReader/MessageWriter (python)
+- open/close method for MessageReader/MessageWriter (Python)
 
 ### Changed
 
 - {python,java}/sample/text/*.py: remove -t option to specify the topic.
 - Documents rearranged.
-- To display the cheat sheet, `python3 -m sinetstream`. (python)
-- The topic= argument is now optional in MessageReader/MessageWriter constructor. (python)
+- To display the cheat sheet, `python3 -m sinetstream`. (Python)
+- The topic= argument is now optional in MessageReader/MessageWriter constructor. (Python)
 
 ### Fixed
 
@@ -90,7 +106,7 @@
 ### Added
 
 - Java implementation.
-- python/MQTT plugin.
+- Python/MQTT plugin.
 - parameter value_type=.
 - display default paraterers during installation.
 - TLS support.

@@ -20,11 +20,12 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import copy
 import logging
 import os
 import time
+import yaml
 from concurrent.futures import ThreadPoolExecutor
-from copy import copy
 from enum import Enum, auto
 from threading import Lock, RLock
 
@@ -57,13 +58,8 @@ DEFAULT_CLIENT_ID = None
 
 
 def yaml_load(s):
-    import yaml
     try:
-        from yaml import CLoader as Loader
-    except ImportError:
-        from yaml import Loader
-    try:
-        yml = yaml.load(s, Loader=Loader)
+        yml = yaml.safe_load(s)
         return yml
     except yaml.scanner.ScannerError:
         return None
@@ -95,7 +91,7 @@ def load_config(config_file=None):
         if ret is not None:
             return ret
 
-    logger.error(f"No configuration file exist")
+    logger.error("No configuration file exist")
     raise NoConfigError()
 
 
@@ -107,7 +103,7 @@ def load_config_from_url(url):
             return yaml_load(contents)
     except OSError as ex:
         logger.debug('load config file from URL', stack_info=True)
-        logger.warning('Could not load from the specified URL.')
+        logger.warning(f'Could not load from the specified URL: {ex}')
         return None
 
 
@@ -126,7 +122,7 @@ def convert_params(params):
     consistency = params.get("consistency")
     if consistency is None:
         return params
-    new_params = copy(params)
+    new_params = copy.copy(params)
     try:
         new_params["consistency"] = (
             consistency if isinstance(consistency, Consistency)
@@ -185,14 +181,14 @@ crypto_params = {
     ("algorithm",      True,  None,   ["AES"]),
     ("key_length",     False, 128,    None),
     ("mode",           True,  None,   ["CBC", "EAX"]),
-    ("padding",        False, "none", [None, "none", "pkcs7"]),
+    ("padding",        False, "none", [None, "none", NoPadding", "pkcs7"]),
     ("key_derivation", False, key_derivation_params,   None),
     ("password",       True,  None,   None),
 }
 
 key_derivation_params = {
     # name             must   default available
-    ("algorithm",      True,  None,          ["pbkdf2"]),
+    ("algorithm",      False, "pbkdf2",      ["pbkdf2"]),
     ("salt_bytes",     False, 8,             None),
     ("iteration",      False, 10000,         None),
     ("prf",            False, "HMAC-SHA256", ["HMAC-SHA256", "HMAC-SHA384", "HMAC-SHA512"]),
@@ -249,7 +245,7 @@ def merge_parameter(service, kwargs, default_values, config_file=None):
     #  config file
     #  sinetstream's default parameter
     #  plugin's default parameter (lowest)
-    params = default_values.copy()
+    params = copy.deepcopy(default_values)
     deepupdate(params, svc_params)
     deepupdate(params, convert_params(kwargs))
     normalize_params(params)
@@ -264,6 +260,7 @@ default_params = {
         "key_length": 128,
         "padding": None,
         "key_derivation": {
+            "algorithm": "pbkdf2",
             "salt_bytes": 8,
             "iteration": 10000,
             "prf": "HMAC-SHA256",
@@ -285,8 +282,20 @@ class Metrics(object):
         # self.error_count_total
 
     @property
+    def start_time_ms(self):
+        return self.start_time * 1000
+
+    @property
+    def end_time_ms(self):
+        return self.end_time * 1000
+
+    @property
     def time(self):
         return self.end_time - self.start_time
+
+    @property
+    def time_ms(self):
+        return self.time * 1000
 
     @property
     def msg_count_rate(self):
@@ -330,7 +339,7 @@ class IOMetrics(object):
     def reset(self):
         with self._lock:
             self._metrics.start_time = time.time()
-            self._metrics.end_time = self._metrics.start_time  # XXX This is most likely unnecessary.
+            self._metrics.end_time = self._metrics.start_time  # This is most likely unnecessary.
             self._metrics.msg_count_total = 0
             self._metrics.msg_bytes_total = 0
             self._metrics.msg_size_min = IOMetrics.MAXSIZE
@@ -352,7 +361,7 @@ class IOMetrics(object):
 
     def get_metrics(self):
         with self._lock:
-            r = copy(self._metrics)
+            r = copy.copy(self._metrics)
         if r.msg_size_min == IOMetrics.MAXSIZE:
             r.msg_size_min = None
         if r.msg_size_max == -1:
@@ -386,7 +395,7 @@ class MessageIO(object):
         logger.debug("MessageIO:open")
         with self._lock:
             if self._opened:
-                logger.error(f"already connected")
+                logger.error("already connected")
                 raise AlreadyConnectedError()
             self._plugin.open()
             self._opened = True
@@ -421,12 +430,16 @@ class MessageIO(object):
     def value_type(self):
         return self.params["value_type"]
 
-    def metrics(self, reset=False):
+    @property
+    def metrics(self):
         metrics = self.iometrics.get_metrics()
-        metrics.raw = self._plugin.metrics(reset)
-        if reset:
-            self.iometrics = IOMetrics()
+        metrics.raw = self._plugin.metrics()
         return metrics
+
+    def reset_metrics(self, reset_raw=False):
+        self.iometrics = IOMetrics()
+        if reset_raw:
+            self._plugin.reset_metrics()
 
 
 class BaseMessageReader(MessageIO):
@@ -436,7 +449,10 @@ class BaseMessageReader(MessageIO):
     }
 
     def __init__(self, registry, service, topics=None, config_file=None, **kwargs):
-        params = merge_parameter(service, kwargs, BaseMessageReader.default_params, config_file=config_file)
+        params = merge_parameter(service,
+                                 kwargs,
+                                 BaseMessageReader.default_params,
+                                 config_file=config_file)
         params["topics"] = _setup_topics(params, topics)
         super().__init__(service, params, registry)
         self.unmarshaller = Unmarshaller()
@@ -444,7 +460,7 @@ class BaseMessageReader(MessageIO):
 
     @property
     def topics(self):
-        return copy(self.params["topics"])
+        return copy.copy(self.params["topics"])
 
     @property
     def receive_timeout_ms(self):
@@ -508,6 +524,7 @@ class MessageReader(BaseMessageReader):
     def __init__(self, service, topics=None, config_file=None, **kwargs):
         logger.debug("MessageReader:init")
         super().__init__(MessageReader.registry, service, topics, config_file, **kwargs)
+        self.debug_inject_msg_bytes = None  # for injection: None or tuple (message, topic, raw)
 
     def __iter__(self):
         logger.debug("MessageReader:iter")
@@ -515,10 +532,14 @@ class MessageReader(BaseMessageReader):
         return self
 
     def __next__(self):
+        if self.debug_inject_msg_bytes is not None:
+            msg_bytes = self.debug_inject_msg_bytes
+            self.debug_inject_msg_bytes = None
+            return self._make_message(*msg_bytes)
         try:
             message, topic, raw = next(self._iter)
             return self._make_message(message, topic, raw)
-        except:
+        except Exception:
             self.iometrics.update_err()
             raise
 
@@ -549,15 +570,23 @@ class BaseMessageWriter(MessageIO):
 
     def __init__(self, registry, service, topic=None, config_file=None, **kwargs):
         logger.debug("MessageWriter:init")
-        params = merge_parameter(service, kwargs, MessageWriter.default_params, config_file=config_file)
+        params = merge_parameter(service,
+                                 kwargs,
+                                 MessageWriter.default_params,
+                                 config_file=config_file)
         params["topic"] = _setup_topic(params, topic)
         super().__init__(service, params, registry)
         self.marshaller = Marshaller()
         self.value_serializer = self._setup_serializer()
+        self.debug_last_msg_bytes = None  # for inspection
 
     def _publish(self, msg):
         tstamp = int(time.time() * 1000_000)
-        return self._plugin.publish(self._to_bytes(msg, tstamp))
+        msg_bytes = self._to_bytes(msg, tstamp)
+        if self.debug_last_msg_bytes is not None:
+            self.debug_last_msg_bytes = msg_bytes
+            return True
+        return self._plugin.publish(msg_bytes)
 
     @property
     def topic(self):
@@ -606,7 +635,7 @@ class MessageWriter(BaseMessageWriter):
     def publish(self, msg):
         try:
             return super()._publish(msg)
-        except:
+        except Exception:
             self.iometrics.update_err()
             raise
 
@@ -715,3 +744,6 @@ class AsyncMessageReader(BaseMessageReader):
             self._on_failure(e, traceback)
 
         self._plugin.on_failure = callback
+
+    def debug_inject_msg_bytes(self, value, topic, raw):
+        self._on_message(self._make_message(value, topic, raw))

@@ -140,7 +140,7 @@ try (MessageReader<String> reader = factory.getReader()) {
     * Kafkaのサービスクラス
 * ServiceLoader
     * 登録されているサービスをロードする
-    
+
 #### 2.2.2 MessageWriter
 
 以下に示すメッセージ送信処理を SINETStreamで行った場合のシーケンス図を示します。
@@ -213,7 +213,7 @@ try (AsyncMessageReader<String> reader = factory.getAsyncReader()) {
     * Kafkaのサービスクラス
 * ServiceLoader
     * 登録されているサービスをロードする
-    
+
 #### 2.2.4 AsyncMessageWriter
 
 以下に示す非同期APIのメッセージ送信処理を SINETStreamで行った場合のシーケンス図を示します。
@@ -254,7 +254,7 @@ try (AsyncMessageWriter<String> writer = factory.getAsyncWriter()) {
 
 ### 3.1 概要
 
-SINETStreamでは [ServiceLoader](https://docs.oracle.com/javase/jp/8/docs/api/java/util/ServiceLoader.html) を用いてプラグインを実現しています。  
+SINETStreamでは [ServiceLoader](https://docs.oracle.com/javase/jp/8/docs/api/java/util/ServiceLoader.html) を用いてプラグインを実現しています。
 プラグインを作成するためには以下の作業が必要となります。
 
 * プロバイダ構成ファイルの作成
@@ -265,7 +265,7 @@ SINETStreamでは [ServiceLoader](https://docs.oracle.com/javase/jp/8/docs/api/j
 ### 3.2 プロバイダ構成ファイルの作成
 
 プロバイダ構成ファイルにサービスプロバイダを登録することで、
-ServiceLoaderがプラグインを見つけることができるようになります。  
+ServiceLoaderがプラグインを見つけることができるようになります。
 
 構成ファイルはリソースディレクトリの`META-INF/services/`に配置します。
 ファイル名はサービスプロバイダの完全修飾クラス名にする必要があります。
@@ -279,7 +279,7 @@ SINETStreamのメッセージ受信、送信に対応するサービスプロバ
     * `jp.ad.sinet.stream.spi.AsyncMessageReaderProvider`
 * メッセージ送信(非同期API)に対応するサービスプロバイダ
     * `jp.ad.sinet.stream.spi.AsyncMessageWriterProvider`
-    
+
 構成ファイルには、サービスプロバイダの実装クラスを完全修飾名で１クラス1行で記述します。
 
 例えば Kafkaブローカーにメッセージ送信を行うクラス`jp.ad.sinet.stream.plugins.kafka.KafkaMessageProvider`を登録する場合、
@@ -303,7 +303,7 @@ SINETStreamには４つのサービスプロバイダがありますが、１つ
     * サービスプロバイダインタフェース
 * `jp.ad.sinet.stream.spi.PluginMessageWriter`
     * メッセージ送信処理のインタフェース
-    
+
 `MessageWriterProvider`のメソッドを以下に示します。
 
 * `PluginMessageWriter getWriter(WriterParameters params)`
@@ -312,7 +312,7 @@ SINETStreamには４つのサービスプロバイダがありますが、１つ
 * `String getType()`
     * メッセージングシステムのタイプを表す名前を返す
     * メッセージングシステム固有の処理については、このメソッドが返す値と設定ファイルの `type` に指定された値が一致したプラグインによって処理される
-    
+
 `PluginMessageWriter`の主なメソッドを以下に示します。
 
 * `void write(byte[] message)`
@@ -363,7 +363,7 @@ SINETStreamには４つのサービスプロバイダがありますが、１つ
     * サービスプロバイダインタフェース
 * `jp.ad.sinet.stream.spi.PluginAsyncMessageWriter`
     * メッセージ送信処理のインタフェース
-    
+
 `AsyncMessageWriterProvider`のメソッドを以下に示します。
 
 * `PluginAsyncMessageWriter getAsyncWriter(WriterParameters params)`
@@ -372,7 +372,7 @@ SINETStreamには４つのサービスプロバイダがありますが、１つ
 * `String getType()`
     * メッセージングシステムのタイプを表す名前を返す
     * メッセージングシステム固有の処理については、このメソッドが返す値と設定ファイルの `type` に指定された値が一致したプラグインによって処理される
-    
+
 `PluginAsyncMessageWriter`の主なメソッドを以下に示します。
 
 * `Promise<?, ? extends Throwable, ?> write(byte[] message)`

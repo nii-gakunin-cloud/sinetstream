@@ -68,8 +68,11 @@ class DummyReader(object):
     def close(self):
         pass
 
-    def metrics(self, reset):
+    def metrics(self):
         return "this is a dummy metrics"
+
+    def reset_metrics(self):
+        pass
 
     def __iter__(self):
         return self
@@ -109,8 +112,11 @@ class DummyWriter(object):
     def close(self):
         pass
 
-    def metrics(self, reset):
+    def metrics(self):
         return "this is a dummy metrics"
+
+    def reset_metrics(self):
+        pass
 
     def publish(self, value):
         qwrite(self._params.get("topic"), value)

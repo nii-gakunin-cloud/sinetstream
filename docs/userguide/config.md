@@ -291,30 +291,40 @@ SINETStream では、バックエンドの SSL/TLS による通信の暗号化�
 
 `crypto` の子要素となるマッピングに指定できる値を以下に示す。
 
-* algorithm
+* algorithm (mandatory)
     * 暗号のアルゴリズムを指定する
     * 指定可能な値: "AES"
-* key_length
+* key_length (optinal)
     * 鍵長 (bit) を指定する
     * 指定可能な値: 128, 192, 256
     * デフォルト値: 128
-* mode
+* mode (mandatory)
     * 暗号利用モードを指定する
     * 指定可能な値: "CBC", "OFB", "CTR", "EAX", "GCM"
-* padding
+        * Android: "CBC", "GCM"
+    * 補足: CBCを使う場合はpaddingにnone以外の値を指定しなければならない。
+* padding (optional)
     * パディング方法を指定する
-    * 指定可能な値: "pkcs7"
-* password
+    * 指定可能な値: "none", "pkcs7"
+    * デフォルト値: "none"
+* password (mandatory)
     * パスワードを指定する
-* key_derivation
+* key_derivation (optional)
     * 鍵導出関数に関するパラメータを YAML のマッピングで指定する
-    * algorithm
+    * algorithm (optional)
         * 鍵導出関数のアルゴリズムを指定する
         * 指定可能な値: "pbkdf2"
-    * salt_bytes
+        * デフォルト値: "pbkdf2"
+    * salt_bytes (optional)
         * ソルトのバイト数を指定する
-    * iteration
+        * デフォルト値: 8
+    * iteration (optional)
         * 反復回数を指定する
+        * デフォルト値: 10000
+    * prf (optional)
+        * 鍵導出関数(pseudorandom function)を指定する
+        * 指定可能な値: "HMAC-SHA256"
+        * デフォルト値: "HMAC-SHA256"
 
 #### 設定例
 

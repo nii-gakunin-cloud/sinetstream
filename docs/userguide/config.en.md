@@ -273,30 +273,40 @@ By encrypting the message encryption you can protect your information even if a 
 
 The mapping may contain the following keys.
 
-* algorithm
+* algorithm (mandatory)
     * Specify the encryption algorithm.
     * Valid values: "AES"
-* key_length
+* key_length (optional)
     * Specify the key length (in bits).
     * Valid values: 128, 192, 256
     * Default value: 128
-* mode
+* mode (mandatory)
     * Specify the encryption mode.
     * Valid values: "CBC", "OFB", "CTR", "EAX", "GCM"
-* padding
+        * for Android: "CBC", "GCM"
+    * Note: If "CBC" used, specify a value other than "none" for padding.
+* padding (optional)
     * Specify the padding method.
-    * Valid values: "pkcs7"
-* password
+    * Valid values: "none", "pkcs7"
+    * Default value: "none"
+* password (mandatory)
     * Specify the password.
-* key_derivation
+* key_derivation (optional)
     * Specify the parameters related to key derivation function by YAML mapping
-    * algorithm
+    * algorithm (optional)
         * Specify the algorithm for the key derivation function.
         * Valid values: "pbkdf2"
-    * salt_bytes
+        * Default value: "pbkdf2"
+    * salt_bytes (optional)
         * Specify the number of bytes for the salt.
-    * iteration
+	* Default value: 8
+    * iteration (optional)
         * Specify the number of iterations.
+	* Default value: 10000
+    * prf (optional)
+        * Specify the key derivation function (pseudorandom function).
+	* Valid values: "HMAC-SHA256"
+	* Default value: "HMAC-SHA256"
 
 #### Setting Example
 

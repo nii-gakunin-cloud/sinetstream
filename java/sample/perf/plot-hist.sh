@@ -139,7 +139,7 @@ GNUPLOT_SETTING() {
 	echo "set output '$TITLE.png'"
         ;;
     pdf)
-	echo "set term pdfcairo size 4.8in,3.2in"
+	echo "set term pdfcairo font 'Arial,12' size 4.8in,3.2in"
 	echo "set output '$TITLE.pdf'"
 	;;
     esac
@@ -263,7 +263,7 @@ for lib in kafka mqtt; do
 done
 done
 
-exit
+#exit
 
 #１：暗号化比較なし＋sync＋async（今と同じ）、sync＋暗号化比較あり、async＋暗号化比較あり
 #２：クライアントxシステム (aws,raspi)x(kafka,mqtt)

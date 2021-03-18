@@ -229,14 +229,14 @@ try (AsyncMessageWriter<String> writer = factory.getAsyncWriter()) {
 }
 ```
 
-`write()`メソッドが返す`Promise`オブジェクトのメソッド `.done()`, `.fail()`を用いることで、 
+`write()`メソッドが返す`Promise`オブジェクトのメソッド `.done()`, `.fail()`を用いることで、
 送信結果（成功、失敗）に応じた処理を設定することができる。`Promise`の主なメソッドを以下に示す。
 
 * `done（）`
    – 遅延オブジェクトの処理が正常に完了した場合にトリガーされる
 * `fail（）`
    – 遅延オブジェクトの処理中に例外が発生したした場合にトリガーされる
-* `always（）` 
+* `always（）`
    – 遅延オブジェクトの処理結果によらず全ての場合にトリガーされる
 
 ### MessageReaderFactory

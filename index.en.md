@@ -61,7 +61,8 @@ Please refer to the following link for details on the structure and operating en
 
 ## Tutorial
 
-* [Quick Start Guide](docs/tutorial/index.en.md)
+* [Quick Start Guide (PC)](docs/tutorial/index.en.md)
+* [Quick Start Guide (Android)](docs/tutorial-android/index.en.md)
 
 ## Live demo using SINETStream
 

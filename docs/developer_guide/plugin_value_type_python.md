@@ -43,7 +43,7 @@ SINETStream v1.1 以降では以下の `value_type` をサポートしていま�
     * [OpenCV](https://pypi.org/project/opencv-python/)の画像型のメッセージに対応するタイプ
     * シリアライザはOpenCVの画像(ndarray)をPNGファイルフォーマットのバイト列に変換する
     * デシリアライザは画像ファイルフォーマットのバイト列をOpenCVの画像オブジェクト(ndarray)に変換する
-    
+
 `byte_array`, `text`はSINETStream本体に組み込みの `value_type` です。
 `image`は追加プラグインとして提供している`value_type`です。
 
@@ -88,7 +88,7 @@ SINETStreamのプラグインを作成するためには以下の作業が必要
 プラグインが上記のプロパティを実装することを確認するために、
 抽象基底クラス `sinetstream.spi.PluginValueType`を利用することができます。
 `PluginValueType`では上記のプロパティが抽象プロパティとして定義されています。
-    
+
 ### 2.3 パッケージメタデータの作成
 
 [setuptools](http://setuptools.readthedocs.io/)のエントリポイントにクラスを

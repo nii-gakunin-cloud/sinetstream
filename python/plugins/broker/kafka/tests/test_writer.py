@@ -20,12 +20,11 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import time
 import logging
 import pytest
 
 from sinetstream import (
-    MessageReader, MessageWriter, AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE,
+    MessageWriter, AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE,
     InvalidArgumentError, AlreadyConnectedError,
 )
 from conftest import SERVICE, TOPIC, TOPIC2
@@ -45,7 +44,7 @@ def test_writer_topic(topic):
 
 def test_writer_bad_topics():
     with pytest.raises(InvalidArgumentError):
-        with MessageWriter(SERVICE, [TOPIC, TOPIC2]) as f:
+        with MessageWriter(SERVICE, [TOPIC, TOPIC2]) as _:
             pass
 
 
@@ -55,13 +54,13 @@ def test_writer_bad_topics():
     EXACTLY_ONCE,
 ])
 def test_writer_consistency(consistency):
-    with MessageWriter(SERVICE, TOPIC, consistency=consistency) as f:
+    with MessageWriter(SERVICE, TOPIC, consistency=consistency) as _:
         pass
 
 
 def test_writer_bad_consistency():
     with pytest.raises(InvalidArgumentError):
-        with MessageWriter(SERVICE, TOPIC, consistency=999) as f:
+        with MessageWriter(SERVICE, TOPIC, consistency=999) as _:
             pass
 
 
@@ -77,12 +76,12 @@ def test_writer_client_id_set():
 
 
 def test_writer_deser():
-    with MessageWriter(SERVICE, TOPIC, value_serializer=(lambda x: x)) as f:
+    with MessageWriter(SERVICE, TOPIC, value_serializer=(lambda x: x)) as _:
         pass
 
 
 def test_writer_kafka_opt():
-    with MessageWriter(SERVICE, TOPIC, batch_size=1000) as f:
+    with MessageWriter(SERVICE, TOPIC, batch_size=1000) as _:
         pass
 
 

@@ -45,7 +45,7 @@ consistency = AT_LEAST_ONCE
 
 def test_metrics0_reader():
     with MessageReader(SERVICE, TOPIC) as f:
-        m = f.metrics()
+        m = f.metrics
         assert type(m) == Metrics
         assert type(m.raw) is dict
         assert m.start_time > 0
@@ -60,7 +60,7 @@ def test_metrics0_reader():
 
 def test_metrics0_writer():
     with MessageWriter(SERVICE, TOPIC) as f:
-        m = f.metrics()
+        m = f.metrics
         assert type(m) == Metrics
         assert type(m.raw) is dict
         assert m.start_time > 0
@@ -80,16 +80,16 @@ def test_metrics(setup_messages, config_topic):
         with MessageWriter(SERVICE, config_topic, value_type=TEXT) as writer:
             for msg in setup_messages:
                 writer.publish(msg)
-            writer_metrics = writer.metrics()
+            writer_metrics = writer.metrics
             logger.info(f"writer.metrics: {writer_metrics}")
         count = 0
-        logger.info(f"OK")
+        logger.info("OK")
         reader.seek_to_beginning()
         for msg in reader:
             count += 1
             if count >= nmsg:
                 break
-        reader_metrics = reader.metrics()
+        reader_metrics = reader.metrics
         logger.info(f"reader.metrics: {reader_metrics}")
 
     min_avro_overhead = 2 + 8 + 8 + 1  # marker + fingerprint + timestamp + body_len

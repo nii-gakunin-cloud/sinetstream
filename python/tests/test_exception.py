@@ -29,7 +29,7 @@ from sinetstream import (
     MessageWriter, MessageReader, NoServiceError, NoConfigError,
     InvalidArgumentError, UnsupportedServiceTypeError,
 )
-from conftest import SERVICE, TOPIC
+from conftest import SERVICE
 
 logging.basicConfig(level=logging.CRITICAL)
 BAD_SERVICE = 'bad-service'
@@ -38,21 +38,21 @@ BAD_SERVICE = 'bad-service'
 @pytest.mark.parametrize('io', [MessageReader, MessageWriter])
 def test_no_service_error(io, setup_config):
     with pytest.raises(NoServiceError):
-        with io(BAD_SERVICE) as f:
+        with io(BAD_SERVICE) as _:
             pass
 
 
 @pytest.mark.parametrize('io', [MessageReader, MessageWriter])
 def test_no_config(io, setup_no_config):
     with pytest.raises(NoConfigError):
-        with io(SERVICE) as f:
+        with io(SERVICE) as _:
             pass
 
 
 @pytest.mark.parametrize('io', [MessageReader, MessageWriter])
 def test_config_bad_url(io, setup_bad_url_config):
     with pytest.raises(NoConfigError):
-        with io(SERVICE) as f:
+        with io(SERVICE) as _:
             pass
 
 
@@ -81,7 +81,7 @@ def setup_bad_url_config(tmp_path):
 @pytest.mark.parametrize("io", [MessageWriter, MessageReader])
 def test_bad_consistency(io, setup_config):
     with pytest.raises(InvalidArgumentError):
-        with io(SERVICE, consistency=999) as f:
+        with io(SERVICE, consistency=999) as _:
             pass
 
 
@@ -91,7 +91,7 @@ def test_bad_consistency(io, setup_config):
 ])
 def test_no_topic(io, setup_config):
     with pytest.raises(InvalidArgumentError):
-        with io(SERVICE) as f:
+        with io(SERVICE) as _:
             pass
 
 
@@ -101,5 +101,5 @@ def test_no_topic(io, setup_config):
 ])
 def test_unsupported_service_type(io, setup_config):
     with pytest.raises(UnsupportedServiceTypeError):
-        with io(SERVICE) as f:
+        with io(SERVICE) as _:
             pass

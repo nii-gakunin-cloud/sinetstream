@@ -142,12 +142,13 @@ class KafkaClient(object):
         except Exception:
             logger.error('kafka close() error')
 
-    def metrics(self, reset):
+    def metrics(self):
         if self._client is None:
             return None
-        if reset:
-            logger.info("Kafka:metrics: reset is not supported")
         return self._client.metrics(raw=True)
+
+    def reset_metrics(self):
+        pass
 
 
 class BaseKafkaReader(KafkaClient):
@@ -354,8 +355,8 @@ class KafkaAsyncWriter(BaseKafkaWriter):
 
         def _then(
                 self,
-                did_fulfill=None,  # type: Optional[Callable[[T], S]]
-                did_reject=None,  # type: Optional[Callable[[Exception], S]]
+                did_fulfill=None,
+                did_reject=None,
         ):
             if self._lock is not None:
                 with self._lock:

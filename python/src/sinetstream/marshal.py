@@ -81,17 +81,20 @@ class Unmarshaller(object):
         from sinetstream.api import InvalidMessageError
 
         if len(msg) <= (2 + 8):
-            logger.error(f"Unmarshaller: len(msg)={len(msg)}")
-            raise InvalidMessageError()
+            emsg = f"Unmarshaller: len(msg)={len(msg)}"
+            logger.error(emsg)
+            raise InvalidMessageError(emsg)
         bytes_reader = io.BytesIO(msg)
         marker = bytes_reader.read(2)
         if marker != avro_signle_object_format_marker:
-            logger.error(f"Unmarshaller: marker={marker}")
-            raise InvalidMessageError()
+            emsg = f"Unmarshaller: marker={marker}"
+            logger.error(emsg)
+            raise InvalidMessageError(emsg)
         fingerprint = bytes_reader.read(8)
         if fingerprint != message_schema_fingerprint:
-            logger.error(f"Unmarshaller: fingerprint={fingerprint}")
-            raise InvalidMessageError()
+            emsg = f"Unmarshaller: fingerprint={fingerprint}"
+            logger.error(emsg)
+            raise InvalidMessageError(emsg)
         decoder = avro.io.BinaryDecoder(bytes_reader)
         try:
             m = self._reader.read(decoder)

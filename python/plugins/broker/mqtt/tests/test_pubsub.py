@@ -27,6 +27,7 @@ from pathlib import Path
 from queue import Queue
 from tempfile import TemporaryDirectory
 from threading import Thread, Event
+from time import sleep
 
 import pytest
 from conftest import BROKER, SERVICE, TOPIC, create_config_file
@@ -86,6 +87,8 @@ def pubsub():
     ]
     for th in ths:
         th.start()
+        sleep(1)    # Workaround to avoid writing until ready to read.
+
     for th in ths:
         th.join()
 

@@ -27,6 +27,7 @@ services:
     volumes:
     - ../../../..:/build
     environment:
+      RUN_INTERGRATION_TEST: "true"
       KAFKA_BROKER: broker:9092
       KAFKA_BROKER_IP: 192.168.64.10:9092
       KAFKA_SSL_BROKER: broker:9093

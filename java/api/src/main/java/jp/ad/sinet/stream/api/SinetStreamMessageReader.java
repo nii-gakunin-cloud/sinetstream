@@ -31,14 +31,40 @@ import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import lombok.Getter;
+
 public class SinetStreamMessageReader<T> extends SinetStreamBaseReader<T, PluginMessageReader> implements MessageReader<T> {
 
     public SinetStreamMessageReader(PluginMessageReader pluginReader, ReaderParameters parameters, Deserializer<T> deserializer) {
         super(pluginReader, parameters, deserializer);
     }
 
+    private class InjectedMessage implements PluginMessageWrapper {
+        @Getter
+        private final byte[] value;
+        @Getter
+        private final String topic;
+        @Getter
+        private final Object raw;
+
+        public InjectedMessage(byte[] value, String topic, Object raw) {
+            this.value = value;
+            this.topic = topic;
+            this.raw = raw;
+        }
+    }
+    private InjectedMessage injectMsg;
+    public void debugInjectMsgBytes(byte[] value, String topic, Object raw) {
+        injectMsg = new InjectedMessage(value, topic, raw);
+    }
+
     @Override
     public Message<T> read() {
+        if (injectMsg != null) {
+            PluginMessageWrapper msg = injectMsg;
+            injectMsg = null;
+            return toMessage(msg);
+        }
         try {
             return toMessage(target.read());
         }

@@ -42,8 +42,11 @@ class PluginMessageWriter(metaclass=ABCMeta):
     def close(self):
         pass
 
-    def metrics(self, reset):
+    def metrics(self):
         return None
+
+    def reset_metrics(self):
+        pass
 
     @abstractmethod
     def publish(self, message):
@@ -51,7 +54,7 @@ class PluginMessageWriter(metaclass=ABCMeta):
 
     @classmethod
     def __subclasshook__(cls, subclass):
-        return _subclasscheck(subclass, ['open', 'close', 'metrics', 'publish'])
+        return _subclasscheck(subclass, ['open', 'close', 'metrics', 'reset_metrics', 'publish'])
 
 
 class PluginAsyncMessageWriter(metaclass=ABCMeta):
@@ -63,8 +66,11 @@ class PluginAsyncMessageWriter(metaclass=ABCMeta):
     def close(self):
         pass
 
-    def metrics(self, reset):
+    def metrics(self):
         return None
+
+    def reset_metrics(self):
+        pass
 
     @abstractmethod
     def publish(self, message):
@@ -72,7 +78,7 @@ class PluginAsyncMessageWriter(metaclass=ABCMeta):
 
     @classmethod
     def __subclasshook__(cls, subclass):
-        return _subclasscheck(subclass, ['open', 'close', 'metrics', 'publish'])
+        return _subclasscheck(subclass, ['open', 'close', 'metrics', 'reset_metrics', 'publish'])
 
 
 class PluginMessageReader(metaclass=ABCMeta):
@@ -84,8 +90,11 @@ class PluginMessageReader(metaclass=ABCMeta):
     def close(self):
         pass
 
-    def metrics(self, reset):
+    def metrics(self):
         return None
+
+    def reset_metrics(self):
+        pass
 
     @abstractmethod
     def __iter__(self):
@@ -93,7 +102,7 @@ class PluginMessageReader(metaclass=ABCMeta):
 
     @classmethod
     def __subclasshook__(cls, subclass):
-        return _subclasscheck(subclass, ['open', 'close', 'metrics', '__iter__'])
+        return _subclasscheck(subclass, ['open', 'close', 'metrics', 'reset_metrics', '__iter__'])
 
 
 class PluginAsyncMessageReader(metaclass=ABCMeta):
@@ -105,8 +114,11 @@ class PluginAsyncMessageReader(metaclass=ABCMeta):
     def close(self):
         pass
 
-    def metrics(self, reset):
+    def metrics(self):
         return None
+
+    def reset_metrics(self):
+        pass
 
     @property
     @abstractmethod
@@ -131,7 +143,7 @@ class PluginAsyncMessageReader(metaclass=ABCMeta):
     @classmethod
     def __subclasshook__(cls, subclass):
         return _subclasscheck(
-            subclass, ['open', 'close', 'metrics', 'on_message', 'on_failure'])
+            subclass, ['open', 'close', 'metrics', 'reset_metrics', 'on_message', 'on_failure'])
 
 
 class PluginValueType(metaclass=ABCMeta):

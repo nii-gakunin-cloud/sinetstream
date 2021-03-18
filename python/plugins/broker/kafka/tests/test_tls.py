@@ -21,11 +21,10 @@
 # under the License.
 
 import logging
-from pathlib import Path
 from sinetstream import MessageReader, MessageWriter, ConnectionError
 import pytest
 from conftest import (
-    SERVICE, TOPIC, BROKER, SSL_BROKER, SSL_BROKER_BAD_HOSTNAME, CACERT_PATH,
+    SERVICE, TOPIC, SSL_BROKER, SSL_BROKER_BAD_HOSTNAME, CACERT_PATH,
     CLIENT_CERT_PATH, CLIENT_CERT_KEY_PATH, CLIENT_BAD_CERT_PATH,
     CLIENT_BAD_CERT_KEY_PATH,
 )
@@ -38,7 +37,7 @@ pytestmark = pytest.mark.skipif(
 
 @pytest.mark.parametrize("io", [MessageReader, MessageWriter])
 def test_tls(io, setup_config):
-    with io(SERVICE, TOPIC) as f:
+    with io(SERVICE, TOPIC) as _:
         pass
 
 
@@ -52,7 +51,7 @@ if CACERT_PATH is not None:
     pytest.param(MessageWriter, kafka_ssl_params),
 ])
 def test_tls_kafka_parameters(io, setup_config):
-    with io(SERVICE, TOPIC) as f:
+    with io(SERVICE, TOPIC) as _:
         pass
 
 
@@ -62,7 +61,7 @@ def test_tls_kafka_parameters(io, setup_config):
 ])
 def test_tls_error(io, setup_config):
     with pytest.raises(ConnectionError):
-        with io(SERVICE, TOPIC) as f:
+        with io(SERVICE, TOPIC) as _:
             pass
 
 
@@ -83,7 +82,7 @@ no_check_hostname_params = {
 ])
 def test_tls_bad_hostname(io, setup_config):
     with pytest.raises(ConnectionError):
-        with io(SERVICE, TOPIC) as f:
+        with io(SERVICE, TOPIC) as _:
             pass
 
 
@@ -97,7 +96,7 @@ def test_tls_bad_hostname(io, setup_config):
                  no_check_hostname_params),
 ])
 def test_tls_no_check_hostname(io, setup_config):
-    with io(SERVICE, TOPIC) as f:
+    with io(SERVICE, TOPIC) as _:
         pass
 
 
@@ -108,7 +107,7 @@ def test_tls_no_check_hostname(io, setup_config):
 def test_tls_client_auth(io, setup_config):
     with io(SERVICE, TOPIC,
             ssl_certfile=str(CLIENT_CERT_PATH),
-            ssl_keyfile=str(CLIENT_CERT_KEY_PATH)) as f:
+            ssl_keyfile=str(CLIENT_CERT_KEY_PATH)) as _:
         pass
 
 
@@ -120,7 +119,7 @@ def test_tls_bad_client_auth(io, setup_config):
     with pytest.raises(ConnectionError):
         with io(SERVICE, TOPIC,
                 ssl_certfile=str(CLIENT_BAD_CERT_PATH),
-                ssl_keyfile=str(CLIENT_BAD_CERT_KEY_PATH)) as f:
+                ssl_keyfile=str(CLIENT_BAD_CERT_KEY_PATH)) as _:
             pass
 
 

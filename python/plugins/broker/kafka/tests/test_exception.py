@@ -37,7 +37,7 @@ pytestmark = pytest.mark.usefixtures('setup_config')
 ])
 def test_connection_error(io):
     with pytest.raises(ConnectionError):
-        with io(SERVICE, TOPIC) as f:
+        with io(SERVICE, TOPIC) as _:
             pass
 
 

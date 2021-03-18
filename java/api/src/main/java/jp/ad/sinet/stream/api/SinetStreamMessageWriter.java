@@ -24,16 +24,21 @@ package jp.ad.sinet.stream.api;
 import jp.ad.sinet.stream.spi.PluginMessageWriter;
 import jp.ad.sinet.stream.spi.WriterParameters;
 
+import lombok.Getter;
+
 public class SinetStreamMessageWriter<T> extends SinetStreamBaseWriter<T, PluginMessageWriter> implements MessageWriter<T> {
 
     public SinetStreamMessageWriter(PluginMessageWriter pluginWriter, WriterParameters parameters, Serializer<T> serializer) {
         super(pluginWriter, parameters, serializer);
     }
 
+    @Getter
+    private byte[] debugLastMsgBytes;
+
     @Override
     public void write(T message) {
         try {
-            target.write(toPayload(message));
+            target.write(debugLastMsgBytes = toPayload(message));
         }
         catch (Exception e) {
             updateMetricsErr();

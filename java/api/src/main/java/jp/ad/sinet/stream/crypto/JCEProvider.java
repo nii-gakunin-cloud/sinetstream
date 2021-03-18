@@ -73,6 +73,7 @@ public class JCEProvider implements CryptoProvider {
         String ret = Optional.ofNullable(parameters.get("algorithm"))
                 .filter(String.class::isInstance).map(String.class::cast)
                 .orElseThrow(InvalidConfigurationException::new) +
+                //'_' + parameters.get("key_length") +
                 '/' +
                 Optional.ofNullable(parameters.get("mode"))
                         .filter(String.class::isInstance).map(String.class::cast)
@@ -94,6 +95,8 @@ public class JCEProvider implements CryptoProvider {
                                     return "ISO7816-4Padding";
                                 case "x923":
                                     return "X9.23Padding";
+                                case "none":
+                                    return "NoPadding";
                                 default:
                                     if (x.endsWith("Padding")) {
                                         return x;

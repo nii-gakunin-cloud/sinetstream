@@ -36,4 +36,6 @@ public interface MessageReader<T> extends MessageIO {
     Duration getReceiveTimeout();
 
     Deserializer<T> getDeserializer();
+
+    void debugInjectMsgBytes(byte[] value, String topic, Object raw);
 }

@@ -26,11 +26,13 @@ import jp.ad.sinet.stream.api.InvalidConfigurationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 
+@EnabledIfEnvironmentVariable(named="RUN_INTERGRATION_TEST", matches = "(?i)true")
 class BrokerTest {
 
     @Nested

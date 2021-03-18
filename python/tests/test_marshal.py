@@ -134,9 +134,9 @@ def queue2list(q):
     return ret
 
 
-def list2queue(l):
+def list2queue(lst):
     q = Queue()
-    for x in l:
+    for x in lst:
         q.put(x)
     return q
 

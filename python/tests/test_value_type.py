@@ -60,5 +60,5 @@ def test_byte_array(config_topic):
 @pytest.mark.parametrize('io', [MessageReader, MessageWriter])
 def test_invalid(io):
     with pytest.raises(InvalidArgumentError):
-        with io(SERVICE, value_type="invalid") as fw:
+        with io(SERVICE, value_type="invalid") as _:
             pass

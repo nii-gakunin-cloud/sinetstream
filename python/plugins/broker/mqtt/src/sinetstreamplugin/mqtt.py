@@ -256,8 +256,11 @@ class MqttClient(object):
         except Exception:
             logger.error("mqtt close() error")
 
-    def metrics(self, reset):
+    def metrics(self):
         return None
+
+    def reset_metrics(self):
+        pass
 
     def _is_connected(self):
         return self._connection_result is not None
@@ -388,7 +391,7 @@ class MqttAsyncWriter(BaseMqttWriter):
         return Promise(executor)
 
     def _on_publish(self, client, user_data, mid):
-        cb = self._callbacks.pop(mid)
+        cb = self._callbacks.pop(mid, None)
         if cb is not None:
             cb[0](cb[1])
 

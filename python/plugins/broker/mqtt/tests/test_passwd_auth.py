@@ -22,7 +22,6 @@
 
 import logging
 import threading
-from pathlib import Path
 from sinetstream import MessageReader, MessageWriter, ConnectionError
 import pytest
 from conftest import (
@@ -37,7 +36,7 @@ pytestmark = pytest.mark.skipif(
 
 @pytest.mark.parametrize("io", [MessageReader, MessageWriter])
 def test_password_auth(io, setup_config):
-    with io(SERVICE, TOPIC) as f:
+    with io(SERVICE, TOPIC) as _:
         pass
 
 

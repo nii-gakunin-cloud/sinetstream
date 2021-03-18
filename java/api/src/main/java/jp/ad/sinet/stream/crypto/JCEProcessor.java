@@ -60,6 +60,7 @@ public class JCEProcessor implements Crypto {
     private final Cipher cipher;
     private final SecureRandom random;
 
+    private int ivLength;
     private int keyLength;
     private SecretKeyFactory keyFactory;
     private char[] password;
@@ -80,6 +81,13 @@ public class JCEProcessor implements Crypto {
         keyLength =
                 Optional.ofNullable(parameters.get("key_length"))
                         .filter(Integer.class::isInstance).map(Integer.class::cast).orElse(128);
+
+        if (parameters.get("algorithm").equals("AES")) {
+            // The IV length is the same as the block length of the cipher, which in the case of AES is 128 bits.
+            ivLength = 128 / 8;
+        } else {
+            ivLength = keyLength / 8;
+        }
 
         mode = Optional.ofNullable(parameters.get("mode"))
                 .filter(String.class::isInstance).map(String.class::cast)
@@ -204,7 +212,7 @@ public class JCEProcessor implements Crypto {
             byte[] salt = getSalt();
             SecretKeySpec key = getSecretKeySpec(salt);
 
-            byte[] iv = new byte[keyLength / 8];
+            byte[] iv = new byte[ivLength];
             random.nextBytes(iv);
 
             cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
@@ -235,7 +243,7 @@ public class JCEProcessor implements Crypto {
             byte[] salt = getSalt();
             SecretKeySpec key = getSecretKeySpec(salt);
 
-            byte[] iv = new byte[keyLength / 8];
+            byte[] iv = new byte[ivLength];
             random.nextBytes(iv);
 
             cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
@@ -286,7 +294,7 @@ public class JCEProcessor implements Crypto {
             if (debug)
                 System.err.println("XXX:decrypt: key='" + DatatypeConverter.printHexBinary(key.getEncoded()) + "'");
 
-            byte[] iv = new byte[keyLength / 8];
+            byte[] iv = new byte[ivLength];
             System.arraycopy(data, saltBytes, iv, 0, iv.length);
             if (debug) {
                 System.err.println("XXX:decrypt: iv.length=" + iv.length);
@@ -323,7 +331,7 @@ public class JCEProcessor implements Crypto {
                 System.err.println("XXX:decryptAAD: key='" + DatatypeConverter.printHexBinary(key.getEncoded()) + "'");
             }
 
-            byte[] iv = new byte[keyLength / 8];
+            byte[] iv = new byte[ivLength];
             System.arraycopy(data, saltBytes, iv, 0, iv.length);
             if (debug) {
                 System.err.println("XXX:decryptAAD: iv.length=" + iv.length);

@@ -67,7 +67,8 @@ SINETStreamの仕組みや動作環境などの詳細については以下のリ
 
 ## チュートリアル
 
-* [クイックスタートガイド](docs/tutorial/index.md)
+* [クイックスタートガイド (PC版)](docs/tutorial/index.md)
+* [クイックスタートガイド (Android版)](docs/tutorial-android/index.md)
 
 <div align="center">
 <br/>

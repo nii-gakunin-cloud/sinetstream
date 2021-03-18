@@ -21,6 +21,7 @@
 # under the License.
 
 import logging
+import os
 from random import choices
 from string import ascii_letters, digits
 from threading import Condition
@@ -34,10 +35,14 @@ from sinetstream import (
 
 logging.basicConfig(level=logging.CRITICAL)
 logger = logging.getLogger(__name__)
-pytestmark = pytest.mark.usefixtures('setup_config')
+pytestmark = [
+    pytest.mark.usefixtures('setup_config'),
+    pytest.mark.skipif(
+        os.environ.get('SKIP_FRAGILE_TEST') is not None,
+        reason='SKIP_FRAGILE_TEST is set.'),
+]
 
 
-@pytest.mark.timeout(30)
 @pytest.mark.parametrize("consistency", [
     AT_MOST_ONCE,
     AT_LEAST_ONCE,
@@ -51,8 +56,7 @@ def test_write_message(setup_messages, consistency, config_topic):
     def wait_on_messages():
         nonlocal count
         with cv:
-            while count > 0:
-                cv.wait(1)
+            cv.wait_for(lambda: count == 0, timeout=15)
 
     def on_success(r):
         nonlocal count, check
@@ -73,11 +77,11 @@ def test_write_message(setup_messages, consistency, config_topic):
             consistency=consistency) as writer:
         for msg in setup_messages:
             writer.publish(msg).then(on_success, on_failure)
-            import time
-            time.sleep(0.001)  # XXX slowlife
         wait_on_messages()
-    with cv:
-        assert check == len(setup_messages)
+
+    if consistency != AT_MOST_ONCE:
+        assert len(setup_messages) == check
+    else:
         assert count == 0
 
 

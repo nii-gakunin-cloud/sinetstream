@@ -2,7 +2,7 @@
 permalink: README.html
 ---
 <!--
-Copyright (C) 2019 National Institute of Informatics
+Copyright (C) 2019-2021 National Institute of Informatics
 
 Licensed to the Apache Software Foundation (ASF) under one
 or more contributor license agreements.  See the NOTICE file
@@ -79,29 +79,48 @@ Writer/Readerはトピックを指定してメッセージの送受信を行う�
     * userguide/
         * [ユーザガイド](docs/userguide/index.md)
     * tutorial/
-        * [チュートリアル](docs/tutorial/index.md)
+        * [クイックスタートガイド(PC版)](docs/tutorial/index.md)
+        * [クイックスタートガイド(Android版)](docs/tutorial-android/index.md)
     * developer_guide/
         * [開発者ガイド](docs/developer_guide/index.md)
 
 ## 動作環境
+### PC版
 
-SINETStream API では以下の言語をサポートする。
+PC版の`SINETStream API`は、以下のプログラム言語で実装される。
 
 * Python 3.6
 * Java 8
 
-SINETStream では以下のメッセージングシステムをサポートする。
+PC版のSINETStreamは、以下のメッセージングシステムに対応する。
 
 * [Apache Kafka](https://kafka.apache.org/) 2.2.1
 * MQTT v3.1, v3.1.1
     * [Eclipse Mosquitto](https://mosquitto.org/) v1.6.2
 
-SINETStreamの動作環境は以下の通り。
+PC版のSINETStreamが対応するOS条件は以下の通り。
 
 * CentOS 7.6
 * Windows 10
 
+### Android版
+
+Android版の`SINETStream API`は、以下のプログラム言語で実装される。
+
+* Java 8
+* Kotlin 1.4.x
+
+Android版のSINETStreamは、以下のメッセージングシステムに対応する。
+
+* MQTT v3.1, v3.1.1
+    * [Eclipse Paho Android Client](https://www.eclipse.org/paho/index.php?page=clients/android/index.php)
+
+Android版のSINETStreamが対応するOS条件は以下の通り。
+
+* Android 8.0 以降
+
 ## 準備
+### PC版
 
 SINETStreamでは、Brokerを実現するバックエンドのメッセージングシステムとしてKafkaまたはMQTTを利用している。
 そのため、SINETStreamとともに、これらのメッセージングシステムのどちらかをインストールする必要がある。
@@ -116,11 +135,29 @@ SINETStreamでは、Brokerを実現するバックエンドのメッセージン
     * Python: `pip3 install --user sinetstream-kafka sinetstream-mqtt`
     * Java: Java版READMEを参照
 
-dockerコンテナをつかった[チュートリアル](docs/tutorial/index.md)も参考のこと。
+dockerコンテナをつかった
+[クイックスタートガイド (PC版)](docs/tutorial/index.md)
+も参考のこと。
+
+### Android版
+
+Android版の`SINETStream API`は、メッセージングシステムのうち
+MQTTのみに対応し、クライアント機能（`Writer`、`Reader`）を
+提供する。
+このため、Android版のSINETStreamクライアントと対向するバック
+エンド側の`Broker`はMQTT一択となる。
+上記PC版の記述内容に沿って導入したバックエンドに関して、MQTT
+ブローカー部分をAndroid対向用に流用することで構わない。
+
+dockerコンテナをつかった
+[クイックスタートガイド (Android版)](docs/tutorial-android/index.md)
+も参考のこと。
 
 ## リンク
 
-* [チュートリアル](docs/tutorial/index.md)
+* チュートリアル
+    * [クイックスタートガイド (PC版)](docs/tutorial/index.md)
+    * [クイックスタートガイド (Android版)](docs/tutorial-android/index.md)
 * [ユーザガイド](docs/userguide/index.md)
 * [SINETStream性能測定結果](docs/performance/index.md)
 * [プラグイン開発ガイド](docs/developer_guide/index.md)

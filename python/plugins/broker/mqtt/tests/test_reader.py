@@ -24,7 +24,7 @@ import logging
 import pytest
 
 from sinetstream import (
-    MessageReader, MessageWriter, AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE,
+    MessageReader, AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE,
     InvalidArgumentError, AlreadyConnectedError,
 )
 from conftest import SERVICE, TOPIC, TOPIC2
@@ -49,13 +49,13 @@ def test_reader_topic(topics):
     EXACTLY_ONCE,
 ])
 def test_reader_consistency(consistency):
-    with MessageReader(SERVICE, TOPIC, consistency=consistency) as f:
+    with MessageReader(SERVICE, TOPIC, consistency=consistency) as _:
         pass
 
 
 def test_reader_consistency_error():
     with pytest.raises(InvalidArgumentError):
-        with MessageReader(SERVICE, TOPIC, consistency=999) as f:
+        with MessageReader(SERVICE, TOPIC, consistency=999) as _:
             pass
 
 
@@ -71,7 +71,7 @@ def test_reader_client_id_set():
 
 
 def test_reader_deser():
-    with MessageReader(SERVICE, TOPIC, value_deserializer=(lambda x: x)) as f:
+    with MessageReader(SERVICE, TOPIC, value_deserializer=(lambda x: x)) as _:
         pass
 
 

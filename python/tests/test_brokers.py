@@ -35,7 +35,7 @@ BROKER3 = 'broker3'
 ])
 def test_no_broker(io):
     with pytest.raises(InvalidArgumentError):
-        with io(SERVICE) as f:
+        with io(SERVICE) as _:
             pass
 
 
@@ -45,7 +45,7 @@ def test_no_broker(io):
 ])
 def test_empty_broker_list(io):
     with pytest.raises(InvalidArgumentError):
-        with io(SERVICE) as f:
+        with io(SERVICE) as _:
             pass
 
 

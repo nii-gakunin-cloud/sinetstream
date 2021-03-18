@@ -237,6 +237,7 @@ public class Util {
         return x;
     }
 
+    @SuppressWarnings("unchecked")
     static public Object get_kafka_metric(Object metrics, String name, String group) {
         return get_kafka_metric((Map<MetricName,? extends Metric>)metrics, name, group);
     }

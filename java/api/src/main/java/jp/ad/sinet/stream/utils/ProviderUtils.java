@@ -71,6 +71,6 @@ class ProviderUtils<T extends SinetMessageProvider> {
                 return provider;
             }
         }
-        throw new SinetStreamException();
+        throw new SinetStreamException("NoCryptoProvider");
     }
 }

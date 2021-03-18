@@ -40,14 +40,14 @@ pytestmark = pytest.mark.usefixtures('setup_config', 'dummy_reader_plugin')
     [TOPIC, TOPIC2],
 ])
 def test_reader_topic(topics):
-    with MessageReader(SERVICE, topics) as f:
+    with MessageReader(SERVICE, topics) as _:
         pass
 
 
 @pytest.mark.parametrize("config_topic", [None, []])
 def test_reader_bad_topics():
     with pytest.raises(InvalidArgumentError):
-        with MessageReader(SERVICE) as f:
+        with MessageReader(SERVICE) as _:
             pass
 
 
@@ -71,7 +71,7 @@ def test_reader_consistency_in_config_file(config_params):
 @pytest.mark.parametrize("consistency", [999, "XXX"])
 def test_reader_bad_consistency(consistency):
     with pytest.raises(InvalidArgumentError):
-        with MessageReader(SERVICE, consistency=consistency) as f:
+        with MessageReader(SERVICE, consistency=consistency) as _:
             pass
 
 
@@ -92,12 +92,12 @@ def test_reader_client_id_set():
 
 
 def test_reader_deser():
-    with MessageReader(SERVICE, value_deserializer=(lambda x: x)) as f:
+    with MessageReader(SERVICE, value_deserializer=(lambda x: x)) as _:
         pass
 
 
 def test_reader_timeout():
-    with MessageReader(SERVICE, receive_timeout_ms=3000) as f:
+    with MessageReader(SERVICE, receive_timeout_ms=3000) as _:
         pass
 
 

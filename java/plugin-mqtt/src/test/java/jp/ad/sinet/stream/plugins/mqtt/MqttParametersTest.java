@@ -26,6 +26,7 @@ import jp.ad.sinet.stream.api.MessageWriter;
 import jp.ad.sinet.stream.utils.MessageWriterFactory;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -39,6 +40,7 @@ import static jp.ad.sinet.stream.api.Consistency.AT_MOST_ONCE;
 import static jp.ad.sinet.stream.api.Consistency.EXACTLY_ONCE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@EnabledIfEnvironmentVariable(named="RUN_INTERGRATION_TEST", matches = "(?i)true")
 class MqttParametersTest implements ConfigFileAware {
 
     @TempDir

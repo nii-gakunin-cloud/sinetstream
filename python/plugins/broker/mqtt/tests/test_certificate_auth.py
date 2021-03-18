@@ -21,7 +21,6 @@
 # under the License.
 
 import logging
-from pathlib import Path
 from itertools import product
 from sinetstream import MessageReader, MessageWriter, ConnectionError
 import pytest
@@ -53,7 +52,7 @@ no_client_auth_params = [
 ))
 def test_no_client_cert_tls(io, setup_config):
     with pytest.raises(ConnectionError):
-        with io(SERVICE, TOPIC) as f:
+        with io(SERVICE, TOPIC) as _:
             pass
 
 
@@ -82,7 +81,7 @@ client_auth_params = [
     client_auth_params,
 ))
 def test_tls_client_auth(io, setup_config):
-    with io(SERVICE, TOPIC) as f:
+    with io(SERVICE, TOPIC) as _:
         pass
 
 
@@ -113,7 +112,7 @@ bad_client_auth_params = [
 ))
 def test_tls_bad_client_auth(io, setup_config):
     with pytest.raises(ConnectionError):
-        with io(SERVICE, TOPIC) as f:
+        with io(SERVICE, TOPIC) as _:
             pass
 
 

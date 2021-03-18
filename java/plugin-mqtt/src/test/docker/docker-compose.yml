@@ -21,6 +21,7 @@ services:
     volumes:
     - ../../../..:/build
     environment:
+      RUN_INTERGRATION_TEST: "true"
       MQTT_BROKER: broker:1883
       MQTT_USER_PASSWD_BROKER: broker:1884
       MQTT_WS_BROKER: broker:1885

@@ -129,7 +129,7 @@ with MessageReader(service='kafka-service') as reader:
     * Kafkaブローカーから受信したメッセージをひとつづつ返すイテレータ
 * Registry
     * 登録されているプラグインを管理するクラス
-    
+
 #### 2.2.2 MessageWriter
 
 以下に示すようなメッセージ送信処理を SINETStreamで行った場合のシーケンス図を示します。
@@ -184,7 +184,7 @@ reader.close()
     * Kafkaブローカーから非同期APIでメッセージを受信するKafkaプラグインのクラス
 * Registry
     * 登録されているプラグインを管理するクラス
-    
+
 #### 2.2.4 AsyncMessageWriter
 
 以下に示すようなメッセージ送信処理をSINETStreamの非同期APIで行った場合のシーケンス図を示します。
@@ -261,10 +261,10 @@ SINETStreamのプラグインを作成するためには以下の作業が必要
     * 固有の情報がなければNoneを返す
 * `reset_metrics()`
     * サービスプロバイダ固有のメトリクス情報をリセットするメソッド
-    
+
 プラグインが上記のメソッドを実装することを確認するために、抽象基底クラス `sinetstream.spi.PluginMessageReader`
 を利用することができます。`PluginMessageReader`では上記の３つのメソッドが抽象メソッドとして定義されています。
-    
+
 メッセージ受信を行うクラスのコンストラクタは引数から `params` を受け取ります。`params`には、
 SINETStreamの設定ファイル、あるいは`MessageReader`のコンストラクタで指定されたパラメータが
 `dict`型の変数として渡されます。
@@ -285,7 +285,7 @@ SINETStreamの設定ファイル、あるいは`MessageReader`のコンストラ
 * `metrics()`
     * プラグイン固有のメトリクス情報を返すメソッド
     * 固有の情報がなければNoneを返す
-    
+
 プラグインが上記のメソッドを実装することを確認するために、抽象基底クラス `sinetstream.spi.PluginMessageWriter`
 を利用することができます。`PluginMessageWriter`では上記の３つのメソッドが抽象メソッドとして定義されています。
 
@@ -311,10 +311,10 @@ SINETStreamの設定ファイル、あるいは`MessageWriter`のコンストラ
 * `.on_failure`
     * エラーが発生した時に呼び出すコールバック関数
     * 引数でエラーの原因となった例外オブジェクトを渡す
-    
+
 プラグインが上記のメソッドを実装することを確認するために、抽象基底クラス `sinetstream.spi.PluginAsyncMessageReader`
 を利用することができます。`PluginAsyncMessageReader`では上記のメソッド、プロパティが抽象メソッドとして定義されています。
-    
+
 メッセージ受信を行うクラスのコンストラクタは引数から `params` を受け取ります。`params`には、
 SINETStreamの設定ファイル、あるいは`AsyncMessageReader`のコンストラクタで指定されたパラメータが
 `dict`型の変数として渡されます。
@@ -336,7 +336,7 @@ SINETStreamの設定ファイル、あるいは`AsyncMessageReader`のコンス�
 * `metrics()`
     * プラグイン固有のメトリクス情報を返すメソッド
     * 固有の情報がなければNoneを返す
-    
+
 プラグインが上記のメソッドを実装することを確認するために、抽象基底クラス `sinetstream.spi.PluginAsyncMessageWriter`
 を利用することができます。`PluginAsyncMessageWriter`では上記の３つのメソッドが抽象メソッドとして定義されています。
 
@@ -366,10 +366,10 @@ SINETStreamではグループを`MessageReader`, `MessageWriter`, `AsyncMessageR
     * `AsyncMessageReader`から呼び出されるメッセージ受信(非同期API)を行うプラグインのグループ
 * `sinetstream.async_writer`
     * `AsyncMessageWriter`から呼び出されるメッセージ送信(非同期API)を行うプラグインのグループ
-    
+
 １つのプラグインで必ずしも上記全てのグループに対応する実装を提供する必要はありません。
 必要なグループに関する記述のみを行ってください。
-    
+
 エントリポイントにはグループ内で識別するための名前がつけられます。SINETSteramでは
 エントリポイントに付けられた名前が、メッセージングシステムのタイプに対応づけられます。
 

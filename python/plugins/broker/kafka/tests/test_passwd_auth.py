@@ -21,7 +21,6 @@
 # under the License.
 
 import logging
-from pathlib import Path
 from sinetstream import MessageReader, MessageWriter, ConnectionError
 import threading
 import pytest
@@ -37,7 +36,7 @@ pytestmark = pytest.mark.skipif(
 
 @pytest.mark.parametrize("io", [MessageReader, MessageWriter])
 def test_password_auth(io, setup_config):
-    with io(SERVICE, TOPIC) as f:
+    with io(SERVICE, TOPIC) as _:
         pass
 
 
@@ -97,7 +96,7 @@ def test_bad_user(io, setup_config):
 ])
 def test_bad_security_protocol(io, setup_config):
     with pytest.raises(ConnectionError):
-        with io(SERVICE, TOPIC) as f:
+        with io(SERVICE, TOPIC) as _:
             pass
 
 

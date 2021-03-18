@@ -20,7 +20,7 @@
 from .api import (
     MessageReader, MessageWriter, AsyncMessageWriter, AsyncMessageReader,
     AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE, DEFAULT_CLIENT_ID,
-    Metrics
+    Metrics,
 )
 from .error import (
     SinetError, NoServiceError, NoConfigError, InvalidArgumentError,
@@ -28,3 +28,15 @@ from .error import (
     InvalidMessageError, AuthorizationError,
 )
 from .value_type import TEXT, BYTE_ARRAY
+
+__all__ = [
+    MessageReader, MessageWriter, AsyncMessageWriter, AsyncMessageReader,
+    AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE, DEFAULT_CLIENT_ID,
+    Metrics,
+
+    SinetError, NoServiceError, NoConfigError, InvalidArgumentError,
+    ConnectionError, AlreadyConnectedError, UnsupportedServiceTypeError,
+    InvalidMessageError, AuthorizationError,
+
+    TEXT, BYTE_ARRAY
+]

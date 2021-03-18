@@ -23,7 +23,7 @@
 import pytest
 from sinetstream import MessageReader, MessageWriter, InvalidArgumentError
 from conftest import (
-    SERVICE, TOPIC, BROKER, WS_BROKER, WSS_BROKER, CACERT_PATH,
+    SERVICE, TOPIC, WS_BROKER, WSS_BROKER, CACERT_PATH,
 )
 from itertools import product
 
@@ -35,7 +35,7 @@ pytestmark = pytest.mark.usefixtures('setup_config')
     [{'protocol': x} for x in ['MQTTv31', 'MQTTv311', 'MQTTv5']],
 ))
 def test_protocol(io):
-    with io(SERVICE) as f:
+    with io(SERVICE) as _:
         pass
 
 
@@ -45,7 +45,7 @@ def test_protocol(io):
 ])
 def test_bad_protocol(io):
     with pytest.raises(InvalidArgumentError):
-        with io(SERVICE) as f:
+        with io(SERVICE) as _:
             pass
 
 
@@ -54,7 +54,7 @@ def test_bad_protocol(io):
     (MessageWriter, {'transport': 'tcp'}),
 ])
 def test_transport_tcp(io):
-    with io(SERVICE) as f:
+    with io(SERVICE) as _:
         pass
 
 
@@ -64,7 +64,7 @@ def test_transport_tcp(io):
     (MessageWriter, {'transport': 'websockets'}, WS_BROKER),
 ])
 def test_transport_ws(io):
-    with io(SERVICE) as f:
+    with io(SERVICE) as _:
         pass
 
 
@@ -82,7 +82,7 @@ wss_params = {
     (MessageWriter, wss_params, WSS_BROKER),
 ])
 def test_transport_wss(io):
-    with io(SERVICE) as f:
+    with io(SERVICE) as _:
         pass
 
 
@@ -92,7 +92,7 @@ def test_transport_wss(io):
 ])
 def test_transport_bad_value(io):
     with pytest.raises(InvalidArgumentError):
-        with io(SERVICE) as f:
+        with io(SERVICE) as _:
             pass
 
 
@@ -101,7 +101,7 @@ def test_transport_bad_value(io):
     [{'clean_session': x} for x in [True, False]],
 ))
 def test_clean_session(io):
-    with io(SERVICE) as f:
+    with io(SERVICE) as _:
         pass
 
 
@@ -110,7 +110,7 @@ def test_clean_session(io):
     [{'max_inflight_messages_set': {'inflight': x}} for x in [20, 40]],
 ))
 def test_max_inflight_messages(io):
-    with io(SERVICE) as f:
+    with io(SERVICE) as _:
         pass
 
 
@@ -119,7 +119,7 @@ def test_max_inflight_messages(io):
     [{'max_queued_messages_set': {'queue_size': x}} for x in [0, 10]],
 ))
 def test_max_queued_messages(io):
-    with io(SERVICE) as f:
+    with io(SERVICE) as _:
         pass
 
 
@@ -128,7 +128,7 @@ def test_max_queued_messages(io):
     [{'message_retry_set': {'retry': x}} for x in [5, 10]],
 ))
 def test_message_retry(io):
-    with io(SERVICE) as f:
+    with io(SERVICE) as _:
         pass
 
 
@@ -146,7 +146,7 @@ ws_set_options_params = {
     (MessageWriter, ws_set_options_params, WS_BROKER),
 ])
 def test_ws_set_options(io):
-    with io(SERVICE) as f:
+    with io(SERVICE) as _:
         pass
 
 
@@ -165,7 +165,7 @@ will_set_params = {
     (MessageWriter, will_set_params),
 ])
 def test_will(io):
-    with io(SERVICE) as f:
+    with io(SERVICE) as _:
         pass
 
 
@@ -182,5 +182,5 @@ reconnect_delay_params = {
     (MessageWriter, reconnect_delay_params),
 ])
 def test_reconnect_delay(io):
-    with io(SERVICE) as f:
+    with io(SERVICE) as _:
         pass

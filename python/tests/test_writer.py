@@ -38,14 +38,14 @@ pytestmark = pytest.mark.usefixtures('setup_config', 'dummy_writer_plugin')
     [TOPIC],
 ])
 def test_writer_topic(topics):
-    with MessageWriter(SERVICE, topics) as f:
+    with MessageWriter(SERVICE, topics) as _:
         pass
 
 
 @pytest.mark.parametrize("config_topic", [None, [], [TOPIC, TOPIC2]])
 def test_writer_bad_topics():
     with pytest.raises(InvalidArgumentError):
-        with MessageWriter(SERVICE) as f:
+        with MessageWriter(SERVICE) as _:
             pass
 
 
@@ -69,7 +69,7 @@ def test_writer_consistency_in_config_file(config_params):
 @pytest.mark.parametrize("consistency", [999, "XXX"])
 def test_writer_bad_consistency(consistency):
     with pytest.raises(InvalidArgumentError):
-        with MessageWriter(SERVICE, consistency=consistency) as f:
+        with MessageWriter(SERVICE, consistency=consistency) as _:
             pass
 
 
@@ -85,7 +85,7 @@ def test_writer_client_id_set():
 
 
 def test_writer_deser():
-    with MessageWriter(SERVICE, value_serializer=(lambda x: x)) as f:
+    with MessageWriter(SERVICE, value_serializer=(lambda x: x)) as _:
         pass
 
 
@@ -115,7 +115,7 @@ def test_writer_topic_list_one_item_in_config_file():
 @pytest.mark.parametrize('config_topic', [[TOPIC, TOPIC2]])
 def test_writer_topic_list_in_config_file():
     with pytest.raises(InvalidArgumentError):
-        with MessageWriter(SERVICE) as f:
+        with MessageWriter(SERVICE) as _:
             pass
 
 

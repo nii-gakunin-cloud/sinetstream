@@ -101,7 +101,7 @@ Next, install the library of SINETStream on the container environment. Please ex
 [user01@broker]$ pip3 install --user sinetstream-kafka sinetstream-mqtt
 Collecting sinetstream-kafka
 (omit)
-Successfully installed avro-python3-1.9.2.1 kafka-python-2.0.1 paho-mqtt-1.5.0 promise-2.3 pycryptodome-3.9.7 pyyaml-5.3.1 sinetstream-1.2.0 sinetstream-kafka-1.2.0 sinetstream-mqtt-1.2.0 six-1.14.0
+Successfully installed avro-python3-1.10.0 kafka-python-2.0.2 paho-mqtt-1.5.1 promise-2.3 pycryptodome-3.9.9 pyyaml-3.13 sinetstream-1.4.0 sinetstream-kafka-1.4.0 sinetstream-mqtt-1.4.0 six-1.15.0 
 ```
 
 Finally, if the message `Successfully installed ...` is shown, the library has been successfully installed.
@@ -111,19 +111,19 @@ To show the list of installed Python 3 libraries, use the following command.
 [user01@broker]$ pip3 list
 Package           Version
 ----------------- --------
-avro-python3      1.9.2.1
-kafka-python      2.0.1
-paho-mqtt         1.5.0
-pip               19.3.1
+avro-python3      1.10.0
+kafka-python      2.0.2
+paho-mqtt         1.5.1
+pip               20.2.4
 promise           2.3
-pycryptodome      3.9.7
-PyYAML            5.3.1
-setuptools        42.0.2
-sinetstream       1.2.0
-sinetstream-kafka 1.2.0
-sinetstream-mqtt  1.2.0
-six               1.14.0
-supervisor        4.1.0
+pycryptodome      3.9.9
+PyYAML            3.13
+setuptools        50.3.2
+sinetstream       1.4.0
+sinetstream-kafka 1.4.0
+sinetstream-mqtt  1.4.0
+six               1.15.0
+supervisor        4.2.1
 ```
 
 > The ``Version``s of other libraries than SINETStream may differ from the above example.
@@ -150,7 +150,7 @@ Prepare the SINETStream configuration file.
 Download the configuration file prepared for this tutorial from GitHub.
 
 ```console
-[user01@broker]$ ss_url=https://raw.githubusercontent.com/nii-gakunin-cloud/sinetstream/master
+[user01@broker]$ ss_url=https://raw.githubusercontent.com/nii-gakunin-cloud/sinetstream/main
 [user01@broker]$ curl -O ${ss_url}/docs/tutorial/.sinetstream_config.yml
 ```
 
@@ -420,7 +420,7 @@ with MessageReader(service) as reader:
         print(f"topic={message.topic} value='{message.value}'")
 ```
 
-> The entire code of the sample program consumer.py is available on [GitHub](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/python/sample/text/consumer.py).
+> The entire code of the sample program consumer.py is available on [GitHub](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/python/sample/text/consumer.py).
 
 First, create a `MessageReader` object to receive a message, specifying the service name in the argument.
 `MessageReader` is usually executed by Python's `with` statement.
@@ -439,7 +439,7 @@ with MessageWriter(service) as writer:
         writer.publish(message)
 ```
 
-> The entire code of the sample program producer.py is available on [GitHub](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/python/sample/text/producer.py).
+> The entire code of the sample program producer.py is available on [GitHub](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/python/sample/text/producer.py).
 
 First, create a `MessageWriter` object to send a message, specifying the service name in the argument.
 `MessageWriter` is usually executed by Python's `with` statement.
@@ -450,10 +450,10 @@ Please refer to the [user guide](../userguide/api-python.en.md) for more informa
 
 ### 4.3 SINETStream API (asynchronous API)
 
-SINETStream v1.2 now supports asynchronous API. We have prepared sample programs on Github that executes the same processing as described above with asynchronous API.
+SINETStream v1.4 now supports asynchronous API. We have prepared sample programs on Github that executes the same processing as described above with asynchronous API.
 
-*[Reader](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/python/sample/text_async/consumer.py)
-*[Writer](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/python/sample/text_async/producer.py)
+*[Reader](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/python/sample/text_async/consumer.py)
+*[Writer](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/python/sample/text_async/producer.py)
 
 #### Reader (asynchronous API)
 In the sample program consumer.py of the ‘Reader’ of the asynchronous API,

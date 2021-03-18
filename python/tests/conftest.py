@@ -79,6 +79,11 @@ def qedit(topic, nque):
     return oque
 
 
+def qclear():
+    global que
+    que = defaultdict(Queue)
+
+
 class DummyReader(PluginMessageReader):
     def __init__(self, params):
         self._params = params
@@ -93,8 +98,11 @@ class DummyReader(PluginMessageReader):
     def close(self):
         pass
 
-    def metrics(self, reset):
+    def metrics(self):
         return "this is a dummy metrics"
+
+    def reset_metrics(self):
+        pass
 
     def __iter__(self):
         return self
@@ -143,8 +151,11 @@ class DummyAsyncReader(PluginAsyncMessageReader):
             self._executor.shutdown()
         self._executor = None
 
-    def metrics(self, reset):
+    def metrics(self):
         return "this is a dummy metrics"
+
+    def reset_metrics(self):
+        pass
 
     def _read_messages(self):
         topics = self._params.get("topics")
@@ -200,8 +211,11 @@ class DummyWriter(PluginMessageWriter):
     def close(self):
         pass
 
-    def metrics(self, reset):
+    def metrics(self):
         return "this is a dummy metrics"
+
+    def reset_metrics(self):
+        pass
 
     def publish(self, value):
         qwrite(self._params.get("topic"), value)
@@ -226,8 +240,11 @@ class DummyAsyncWriter(PluginAsyncMessageWriter):
             self._executor.shutdown()
             self._executor = None
 
-    def metrics(self, reset):
+    def metrics(self):
         return "this is a dummy metrics"
+
+    def reset_metrics(self):
+        pass
 
     def publish(self, value):
         future = self._executor.submit(qwrite, self._params.get("topic"), value)

@@ -21,7 +21,6 @@
 # under the License.
 
 import logging
-from pathlib import Path
 from sinetstream import MessageReader, MessageWriter, ConnectionError
 import pytest
 from conftest import (
@@ -40,7 +39,7 @@ _TLS_PARAMS = {'ca_certs': str(CACERT_PATH)} if CACERT_PATH is not None else Tru
 
 @pytest.mark.parametrize("io", [MessageReader, MessageWriter])
 def test_password_auth(io, setup_config):
-    with io(SERVICE, TOPIC) as f:
+    with io(SERVICE, TOPIC) as _:
         pass
 
 
@@ -59,7 +58,7 @@ bad_passwd_params = {
 ])
 def test_bad_password(io, setup_config):
     with pytest.raises(ConnectionError):
-        with io(SERVICE, TOPIC) as f:
+        with io(SERVICE, TOPIC) as _:
             pass
 
 
@@ -78,7 +77,7 @@ bad_user_params = {
 ])
 def test_bad_user(io, setup_config):
     with pytest.raises(ConnectionError):
-        with io(SERVICE, TOPIC) as f:
+        with io(SERVICE, TOPIC) as _:
             pass
 
 

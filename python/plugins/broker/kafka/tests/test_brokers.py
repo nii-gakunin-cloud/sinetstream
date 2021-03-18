@@ -19,11 +19,8 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-import os
-from pathlib import Path
 
 import pytest
-import yaml
 from sinetstream import MessageReader, MessageWriter, InvalidArgumentError
 from conftest import SERVICE, TOPIC, BROKER
 
@@ -34,7 +31,7 @@ from conftest import SERVICE, TOPIC, BROKER
 ])
 def test_no_broker(io, setup_config):
     with pytest.raises(InvalidArgumentError):
-        with io(SERVICE) as f:
+        with io(SERVICE) as _:
             pass
 
 
@@ -44,7 +41,7 @@ def test_no_broker(io, setup_config):
 ])
 def test_empty_broker_list(io, setup_config):
     with pytest.raises(InvalidArgumentError):
-        with io(SERVICE) as f:
+        with io(SERVICE) as _:
             pass
 
 

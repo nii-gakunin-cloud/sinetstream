@@ -1,0 +1,348 @@
+<!--
+Copyright (C) 2020-2021 National Institute of Informatics
+
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+--->
+
+[English](TUTORIAL-ANDROID-SAMPLE2.en.md)
+
+# チュートリアル - ANDROID-SAMPLE2
+
+## 1. 概要
+
+Android版の
+[SINETStreamライブラリ](https://www.sinetstream.net/docs/userguide/android.html)
+および
+[SINETStreamHelperライブラリ](https://www.sinetstream.net/docs/userguide/android_helper.html)
+の使用例として、Android端末上の
+[センサーデバイス](https://developer.android.com/reference/android/hardware/Sensor)
+の読取値をSINETStream経由で送信する`Publisher`サンプルアプリケーション
+（以降「本アプリ」と略記）を実装しました。
+本書では、本アプリのAndroid端末への導入と設定、操作方法などについて
+概説します。
+
+
+### 1.1 ネットワーク構成
+
+![構成](images/sample2/network_model.png)
+
+本アプリは、`Writer`機能のみを具備します。
+当該Android端末上で収集したセンサー値は
+[SINETStreamHelperライブラリ](https://www.sinetstream.net/docs/userguide/android_helper.html)
+によりJSON形式に成形されて本アプリ制御部に非同期通知されます。
+これをSINETStreamメッセージとして対向の`Broker`に送信します。  
+一方、`Broker`側では同メッセージ内容を解析してサーバ側のデータベース
+に蓄積するとともに、Webインタフェースでグラフ化するという動作の流れ
+になります。
+
+
+また`Broker`への接続情報やSINETStreamの動作パラメータなどの諸元をGUI
+操作で設定し、その内容に応じてAndroid版の
+[SINETStream設定ファイル](https://www.sinetstream.net/docs/userguide/config-android.html)
+を自動生成するための設定画面も用意してあります。  
+
+
+### 1.2 前提条件
+
+* Android端末の動作環境
+
+  * Android版の
+[SINETStreamライブラリ](https://www.sinetstream.net/docs/userguide/android.html)
+は、足回りのメッセージングシステムとして
+[MQTT(Eclipse Mosquitto)](https://mosquitto.org/)
+に対応しています。
+そのAndroid版の実装である
+[Paho MQTT Android Client](https://www.eclipse.org/paho/index.php?page=clients/java/index.php)
+ライブラリの制約条件により、本アプリを動かすAndroid端末はOSバージョン
+が8.0（APIレベル26）以上のものを使ってください。
+
+* バックエンドシステムの事前準備
+
+  * 本チュートリアルでは、MQTTの`Broker`に後処理を組み合わせます。
+  * バックエンド側のホストサーバにて、`docker run`コマンドにより
+本チュートリアル用のコンテナイメージの導入とサーバプログラム群の起動
+を実施することになります。
+Android側の作業着手前にこちらを済ませてください。
+  * 手順詳細は、前項に戻り
+[4. バックエンド側の作業](
+TUTORIAL-android-sample2-overview.md#4-バックエンド側の作業)
+を参照ください。
+
+* ネットワーク環境
+
+  * 本アプリを実行するAndroid端末と`Broker`とはIPネットワークで接続
+されます。携帯電話網やWiFiを介して両者のIP疎通を確保してください。
+
+
+## 2. 実行環境の準備
+
+現状では、本アプリはGooglePlayからではなくNII管理サーバから配布します。  
+別紙
+[Android版サンプルアプリケーションの導入](TUTORIAL-android-install.md)
+を参照に、所用のものを導入してください。 アプリ更新時も同様の手順です。
+
+
+## 3. サンプルアプリケーションの操作
+### 3.1 画面遷移
+
+![画面遷移](images/sample2/activity_transition.png)
+
+＜凡例＞
+1. Androidのホーム画面（a）にて、アイコン`SamplePublisher`を押下し、
+本アプリを起動する。
+2. 起動画面（b）にて、アイコンと著作者を一瞬表示して初期画面(c)に遷移
+する。
+3. 初期画面(c)にて、ボタン`Settings`押下により設定画面(d)に遷移する。
+4. 設定画面(d)にて、ボタン`BACK`押下により初期画面（c）に戻る。
+5. 初期画面(c)にて、ボタン`Run`押下により主画面(e)に遷移する。
+6. 主画面(e)にて、ボタン`BACK`押下により初期画面（c）に戻る。
+7. 初期画面(c)にて、ボタン`BACK`押下によりホーム画面（a）に戻る。
+
+各画面の構成および操作詳細は後述します。
+
+
+### 3.2. 初期画面
+
+![初期画面](images/sample2/activity_launcher.png)
+
+本アプリの起動直後に表示される初期画面です。
+
+* `Run`ボタン
+  * 本アプリの主画面`Main`を起動する
+  * 主画面の処理が終わると、この初期画面に戻る
+* `Settings`ボタン
+  * 本アプリの設定画面`Settings`を起動する
+  * 設定画面の処理が終わると、この初期画面に戻る
+* メニューボタン
+  * 画面上部のタイトル右端の「縦3つの点」を押下すると、メニューが
+展開される
+    * `About`：このアプリについて
+    * `Help`：ヘルプ表示
+
+本アプリ導入直後のように、
+[SINETStream設定ファイル](https://www.sinetstream.net/docs/userguide/config-android.html)
+が存在していない、あるいは現在の設定内容が必須項目を満足していない
+場合、`Run`ボタンが無効化（灰色表示）され、画面下部にはユーザに対応を
+促すメッセージが表示されます。
+このような場合、まずは`Settings`ボタンを押下してSINETStreamの動作環境
+設定操作を実行してください。
+
+
+### 3.3. 設定画面
+
+設定画面はセンサー情報配信用、SINETStream動作設定用に分割されており、
+それぞれ階層的に展開されます。
+
+![設定画面](images/sample2/activity_settings.png)
+
+
+#### 3.3.1 センサー情報配信用
+
+Android端末で収集したセンサー情報は、別紙
+[SINETStreamHelper#JSONデータ形式](https://github.com/nii-gakunin-cloud/sinetstream-android-helper#json%E3%83%87%E3%83%BC%E3%82%BF%E5%BD%A2%E5%BC%8F)
+で定義されたJSONデータ形式に成形されます。  
+上記JSONを構成するデバイス情報のうち、`User Info`と`Location`（いず
+れも任意）は外部から指定する必要があります。
+
+* User Info
+  * 本アプリを実行するAndroid端末が複数台同じ`Broker`に接続する際に
+個々のAndroid端末を識別するのが目的
+  * `Publisher`が送信者情報、`Notes`が補足情報
+* Location
+  * 本アプリを実行するAndroid端末の位置情報（緯度、経度）
+
+また、ネットワーク送出間隔を調整するための項目`Interval timer`を指定
+可能としており、意図するところは以下の通りです。  
+動作中のセンサーデバイスの読取値はAndroidの
+[SensorManager](https://developer.android.com/reference/android/hardware/SensorManager)
+から非同期的に通知されますが、その契機はセンサー種別ごとにまちまち
+（継続的に出力されたり、値の変化時に出力されたりなど）であり、複数の
+センサー種別を同時に観測する場合は高頻度の通知となる可能性があります。
+ネットワーク負荷を抑止するため、個々のセンサーデータは
+[SINETStreamHelperライブラリ](https://www.sinetstream.net/docs/userguide/android_helper.html)
+内部に最新データとして蓄積しつつ、本アプリの設定画面で指定した標本化
+間隔を下回らない頻度でJSONデータを生成（かつ`Broker`宛に送信）するよ
+うにしています。
+
+```
+    [SensorA] [SensorB]
+       |         :
+       +-----------------++---------------+
+       |         :       ||               |
+       |   ......:.......||...............|..
+       |   :          :  ||   :    :      | :
+       V   V          V  VV   V    V      V V
+
+   ----o---x----------o--xx---x----o------x-x---------> t
+       |<-------->|   |            |
+       |    T         |<-------->| |
+       V              |    T       |<-------->|
+      JSON#1          V            |    T
+                     JSON#2        V
+                                  JSON#3
+```
+上図は、Androidシステム側からセンサー読取値（例としてA/Bの2種類）
+が`SINETStreamHelper`に通知される契機（o/x）と、実際にJSONデータが
+生成される契機との時間関係を示します。
+
+そもそもセンサー読取値の生起タイミングは一定周期ではありません。  
+契機`o`でJSONデータが生成されたとき、その時点から指定時間`T`が経過
+するまでの間に通知された契機`x`時点のセンサー読取値はJSON生成対象と
+せず、センサー種別ごとの最新値として蓄積されます。  
+次にセンサー読取通知が発生した契機`o`の時点が`T`を超えている場合、
+各センサー種別ごとの最新値（`o`および最後の`x`時点の値）を集計して
+JSONデータを生成します。
+
+```yaml
+{
+   ...
+   "sensors": [
+     { # Sensor A
+         ...
+         "timestamp": "20210101T012312.345+0900",  # Timing 'x'
+         "values": 1
+     },
+     { # Sensor B
+         ...
+         "timestamp": "20210101T012345.678+0900",  # Timing 'o'
+         "values": [
+           1.0,
+           -2.3,
+           4.5
+         ]
+     }
+   ...
+   ]    
+}
+```
+
+すなわち、本アプリが`Broker`に送信する`SINETStream`メッセージの
+最小送信間隔は`T`（設定項目`Interval timer`）により律速されます。
+
+
+#### 3.3.2 SINETStream動作設定用
+
+Android版の
+[SINETStreamライブラリ](https://www.sinetstream.net/docs/userguide/android.html)
+を使うためには、
+[SINETStream設定ファイル](https://www.sinetstream.net/docs/userguide/config-android.html)
+を「対向`Broker`との接続条件に適合するよう」設定する必要があります。
+Androidアプリケーション単体で同設定ファイルを直接編集して本アプリに
+反映させるには煩雑な手順が必要となるため、実用的でありません。
+その代わり、GUI操作によるSINETStream設定画面（Settings）を用意して
+います。
+
+本アプリ起動後の初期画面から設定画面に遷移し、（もろもろの設定操作を
+経て）初期画面に戻る際に`SINETStream設定ファイル`が自動生成されます。
+既存の設定内容から変更が発生した場合は同設定ファイルが更新されます。
+
+まずは`Broker`と接続するため、以下の項目を必ず設定してください。
+他の項目は放置で構いません。プログラム既定値が使われます。
+* サービス名
+* トピック名
+* `Broker`接続情報（アドレス、ポート）
+
+このチュートリアルで例示した`Broker`であれば以下のように設定すること
+になります。  
+実際の`Broker`のアドレスはお使いの環境に合わせてください。
+
+|Service Name|Topic Name|IP Address (or FQDN)|
+|---|---|---|
+|service-tutorial-mqtt|sensor-data|172.29.2.12|
+
+> ここで`Topic Name`は通信チャネル識別子として使われる文字列です。
+> 任意の値を指定して構わないのですが、SAMPLE2の使い方においては、
+> バックエンドシステムの都合上、予約語`sensor-data`を**指定して**
+> ください。
+> この予約語が後段処理に渡されるフィルターとなっているため、指定の
+> 値と異なるとJSONデータがデータベースに蓄積されず、グラフ表示に
+> 反映できません。
+
+### 3.4. 主画面
+#### 3.4.1 主画面の画面構成
+
+本アプリの主画面（Main）にて、センサー情報の配信操作を実行します。
+画面中央がセンサー種別のリスト表示欄、画面下部の黒帯が統計情報表示
+パネル、最下部の青帯が操作パネルという構成です。
+
+![主画面の画面構成](images/sample2/activity_main_layout.png)
+
+＜凡例＞
+1. センサー稼動状態  
+[SINETStreamHelperライブラリ](https://www.sinetstream.net/docs/userguide/android_helper.html)
+が動作中
+（具体的にはバックグラウンド動作のSensorServiceと結合済み）でセンサー
+情報を取得可能であることを示す。
+2. センサー種別一覧  
+当該Android端末で実装されているセンサーデバイスの種別一覧が列挙
+される。チェックボックスで操作対象のものを選択すると、画面下部の
+配信動作ボタンが操作可能になる。
+3. 配信動作（RUN/STOP）切換ボタン  
+初期状態で無効。センサー種別が選択されると有効となる。
+`RUN`ボタンを押下すると、実際にセンサー情報の取得および対向`Broker`
+への周期的なメッセージ送信が開始される。  
+誤操作を避けるため、配信動作中はセンサー種別の追加的な選択／解除
+操作が抑止される。`STOP`ボタン押下によりセンサー情報の配信が停止
+するとともに、センサー種別を再び選択／解除できるようになる。
+4. 統計情報表示欄  
+センサー情報の配信中は「送信時刻、送信メッセージ数」が随時更新される。
+5. 統計情報のリセットボタン  
+センサー情報の配信中は無効となる。
+
+
+#### 3.4.2 画面遷移
+
+主画面の動作と画面遷移は、以下のようになります。
+
+![主画面の状態遷移](images/sample2/activity_main_transition.png)
+
+＜凡例＞
+1. 主画面を起動後にセンサー種別を指定(a)し、RUNボタン押下で実行開始。
+2. 実行中(b)は統計情報が随時更新される。STOP後も値は保持。
+3. 待機中(c)はリセットボタン押下により統計情報を再初期化できる。
+4. 前回実行時の統計情報を維持したまま、次の実行を開始しても良い。
+
+
+## 付録
+### A.1 ソースコード
+
+本アプリのソースコードは
+[GitHub](https://github.com/nii-gakunin-cloud/sinetstream-android-sensor-publisher)
+で公開しています。
+もし何か不具合がありましたら連絡いただけると助かります。  
+ソース修正が必要な方は、Android開発環境
+[Android Studio](https://developer.android.com/studio)
+をお手元の機材に導入して、上記ソースコードを取り込んでください。
+
+
+### A.2 既知の問題
+* SSL/TLS証明書の配置
+  * 本来はAndroidシステムの秘密領域
+[KeyChain](https://developer.android.com/reference/android/security/KeyChain)
+にSSL/TLS証明書を別途導入してアプリからそれを参照すべきなのですが、
+実装が間に合っておらずソース埋め込みとなっています。  
+SSL/TLSを使う必要がある場合、お手数ですが`Broker`側で発行したクライ
+アント証明書（もし自己署名サーバ証明書を使う場合はそれも必要）を利用
+者ご自身で本アプリのソースに埋め込み、再ビルドしてから所用のAndroid
+端末に当該APKを導入してください。
+
+* GUIの設定画面とSINETStream設定ファイルの対応
+  * 実装の都合上、GUIの設定画面での対応項目は
+[SINETStream設定ファイル](https://www.sinetstream.net/docs/userguide/config-android.html)
+を網羅しておらず、サブセットとなります。
+

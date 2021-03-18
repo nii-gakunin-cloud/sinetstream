@@ -23,6 +23,7 @@ package jp.ad.sinet.stream.plugins.mqtt;
 
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,6 +36,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+@EnabledIfEnvironmentVariable(named="RUN_INTERGRATION_TEST", matches = "(?i)true")
 class TlsTest {
 
     @Nested

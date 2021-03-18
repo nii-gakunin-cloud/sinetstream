@@ -43,7 +43,7 @@ SINETStream v1.1 以降では以下の `value_type` をサポートしていま�
     * 画像(`java.awt.image.BufferedImage`)のメッセージに対応するタイプ
     * シリアライザは`BufferedImage`をPNGファイルフォーマットのバイト列に変換する
     * デシリアライザは画像ファイルフォーマットのバイト列を`BufferedImage`の画像オブジェクトに変換する
-    
+
 `byte_array`, `text`はSINETStream本体に組み込みの `value_type` です。
 `image`は追加プラグインとして提供している`value_type`です。
 
@@ -78,14 +78,14 @@ SINETStreamのプラグインを作成するためには以下の作業が必要
 ### 2.2 プロバイダ構成ファイルの作成
 
 プロバイダ構成ファイルにサービスプロバイダを登録することで、
-ServiceLoaderがプラグインを見つけることができるようになります。  
+ServiceLoaderがプラグインを見つけることができるようになります。
 
 構成ファイルはリソースディレクトリの`META-INF/services/`に配置します。
 ファイル名はサービスプロバイダの完全修飾クラス名にする必要があります。
 SINETStreamに`value_type`を追加するためのサービスプロバイダの場合、以下のファイル名となります。
 
 * `jp.ad.sinet.stream.spi.ValueTypeProvider`
-    
+
 構成ファイルには、サービスプロバイダの実装クラス名を完全修飾名で１クラス1行で記述します。
 
 例えば`image`の`value_type`を追加するクラス`jp.ad.sinet.stream.api.valuetype.ImageValueTypeProvider`を追加する場合、
@@ -104,23 +104,22 @@ jp.ad.sinet.stream.api.valuetype.ImageValueTypeProvider
     * サービスプロバイダインタフェース
 * `jp.ad.sinet.stream.api.ValueType`
     * `value_type`に対応したシリアライザ、デシリアライザを得るためのインタフェース
-    
+
 `ValueTypeProvider` のメソッドを以下に示します。
-    
+
 * `String getName()`
     * `value_type`のタイプを表す名前を返す
 * `ValueType getValueType()`
     * プラグインの`value_type`に対応したシリアライザ、デシリアライザを得るインターフェースを返す
-    
+
 `ValueType` のメソッドを以下に示します。
-    
-* `Serializer getSerializer()`    
+
+* `Serializer getSerializer()`
     * シリアライザを返す
-* `Deserializer getDeserializer()`    
+* `Deserializer getDeserializer()`
     * デシリアライザを返す
-* `String getName()`    
+* `String getName()`
     * `value_type`のタイプを表す名前を返す
-    
 
 ## 3. プラグインの実装例
 

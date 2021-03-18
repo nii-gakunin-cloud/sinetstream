@@ -30,4 +30,6 @@ public interface MessageWriter<T> extends MessageIO {
     default boolean isThreadSafe() {
         return false;
     }
+
+    byte[] getDebugLastMsgBytes();
 }

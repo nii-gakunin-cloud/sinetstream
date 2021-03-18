@@ -2,7 +2,7 @@
 
 PYTHON3 = python3.6
 SETUP = $(PYTHON3) setup.py
-LINT = flake8-3.6
+LINT = flake8
 
 all:: lint
 
@@ -11,8 +11,7 @@ recurse-plugins:
 
 lint: lint-local #lint-plugins
 lint-local:
-	#$(LINT) src tests || true
-	$(SETUP) flake8 || true
+	$(SETUP) $(LINT) || true
 lint-plugins:
 	$(MAKE) recurse-plugins TARGET="lint"
 
@@ -60,7 +59,7 @@ test-plugins:
 	$(MAKE) recurse-plugins TARGET="test"
 
 tags::
-	uctags -R --exclude=".*" --exclude="*.css" --exclude="*.js" src plugins tests $(HOME)/.local/lib
+	uctags -R --exclude=".*" --exclude="build" --exclude="*.css" --exclude="*.js" src plugins tests #$(HOME)/.local/lib
 
 doc:: README.html
 README.html: README.md

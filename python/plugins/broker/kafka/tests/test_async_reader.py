@@ -21,6 +21,7 @@
 # under the License.
 
 import logging
+import os
 from random import choices
 from string import ascii_letters, digits
 from threading import Condition
@@ -34,7 +35,12 @@ from sinetstream import (
 )
 
 logging.basicConfig(level=logging.CRITICAL)
-pytestmark = pytest.mark.usefixtures('setup_config')
+pytestmark = [
+    pytest.mark.usefixtures('setup_config'),
+    pytest.mark.skipif(
+        os.environ.get('SKIP_FRAGILE_TEST') is not None,
+        reason='SKIP_FRAGILE_TEST is set.'),
+]
 
 
 @pytest.mark.timeout(30)
@@ -92,7 +98,7 @@ def template_on_message(setup_messages, consistency, config_topics, reader_test)
         with cv:
             while count > 0:
                 if time.time() >= deadline:
-                    raise Exception("TIMEOUT")
+                    raise Exception(f"TIMEOUT: count={count} setup_messages={len(setup_messages)}")
                 cv.wait(1)
 
     reader_test(
@@ -115,11 +121,13 @@ def write_messages(messages, topic):
     with MessageWriter(SERVICE, topic, value_type=TEXT, consistency=AT_LEAST_ONCE) as writer:
         for msg in messages:
             writer.publish(msg)
+            import time
+            time.sleep(0.001)  # XXX slowlife
 
 
 @pytest.fixture()
 def setup_messages():
-    return [str(x) + ''.join(choices(ascii_letters + digits, k=10)) for x in range(100)]
+    return [str(x) + ''.join(choices(ascii_letters + digits, k=10)) for x in range(10)]
 
 
 @pytest.fixture()

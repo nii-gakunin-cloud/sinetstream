@@ -22,7 +22,7 @@
 
 import pytest
 from sinetstream import MessageReader, MessageWriter, InvalidArgumentError
-from conftest import SERVICE, TOPIC, BROKER
+from conftest import SERVICE, BROKER
 
 pytestmark = pytest.mark.usefixtures('setup_config')
 BROKER2 = 'mqtt2'

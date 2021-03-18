@@ -41,3 +41,9 @@ SINETStreamは開発言語として Python と Java に対応しているので�
 * 新たなメッセージタイプをサポートするためのプラグイン
     * [Python](plugin_value_type_python.md)
     * [Java](plugin_value_type_java.md)
+
+<!---
+## 外部仕様
+
+* [データーフォーマット](data_format.md)
+--->

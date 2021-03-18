@@ -1,0 +1,3084 @@
+AES++CBC+pkcs7++++:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++OFB+++++:
+    crypto:
+        algorithm: AES
+        
+        mode: OFB
+        
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++OFB+none++++:
+    crypto:
+        algorithm: AES
+        
+        mode: OFB
+        padding: none
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++OFB+pkcs7++++:
+    crypto:
+        algorithm: AES
+        
+        mode: OFB
+        padding: pkcs7
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CTR+++++:
+    crypto:
+        algorithm: AES
+        
+        mode: CTR
+        
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CTR+none++++:
+    crypto:
+        algorithm: AES
+        
+        mode: CTR
+        padding: none
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CTR+pkcs7++++:
+    crypto:
+        algorithm: AES
+        
+        mode: CTR
+        padding: pkcs7
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM+++++:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM+none++++:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        padding: none
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++EAX+++++:
+    crypto:
+        algorithm: AES
+        
+        mode: EAX
+        
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++EAX+none++++:
+    crypto:
+        algorithm: AES
+        
+        mode: EAX
+        padding: none
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES+128+CBC+pkcs7++++:
+    crypto:
+        algorithm: AES
+        key_length: 128
+        mode: CBC
+        padding: pkcs7
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES+128+OFB+++++:
+    crypto:
+        algorithm: AES
+        key_length: 128
+        mode: OFB
+        
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES+128+OFB+none++++:
+    crypto:
+        algorithm: AES
+        key_length: 128
+        mode: OFB
+        padding: none
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES+128+OFB+pkcs7++++:
+    crypto:
+        algorithm: AES
+        key_length: 128
+        mode: OFB
+        padding: pkcs7
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES+128+CTR+++++:
+    crypto:
+        algorithm: AES
+        key_length: 128
+        mode: CTR
+        
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES+128+CTR+none++++:
+    crypto:
+        algorithm: AES
+        key_length: 128
+        mode: CTR
+        padding: none
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES+128+CTR+pkcs7++++:
+    crypto:
+        algorithm: AES
+        key_length: 128
+        mode: CTR
+        padding: pkcs7
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES+128+GCM+++++:
+    crypto:
+        algorithm: AES
+        key_length: 128
+        mode: GCM
+        
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES+128+GCM+none++++:
+    crypto:
+        algorithm: AES
+        key_length: 128
+        mode: GCM
+        padding: none
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES+128+EAX+++++:
+    crypto:
+        algorithm: AES
+        key_length: 128
+        mode: EAX
+        
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES+128+EAX+none++++:
+    crypto:
+        algorithm: AES
+        key_length: 128
+        mode: EAX
+        padding: none
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES+192+CBC+pkcs7++++:
+    crypto:
+        algorithm: AES
+        key_length: 192
+        mode: CBC
+        padding: pkcs7
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES+192+OFB+++++:
+    crypto:
+        algorithm: AES
+        key_length: 192
+        mode: OFB
+        
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES+192+OFB+none++++:
+    crypto:
+        algorithm: AES
+        key_length: 192
+        mode: OFB
+        padding: none
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES+192+OFB+pkcs7++++:
+    crypto:
+        algorithm: AES
+        key_length: 192
+        mode: OFB
+        padding: pkcs7
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES+192+CTR+++++:
+    crypto:
+        algorithm: AES
+        key_length: 192
+        mode: CTR
+        
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES+192+CTR+none++++:
+    crypto:
+        algorithm: AES
+        key_length: 192
+        mode: CTR
+        padding: none
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES+192+CTR+pkcs7++++:
+    crypto:
+        algorithm: AES
+        key_length: 192
+        mode: CTR
+        padding: pkcs7
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES+192+GCM+++++:
+    crypto:
+        algorithm: AES
+        key_length: 192
+        mode: GCM
+        
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES+192+GCM+none++++:
+    crypto:
+        algorithm: AES
+        key_length: 192
+        mode: GCM
+        padding: none
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES+192+EAX+++++:
+    crypto:
+        algorithm: AES
+        key_length: 192
+        mode: EAX
+        
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES+192+EAX+none++++:
+    crypto:
+        algorithm: AES
+        key_length: 192
+        mode: EAX
+        padding: none
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES+256+CBC+pkcs7++++:
+    crypto:
+        algorithm: AES
+        key_length: 256
+        mode: CBC
+        padding: pkcs7
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES+256+OFB+++++:
+    crypto:
+        algorithm: AES
+        key_length: 256
+        mode: OFB
+        
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES+256+OFB+none++++:
+    crypto:
+        algorithm: AES
+        key_length: 256
+        mode: OFB
+        padding: none
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES+256+OFB+pkcs7++++:
+    crypto:
+        algorithm: AES
+        key_length: 256
+        mode: OFB
+        padding: pkcs7
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES+256+CTR+++++:
+    crypto:
+        algorithm: AES
+        key_length: 256
+        mode: CTR
+        
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES+256+CTR+none++++:
+    crypto:
+        algorithm: AES
+        key_length: 256
+        mode: CTR
+        padding: none
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES+256+CTR+pkcs7++++:
+    crypto:
+        algorithm: AES
+        key_length: 256
+        mode: CTR
+        padding: pkcs7
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES+256+GCM+++++:
+    crypto:
+        algorithm: AES
+        key_length: 256
+        mode: GCM
+        
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES+256+GCM+none++++:
+    crypto:
+        algorithm: AES
+        key_length: 256
+        mode: GCM
+        padding: none
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES+256+EAX+++++:
+    crypto:
+        algorithm: AES
+        key_length: 256
+        mode: EAX
+        
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES+256+EAX+none++++:
+    crypto:
+        algorithm: AES
+        key_length: 256
+        mode: EAX
+        padding: none
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7++++:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7++++HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            
+            
+            
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+++1+:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            
+            
+            iteration: 1
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+++1+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            
+            
+            iteration: 1
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+++1000+:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            
+            
+            iteration: 1000
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+++1000+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            
+            
+            iteration: 1000
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+++10000+:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            
+            
+            iteration: 10000
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+++10000+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            
+            
+            iteration: 10000
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7++8++:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            
+            salt_bytes: 8
+            
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7++8++HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            
+            salt_bytes: 8
+            
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7++8+1+:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            
+            salt_bytes: 8
+            iteration: 1
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7++8+1+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            
+            salt_bytes: 8
+            iteration: 1
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7++8+1000+:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            
+            salt_bytes: 8
+            iteration: 1000
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7++8+1000+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            
+            salt_bytes: 8
+            iteration: 1000
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7++8+10000+:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            
+            salt_bytes: 8
+            iteration: 10000
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7++8+10000+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            
+            salt_bytes: 8
+            iteration: 10000
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7++12++:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            
+            salt_bytes: 12
+            
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7++12++HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            
+            salt_bytes: 12
+            
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7++12+1+:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            
+            salt_bytes: 12
+            iteration: 1
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7++12+1+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            
+            salt_bytes: 12
+            iteration: 1
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7++12+1000+:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            
+            salt_bytes: 12
+            iteration: 1000
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7++12+1000+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            
+            salt_bytes: 12
+            iteration: 1000
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7++12+10000+:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            
+            salt_bytes: 12
+            iteration: 10000
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7++12+10000+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            
+            salt_bytes: 12
+            iteration: 10000
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7++16++:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            
+            salt_bytes: 16
+            
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7++16++HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            
+            salt_bytes: 16
+            
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7++16+1+:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            
+            salt_bytes: 16
+            iteration: 1
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7++16+1+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            
+            salt_bytes: 16
+            iteration: 1
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7++16+1000+:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            
+            salt_bytes: 16
+            iteration: 1000
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7++16+1000+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            
+            salt_bytes: 16
+            iteration: 1000
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7++16+10000+:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            
+            salt_bytes: 16
+            iteration: 10000
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7++16+10000+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            
+            salt_bytes: 16
+            iteration: 10000
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+pbkdf2+++:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            algorithm: pbkdf2
+            
+            
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+pbkdf2+++HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            algorithm: pbkdf2
+            
+            
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+pbkdf2++1+:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            algorithm: pbkdf2
+            
+            iteration: 1
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+pbkdf2++1+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            algorithm: pbkdf2
+            
+            iteration: 1
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+pbkdf2++1000+:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            algorithm: pbkdf2
+            
+            iteration: 1000
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+pbkdf2++1000+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            algorithm: pbkdf2
+            
+            iteration: 1000
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+pbkdf2++10000+:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            algorithm: pbkdf2
+            
+            iteration: 10000
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+pbkdf2++10000+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            algorithm: pbkdf2
+            
+            iteration: 10000
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+pbkdf2+8++:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 8
+            
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+pbkdf2+8++HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 8
+            
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+pbkdf2+8+1+:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 8
+            iteration: 1
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+pbkdf2+8+1+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 8
+            iteration: 1
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+pbkdf2+8+1000+:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 8
+            iteration: 1000
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+pbkdf2+8+1000+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 8
+            iteration: 1000
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+pbkdf2+8+10000+:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 8
+            iteration: 10000
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+pbkdf2+8+10000+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 8
+            iteration: 10000
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+pbkdf2+12++:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 12
+            
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+pbkdf2+12++HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 12
+            
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+pbkdf2+12+1+:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 12
+            iteration: 1
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+pbkdf2+12+1+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 12
+            iteration: 1
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+pbkdf2+12+1000+:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 12
+            iteration: 1000
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+pbkdf2+12+1000+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 12
+            iteration: 1000
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+pbkdf2+12+10000+:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 12
+            iteration: 10000
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+pbkdf2+12+10000+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 12
+            iteration: 10000
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+pbkdf2+16++:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 16
+            
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+pbkdf2+16++HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 16
+            
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+pbkdf2+16+1+:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 16
+            iteration: 1
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+pbkdf2+16+1+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 16
+            iteration: 1
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+pbkdf2+16+1000+:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 16
+            iteration: 1000
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+pbkdf2+16+1000+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 16
+            iteration: 1000
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+pbkdf2+16+10000+:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 16
+            iteration: 10000
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++CBC+pkcs7+pbkdf2+16+10000+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: CBC
+        padding: pkcs7
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 16
+            iteration: 10000
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM+++++:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM+++++HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            
+            
+            
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++++1+:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            
+            
+            iteration: 1
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++++1+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            
+            
+            iteration: 1
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++++1000+:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            
+            
+            iteration: 1000
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++++1000+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            
+            
+            iteration: 1000
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++++10000+:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            
+            
+            iteration: 10000
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++++10000+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            
+            
+            iteration: 10000
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM+++8++:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            
+            salt_bytes: 8
+            
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM+++8++HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            
+            salt_bytes: 8
+            
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM+++8+1+:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            
+            salt_bytes: 8
+            iteration: 1
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM+++8+1+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            
+            salt_bytes: 8
+            iteration: 1
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM+++8+1000+:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            
+            salt_bytes: 8
+            iteration: 1000
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM+++8+1000+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            
+            salt_bytes: 8
+            iteration: 1000
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM+++8+10000+:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            
+            salt_bytes: 8
+            iteration: 10000
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM+++8+10000+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            
+            salt_bytes: 8
+            iteration: 10000
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM+++12++:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            
+            salt_bytes: 12
+            
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM+++12++HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            
+            salt_bytes: 12
+            
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM+++12+1+:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            
+            salt_bytes: 12
+            iteration: 1
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM+++12+1+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            
+            salt_bytes: 12
+            iteration: 1
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM+++12+1000+:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            
+            salt_bytes: 12
+            iteration: 1000
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM+++12+1000+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            
+            salt_bytes: 12
+            iteration: 1000
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM+++12+10000+:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            
+            salt_bytes: 12
+            iteration: 10000
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM+++12+10000+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            
+            salt_bytes: 12
+            iteration: 10000
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM+++16++:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            
+            salt_bytes: 16
+            
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM+++16++HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            
+            salt_bytes: 16
+            
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM+++16+1+:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            
+            salt_bytes: 16
+            iteration: 1
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM+++16+1+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            
+            salt_bytes: 16
+            iteration: 1
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM+++16+1000+:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            
+            salt_bytes: 16
+            iteration: 1000
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM+++16+1000+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            
+            salt_bytes: 16
+            iteration: 1000
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM+++16+10000+:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            
+            salt_bytes: 16
+            iteration: 10000
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM+++16+10000+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            
+            salt_bytes: 16
+            iteration: 10000
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++pbkdf2+++:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            algorithm: pbkdf2
+            
+            
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++pbkdf2+++HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            algorithm: pbkdf2
+            
+            
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++pbkdf2++1+:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            algorithm: pbkdf2
+            
+            iteration: 1
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++pbkdf2++1+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            algorithm: pbkdf2
+            
+            iteration: 1
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++pbkdf2++1000+:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            algorithm: pbkdf2
+            
+            iteration: 1000
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++pbkdf2++1000+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            algorithm: pbkdf2
+            
+            iteration: 1000
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++pbkdf2++10000+:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            algorithm: pbkdf2
+            
+            iteration: 10000
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++pbkdf2++10000+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            algorithm: pbkdf2
+            
+            iteration: 10000
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++pbkdf2+8++:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 8
+            
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++pbkdf2+8++HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 8
+            
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++pbkdf2+8+1+:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 8
+            iteration: 1
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++pbkdf2+8+1+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 8
+            iteration: 1
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++pbkdf2+8+1000+:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 8
+            iteration: 1000
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++pbkdf2+8+1000+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 8
+            iteration: 1000
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++pbkdf2+8+10000+:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 8
+            iteration: 10000
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++pbkdf2+8+10000+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 8
+            iteration: 10000
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++pbkdf2+12++:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 12
+            
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++pbkdf2+12++HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 12
+            
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++pbkdf2+12+1+:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 12
+            iteration: 1
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++pbkdf2+12+1+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 12
+            iteration: 1
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++pbkdf2+12+1000+:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 12
+            iteration: 1000
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++pbkdf2+12+1000+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 12
+            iteration: 1000
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++pbkdf2+12+10000+:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 12
+            iteration: 10000
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++pbkdf2+12+10000+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 12
+            iteration: 10000
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++pbkdf2+16++:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 16
+            
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++pbkdf2+16++HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 16
+            
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++pbkdf2+16+1+:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 16
+            iteration: 1
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++pbkdf2+16+1+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 16
+            iteration: 1
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++pbkdf2+16+1000+:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 16
+            iteration: 1000
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++pbkdf2+16+1000+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 16
+            iteration: 1000
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++pbkdf2+16+10000+:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 16
+            iteration: 10000
+            
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+
+AES++GCM++pbkdf2+16+10000+HMAC-SHA256:
+    crypto:
+        algorithm: AES
+        
+        mode: GCM
+        
+        key_derivation:
+            algorithm: pbkdf2
+            salt_bytes: 16
+            iteration: 10000
+            prf: HMAC-SHA256
+        password:
+            value: sercret-000
+    topic: test-topic
+    value_type: byte_array
+    type: dummy
+    brokers: broker.example.com
+    data_encryption: true
+

@@ -138,7 +138,7 @@ Below is a brief description of the classes in the figure.
     * A common service class of Kafka.  (XXX これはPlugin内で定義されたclass??)
 * ServiceLoader
     * Loads registered services.
-    
+
 #### 2.2.2 MessageWriter
 
 We show the sequence diagram when the following message transmission program is executed.
@@ -212,7 +212,7 @@ try (AsyncMessageReader<String> reader = factory.getAsyncReader()) {
     * Kafkaのサービスクラス
 * ServiceLoader
     * 登録されているサービスをロードする
-    
+
 #### 2.2.4 AsyncMessageWriter
 
 以下に示す非同期APIのメッセージ送信処理を SINETStreamで行った場合のシーケンス図を示します。
@@ -277,7 +277,7 @@ In the case of service providers that support SINETStream message reception and 
     * `jp.ad.sinet.stream.spi.AsyncMessageReaderProvider`
 * A service provider to send messages (async API)
     * `jp.ad.sinet.stream.spi.AsyncMessageWriterProvider`
-    
+
 In the configuration file, the fully qualified class name of the implemented service provider class is described in the one-class-per-line manner.
 
 For example, when you register the `jp.ad.sinet.stream.plugins.kafka.KafkaMessageProvider` class that sends messages to Kafka brokers, you need to create the configuration file `META-INF/services/jp.ad.sinet.stream.spi.MessageWriterProvider` and describe the following contents in the file.
@@ -301,7 +301,7 @@ it is necessary to create an implementation class of the following interface cla
     * Service provider interface.
 * `jp.ad.sinet.stream.spi.PluginMessageWriter`
     * Interface to send messages.
-    
+
 The methods of `MessageWriterProvider` are described as follows:
 
 * `PluginMessageWriter getWriter(WriterParameters params)`
@@ -312,7 +312,7 @@ The methods of `MessageWriterProvider` are described as follows:
 * `String getType()`
     * Returns the name of the messaging system type.
     * The processing specific to the messaging system is processed by each plugin in which the value returned by this method matches the value specified for `type` in the configuration file.
-    
+
 The main methods of `PluginMessageWriter` are shown below.
 
 * `void write(byte[] message)`
@@ -357,7 +357,7 @@ The main methods of `PluginMessageReader` are shown below.
     * サービスプロバイダインタフェース
 * `jp.ad.sinet.stream.spi.PluginAsyncMessageWriter`
     * メッセージ送信処理のインタフェース
-    
+
 `AsyncMessageWriterProvider`のメソッドを以下に示します。
 
 * `PluginAsyncMessageWriter getAsyncWriter(WriterParameters params)`
@@ -366,7 +366,7 @@ The main methods of `PluginMessageReader` are shown below.
 * `String getType()`
     * メッセージングシステムのタイプを表す名前を返す
     * メッセージングシステム固有の処理については、このメソッドが返す値と設定ファイルの `type` に指定された値が一致したプラグインによって処理される
-    
+
 `PluginAsyncMessageWriter`の主なメソッドを以下に示します。
 
 * `Promise<?, ? extends Throwable, ?> write(byte[] message)`

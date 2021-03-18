@@ -49,14 +49,14 @@ def test_metrics(setup_messages, config_topic):
         with MessageWriter(SERVICE, topic=config_topic, value_type=TEXT) as writer:
             for msg in setup_messages:
                 writer.publish(msg)
-            writer_metrics = writer.metrics()
+            writer_metrics = writer.metrics
             logger.info(f"writer.metrics: {writer_metrics}")
         count = 0
         for msg in reader:
             count += 1
             if count >= nmsg:
                 break
-        reader_metrics = reader.metrics()
+        reader_metrics = reader.metrics
         logger.info(f"reader.metrics: {reader_metrics}")
 
     min_avro_overhead = 2 + 8 + 8 + 1  # marker + fingerprint + timestamp + body_len

@@ -24,7 +24,7 @@ import logging
 import pytest
 
 from sinetstream import (
-    MessageReader, MessageWriter, AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE,
+    MessageWriter, AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE,
     InvalidArgumentError, AlreadyConnectedError,
 )
 from conftest import SERVICE, TOPIC, TOPIC2
@@ -44,7 +44,7 @@ def test_writer_topic(topic):
 
 def test_writer_bad_topics():
     with pytest.raises(InvalidArgumentError):
-        with MessageWriter(SERVICE, [TOPIC, TOPIC2]) as f:
+        with MessageWriter(SERVICE, [TOPIC, TOPIC2]) as _:
             pass
 
 
@@ -54,25 +54,25 @@ def test_writer_bad_topics():
     EXACTLY_ONCE,
 ])
 def test_writer_consistency(consistency):
-    with MessageWriter(SERVICE, TOPIC, consistency=consistency) as f:
+    with MessageWriter(SERVICE, TOPIC, consistency=consistency) as _:
         pass
 
 
 def test_writer_bad_consistency():
     with pytest.raises(InvalidArgumentError):
-        with MessageWriter(SERVICE, TOPIC, consistency=999) as f:
+        with MessageWriter(SERVICE, TOPIC, consistency=999) as _:
             pass
 
 
 @pytest.mark.parametrize("qos", [0, 1, 2])
 def test_writer_qos(qos):
-    with MessageWriter(SERVICE, TOPIC, qos=qos) as f:
+    with MessageWriter(SERVICE, TOPIC, qos=qos) as _:
         pass
 
 
 @pytest.mark.parametrize("retain", [True, False])
 def test_writer_retain(retain):
-    with MessageWriter(SERVICE, TOPIC, retain=retain) as f:
+    with MessageWriter(SERVICE, TOPIC, retain=retain) as _:
         pass
 
 
@@ -88,7 +88,7 @@ def test_writer_client_id_set():
 
 
 def test_writer_deser():
-    with MessageWriter(SERVICE, TOPIC, value_serializer=(lambda x: x)) as f:
+    with MessageWriter(SERVICE, TOPIC, value_serializer=(lambda x: x)) as _:
         pass
 
 

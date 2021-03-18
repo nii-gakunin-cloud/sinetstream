@@ -24,6 +24,7 @@ package jp.ad.sinet.stream.plugins.mqtt;
 import jp.ad.sinet.stream.api.AuthenticationException;
 import jp.ad.sinet.stream.api.ConnectionException;
 import jp.ad.sinet.stream.api.InvalidConfigurationException;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -35,6 +36,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+@EnabledIfEnvironmentVariable(named="MQTT_USER_PASSWD_BROKER", matches = ".+")
 class AuthTest extends ConfigFileWriter {
 
 	/**
