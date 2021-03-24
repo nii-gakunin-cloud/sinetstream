@@ -273,7 +273,7 @@ Androidアプリケーション単体で「上記設定ファイルを直接編�
 
 |Service Name|Topic Name|IP Address (or FQDN)|Port Number|
 |---|---|---|---|
-|service-tutorial-mqtt|sensor-data|172.29.2.12|1883|
+|service-tutorial-mqtt|sensor-data|xx.xx.xx.xx|1883|
 
 > ここで`Topic Name`は通信チャネル識別子として使われる文字列です。
 > 任意の値を指定して構わないのですが、STEP2の使い方においては、
