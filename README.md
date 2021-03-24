@@ -20,7 +20,7 @@ software distributed under the License is distributed on an
 KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
---->
+-->
 
 [English](README.en.md)
 
@@ -39,8 +39,7 @@ Brokerの構成情報やBrokerとの通信パラメータをまとめたもの�
 WriterやReaderはサービスを指定するだけでブローカーに接続してメッセージの送受信ができる。
 
 トピックとはブローカーにおける論理的なチャンネルであり、
-Writer/Readerはトピックを指定してメッセージの送受信を行うことで
-異なる種類のメッセージ配信を1つのブローカー上で行える。
+Writer/Readerはトピックを指定してメッセージの送受信を行うことで異なる種類のメッセージ配信を1つのブローカー上で行える。
 
 ## ファイル構成
 
@@ -79,26 +78,26 @@ Writer/Readerはトピックを指定してメッセージの送受信を行う�
     * userguide/
         * [ユーザガイド](docs/userguide/index.md)
     * tutorial/
-        * [クイックスタートガイド(PC版)](docs/tutorial/index.md)
+        * [クイックスタートガイド(Python/Java版)](docs/tutorial/index.md)
         * [クイックスタートガイド(Android版)](docs/tutorial-android/index.md)
     * developer_guide/
         * [開発者ガイド](docs/developer_guide/index.md)
 
 ## 動作環境
-### PC版
+### Python/Java版
 
-PC版の`SINETStream API`は、以下のプログラム言語で実装される。
+Python/Java版の`SINETStream API`は、以下のプログラム言語で実装される。
 
 * Python 3.6
 * Java 8
 
-PC版のSINETStreamは、以下のメッセージングシステムに対応する。
+Python/Java版のSINETStreamは、以下のメッセージングシステムに対応する。
 
 * [Apache Kafka](https://kafka.apache.org/) 2.2.1
 * MQTT v3.1, v3.1.1
     * [Eclipse Mosquitto](https://mosquitto.org/) v1.6.2
 
-PC版のSINETStreamが対応するOS条件は以下の通り。
+Python/Java版のSINETStreamが対応するOS条件は以下の通り。
 
 * CentOS 7.6
 * Windows 10
@@ -120,11 +119,11 @@ Android版のSINETStreamが対応するOS条件は以下の通り。
 * Android 8.0 以降
 
 ## 準備
-### PC版
+### Python/Java版
 
 SINETStreamでは、Brokerを実現するバックエンドのメッセージングシステムとしてKafkaまたはMQTTを利用している。
 そのため、SINETStreamとともに、これらのメッセージングシステムのどちらかをインストールする必要がある。
-チュートリアルパッケージでは、dockerコンテナを利用して必要なソフトウェア一式（SINETStream, Kafka, MQTT）をインストールする方法を用意している。
+チュートリアルパッケージでは、Dockerコンテナを利用して必要なソフトウェア一式（SINETStream, Kafka, MQTT）をインストールする方法を用意している。
 
 1. Kafkaブローカーの設定
     * [Kafka Quickstart](https://kafka.apache.org/quickstart)
@@ -135,28 +134,26 @@ SINETStreamでは、Brokerを実現するバックエンドのメッセージン
     * Python: `pip3 install --user sinetstream-kafka sinetstream-mqtt`
     * Java: Java版READMEを参照
 
-dockerコンテナをつかった
-[クイックスタートガイド (PC版)](docs/tutorial/index.md)
+Dockerコンテナをつかった
+[クイックスタートガイド (Python/Java版)](docs/tutorial/index.md)
 も参考のこと。
 
 ### Android版
 
-Android版の`SINETStream API`は、メッセージングシステムのうち
-MQTTのみに対応し、クライアント機能（`Writer`、`Reader`）を
-提供する。
-このため、Android版のSINETStreamクライアントと対向するバック
-エンド側の`Broker`はMQTT一択となる。
-上記PC版の記述内容に沿って導入したバックエンドに関して、MQTT
-ブローカー部分をAndroid対向用に流用することで構わない。
+Android版の`SINETStream API`は、メッセージングシステムのうちMQTTのみに対応し、
+クライアント機能（`Writer`、`Reader`）を提供する。
+このため、Android版のSINETStreamクライアントと対向するバックエンド側の`Broker`はMQTT一択となる。
+上記Python/Java版の記述内容に沿って導入したバックエンドに関して、
+MQTTブローカー部分をAndroid対向用に流用することで構わない。
 
-dockerコンテナをつかった
+Dockerコンテナをつかった
 [クイックスタートガイド (Android版)](docs/tutorial-android/index.md)
 も参考のこと。
 
 ## リンク
 
 * チュートリアル
-    * [クイックスタートガイド (PC版)](docs/tutorial/index.md)
+    * [クイックスタートガイド (Python/Java版)](docs/tutorial/index.md)
     * [クイックスタートガイド (Android版)](docs/tutorial-android/index.md)
 * [ユーザガイド](docs/userguide/index.md)
 * [SINETStream性能測定結果](docs/performance/index.md)

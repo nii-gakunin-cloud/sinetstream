@@ -17,30 +17,37 @@ software distributed under the License is distributed on an
 KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
---->
+-->
 
 [English](index.en.md)
 
 # Android版クイックスタートガイド
 
+<em>目次</em>
+<pre>
+1. はじめに
+2. 動作環境について
+3. 前提条件
+3.1 Androidクライアント
+3.2 バックエンドシステム
+3.3 観測用PC（後述のチュートリアル「STEP2」限定）
+4. チュートリアルの実行
+</pre>
+
+
 ## 1. はじめに
 
-別紙
-[クイックスタートガイド (PC版)](docs/tutorial/index.md)
-で想定するコンポーネント構成図を一般化すると、以下のようになります。
+`クイックスタートガイド (Python/Java版)`で想定するコンポーネント構成図を一般化すると、以下のようになります。
 
 ![構成図](images/common/network_model.png)
 
-すなわち、クライアント側の`Writer`および`Reader`の機能は、Android
-またはLinuxのいずれかのものを組み合わせて使えることに注目ください。  
-本チュートリアルでは、`Writer`と`Reader`の両方、またはそのいずれかを
-Androidアプリケーションが担当する場合に関して紹介します。
+すなわち、クライアント側の`Writer`および`Reader`の機能は、AndroidまたはLinuxのいずれかのものを組み合わせて使えることに注目ください。
+本チュートリアルでは、`Writer`と`Reader`の両方、またはそのいずれかをAndroidアプリケーションが担当する場合に関して紹介します。
 
 
 ## 2. 動作環境について
 
-PC版のチュートリアルと同様に、`Broker`機能はアプリケーション仮想実行
-環境である`Docker`コンテナ上に構築します。  
+Python/Java版のチュートリアルと同様に、`Broker`機能はアプリケーション仮想実行環境である`Docker`コンテナ上に構築します。
 適当なホスト機材上に`Docker Engine`を導入し、チュートリアル用に用意
 された`Docker`コンテナイメージを取得して実行するという作業の流れです。
 一方、`Writer`や`Reader`機能は、お手元のAndroid機材にサンプルアプリ
@@ -80,7 +87,7 @@ PC版のチュートリアルと同様に、`Broker`機能はアプリケーシ�
     * お手軽な実行環境として、机上のPC機材に`Docker Engine`を導入する
       方式も併記します。
 
-### 3.3 観測用PC（後述のチュートリアル「SAMPLE2」限定）
+### 3.3 観測用PC（後述のチュートリアル「STEP2」限定）
 
 * 観測用PCからバックエンドシステムにHTTP接続できること
     * 経路設定やファイアウォール設定に留意して接続性を確保してください。
@@ -91,13 +98,13 @@ PC版のチュートリアルと同様に、`Broker`機能はアプリケーシ�
 ## 4. チュートリアルの実行
 
 Android版の
-[SINETStreamライブラリ](https://www.sinetstream.net/docs/userguide/android.html)
+[SINETStreamライブラリ](../userguide/android.html)
 の使用例として、2種類のサンプルアプリ
 ケーションを用意しました。
 
-* [SAMPLE1 (sinetstream-android-echo)](TUTORIAL-android-sample1-overview.md)
+* [STEP1: テキスト送受信アプリの実行(sinetstream-android-echo)](TUTORIAL-android-step1-overview.md)
     - GUI操作で入力した任意文字列を`Broker`折り返しで送受信する
-* [SAMPLE2 (sinetstream-android-sensor-publisher)](TUTORIAL-android-sample2-overview.md)
+* [STEP2: センサ情報収集アプリの実行(sinetstream-android-sensor-publisher)](TUTORIAL-android-step2-overview.md)
     - Android端末上のセンサー読取値を`Broker`に送信する
     - `Broker`背後のバックエンドシステムがセンサー読取値をデータベースに
 蓄積する
@@ -108,17 +115,18 @@ Android版の
 2つの手順は独立していますので、どちらか一方のみを試すこともできますし、
 順々に両方を試すこともできます。
 
-> **注記**：  
-> 上記2種類のサンプルを続けて試す場合は、SAMPLE2を先に実行した方が
+> **注記**：
+>
+> 上記2種類のサンプルを続けて試す場合は、STEP2を先に実行した方が
 > 作業が円滑に進むと思います。
 >
-> SAMPLE1では`Broker`は何を使っても良いのですが、SAMPLE2では`Broker`
+> STEP1では`Broker`は何を使っても良いのですが、STEP2では`Broker`
 > 背後のバックエンド側と接続して逐次処理する必要があります。このため
-> SAMPLE2のコンテナイメージは専用のものを使います。
-> すなわち、SAMPLE2を先に実行して、そのコンテナイメージを動作させた
-> ままにしておけば、SAMPLE1でその`Broker`を流用できます。
+> STEP2のコンテナイメージは専用のものを使います。
+> すなわち、STEP2を先に実行して、そのコンテナイメージを動作させた
+> ままにしておけば、STEP1でその`Broker`を流用できます。
 >
-> SAMPLE1のバックエンドシステム用にPC版チュートリアルのコンテナ
+> STEP1のバックエンドシステム用にPython/Java版チュートリアルのコンテナ
 > イメージを起動してその`Broker`を相手にすることも、もちろん可能です。
-> その場合はSAMPLE2を実行する前にコンテナイメージの入れ替えを忘れず
+> その場合はSTEP2を実行する前にコンテナイメージの入れ替えを忘れず
 > 実施してください。

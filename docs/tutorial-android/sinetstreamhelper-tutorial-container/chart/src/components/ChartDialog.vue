@@ -1,5 +1,8 @@
 <template>
-  <v-dialog v-model="show">
+  <v-dialog
+    v-model="show"
+    max-width="400"
+  >
     <template #activator="{ on, attrs }">
       <v-btn
         class="mx-2"

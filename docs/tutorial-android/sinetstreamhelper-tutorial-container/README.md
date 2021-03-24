@@ -17,13 +17,13 @@ software distributed under the License is distributed on an
 KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
---->
+-->
 
 [English](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/tutorial-android/sinetstreamhelper-tutorial-container/README.html "google translate")
 
-# SINETStreamHelper Tutorial Container
+# SINETStream Android Tutorial Container
 
-SINETStreamHelperのチュートリアルのためのコンテナイメージ
+SINETStream Androidのチュートリアル用コンテナイメージ
 
 ## 概要
 
@@ -31,12 +31,12 @@ SINETStreamHelperのチュートリアルのためのコンテナイメージ
 
 上図で示した各コンポーネントの役割を、以下に記します。
 
-* `SINETStream` は`SINETStreamHelper`が収集したAndroid端末のセンサー情報をMQTTブローカーに送信します
-* チュートリアルコンテナの MQTTブローカー(mosquitto)はAndroid端末から送られたセンサー情報を受け取ります
+* `SINETStream`は`SINETStreamHelper`が収集したAndroid端末のセンサー情報をMQTTブローカーに送信します
+* チュートリアルコンテナのMQTTブローカー(mosquitto)はAndroid端末から送られたセンサー情報を受け取ります
 * MQTTブローカーが受け取ったメッセージはKafka Connect(`mqtt-android-sensor-data`)によってKafkaブローカーに送られます
 * Kafkaブローカーが受け取ったメッセージはKafka Connect(`s3-sink`)によってオブジェクトストレージ(MinIO)に送られます
 * オブジェクトストレージ(MinIO)に保存されたデータはリバースプロキシ(nginx)によってHTTPで外部に公開されます
-* nginx経由で公開されたセンサーデータを JavaScriptによってWebブラウザ上でグラフ表示します
+* nginx経由で公開されたセンサーデータをJavaScriptによってWebブラウザ上でグラフ表示します
 
 ### チュートリアルコンテナのソフトウェアコンポーネント
 
@@ -47,7 +47,7 @@ SINETStreamHelperのチュートリアルのためのコンテナイメージ
 | MQTT(mosquitto) | sensor-data | TCP/1883 |
 | Apache Kafka | sensor-data | TCP/9092 |
 
-チュートリアルコンテナでは MQTT, Kafkaブローカーが実行されています。Android端末からはMQTTブローカーのみにアクセスします。
+チュートリアルコンテナではMQTT,Kafkaブローカーが実行されています。Android端末からはMQTTブローカーのみにアクセスします。
 
 #### Kafka Connect
 
@@ -56,7 +56,7 @@ SINETStreamHelperのチュートリアルのためのコンテナイメージ
 | mqtt-android-sensor-data | source | MQTT |
 | s3-sink | sink | Amazon S3互換オブジェクトストレージ |
 
-送信されたセンサー情報は Kafka コネクタによって
+送信されたセンサー情報はKafkaコネクタによって
 Kafkaブローカへの送信(source)、あるいはKafkaブローカーからの送信(sink)
 が行われます。チュートリアルコンテナではMQTTブローカーからKafka
 ブローカーへの送信、KafkaブローカーからS3互換オブジェクトストレージ(MinIO)
@@ -73,36 +73,34 @@ Android端末からチュートリアルコンテナに送信されたセンサ�
 
 ### チュートリアルを実行する前提条件
 
-* チュートリアルコンテナを実行するノードに Docker Engine がインストールされていること
-* チュートリアルコンテナを実行するノードで TCP/1883, TCP/80 のポートが利用可能なこと
+* チュートリアルコンテナを実行するノードに`Docker Engine`がインストールされていること
+* チュートリアルコンテナを実行するノードでTCP/1883, TCP/80のポートが利用可能なこと
     - MQTTブローカーがTCPの待ち受けポートとしてTCP/1883を利用します
-    - nginx がTCPの待ち受けポートとしてTCP/80を利用します
+    - nginxがTCPの待ち受けポートとしてTCP/80を利用します
     - コンテナ起動時の指定で待ち受けポート番号を変更することができます
-* Android端末からチュートリアルコンテナを実行するノードの TCP/1883 にアクセス可能なこと
+* Android端末からチュートリアルコンテナを実行するノードのTCP/1883にアクセス可能なこと
     - ファイアウォールなどで通信がブロックされないように設定してください
-* Webブラウザからチュートリアルコンテナを実行するノードの TCP/80 にアクセス可能なこと
+* Webブラウザからチュートリアルコンテナを実行するノードのTCP/80にアクセス可能なこと
     - ファイアウォールなどで通信がブロックされないように設定してください
 
 ### 実行例について
 
-この文書で実行例を示す際に、チュートリアルコンテナを実行する
-ノードのIPアドレスを `192.168.1.XXX` と表記します。
+この文書で実行例を示す際に、チュートリアルコンテナを実行するノードのIPアドレスを`192.168.1.XXX`と表記します。
 実際の操作を行う際は、環境に合わせて適宜読み替えて実行してください。
 
 ## 実行環境を準備する
 
 ### チュートリアルコンテナの導入および操作
 
-MQTTブローカーなどのサービスをDockerコンテナとして
-実行します。  
+MQTTブローカーなどのサービスをDockerコンテナとして実行します。
+
 具体的な手順詳細は、別紙「
 [チュートリアル DOCKER-CONTAINER](TUTORIAL-docker-container.md)
 」を参照してください。
 
 ### Android端末の SINETStream 設定について
 
-チュートリアルコンテナで実行しているMQTTブローカーをSINETStream
-から利用する場合、以下のように設定ファイルを記述してください。
+チュートリアルコンテナで実行しているMQTTブローカーをSINETStreamから利用する場合、以下のように設定ファイルを記述してください。
 
 ```yaml
 service-tutorial-mqtt:
@@ -120,10 +118,10 @@ service-tutorial-mqtt:
 
 http://192.168.1.XXX/
 
-ただし、ホスト名 `192.168.1.XXX`は環境に合わせて適宜変更してください。
+ただし、ホスト名`192.168.1.XXX`は環境に合わせて適宜変更してください。
 
-チュートリアルコンテナでは、Andorid端末から送信されたセンサー情報のうち
-歩数(`step_count`)、照度(`light`)、加速度(`accelerometer`)をグラフ表示
+チュートリアルコンテナでは、Andorid端末から送信されたセンサー情報のうち歩数(`step_count`)、照度(`light`)、加速度(`accelerometer`)をグラフ表示
 しています。
 
 ![グラフ例](doc/chart-001.png)
+

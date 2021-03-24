@@ -17,25 +17,39 @@ software distributed under the License is distributed on an
 KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
---->
+-->
 
 [English](TUTORIAL-DOCKER-CONTAINER.en.md)
 
 # チュートリアル - DOCKER-CONTAINER
 
+<em>目次</em>
+<pre>
+1. 概要
+2. 動作基盤の整備
+2.1 Amazon AWSのEC2をホスト機材とする場合
+2.1.1 EC2インスタンスの作成と起動
+2.1.2 EC2インスタンスへのDocker Engineの導入
+2.2 手元機材をホストとする場合
+2.2.1 手元機材の調達
+2.2.2 手元機材へのDocker Engineの導入
+3. コンテナイメージの操作
+3.1 brokerコンテナの導入と起動
+3.2 brokerコンテナの停止と再起動
+3.3 brokerコンテナの削除と再導入
+</pre>
+
+
 ## 1. 概要
 
-本書では、アプリケーション仮想実行環境である`Docker`コンテナ上に
-`Broker`などバックエンド機能を構築する方法について紹介します。
+本書では、アプリケーション仮想実行環境である`Docker`コンテナ上に`Broker`などバックエンド機能を構築する方法について紹介します。
 
 
 ## 2. 動作基盤の整備
 
-`Docker Engine`はLinuxやmacOS、Windowsなどさまざまな動作環境に対応
-していますので、まずは適当な機材にこれを導入するところから始めます。
-次に、チュートリアル用に用意したコンテナイメージをインターネット
-経由でダウンロードし、上記`Docker Engine`環境で起動するという作業の
-流れとなります。
+`Docker Engine`はLinuxやmacOS、Windowsなどさまざまな動作環境に対応しています。
+まずは適当な機材にこれを導入するところから始めます。
+次に、チュートリアル用に用意したコンテナイメージをインターネット経由でダウンロードし、上記`Docker Engine`環境で起動するという作業の流れとなります。
 
 ### 2.1 Amazon AWSのEC2をホスト機材とする場合
 
@@ -50,13 +64,11 @@ under the License.
 ```
     [Android]-----(Celluar)-----(INTERNET)-----[Amazon AWS]
 ```
-この場合、Android端末上のクライアントと`Amazon AWS`の`EC2`とはイン
-ターネット経由で接続します。
+この場合、Android端末上のクライアントと`Amazon AWS`の`EC2`とはインターネット経由で接続します。
 
 #### 2.1.1 EC2インスタンスの作成と起動
 
-AWSコンソール上の操作により適当なEC2インスタンスを作成して起動
-すると、グローバルIPアドレスやSSHログイン認証鍵が払い出されます。
+AWSコンソール上の操作により適当なEC2インスタンスを作成して起動すると、グローバルIPアドレスやSSHログイン認証鍵が払い出されます。
 当該EC2インスタンスにSSHログインしてください。
 
 ```console
@@ -69,8 +81,8 @@ AWSコンソール上の操作により適当なEC2インスタンスを作成�
 https://aws.amazon.com/amazon-linux-2/
 ```
 
-> EC2インスタンスのメモリ不足に注意！  
-> -----------------------------------  
+> EC2インスタンスのメモリ不足に注意！
+> -----------------------------------
 > 筆者が動作試験をした際、当初はEC2インスタンスタイプとして最小
 > 構成の`t2.micro`（メモリ2GB）を選択しました。
 > 単純に`MQTT`ブローカを置いて「受信メッセージを再配信する」には
@@ -78,7 +90,7 @@ https://aws.amazon.com/amazon-linux-2/
 > 介してセンサー情報を可視化するバックエンドシステム」を構築しよ
 > うとして動作不安定（グラフ表示されない）事象が発生しました。
 > Kafkaブローカがメモリ不足で異常終了し、supervisorがこれを自動
-> 再起動するという状態を繰り返すことが原因でした。  
+> 再起動するという状態を繰り返すことが原因でした。
 > 結局、より容量の大きな`t3.large`（メモリ8GB）でEC2インスタンス
 > を作り直したことで本事象を解消しました。
 
@@ -143,9 +155,8 @@ CONTAINER ID        IMAGE               COMMAND             CREATED             
 ### 2.2 手元機材をホストとする場合
 #### 2.2.1 手元機材の調達
 
-お手元の適当なPC機材（macOS/Windows/Linux）が`Docker Engine`の動作
-条件を満足し、かつインターネットに接続可能であるなら、それをホスト
-機材として活用できます。
+お手元の適当なPC機材（macOS/Windows/Linux）が`Docker Engine`の動作条件を満足し、
+かつインターネットに接続可能であるなら、それをホスト機材として活用できます。
 ```
     [Android]-----[WiFi_AP]-----(LAN)-----[Local PC]
 ```
@@ -171,12 +182,14 @@ CONTAINER ID        IMAGE               COMMAND             CREATED             
 ## 3. コンテナイメージの操作
 ### 3.1 `broker`コンテナの導入と起動
 
-このチュートリアル用のコンテナイメージを用意してあります。  
-以下のコマンドにより導入してください。手元になければリポジトリから
-ダウンロードするため数分かかります。  
-イメージを取得すだけなら`docker pull`、コンテナ起動は`docker start`
-とそれぞれ単独コマンドがあるのですが、`docker run`によりこの2つの
-操作をまとめて実施することになります。
+このチュートリアル用のコンテナイメージを用意してあります。
+
+以下のコマンドにより導入してください。
+手元になければリポジトリからダウンロードするため数分かかります。
+イメージを取得すだけなら`docker pull`、
+コンテナ起動は`docker start`とそれぞれ単独コマンドがあるのですが、
+`docker run`によりこの2つの操作をまとめて実施することになります。
+
 ```console
 [ec2-user@ip-172-29-2-12 ~]$ sudo docker run -d --name broker -p 1883:1883 -p 80:80 harbor.vcloud.nii.ac.jp/sinetstream/android-tutorial:latest
 Unable to find image 'harbor.vcloud.nii.ac.jp/sinetstream/android-tutorial:latest' locally
@@ -188,9 +201,9 @@ b1020bcf10fa4d20971db247c12e7a9d3b4803ea0ee4dd11d14ea6bd1bc95c3a
 > 上記`docker run`コマンドの引数で、コンテナ名称を`broker`、TCPポート
 > 1883(mqtt)と80(http)の2つを開くように指定しています。
 >
-> サービスの待ち受けポート番号を変更する場合は `-p` オプションの値を
-> 変更してください。 例えば MQTT ブローカーのポート番号を `11883` に
-> 変更する場合は `-p 11883:1883` と指定してください。
+> サービスの待ち受けポート番号を変更する場合は`-p`オプションの値を
+> 変更してください。例えばMQTTブローカーのポート番号を`11883`に
+> 変更する場合は`-p 11883:1883`と指定してください。
 > `-p`引数の詳細については
 > [Docker run reference](https://docs.docker.com/engine/reference/run/#expose-incoming-ports)を参照してください。
 
@@ -262,8 +275,8 @@ REPOSITORY                                             TAG                 IMAGE
 harbor.vcloud.nii.ac.jp/sinetstream/android-tutorial   latest              1b697be85b10        2 months ago        1.22GB
 ```
 
-初期導入時と同じ`docker run`コマンドを実行してもリポジトリからの取得は
-スキップされ、そのまま`broker`コンテナが再起動されます。
+初期導入時と同じ`docker run`コマンドを実行しても、
+リポジトリからの取得はスキップされ、そのまま`broker`コンテナが再起動されます。
 ```console
 [ec2-user@ip-172-29-2-12 ~]$ sudo docker run -d --name broker -p 1883:1883 -p 80:80   harbor.vcloud.nii.ac.jp/sinetstream/android-tutorial:latest
 [sudo] password for ec2-user:

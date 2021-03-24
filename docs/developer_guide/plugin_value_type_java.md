@@ -17,7 +17,7 @@ software distributed under the License is distributed on an
 KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
---->
+-->
 
 [English](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/developer_guide/plugin_value_type_java.html "google translate")
 
@@ -27,8 +27,8 @@ under the License.
 
 ## 1. はじめに
 
-SINETStream では設定ファイルあるいはコンストラクタのパラメータで指定する
-`value_type`の値に応じて、メッセージのシリアライズ、デシリアライズを行います。
+SINETStream では設定ファイルあるいはコンストラクタのパラメータで指定する`value_type`の値に応じて、
+メッセージのシリアライズ、デシリアライズを行います。
 
 SINETStream v1.1 以降では以下の `value_type` をサポートしています。
 
@@ -47,8 +47,7 @@ SINETStream v1.1 以降では以下の `value_type` をサポートしていま�
 `byte_array`, `text`はSINETStream本体に組み込みの `value_type` です。
 `image`は追加プラグインとして提供している`value_type`です。
 
-新たなプラグインを実装することで、上記に示した`value_type`以外のタイプを
-SINETStreamのメッセージとして扱えるようになります。
+新たなプラグインを実装することで、上記に示した`value_type`以外のタイプをSINETStreamのメッセージとして扱えるようになります。
 
 ### 1.1 対象者
 
@@ -125,8 +124,7 @@ jp.ad.sinet.stream.api.valuetype.ImageValueTypeProvider
 
 プラグイン実装の具体的な手順を示すために実装例を示します。
 
-ここでは `java.util.Map`のオブジェクトをSINETStreamのメッセージとして扱えるようにするための
-`value_type`プラグインを実装します。
+ここでは `java.util.Map`のオブジェクトをSINETStreamのメッセージとして扱えるようにするための`value_type`プラグインを実装します。
 
 ### 3.1 ファイル構成
 
@@ -149,8 +147,7 @@ jp.ad.sinet.stream.api.valuetype.ImageValueTypeProvider
 
 プラグインのプロバイダインタフェース`ValueTypeProvider`を実装したクラスになります。
 
-このプラグインの`ValueType`実装となる`MapYamlType`オブジェクトを返す`getValueType()`と
-タイプ名を返す`getName()`の実装を行います。
+このプラグインの`ValueType`実装となる`MapYamlType`オブジェクトを返す`getValueType()`とタイプ名を返す`getName()`の実装を行います。
 
 ```java
 public class MapTypeProvider implements ValueTypeProvider {
@@ -255,11 +252,11 @@ SINETStream-type-map-yaml-1.0.0.jar
 プラグインの実装例となるファイルへのリンクを以下に示します。
 
 * src/main/java/ssplugin/
-    * [MapTypeProvider.java](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/docs/developer_guide/sample/value_type/java/src/main/java/ssplugin/MapTypeProvider.java)
-    * [MapYamlType.java](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/docs/developer_guide/sample/value_type/java/src/main/java/ssplugin/MapYamlType.java)
-    * [MapYamlSerializer.java](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/docs/developer_guide/sample/value_type/java/src/main/java/ssplugin/MapYamlSerializer.java)
-    * [MapYamlDeserializer.java](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/docs/developer_guide/sample/value_type/java/src/main/java/ssplugin/MapYamlDeserializer.java)
-* [src/main/resources/META-INF/services/jp.ad.sinet.stream.spi.ValueTypeProvider](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/docs/developer_guide/sample/value_type/java/src/main/resources/META-INF/services/jp.ad.sinet.stream.spi.ValueTypeProvider)
-* [build.gradle](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/docs/developer_guide/sample/value_type/java/build.gradle)
-* [settings.gradle](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/docs/developer_guide/sample/value_type/java/settings.gradle)
+    * [MapTypeProvider.java](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/docs/developer_guide/sample/value_type/java/src/main/java/ssplugin/MapTypeProvider.java)
+    * [MapYamlType.java](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/docs/developer_guide/sample/value_type/java/src/main/java/ssplugin/MapYamlType.java)
+    * [MapYamlSerializer.java](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/docs/developer_guide/sample/value_type/java/src/main/java/ssplugin/MapYamlSerializer.java)
+    * [MapYamlDeserializer.java](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/docs/developer_guide/sample/value_type/java/src/main/java/ssplugin/MapYamlDeserializer.java)
+* [src/main/resources/META-INF/services/jp.ad.sinet.stream.spi.ValueTypeProvider](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/docs/developer_guide/sample/value_type/java/src/main/resources/META-INF/services/jp.ad.sinet.stream.spi.ValueTypeProvider)
+* [build.gradle](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/docs/developer_guide/sample/value_type/java/build.gradle)
+* [settings.gradle](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/docs/developer_guide/sample/value_type/java/settings.gradle)
 

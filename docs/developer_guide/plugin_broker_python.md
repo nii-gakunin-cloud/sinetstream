@@ -17,7 +17,7 @@ software distributed under the License is distributed on an
 KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
---->
+-->
 
 [English](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/developer_guide/plugin_broker_python.html "google translate")
 
@@ -33,8 +33,7 @@ SINETStream v1.2では以下に示すメッセージングシステムに対応�
 * [MQTT](http://mqtt.org/)
 
 上記のメッセージングシステムに対応するための処理はプラグインとして実装されています。
-さらに、新たなプラグインを実装することで、上記に示したメッセージングシステム以外のものを
-SINETStreamで扱えるようになります。
+さらに、新たなプラグインを実装することで、上記に示したメッセージングシステム以外のものをSINETStreamで扱えるようになります。
 
 このドキュメントでは新たなメッセージングシステムをサポートするためのプラグインを開発する手順について説明します。
 
@@ -63,8 +62,8 @@ SINETStreamのモジュール構成を以下の図に示します。
 
 ![モジュール構成](images/SINETStream-module.png)
 
-青枠で示した部分がSINETStream本体です。この部分はメッセージングシステムによらない機能を提供
-しています。 緑枠で示した部分がSINETStreamのプラグインです。
+青枠で示した部分がSINETStream本体です。この部分はメッセージングシステムによらない機能を提供しています。
+緑枠で示した部分がSINETStreamのプラグインです。
 メッセージングシステム固有の処理は緑枠で示したプラグインに閉じた実装となっています。
 
 モジュールの各部についての簡単な説明を以下に記します。
@@ -234,8 +233,8 @@ SINETStreamのプラグインを作成するためには以下の作業が必要
 
 ### 3.2 プラグインに定められているメソッドを実装したクラスの作成
 
-プラグインで必要となるメソッドはメッセージを受信するためのクラスと
-メッセージを送信するためのクラスで異なります。それぞれについて順に説明します。
+プラグインで必要となるメソッドはメッセージを受信するためのクラスとメッセージを送信するためのクラスで異なります。
+それぞれについて順に説明します。
 
 #### 3.2.1 メッセージ受信のためのクラス
 
@@ -265,9 +264,8 @@ SINETStreamのプラグインを作成するためには以下の作業が必要
 プラグインが上記のメソッドを実装することを確認するために、抽象基底クラス `sinetstream.spi.PluginMessageReader`
 を利用することができます。`PluginMessageReader`では上記の３つのメソッドが抽象メソッドとして定義されています。
 
-メッセージ受信を行うクラスのコンストラクタは引数から `params` を受け取ります。`params`には、
-SINETStreamの設定ファイル、あるいは`MessageReader`のコンストラクタで指定されたパラメータが
-`dict`型の変数として渡されます。
+メッセージ受信を行うクラスのコンストラクタは引数から `params` を受け取ります。
+`params`には、SINETStreamの設定ファイル、あるいは`MessageReader`のコンストラクタで指定されたパラメータが`dict`型の変数として渡されます。
 
 #### 3.2.2 メッセージ送信のためのクラス
 
@@ -289,9 +287,8 @@ SINETStreamの設定ファイル、あるいは`MessageReader`のコンストラ
 プラグインが上記のメソッドを実装することを確認するために、抽象基底クラス `sinetstream.spi.PluginMessageWriter`
 を利用することができます。`PluginMessageWriter`では上記の３つのメソッドが抽象メソッドとして定義されています。
 
-メッセージ送信を行うクラスのコンストラクタは引数から `params` を受け取ります。`params`には、
-SINETStreamの設定ファイル、あるいは`MessageWriter`のコンストラクタで指定されたパラメータが
-`dict`型の変数として渡されます。
+メッセージ送信を行うクラスのコンストラクタは引数から `params` を受け取ります。
+`params`には、SINETStreamの設定ファイル、あるいは`MessageWriter`のコンストラクタで指定されたパラメータが`dict`型の変数として渡されます。
 
 #### 3.2.3 メッセージ受信(非同期API)のためのクラス
 
@@ -315,9 +312,8 @@ SINETStreamの設定ファイル、あるいは`MessageWriter`のコンストラ
 プラグインが上記のメソッドを実装することを確認するために、抽象基底クラス `sinetstream.spi.PluginAsyncMessageReader`
 を利用することができます。`PluginAsyncMessageReader`では上記のメソッド、プロパティが抽象メソッドとして定義されています。
 
-メッセージ受信を行うクラスのコンストラクタは引数から `params` を受け取ります。`params`には、
-SINETStreamの設定ファイル、あるいは`AsyncMessageReader`のコンストラクタで指定されたパラメータが
-`dict`型の変数として渡されます。
+メッセージ受信を行うクラスのコンストラクタは引数から `params` を受け取ります。
+`params`には、SINETStreamの設定ファイル、あるいは`AsyncMessageReader`のコンストラクタで指定されたパラメータが`dict`型の変数として渡されます。
 
 #### 3.2.4 メッセージ送信(非同期API)のためのクラス
 
@@ -340,23 +336,22 @@ SINETStreamの設定ファイル、あるいは`AsyncMessageReader`のコンス�
 プラグインが上記のメソッドを実装することを確認するために、抽象基底クラス `sinetstream.spi.PluginAsyncMessageWriter`
 を利用することができます。`PluginAsyncMessageWriter`では上記の３つのメソッドが抽象メソッドとして定義されています。
 
-メッセージ送信を行うクラスのコンストラクタは引数から `params` を受け取ります。`params`には、
-SINETStreamの設定ファイル、あるいは`AsyncMessageWriter`のコンストラクタで指定されたパラメータが
-`dict`型の変数として渡されます。
+メッセージ送信を行うクラスのコンストラクタは引数から `params` を受け取ります。
+`params`には、SINETStreamの設定ファイル、あるいは`AsyncMessageWriter`のコンストラクタで指定されたパラメータが`dict`型の変数として渡されます。
 
 ### 3.3 パッケージメタデータの作成
 
-[setuptools](http://setuptools.readthedocs.io/) のエントリポイントにクラスを
-登録することで、SINETStreamがプラグインを見つけることができるようになります。
-これは登録されたエントリポイントをsetuptoolsが検出する機能を利用して実現して
-います。setuptoolsはPythonの配布パッケージのビルドなどを行うためのツールです。
+[setuptools](http://setuptools.readthedocs.io/) のエントリポイントにクラスを登録することで、
+SINETStreamがプラグインを見つけることができるようになります。
+これは登録されたエントリポイントをsetuptoolsが検出する機能を利用して実現しています。
+setuptoolsはPythonの配布パッケージのビルドなどを行うためのツールです。
 
-登録されているエントリポイントからSINETStreamで必要となるクラスを探し出すこと
-ができるようにするためには、エントリポイントのグループと名前を適切に設定する
-必要があります。
+登録されているエントリポイントからSINETStreamで必要となるクラスを探し出すことができるようにするためには、
+エントリポイントのグループと名前を適切に設定する必要があります。
 
 SINETStreamではグループを`MessageReader`, `MessageWriter`, `AsyncMessageReader`, `AsyncMessageWriter`
-のうちどのクラスに対応するのかを識別するために用いています。以下に示すいずれかのグループを指定してください。
+のうちどのクラスに対応するのかを識別するために用いています。
+以下に示すいずれかのグループを指定してください。
 
 * `sinetstream.reader`
     * `MessageReader`から呼び出されるメッセージ受信を行うプラグインのグループ
@@ -370,15 +365,14 @@ SINETStreamではグループを`MessageReader`, `MessageWriter`, `AsyncMessageR
 １つのプラグインで必ずしも上記全てのグループに対応する実装を提供する必要はありません。
 必要なグループに関する記述のみを行ってください。
 
-エントリポイントにはグループ内で識別するための名前がつけられます。SINETSteramでは
-エントリポイントに付けられた名前が、メッセージングシステムのタイプに対応づけられます。
+エントリポイントにはグループ内で識別するための名前がつけられます。
+SINETSteramではエントリポイントに付けられた名前が、メッセージングシステムのタイプに対応づけられます。
 
 例えばKafkaプラグインのメッセージ送信を行うクラス
 `sinetstream_plugins.kafka:KafkaWriter` に対応するエントリポイントは
 `sinetstream.writer`グループに所属する `kafka` という名前にします。
 
-パッケージメタデータに上記の例のエントリポイントに対応する設定を行うには `setup.cfg` に
-以下の記述を行います。
+パッケージメタデータに上記の例のエントリポイントに対応する設定を行うには `setup.cfg` に以下の記述を行います。
 
 ```
 [options.entry_points]
@@ -395,8 +389,8 @@ sinetstream.writer =
 
 プラグインを実装する具体的な手順を示すために、簡単な実装例を示します。
 
-ここで示す実装例では実際のブローカーにアクセスするのではなく、プロセス内で
-`queue.Queue`オブジェクトを利用したデータの受け渡しを行う処理をSINETStreamのプラグインとして実現します。
+ここで示す実装例では実際のブローカーにアクセスするのではなく、
+プロセス内で`queue.Queue`オブジェクトを利用したデータの受け渡しを行う処理をSINETStreamのプラグインとして実現します。
 
 ### 4.1 ファイル構成
 
@@ -422,8 +416,7 @@ queues = defaultdict(Queue)
 ```
 
 `queues`はトピック名をキー、`Queue`オブジェクトを値とする dict変数です。
-`defaultdict`を利用することで、トピック名に対応する値が `queues`に無い場合は
-自動的に作成された `Queue`オブジェクトが取得できます。
+`defaultdict`を利用することで、トピック名に対応する値が `queues`に無い場合は自動的に作成された `Queue`オブジェクトが取得できます。
 
 #### 4.2.2 メッセージ送信のためのクラス
 
@@ -450,9 +443,9 @@ class QueueWriter(PluginMessageWriter):
             raise InvalidArgumentError()
 ```
 
-引数の`params`にはSINETStreamの設定ファイル、あるいは`MessageWriter`のコンストラクタで指定されたパラメータが
-`dict`型の変数として渡されます。ここでは、パラメータ`topic`の値を送信対象のトピック名としてインスタンス変数に
-格納しています。
+引数の`params`にはSINETStreamの設定ファイル、
+あるいは`MessageWriter`のコンストラクタで指定されたパラメータが`dict`型の変数として渡されます。
+ここでは、パラメータ`topic`の値を送信対象のトピック名としてインスタンス変数に格納しています。
 
 次にプラグインで実装する必要のあるメソッドを定義します。
 
@@ -495,9 +488,9 @@ class QueueReader(PluginMessageReader):
         self._timeout = timeout_ms / 1000.0 if timeout_ms != inf else None
 ```
 
-引数の`params`にはSINETStreamの設定ファイル、あるいは`MessageReader`のコンストラクタで指定されたパラメータが
-`dict`型の変数として渡されます。ここでは、パラメータ`topic`の値を受信対象のトピック名としてインスタンス変数に
-格納しています。また`receive_timeout_ms`をメッセージ受信のタイムアウト値(ms)としてインスタンス変数に格納します。
+引数の`params`にはSINETStreamの設定ファイル、あるいは`MessageReader`のコンストラクタで指定されたパラメータが`dict`型の変数として渡されます。
+ここでは、パラメータ`topic`の値を受信対象のトピック名としてインスタンス変数に格納しています。
+また`receive_timeout_ms`をメッセージ受信のタイムアウト値(ms)としてインスタンス変数に格納します。
 
 次にプラグインで実装する必要のあるメソッドを定義します。
 
@@ -549,9 +542,8 @@ class QueueAsyncWriter(PluginAsyncMessageWriter):
         self._executor = None
 ```
 
-引数の`params`にはSINETStreamの設定ファイル、あるいは`MessageWriter`のコンストラクタで指定されたパラメータが
-`dict`型の変数として渡されます。ここでは、パラメータ`topic`の値を送信対象のトピック名としてインスタンス変数に
-格納しています。
+引数の`params`にはSINETStreamの設定ファイル、あるいは`MessageWriter`のコンストラクタで指定されたパラメータが`dict`型の変数として渡されます。
+ここでは、パラメータ`topic`の値を送信対象のトピック名としてインスタンス変数に格納しています。
 
 次にプラグインで実装する必要のあるメソッドを定義します。
 
@@ -602,9 +594,8 @@ class QueueAsyncReader(PluginAsyncMessageReader):
         self._closed = True
 ```
 
-引数の`params`にはSINETStreamの設定ファイル、あるいは`MessageReader`のコンストラクタで指定されたパラメータが
-`dict`型の変数として渡されます。ここでは、パラメータ`topic`の値を受信対象のトピック名としてインスタンス変数に
-格納しています。
+引数の`params`にはSINETStreamの設定ファイル、あるいは`MessageReader`のコンストラクタで指定されたパラメータが`dict`型の変数として渡されます。
+ここでは、パラメータ`topic`の値を受信対象のトピック名としてインスタンス変数に格納しています。
 
 次にプラグインで実装する必要のあるメソッドを定義します。
 
@@ -722,6 +713,6 @@ dist/sinetstream_queue-1.2.0-py3-none-any.whl
 
 ### 4.4 ソースコード
 ここまで記した実装例のファイルへのリンクを以下に示します。
-* [src/ssplugin/queue.py](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/docs/developer_guide/sample/messaging-system/python/src/ssplugin/queue.py)
-* [setup.py](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/docs/developer_guide/sample/messaging-system/python/setup.py)
-* [setup.cfg](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/docs/developer_guide/sample/messaging-system/python/setup.cfg)
+* [src/ssplugin/queue.py](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/docs/developer_guide/sample/messaging-system/python/src/ssplugin/queue.py)
+* [setup.py](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/docs/developer_guide/sample/messaging-system/python/setup.py)
+* [setup.cfg](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/docs/developer_guide/sample/messaging-system/python/setup.cfg)

@@ -33,6 +33,9 @@ export default new Vuex.Store({
     options: {} as { [key: number]: ChartOption },
     dataset: {} as { [key: number]: ChartData },
     init: true,
+    displayMaxMinutes: 60,
+    maxDataCount: 100,
+    refreshInterval: 3,
   },
   getters: {
     sensors: (state) => {
@@ -74,9 +77,15 @@ export default new Vuex.Store({
           label: title,
           backgroundColor: color,
           data: datapoints.map((v: DataPoint) => v.y),
+          lineTension: 0,
         }],
       };
       Vue.set(state.dataset, id, ds);
+    },
+    updateSettings: (state, payload) => {
+      state.displayMaxMinutes = payload.displayMaxMinutes;
+      state.maxDataCount = payload.maxDataCount;
+      state.refreshInterval = payload.refreshInterval;
     },
   },
   actions: {
@@ -86,19 +95,30 @@ export default new Vuex.Store({
     deleteDataset({ commit }, payload) {
       commit('deleteDataset', payload);
     },
-    async updateData({ commit, getters }, { url, sensors }) {
-      const data = await fetchSensorData({ url, sensors });
+    async updateData({ commit, getters, state }, { url, sensors }) {
+      const { displayMaxMinutes, maxDataCount } = state;
+      const data = await fetchSensorData({
+        url, sensors, displayMaxMinutes, maxItems: maxDataCount,
+      });
       data.forEach(({ sensor, datapoints }) => {
         getters.ids(sensor).forEach((id: number) => {
           commit('updateData', { id, datapoints });
         });
       });
     },
+    async updateSettings({ commit }, payload) {
+      commit('updateSettings', payload);
+    },
   },
   modules: {
   },
   plugins: [
-    createPersistedState({ paths: ['options', 'init'] }),
+    createPersistedState({
+      paths: [
+        'options', 'init', 'displayMaxMinutes',
+        'maxDataCount', 'refreshInterval',
+      ],
+    }),
     initChartOptions(),
   ],
 });

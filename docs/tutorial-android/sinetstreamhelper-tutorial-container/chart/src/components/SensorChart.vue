@@ -11,7 +11,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Vue } from 'vue-property-decorator';
 import { mapState } from 'vuex';
 import SensorChartCard from './SensorChartCard.vue';
 
@@ -24,8 +24,6 @@ import SensorChartCard from './SensorChartCard.vue';
 export default class SensorChart extends Vue {
   timerId?: number;
 
-  @Prop({ type: Number, default: () => 3000 }) readonly refresh!: number;
-
   updateData() {
     const url = document.location.origin;
     const { sensors } = this.$store.getters;
@@ -33,16 +31,26 @@ export default class SensorChart extends Vue {
   }
 
   updateTimer() {
+    const refresh = this.$store.state.refreshInterval * 1000;
     if (Object.values(this.$store.state.options).length > 0) {
-      if (!this.timerId) {
-        this.timerId = setInterval(() => {
-          this.updateData();
-        }, this.refresh);
+      if (this.timerId) {
+        clearInterval(this.timerId);
       }
+      this.timerId = setInterval(() => {
+        this.updateData();
+      }, refresh);
     } else if (this.timerId) {
       clearInterval(this.timerId);
       this.timerId = undefined;
     }
+  }
+
+  mounted() {
+    this.$store.subscribe((mutation) => {
+      if (mutation.type === 'updateSettings') {
+        this.updateTimer();
+      }
+    });
   }
 }
 </script>

@@ -50,8 +50,7 @@ SINETStreamHelper ユーザガイド
 `SensorService`と結合した場合に呼ばれる。
 * onSensorTypesReceived
     * メソッド`SensorController.getAvailableSensorTypes()`により
-`SensorService`が「センサー種別、センサー種別名称」の組を返却
-した場合に呼ばれる。
+`SensorService`が「センサー種別、センサー種別名称」の組を返却した場合に呼ばれる。
 
 
 ## メソッド詳細
@@ -66,8 +65,7 @@ void onSensorTypesReceived(@NonNull
 
 * 説明：
     * メソッド`SensorController.getAvailableSensorTypes()`により
-`SensorService`が「センサー種別、センサー種別名称」の組を返却
-した場合に呼ばれる。
+`SensorService`が「センサー種別、センサー種別名称」の組を返却した場合に呼ばれる。
 
     * 返却された配列リストの各要素は、以下のようにして得られる。
 
@@ -187,8 +185,7 @@ void onError(@NonNull
     * disableSensors
 * 本クラスの利用者は、呼び出し側の
 [Activity](https://developer.android.com/guide/components/activities/intro-activities)
-において`SensorListener`を実装し、処理結果やエラーの非同期通知を受けら
-れるようにしなければならない。
+において`SensorListener`を実装し、処理結果やエラーの非同期通知を受けられるようにしなければならない。
 
 
 ## コンストラクタ概要
@@ -235,8 +232,7 @@ public SensorController(@NonNull
     * clientId - `SensorService`に結合したクライアント同士を峻別する識別子
 
 * 例外:
-    * java.lang.RuntimeException - 付与のコンテクストが所用のリスナーを
-実装していない
+    * java.lang.RuntimeException - 付与のコンテクストが所用のリスナーを実装していない
 
 
 ## メソッド詳細
@@ -306,13 +302,12 @@ public void enableSensors(@NonNull
     * 本メソッドは非同期要求であるが、利用者は操作完了を待つ
 <em>必要はない</em>。
     * 指定したセンサー群の有効化に成功すると、それらの読取値は
-`SensorListener.onSensorDataReceived`で周期的（または事象検出時）に
-通知される。さもなくば`SensorListener.onError`で通知される。
+`SensorListener.onSensorDataReceived`で周期的（または事象検出時）に通知される。
+さもなくば`SensorListener.onError`で通知される。
 
 * 注意：
-    * デバイスで扱えるセンサー情報は`SensorService`起動時に取得され、
-内部情報として管理される。クライアントが指定したセンサー種別が不明の
-場合は単に無視される。
+    * デバイスで扱えるセンサー情報は`SensorService`起動時に取得され、内部情報として管理される。
+    クライアントが指定したセンサー種別が不明の場合は単に無視される。
 
 * 引数：
     * sensorTypes - センサー種別の配列リスト
@@ -333,9 +328,8 @@ public void disableSensors(@NonNull
 通知が停止する。さもなくば`SensorListener.onError`で通知される。
 
 * 注意：
-    * デバイスで扱えるセンサー情報は`SensorService`起動時に取得され、
-内部情報として管理される。クライアントが指定したセンサー種別が不明の
-場合は単に無視される。
+    * デバイスで扱えるセンサー情報は`SensorService`起動時に取得され、内部情報として管理される。
+クライアントが指定したセンサー種別が不明の場合は単に無視される。
 
 * 引数：
     * sensorTypes - センサー種別の配列リスト

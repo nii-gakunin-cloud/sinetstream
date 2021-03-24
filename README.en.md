@@ -17,23 +17,23 @@ software distributed under the License is distributed on an
 KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
---->
+-->
 
 [日本語](README.md)
 
-## Concept of messaging system
+## Concept of a messaging system
 
-SINETStream is a messaging system that adopts a [topic-based publish/subscribe model](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern).
+The SINETStream is a messaging system that adopts a [topic-based publish/subscribe model](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern).
 It provides an abstraction layer of Broker, which in turn employs Kafka or MQTT as its backend.
 
-In SINETStream, the publisher is called Writer, and the subscriber is called Reader.
+The SINETStream calls the publisher as "Writer", and the subscriber as "Reader", respectively.
 
 ![Conceptual diagram of the messaging system](docs/images/overview.png)
 
-Broker's configuration and communication parameters are abstracted as "service" in SINETStream.
+Broker's configuration and communication parameters are abstracted as "service" in the SINETStream.
 Writers and Readers can communicate with any Broker just by specifying a "service".
 
-A logical channel in Broker is called a topic.
+A logical channel in Broker is called as "topic".
 Writers and Readers send/receive a message specifying a topic, allowing different types of messages to be transferred through a Broker.
 
 ## Directory structure
@@ -73,33 +73,56 @@ Writers and Readers send/receive a message specifying a topic, allowing differen
     * userguide/
         * [User guide](docs/userguide/index.en.md)
     * tutorial/
-        * [Tutorial](docs/tutorial/index.en.md)
+        * [Quick Start Guide (Python/Java)](docs/tutorial/index.en.md)
+        * [Quick Start Guide (Android)](docs/tutorial-android/index.en.md)
     * developer_guide/
         * [Developer guide](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/developer_guide/index.html)
 
 ## Operating environment
+### Python/Java version
 
-The SINETStream API supports the following languages.
+The Python/Java SINETStream API is implemented with following programing
+languages.
 
 * Python 3.6
 * Java 8
 
-The SINETStream API supports the following messaging systems.
+The Python/Java SINETStream API supports the following messaging systems.
 
 * [Apache Kafka](https://kafka.apache.org/) 2.2.1
 * MQTT v3.1, v3.1.1
     * [Eclipse Mosquitto](https://mosquitto.org/) v1.6.2
 
-The operating environment of SINETStream is as follows:
+The Python/Java SINETStream runs on following operating systems.
 
 * CentOS 7.6
 * Windows 10
 
-## Preparation
+### Android version
 
-SINETStream uses Kafka or MQTT as a backend messaging system of Broker.
+The Android SINETStream API is implemented with following programing
+languages.
+
+* Java 8
+* Kotlin 1.4.x
+
+The Android SINETStream API supports the following messaging systems.
+
+* MQTT v3.1, v3.1.1
+    * [Eclipse Paho Android Client](https://www.eclipse.org/paho/index.php?page=clients/android/index.php)
+
+The Android SINETStream runs on following operating system.
+
+* Android 8.0 or higher
+
+## Preparation
+### Python/Java version
+
+The Python/Java SINETStream uses Kafka or MQTT as a backend messaging
+system of Broker.
 Therefore, you need to install one of these messaging systems along with SINETStream.
-The tutorial package utilizes a Docker container to install the required software components,
+The tutorial package utilizes some Docker containers to install the
+required software components,
 i.e., SINETStream, Kafka, and MQTT.
 
 1. Kafka broker settings
@@ -111,11 +134,29 @@ i.e., SINETStream, Kafka, and MQTT.
     * Python: `pip3 install --user sinetstream-kafka sinetstream-mqtt`
     * Java: Please refer to the Java version of README.
 
-Please Refer to the [tutorial](docs/tutorial/index.en.md) using docker container.
+Please refer to
+[Quick Start Guide (Python/Java)](docs/tutorial/index.en.md)
+using Docker containers.
+
+### Android version
+
+The Android SINETStream API provides client functionality
+(Writer, Reader), with the support of MQTT messaging system.
+Therefore, the peer Broker with an Android SINETStream client must
+use MQTT only.
+
+Note that you can use the MQTT broker part as is, which has installed
+for the Python/Java SINETStream backend system.
+
+Please refer to
+[Quick Start Guide (Android)](docs/tutorial-android/index.en.md)
+using a Docker container.
 
 ## Links
 
-* [Tutorial](docs/tutorial/index.en.md)
+* Tutorial
+    * [Quick Start Guide (Python/Java)](docs/tutorial/index.en.md)
+    * [Quick Start Guide (Android)](docs/tutorial-andoid/index.en.md)
 * [User Guide](docs/userguide/index.en.md)
 * [Performance measurement of SINETStream](docs/performance/index.en.md)
 * [Developer guide](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/developer_guide/index.html)

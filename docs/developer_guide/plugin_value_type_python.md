@@ -17,7 +17,7 @@ software distributed under the License is distributed on an
 KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
---->
+-->
 
 [English](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/developer_guide/plugin_value_type_python.html "google translate")
 
@@ -27,8 +27,8 @@ under the License.
 
 ## 1. はじめに
 
-SINETStream では設定ファイルあるいはコンストラクタのパラメータで指定する
-`value_type`の値に応じて、メッセージのシリアライズ、デシリアライズを行います。
+SINETStream では設定ファイルあるいはコンストラクタのパラメータで指定する`value_type`の値に応じて、
+メッセージのシリアライズ、デシリアライズを行います。
 
 SINETStream v1.1 以降では以下の `value_type` をサポートしています。
 
@@ -47,8 +47,7 @@ SINETStream v1.1 以降では以下の `value_type` をサポートしていま�
 `byte_array`, `text`はSINETStream本体に組み込みの `value_type` です。
 `image`は追加プラグインとして提供している`value_type`です。
 
-新たなプラグインを実装することで、上記に示した`value_type`以外のタイプを
-SINETStreamのメッセージとして扱えるようになります。
+新たなプラグインを実装することで、上記に示した`value_type`以外のタイプをSINETStreamのメッセージとして扱えるようになります。
 
 ### 1.1 対象者
 
@@ -77,8 +76,8 @@ SINETStreamのプラグインを作成するためには以下の作業が必要
 
 ### 2.2 プラグインに定められているプロパティを実装したクラスの作成
 
-`value_type`のプラグインではメッセージのタイプに応じたシリアライザ、デシリアライザ
-をプロパティとして提供する必要があります。具体的には以下のプロパティの定義が必要となります。
+`value_type`のプラグインではメッセージのタイプに応じたシリアライザ、デシリアライザをプロパティとして提供する必要があります。
+具体的には以下のプロパティの定義が必要となります。
 
 * `serializer`
     * メッセージのシリアライザ
@@ -91,18 +90,16 @@ SINETStreamのプラグインを作成するためには以下の作業が必要
 
 ### 2.3 パッケージメタデータの作成
 
-[setuptools](http://setuptools.readthedocs.io/)のエントリポイントにクラスを
-登録することで、SINETStreamがプラグインを見つけることができるようになります。
-これは登録されたエントリポイントをsetuptoolsが検出する機能を利用して実現して
-います。setuptoolsはPythonの配布パッケージのビルドなどを行うためのツールです。
+[setuptools](http://setuptools.readthedocs.io/)のエントリポイントにクラスを登録することで、SINETStreamがプラグインを見つけることができるようになります。
+これは登録されたエントリポイントをsetuptoolsが検出する機能を利用して実現しています。
+setuptoolsはPythonの配布パッケージのビルドなどを行うためのツールです。
 
-登録されているエントリポイントからSINETStreamで必要となるクラスを探し出すこと
-ができるようにするためには、エントリポイントのグループと名前を適切に設定する
-必要があります。`value_type`プラグインでは`sinetstream.value_type`をグループ
-に指定します。また名前には `value_type`として追加するタイプ名を指定します。
+登録されているエントリポイントからSINETStreamで必要となるクラスを探し出すことができるようにするためには、
+エントリポイントのグループと名前を適切に設定する必要があります。
+`value_type`プラグインでは`sinetstream.value_type`をグループに指定します。
+また名前には `value_type`として追加するタイプ名を指定します。
 
-例えば`value_type`に`image`を追加プラグインの場合`setup.cfg` に
-以下の記述を行います。
+例えば`value_type`に`image`を追加プラグインの場合`setup.cfg` に以下の記述を行います。
 
 ```
 [options.entry_points]
@@ -119,8 +116,7 @@ sinetstream.value_type =
 
 プラグイン実装の具体的な手順を示すために実装例を示します。
 
-ここでは dict型のオブジェクトをSINETStreamのメッセージとして扱えるようにするための
-`value_type`プラグインを実装します。
+ここでは dict型のオブジェクトをSINETStreamのメッセージとして扱えるようにするための`value_type`プラグインを実装します。
 
 ### 3.1 ファイル構成
 
@@ -253,6 +249,6 @@ with MessageWriter(service='service-1', value_type='map_yaml') as writer:
 
 ### 3.5 ソースコード
 ここまで記した実装例のファイルへのリンクを以下に示します。
-* [src/ssplugin/map_yaml.py](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/docs/developer_guide/sample/value_type/python/src/ssplugin/map_yaml.py)
-* [setup.py](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/docs/developer_guide/sample/value_type/python/setup.py)
-* [setup.cfg](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/docs/developer_guide/sample/value_type/python/setup.cfg)
+* [src/ssplugin/map_yaml.py](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/docs/developer_guide/sample/value_type/python/src/ssplugin/map_yaml.py)
+* [setup.py](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/docs/developer_guide/sample/value_type/python/setup.py)
+* [setup.cfg](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/docs/developer_guide/sample/value_type/python/setup.cfg)

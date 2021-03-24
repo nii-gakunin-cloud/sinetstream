@@ -17,7 +17,7 @@ software distributed under the License is distributed on an
 KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
---->
+-->
 
 [English](index.en.md)
 
@@ -25,8 +25,8 @@ under the License.
 
 公開日: 2019年12月13日
 
-本サイトでは、国立情報学研究所クラウド基盤研究開発センターのSINETStream開発チームが
-実施したSINETStreamの性能測定結果を掲載します。性能測定結果は順次更新していく予定です。
+本サイトでは、国立情報学研究所クラウド基盤研究開発センターのSINETStream開発チームが実施したSINETStreamの性能測定結果を掲載します。
+性能測定結果は順次更新していく予定です。
 
 ## 測定方法・環境
 

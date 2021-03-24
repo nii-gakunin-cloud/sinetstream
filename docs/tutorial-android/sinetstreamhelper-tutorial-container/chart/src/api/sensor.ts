@@ -1,4 +1,5 @@
 import S3, { Object as S3Object, ObjectKey } from 'aws-sdk/clients/s3';
+import { minTime, parseISO, subMinutes } from 'date-fns';
 import pLimit from 'p-limit';
 
 interface SensorDataset {
@@ -25,7 +26,9 @@ export interface DataPoint {
 }
 
 async function getS3ObjectList(
-  { s3, bucket = 'sensor-data', maxItems = 100 }: { s3: S3; bucket?: string; maxItems?: number},
+  {
+    s3, bucket = 'sensor-data', maxItems = -1,
+  }: { s3: S3; bucket?: string; maxItems?: number },
 ) {
   const itemList = [];
   const params = { Bucket: bucket };
@@ -43,7 +46,7 @@ async function getS3ObjectList(
     }
   }
   const items = itemList.flat();
-  if (items.length > maxItems) {
+  if (maxItems > 0 && items.length > maxItems) {
     items.splice(0, items.length - maxItems);
   }
   return items;
@@ -83,20 +86,32 @@ async function getSensorData(
   );
 }
 
-export async function fetchSensorData({ url, sensors }: { url: string; sensors: Set<string> }) {
+export async function fetchSensorData({
+  url,
+  sensors,
+  displayMaxMinutes = -1,
+  maxItems = -1,
+}: { url: string; sensors: Set<string>; displayMaxMinutes?: number; maxItems?: number }) {
   const s3 = new S3({
     endpoint: url,
     region: 'us-east-1',
     s3ForcePathStyle: true,
     s3BucketEndpoint: true,
   });
-  const items = await getS3ObjectList({ s3 });
+  const items = await getS3ObjectList({ s3, maxItems });
   const sensorsData: SensorDataPoint[][] = await getSensorData({ s3, items, sensors });
+  const limit = displayMaxMinutes > 0
+    ? subMinutes(Date.now(), displayMaxMinutes)
+    : minTime;
   return Array.from(sensors).map((sensor) => ({
     sensor,
-    datapoints: sensorsData.flat().filter((v) => v.sensor === sensor).map((v) => ({
-      x: v.x,
-      y: v.y,
-    })).sort((a, b) => a.x.localeCompare(b.x)),
+    datapoints: sensorsData.flat()
+      .filter((v) => v.sensor === sensor)
+      .filter((v) => displayMaxMinutes <= 0 || parseISO(v.x) >= limit)
+      .map((v) => ({
+        x: v.x,
+        y: v.y,
+      }))
+      .sort((a, b) => a.x.localeCompare(b.x)),
   }));
 }

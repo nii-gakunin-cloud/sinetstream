@@ -33,11 +33,13 @@ under the License.
     3.2 実行環境の用意
 4. 作業手順
     4.1 ビルド環境設定
-        4.1.1 リポジトリ追加
-        4.1.2 依存関係追加
+        4.1.1 ライブラリファイルの取得
+        4.1.2 開発ソースへの組み込み
+        4.1.3 リポジトリ追加
+        4.1.4 依存関係追加
     4.2 マニフェストファイルの記述
         4.2.1 利用者権限追加
-    4.3 開発物のAndroid機材への導入
+    4.3 開発成果物のAndroid端末への導入
         4.3.1 Androidエミュレータに導入する場合
     4.3.2 Android実機に導入する場合
 5. まとめ
@@ -46,19 +48,18 @@ under the License.
 
 ## 1. 概要
 
-IoTアプリケーションの一つとして、Android端末が備える様々なセンサー
-情報を収集して
+IoT（Internet of Things）アプリケーションの一つとして、
+Android端末が備える様々なセンサーデバイスから読取値を収集して
 [SINETStream](https://nii-gakunin-cloud.github.io/sinetstream)
-に送出する「パプリッシャ」機能が考えられる。  
+に送出する「パプリッシャ」機能が考えられる。
 
 Android OSの
 [SensorManager](https://developer.android.com/reference/android/hardware/SensorManager)
-経由で個々のセンサーデバイスを制御
-したり生の読取値を受け取ったりする仕掛けが用意されている。
-ユーザアプリケーションがこれを直接利用することでセンサーデバイス
-を扱うことはもちろん可能であるが、ハードウェア制御に関わる実装上
-の細かな点を隠蔽し、簡易に利用できるような補助ライブラリがあると
-使い出が良い。
+経由で個々のセンサーデバイスを制御したり、
+生の読取値を受け取ったりする仕掛けが用意されている。
+ユーザアプリケーションがこれを直接利用することでセンサーデバイスを扱うことはもちろん可能であるが、
+ハードウェア制御に関わる実装上の細かな点を隠蔽し、
+簡易に利用できるような補助ライブラリがあると使い出が良い。
 上記の一つの解として`SINETStreamHelper`ライブラリを用意する。
 
 
@@ -75,7 +76,6 @@ Android OSの
     =========|======================|=============== API functions
              |                      |
       +------|----------------------|-------------+
-      | SINETStreamHelper           |             |
       |      V                      | [JSON]      |
       | +------------------+   +----------------+ |
       | | SensorController |-->| SensorListener | |
@@ -84,7 +84,7 @@ Android OSの
       |      V      |                             |
       | +------------------+                      |
       | |  SensorService   |                      |
-      | +------------------+                      |
+      | +------------------+    SINETStreamHelper |
       +------|------A-----------------------------+
              |      |
              V      | [SensorEvent]
@@ -102,24 +102,23 @@ Android OSの
 ```
 〈凡例〉
 * SensorController
-    * `SINETStreamHelper`ライブラリのフロントエンドとしてセンサー
-制御用のAPI関数一式を提供する。
+    * `SINETStreamHelper`ライブラリのフロントエンドとして、
+センサー制御用のAPI関数一式を提供する。
 * SensorService
-    * `SINETStreamHelper`ライブラリのバックエンドとして、Androidの
-`SensorManager`経由でセンサーデバイスを制御する。
+    * `SINETStreamHelper`ライブラリのバックエンドとして、
+Androidの`SensorManager`経由でセンサーデバイスを制御する。
 * SensorListener
-    * `SINETStreamHelper`ライブラリからの非同期通知を受けるための
-コールバックインタフェースを定義する。
+    * `SINETStreamHelper`ライブラリからの非同期通知を受けるためのコールバックインタフェースを定義する。
 
 
 ## 3. 作業準備
 ### 3.1 開発環境の導入
 
-Google社が提供する統合開発環境`AndroidStudio`を入手して手元の
-作業機材に導入する\[1\]。
+Google社が提供する統合開発環境`AndroidStudio`を入手して、
+手元の作業機材に導入する\[1\]。
 
 \[1\]:
-[Download Android Studio and SDK tools](https://developer.android.com/studio)  
+[Download Android Studio and SDK tools](https://developer.android.com/studio)
 
 ### 3.2 実行環境の用意
 
@@ -132,8 +131,10 @@ Android実機、または`AndroidStudio`のエミュレータを用意する。
 ### 4.1 ビルド環境設定
 
 Android開発環境では、`Gradle`によるビルド管理を行なっている\[1\]。
-ユーザアプリケーションが参照する外部ライブラリなどの設定を`Gradle`
-制御ファイル`build.gradle`で指定する\[2\]\[3\]。
+ユーザアプリケーションが参照する外部ライブラリなどの設定を、
+`Gradle`制御ファイル`build.gradle`で指定する\[2\]\[3\]。
+
+以降では、ユーザのAndroid開発ソースから`SINETStreamHelper`ライブラリを利用するための具体的な手順について記述する。
 
 \[1\]:
 [Gradle Build Tool](https://gradle.org/)
@@ -145,41 +146,68 @@ Android開発環境では、`Gradle`によるビルド管理を行なってい�
 [ビルド依存関係の追加](https://developer.android.com/studio/build/dependencies)
 
 
-#### 4.1.1 リポジトリ追加
+#### 4.1.1 ライブラリファイルの取得
 
-`SINETStreamHelper`ライブラリの取得先（ここでは`maven`リポジトリ）
-をモジュールレベルの`build.gradle`に記述する。
+`SINETStreamHelper`ライブラリは、
+ソースおよびバイナリの形式で`GitHub`上で公開される。
+
+NIIが管理するリポジトリ
+[sinetstream-android-helper](https://github.com/nii-gakunin-cloud/sinetstream-android-helper/releases)
+より、最新バージョンの`libhelper-x.y.z.aar`を手元にダウンロードする。
+> 便宜的に、ダウンロード先を`$HOME/Downloads`として話を進める。
+
+
+#### 4.1.2 開発ソースへの組み込み
+
+Android開発環境で作業する対象プログラムを仮に`testapp`とすると、
+概略以下のようなディレクトリ内容になっているはずである。
+
+```console
+    % cd $(WORKDIR)/testapp
+    % ls -FC
+    app/          gradle/            gradlew      local.properties
+    build.gradle  gradle.properties  gradlew.bat  settings.gradle
+```
+
+アプリケーションソース格納用の`app`サブディレクトリ直下に、
+ローカルライブラリ格納用のディレクトリ`libs`を用意する。
+既にあればそれを使い、なければ作成する。
+前項で取得した`SINETStreamHelper`ライブラリをそこに格納する。
+
+```console
+    % cd app
+    % mkdir libs
+    % cd libs
+    % cp $HOME/Downloads/libhelper-x.y.z.aar .
+```
+
+#### 4.1.3 リポジトリ追加
+
+`SINETStreamHelper`ライブラリの参照先（ここでは`libs`ディレクトリ）を、
+モジュールレベルの`build.gradle`に記述する。
 
 ----------（$TOP/app/build.gradle: 抜粋ここから）----------
 ```build.gradle
 repositories {
-    maven {
+    flatDir {
         // For SINETStreamHelper library
-        url "https://gitlab.vcp-handson.org/api/v4/projects/39/packages/maven"
-        name "GitLab"
-        credentials(HttpHeaderCredentials) {
-            name = 'Private-Token'
-            value = gitLabPrivateToken
-        }
-        authentication {
-            header(HttpHeaderAuthentication)
-        }
+        dirs "libs"
     }
 }
 ```
 ----------（$TOP/app/build.gradle: 抜粋ここまで）----------
 
 
-#### 4.1.2 依存関係追加
+#### 4.1.4 依存関係追加
 
-前述のリポジトリから参照する`SINETStreamHelper`ライブラリをバージョン
-込みでモジュールレベルの`build.gradle`に記述する。
+前述のリポジトリから参照する`SINETStreamHelper`ライブラリを、
+バージョン込みでモジュールレベルの`build.gradle`に記述する。
 
 ----------（$TOP/app/build.gradle: 抜粋ここから）----------
 ```build.gradle
 dependencies {
     // SINETStreamHelper
-    implementation 'jp.ad.sinet.stream.android.helper:libhelper:1.5.0'
+    implementation(name: 'sinetstream-android-helper-x.y.z', ext: 'aar')
 }
 ```
 ----------（$TOP/app/build.gradle: 抜粋ここまで）----------
@@ -188,8 +216,13 @@ dependencies {
 ### 4.2 マニフェストファイルの記述
 #### 4.2.1 利用者権限追加
 
-多くのセンサー種別では特別な利用者権限\[1\]は不要だが、一部例外がある。
-歩数計アプリケーションなど、センサー種別「step_counter, step_detector」
+Android端末が具備するセンサー種別の大部分は、
+その利用に特別な利用者権限\[1\]を求められることはない。
+
+しかし歩数計アプリケーションなど、以下のセンサー種別
+* step_counter
+* step_detector
+
 を利用する場合、`ACTIVITY_RECOGNITION`を明示的に指定する必要がある\[2\]。
 
 -----（$TOP/app/src/main/AndroidManifest.xml: 抜粋ここから）-----
@@ -201,9 +234,9 @@ dependencies {
 <em>注記：</em><br>
 上記の利用者権限は、アプリケーション実行時に利用する可能性がある
 ものをビルド時の設定として宣言するものである。
-Android8.0以降の場合、アプリケーションの初回起動時に権限検査が実施
-されるだけでなく、その利用権限は利用者の手動操作によりいつでもOn/Off
-可能となる\[3\]。
+Android8.0以降の場合、
+アプリケーションの初回起動時に権限検査が実施されるだけでなく、
+その利用権限は利用者の手動操作によりいつでも`On/Off`可能となる\[3\]。
 
 \[1\]:
 [パーミッション](https://developer.android.com/guide/topics/manifest/manifest-intro#perms)
@@ -215,14 +248,13 @@ Android8.0以降の場合、アプリケーションの初回起動時に権限�
 [Android 8.0での動作変更点](https://developer.android.com/about/versions/oreo/android-8.0-changes#rmp)
 
 
-### 4.3 開発物のAndroid機材への導入
+### 4.3 開発成果物のAndroid端末への導入
 
-開発環境`AndroidStudio`を準備し、ユーザアプリケーションを実装\[1\]\[2\]
-すると、`APK`（Android package）と呼ばれるアーカイブファイルが生成
-される。これはコード、データ、およびリソースファイルをパッケージと
-して一つにまとめたものである。
-この生成物`APK`ファイルを実行環境（エミュレータや実機）に導入する
-方法について述べる。
+開発環境`AndroidStudio`を準備し、ユーザアプリケーションを実装\[1\]\[2\]すると、
+`APK`（Android package）と呼ばれるアーカイブファイルが生成される。
+
+APKとは、アプリケーションを構成する「コード、データ、およびリソースファイル」をパッケージとして一つにまとめたものである。
+この生成物`APK`ファイルを実行環境（エミュレータや実機）に導入する方法について述べる。
 
 \[1\]:
 [アプリの基礎](https://developer.android.com/guide/components/fundamentals)
@@ -234,16 +266,24 @@ Android8.0以降の場合、アプリケーションの初回起動時に権限�
 #### 4.3.1 Androidエミュレータに導入する場合
 
 以下の要領で`APK`ファイルをエミュレータに導入する\[1\]。
-1. 開発環境`AndroidStudio`付属の`Android仮想デバイス`（AVD）ツール
-を用いて、所用の諸元（画面解像度、APIレベル、CPU種別など）に
-沿った`AVD`を事前作成しておく。
 
-2. この`AVD`を起動するとAndroid画面が表示され、`AndroidStudio`から
-実機同様に遠隔操作（`APK`導入やデバッグなど）できるようになる。
+1. Android仮想デバイス（AVD: Android Virtual Device）の用意
 
-3. エミュレータが実行中に`AndroidStudio`上の「Run」コマンドを実行
-すると（必要に応じてソースが再構築されて）生成`APK`ファイルが
-エミュレータに導入され、自動的に動作を開始する。
+> 開発環境`AndroidStudio`付属の`Android仮想デバイス`（AVD）ツールを用いて、
+> 所用の諸元（画面解像度、APIレベル、CPU種別など）に
+> 沿った`AVD`を事前作成しておく。
+
+2. AVDの起動
+
+> 目的の諸元を満たす`AVD`を起動するとAndroid端末イメージが表示される。
+> GUI経由で実機同様に操作したり、
+> 遠隔操作（`APK`導入やデバッグなど）ができるようになる。
+
+3. アプリケーションの導入と起動
+
+> エミュレータが実行中に`AndroidStudio`上の「Run」コマンドを実行する。
+> 必要に応じてソースが再構築され、生成`APK`ファイルがエミュレータに導入される。
+> 続けて、当該プログラムが自動的に動作を開始する。
 
 \[1\]:
 [Android Emulator上でアプリを実行する](https://developer.android.com/studio/run/emulator)
@@ -251,7 +291,7 @@ Android8.0以降の場合、アプリケーションの初回起動時に権限�
 
 #### 4.3.2 Android実機に導入する場合
 
-以下の要領で`APK`ファイルを実機に導入する\[\1]。
+以下の要領で`APK`ファイルを実機に導入する\[1\]。
 1. Android実機の設定画面を操作し、開発者モードを有効化する。
 2. 設定コマンドの開発者メニュー経由で「USBデバッグ」を有効化する。
 3. 実機と開発機材をUSBケーブルで接続する。
@@ -259,15 +299,13 @@ Android8.0以降の場合、アプリケーションの初回起動時に権限�
 が表示される。接続を承認すると、`AndroidStudio`で認識される。
 5. この状態で`AndroidStudio`上の「Run」コマンドを実行する。
 
-あるいはターミナル上で`adb`コマンドを直接操作することで対象の
-`APK`ファイルを実機に導入できる\[2\]。
+あるいは開発機材上で`adb`コマンドを直接操作することで、
+対象`APK`ファイルを実機に導入できる\[2\]。
 
------（操作イメージ：ここから）-----
 ```console
 PC% adb install -r XXX.apk
 Success
 ```
------（操作イメージ：ここから）-----
 
 \[1\]:
 [ハードウェアデバイス上でのアプリの実行](https://developer.android.com/studio/run/device)
@@ -278,6 +316,6 @@ Success
 
 ## 5. まとめ
 
-SINETStreamHelperを用いるアプリケーション開発者が留意すべき
-項目について一通り概説した。
+SINETStreamHelperを用いるアプリケーション開発者が留意すべき項目について、
+一通り概説した。
 

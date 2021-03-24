@@ -1,5 +1,12 @@
 # Changelog
 
+## [v1.5.1] - 2021-03-24
+
+### Fixed
+
+- docfix: tutorial for Android
+- bugfix: 2 sample applications for Android
+
 ## [v1.5.0] - 2021-03-18
 
 ### Added

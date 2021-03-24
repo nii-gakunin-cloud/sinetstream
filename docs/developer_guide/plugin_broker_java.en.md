@@ -17,7 +17,7 @@ software distributed under the License is distributed on an
 KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
---->
+-->
 
 # Developer Guide for Java messaging system plugin
 
@@ -121,7 +121,7 @@ try (MessageReader<String> reader = factory.getReader()) {
 ```
 
 ![MessageReader](images/reader_sequence_java.png)
-XXX 英語版の図が必要
+<!-- XXX 英語版の図が必要 -->
 
 Below is a brief description of the classes in the figure.
 
@@ -135,7 +135,7 @@ Below is a brief description of the classes in the figure.
     * A Kafka plugin class to receive messages from Kafka brokers.
 * KafkaMessageProvider
     * Kafkaのサービスクラス
-    * A common service class of Kafka.  (XXX これはPlugin内で定義されたclass??)
+    * A common service class of Kafka.  <!-- XXX これはPlugin内で定義されたclass?? -->
 * ServiceLoader
     * Loads registered services.
 
@@ -158,7 +158,7 @@ try (MessageWriter<String> writer = factory.getWriter()) {
 ```
 
 ![MessageWriter](images/writer_sequence_java.png)
-XXX 英語版の図が必要
+<!-- XXX 英語版の図が必要 -->
 
 Below is a brief description of the classes in the figure.
 
@@ -666,16 +666,16 @@ SINETStream-queue-1.2.0.jar
 The followings are links to example files of the plugin implementations.
 
 * src/main/java/ssplugin/
-    * [QueueMessageProvider.java](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/docs/developer_guide/sample/messaging-system/java/src/main/java/ssplugin/QueueMessageProvider.java)
-    * [QueueMessage.java](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/docs/developer_guide/sample/messaging-system/java/src/main/java/ssplugin/QueueMessage.java)
-    * [QueueMessageReader.java](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/docs/developer_guide/sample/messaging-system/java/src/main/java/ssplugin/QueueMessageReader.java)
-    * [QueueMessageWriter.java](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/docs/developer_guide/sample/messaging-system/java/src/main/java/ssplugin/QueueMessageWriter.java)
-    * [QueueAsyncMessageReader.java](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/docs/developer_guide/sample/messaging-system/java/src/main/java/ssplugin/QueueAsyncMessageReader.java)
-    * [QueueAsyncMessageWriter.java](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/docs/developer_guide/sample/messaging-system/java/src/main/java/ssplugin/QueueAsyncMessageWriter.java)
+    * [QueueMessageProvider.java](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/docs/developer_guide/sample/messaging-system/java/src/main/java/ssplugin/QueueMessageProvider.java)
+    * [QueueMessage.java](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/docs/developer_guide/sample/messaging-system/java/src/main/java/ssplugin/QueueMessage.java)
+    * [QueueMessageReader.java](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/docs/developer_guide/sample/messaging-system/java/src/main/java/ssplugin/QueueMessageReader.java)
+    * [QueueMessageWriter.java](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/docs/developer_guide/sample/messaging-system/java/src/main/java/ssplugin/QueueMessageWriter.java)
+    * [QueueAsyncMessageReader.java](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/docs/developer_guide/sample/messaging-system/java/src/main/java/ssplugin/QueueAsyncMessageReader.java)
+    * [QueueAsyncMessageWriter.java](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/docs/developer_guide/sample/messaging-system/java/src/main/java/ssplugin/QueueAsyncMessageWriter.java)
 * src/main/resources/META-INF/services/
-    * [jp.ad.sinet.stream.spi.MessageReaderProvider](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/docs/developer_guide/sample/messaging-system/java/src/main/resources/META-INF/services/jp.ad.sinet.stream.spi.MessageReaderProvider)
-    * [jp.ad.sinet.stream.spi.MessageWriterProvider](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/docs/developer_guide/sample/messaging-system/java/src/main/resources/META-INF/services/jp.ad.sinet.stream.spi.MessageWriterProvider)
-    * [jp.ad.sinet.stream.spi.AsyncMessageReaderProvider](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/docs/developer_guide/sample/messaging-system/java/src/main/resources/META-INF/services/jp.ad.sinet.stream.spi.AsyncMessageReaderProvider)
-    * [jp.ad.sinet.stream.spi.AsyncMessageWriterProvider](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/docs/developer_guide/sample/messaging-system/java/src/main/resources/META-INF/services/jp.ad.sinet.stream.spi.AsyncMessageWriterProvider)
-* [build.gradle](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/docs/developer_guide/sample/messaging-system/java/build.gradle)
-* [settings.gradle](https://github.com/nii-gakunin-cloud/sinetstream/blob/master/docs/developer_guide/sample/messaging-system/java/settings.gradle)
+    * [jp.ad.sinet.stream.spi.MessageReaderProvider](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/docs/developer_guide/sample/messaging-system/java/src/main/resources/META-INF/services/jp.ad.sinet.stream.spi.MessageReaderProvider)
+    * [jp.ad.sinet.stream.spi.MessageWriterProvider](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/docs/developer_guide/sample/messaging-system/java/src/main/resources/META-INF/services/jp.ad.sinet.stream.spi.MessageWriterProvider)
+    * [jp.ad.sinet.stream.spi.AsyncMessageReaderProvider](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/docs/developer_guide/sample/messaging-system/java/src/main/resources/META-INF/services/jp.ad.sinet.stream.spi.AsyncMessageReaderProvider)
+    * [jp.ad.sinet.stream.spi.AsyncMessageWriterProvider](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/docs/developer_guide/sample/messaging-system/java/src/main/resources/META-INF/services/jp.ad.sinet.stream.spi.AsyncMessageWriterProvider)
+* [build.gradle](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/docs/developer_guide/sample/messaging-system/java/build.gradle)
+* [settings.gradle](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/docs/developer_guide/sample/messaging-system/java/settings.gradle)

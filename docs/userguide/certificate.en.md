@@ -272,5 +272,5 @@ Certificate:
             Not Before: Feb 01 00:00:00 2020 GMT
             Not After : Jan 31 00:00:00 2023 GMT
         Subject: C=JP, CN=client0
-(後略)
+(omit)
 ```

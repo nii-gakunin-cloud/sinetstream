@@ -27,11 +27,11 @@ under the License.
 
 ## 概要
 
-Java版やPython版とは異なり、Android版のSINETStreamライブラリは
-足回りのメッセージングシステムとして(現状では)
+Java版やPython版とは異なり、Android版のSINETStreamライブラリは足回りのメッセージングシステムとして(現状では)
 [Paho MQTT Android](https://www.eclipse.org/paho/index.php?page=clients/android/index.php)
 のみを利用する。
-ここでの設定内容はPahoの[MqttConnectOptions](https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttConnectOptions.html)に反映される。オプション扱いの設定項目が省略された場合、MqttConnectOptions組み込みの値が使われる。
+ここでの設定内容はPahoの[MqttConnectOptions](https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttConnectOptions.html)に反映される。
+オプション扱いの設定項目が省略された場合、MqttConnectOptions組み込みの値が使われる。
 
 ## サービスによる記述内容のブロック化
 

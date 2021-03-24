@@ -17,35 +17,35 @@ software distributed under the License is distributed on an
 KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
---->
+-->
 
 [日本語](index.md)
 
-## What is SINETStream
+## What is the SINETStream
 
 It is required to collect data from sensors and other devices distributed over a wide area network without loss for reliable analysis in such research areas as environmental measurement, biological observation, and Internet of things (IoT).
 However, advanced knowledge and skills about networking are required to develop a program that collects and analyzes data distributed over a wide area network.
 It is difficult for average researchers who want to focus on their own research topics.
-SINETStream is a software package that makes it easy for researchers to reliably collect and analyze data via wide area networks without loss.
-SINETStream provides such functions as follows:
+The SINETStream is a software package that makes it easy for researchers to reliably collect and analyze data via wide area networks without loss.
+The SINETStream provides such functions as follows:
 
 * Write data collected from sensors etc. to cloud servers or to on-premises servers in universities etc.
 * Read the data stored in the servers into your analysis program.
 
 A researcher can easily develop his/her own programs that collect and analyze data distributed over a wide area network using the SINETStream API.
 Research data may contain sensitive information.
-SINETStream also supports authentication of sensor devices and encryption of data and communication to enable a secure data collection.
+The SINETStream also supports authentication of sensor devices and encryption of data and communication to enable a secure data collection.
 
-![appearance of SINETStream](docs/images/sinetstream-00.en.png)
+![appearance of the SINETStream](docs/images/sinetstream-00.en.png)
 
 <div align="center">
 <br/>
-<a href="https://www.youtube.com/watch?v=Z0wlUi4lr6c">Introduction of Wide Area Data Collection Infrastructure (Mobile SINET) and SINETStream</a>
+<a href="https://www.youtube.com/watch?v=Z0wlUi4lr6c">Introduction of Wide Area Data Collection Infrastructure (Mobile SINET) and the SINETStream</a>
 <br/>
 <iframe width="560" height="315" src="https://www.youtube.com/embed/Z0wlUi4lr6c" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </div>
 
-## Use of SINETStream
+## Use of the SINETStream
 
 To use SINETStream, please complete a user registration.
 Registered user will be notified of new SINETStream releases, bug fixes, FAQ, etc.
@@ -55,15 +55,15 @@ Please register from the link below.
 
 ## Documents
 
-Please refer to the following link for details on the structure and operating environment of SINETStream.
+Please refer to the following link for details on the structure and operating environment of the SINETStream.
 
 * [Documents](README.en.md)
 
 ## Tutorial
 
-* [Quick Start Guide (PC)](docs/tutorial/index.en.md)
+* [Quick Start Guide (Python/Java)](docs/tutorial/index.en.md)
 * [Quick Start Guide (Android)](docs/tutorial-android/index.en.md)
 
-## Live demo using SINETStream
+## Live demo using the SINETStream
 
-* [Live demo of SINETStream](docs/livedemo/livedemo.en.md)
+* [Live demo of the SINETStream](docs/livedemo/livedemo.en.md)

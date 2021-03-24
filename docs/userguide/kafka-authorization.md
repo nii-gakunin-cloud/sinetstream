@@ -25,8 +25,7 @@ under the License.
 
 ## 概要
 
-認可をおこなうように設定をされた Kafaka ブローカーを
-SINETStreamから利用する方法について説明する。
+認可をおこなうように設定をされた Kafaka ブローカーをSINETStreamから利用する方法について説明する。
 
 この文書のおもな記述の流れを以下に示す。
 
@@ -46,8 +45,7 @@ Kafkaブローカーの構成や設定については様々な状況が想定さ
 * Kafkaブローカーは既にSSL/TLS接続の設定が行われているものとする(*1)
 * ACLの設定対象となるユーザは既に登録されているものとする(*1)
 
-(*1) SASL/SCRAM認証の設定手順については
-「[SINETStreamからKafkaのSASL/SCRAM認証を利用する](kafka-authentication-sasl-scram.md)」を参照のこと。
+(*1) SASL/SCRAM認証の設定手順については「[SINETStreamからKafkaのSASL/SCRAM認証を利用する](kafka-authentication-sasl-scram.md)」を参照のこと。
 
 (*2) Kafkaブローカーでの認可の設定手順については SASL/SCRAM認証以外の認証方法を利用する場合も同様の手順となる。
 
@@ -89,16 +87,14 @@ Kafkaブローカーに認可の設定を行う手順について説明する。
 
 ### 認可に関するプロパティを設定ファイルに記述する
 
-Kafkaブローカーのプロパティファイル `/srv/kafka/config/server.properties` に
-以下の内容を追加する。
+Kafkaブローカーのプロパティファイル `/srv/kafka/config/server.properties` に以下の内容を追加する。
 
 ```properties
 authorizer.class.name=kafka.security.auth.SimpleAclAuthorizer
 ```
 
 `authorizer.class.name`にはKafkaブローカーの認可で使用するクラス名を指定する。
-ZooKeeperに記録されているACL設定による認可を行うには
-`kafka.security.auth.SimpleAclAuthorizer`を指定する。
+ZooKeeperに記録されているACL設定による認可を行うには `kafka.security.auth.SimpleAclAuthorizer` を指定する。
 
 必要に応じて以下のプロパティを追加することができる。
 
@@ -209,13 +205,12 @@ SINETStreamから認可を行うKafkaブローカーを利用するための設�
 
 ### 証明書の準備
 
-認可には直接関係しないが、前提としてSSL/TLS接続を行うブローカーを利用するので
-必要となる証明書をクライアント環境に準備する。
+認可には直接関係しないが、前提としてSSL/TLS接続を行うブローカーを利用するので必要となる証明書をクライアント環境に準備する。
 
 * CA証明書
 
-SINETStreamでは証明書の配置場所を定めてはいないので、配置する場所は利用者の判断に
-ゆだねられる。SINETStreamは、設定ファイルに記されたパスから証明書を読み込む。
+SINETStreamでは証明書の配置場所を定めてはいないので、配置する場所は利用者の判断にゆだねられる。
+SINETStreamは、設定ファイルに記されたパスから証明書を読み込む。
 
 ### SINETStreamの設定ファイルを作成する
 
@@ -255,10 +250,10 @@ SASL認証、SSL/TLS接続に関するパラメータの設定内容について
 
 ### SINETStreamを利用するプログラムを作成する
 
-SINETStreamを利用するプログラム自体は、認可を行うKafkaブローカーを利用する場合
-と認可なしのKafkaブローカーを利用する場合で変わりはない。
+SINETStreamを利用するプログラム自体は、認可を行うKafkaブローカーを利用する場合と認可なしのKafkaブローカーを利用する場合で変わりはない。
 
-Python APIの `MessageWriter` を利用する場合の例を以下に示す。認可に関わる処理は存在していない。
+Python APIの `MessageWriter` を利用する場合の例を以下に示す。
+認可に関わる処理は存在していない。
 
 ```python
 with sinetstream.MessageWriter(service='service-kafka') as writer:
@@ -269,8 +264,8 @@ with sinetstream.MessageWriter(service='service-kafka') as writer:
 
 ### Python API
 
-読み込み権限がないトピックに対して `MessageReader`がメッセージの読み込み処理を行うと、例外
-`sinetstream.error.AuthorizationError` が発生する。
+読み込み権限がないトピックに対して `MessageReader`がメッセージの読み込み処理を行うと、
+例外 `sinetstream.error.AuthorizationError` が発生する。
 
 書き込み権限がないトピックに対して `MessageWriter`が`publish()`でメッセージの書き込み処理を行った場合、
 `consistency`の値によって動作が異なる。
@@ -290,12 +285,11 @@ with sinetstream.MessageWriter(service='service-kafka') as writer:
 
 ### Java API
 
-読み込み権限がないトピックに対して `jp.ad.sinet.stream.api.MessageReader#read`が
-メッセージの読み込み処理を行うと、例外 `jp.ad.sinet.stream.api.AuthorizationException`
-が発生する。
+読み込み権限がないトピックに対して `jp.ad.sinet.stream.api.MessageReader#read`がメッセージの読み込み処理を行うと、
+例外 `jp.ad.sinet.stream.api.AuthorizationException` が発生する。
 
-書き込み権限がないトピックに対して `jp.ad.sinet.stream.api.MessageWriter#write`が
-メッセージの書き込み処理を行う行った場合、`consistency`の値によって動作が異なる。
+書き込み権限がないトピックに対して `jp.ad.sinet.stream.api.MessageWriter#write`がメッセージの書き込み処理を行う行った場合、
+`consistency`の値によって動作が異なる。
 
 * `consistency`=`AT_MOST_ONCE`の場合
     * 権限がないため、メッセージはトピックに書き込まれない

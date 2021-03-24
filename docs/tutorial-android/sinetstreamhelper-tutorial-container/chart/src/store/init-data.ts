@@ -31,7 +31,7 @@ function generateChartOption(
 const initOpts: { [key: number]: ChartOption } = {
   1: generateChartOption({
     id: 1,
-    sensor: 'step_count',
+    sensor: 'step_counter',
     title: '歩数',
     chart: 'bar',
     color: '#a6cee3',

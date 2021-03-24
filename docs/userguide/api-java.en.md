@@ -234,13 +234,10 @@ The main methods of Promise are shown below.
 
 * 'done()'
    – Triggered when the deferred object process completes successfully
-
 * 'fail()'
    – Triggered when an exception occurs while processing a deferred object
-
 * 'always()'
    – Triggered in all cases even if regardless of the processing result of the deferred object
-
 
 
 ### MessageReaderFactory

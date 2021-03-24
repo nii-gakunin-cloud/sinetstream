@@ -17,7 +17,7 @@ software distributed under the License is distributed on an
 KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
---->
+-->
 
 [English](TUTORIAL-STEP2.en.md)
 
@@ -172,7 +172,7 @@ xxxxxxxxxxxx        sinetstream/tutorial:1.0.0   "/usr/local/bin/supe…"   Abou
 
 `Broker`コンテナでプロセス一覧を確認した時の結果と異なり、Kafkaブローカー、MQTTブローカー、ZooKeeperが実行されていないことがわかります。
 
-`Reader`用のコンテナを起動する際に指定した `--add-host` は　`Reader`コンテナの /etc/hosts に、`Broker` の IPアドレスを登録するためのものです。
+`Reader`用のコンテナを起動する際に指定した `--add-host` は`Reader`コンテナの /etc/hosts に、`Broker` の IPアドレスを登録するためのものです。
 Kafkaブローカーを利用するためにはサーバアドレスの名前解決が必要となるため、このパラメータの指定を追加しています。
 `Reader`コンテナの /etc/hosts を表示して `Broker` のIPアドレスが登録されていることを確認します。
 
@@ -210,7 +210,7 @@ Successfully installed avro-python3-1.10.0 kafka-python-2.0.2 paho-mqtt-1.5.1 pr
 ```
 
 最後に `Successfully installed ...`と表示されていれば、ライブラリのインストールに成功しています。
-確認のためインストールされている Python3　ライブラリの一覧を表示してみます。
+確認のためインストールされている Python3 ライブラリの一覧を表示してみます。
 
 ```console
 [user01@reader]$ pip3 list
@@ -347,7 +347,7 @@ Successfully installed avro-python3-1.10.0 kafka-python-2.0.2 paho-mqtt-1.5.1 pr
 ```
 
 最後に `Successfully installed ...`と表示されていれば、ライブラリのインストールに成功しています。
-確認のためインストールされている Python3　ライブラリの一覧を表示してみます。
+確認のためインストールされている Python3 ライブラリの一覧を表示してみます。
 
 ```console
 [user01@writer]$ pip3 list
@@ -698,8 +698,7 @@ SINETStream v1.4 では非同期APIを利用することができます。
 
 #### Reader(非同期API)
 
-非同期APIを用いた`Reader`のサンプルプログラムconsumer.py で
-SINETStream API を使用している箇所を以下に示します。
+非同期APIを用いた`Reader`のサンプルプログラムconsumer.pyでSINETStream APIを使用している箇所を以下に示します。
 
 ```python
 reader = AsyncMessageReader(service)
@@ -707,11 +706,11 @@ reader.on_message = show_message
 reader.open()
 ```
 
-はじめにメッセージを受信するための `AsyncMessageReader` のオブジェクトを
-作成します。その際、引数としてサービス名を指定します。
+はじめにメッセージを受信するための `AsyncMessageReader` のオブジェクトを作成します。
+その際、引数としてサービス名を指定します。
 
-次に`.on_message`プロパティにメッセージを受信した際に呼び出すコールバック関数
-を指定します。コールバック関数は引数から受信したメッセージを受け取ることができます。
+次に`.on_message`プロパティにメッセージを受信した際に呼び出すコールバック関数を指定します。
+コールバック関数は引数から受信したメッセージを受け取ることができます。
 サンプルプログラムでは以下のようなコールバック関数を用いています。
 
 ```python
@@ -724,8 +723,7 @@ def show_message(message):
 
 #### Writer(非同期API)
 
-非同期APIを用いた`Writer`のサンプルプログラムproducer.py で
-SINETStream API を使用している箇所を以下に示します。
+非同期APIを用いた`Writer`のサンプルプログラムproducer.pyでSINETStream APIを使用している箇所を以下に示します。
 
 ```python
 with AsyncMessageWriter(service) as writer:
@@ -740,6 +738,6 @@ with AsyncMessageWriter(service) as writer:
 これにより、ブローカーとの接続、切断が with文のブロックの境界で実行されます。
 with文が返した値 `writer` に対して `.publish(message)`を呼び出すことでメッセージをブローカーに送信することができます。
 
-同期APIでは`.publish()`が送信処理の完了までブロックしますが、非同期APIの場合は
-ブロックすることなく返ります。また非同期APIの`.publish()`は処理結果が確定した
-後の処理を指定するための[Promiseオブジェクト](https://github.com/syrusakbary/promise)を返します。
+同期APIでは`.publish()`が送信処理の完了までブロックしますが、非同期APIの場合はブロックすることなく返ります。
+また非同期APIの`.publish()`は処理結果が確定した後の処理を指定するための
+[Promiseオブジェクト](https://github.com/syrusakbary/promise)を返します。

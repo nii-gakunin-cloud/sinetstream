@@ -25,8 +25,7 @@ under the License.
 
 ## 概要
 
-SSL/TLSの双方向認証をおこなうように設定をされた Kafaka ブローカーを
-SINETStreamから利用する方法について説明する。
+SSL/TLSの双方向認証をおこなうように設定をされた Kafaka ブローカーをSINETStreamから利用する方法について説明する。
 
 この文書のおもな記述の流れを以下に示す。
 
@@ -122,8 +121,8 @@ $ sudo openssl pkcs12 -export -in /etc/pki/CA/cacert.pem \
 ```
 
 次に同様の手順でキーストアを作成する。キーストアにはブローカーのサーバ証明書を格納するので、
-`-in`, `-inkey`にはサーバ証明書とその秘密鍵のファイル名を指定する。また`-passout`には
-キーストアに設定するパスワードを指定する。
+`-in`, `-inkey`にはサーバ証明書とその秘密鍵のファイル名を指定する。
+また`-passout`にはキーストアに設定するパスワードを指定する。
 
 ```bash
 $ sudo openssl pkcs12 -export -in /etc/pki/CA/certs/broker.crt \
@@ -135,8 +134,7 @@ $ sudo openssl pkcs12 -export -in /etc/pki/CA/certs/broker.crt \
 
 ### SSL/TLS認証に関するプロパティを設定ファイルに記述する
 
-Kafkaブローカーのプロパティファイル `/srv/kafka/config/server.properties` に
-以下の内容を追加する。
+Kafkaブローカーのプロパティファイル `/srv/kafka/config/server.properties` に以下の内容を追加する。
 
 ```properties
 listeners=SSL://:9093
@@ -202,8 +200,8 @@ SSL/TLSの双方向認証を利用するのに必要となる証明書類をク�
 * CA証明書
 
 プライベート認証局などで作成した証明書をクライアント環境に配置する。
-SINETStreamでは証明書の配置場所を定めてはいないので、配置する場所は利用者の判断に
-ゆだねられる。SINETStreamは、設定ファイルに記されたパスから証明書を読み込む。
+SINETStreamでは証明書の配置場所を定めてはいないので、配置する場所は利用者の判断にゆだねられる。
+SINETStreamは、設定ファイルに記されたパスから証明書を読み込む。
 
 ### SINETStreamの設定ファイルを作成する
 
@@ -220,8 +218,8 @@ service-kafka-ssl:
     keyfile: /home/user01/certs/client0.key
 ```
 
-`brokers`, `type`, `topic` については認証を利用しない場合の設定ファイルと同様なので
-説明を省く。 SSL/TLS認証に関わる設定は `tls:` 以降の行が該当する。
+`brokers`, `type`, `topic` については認証を利用しない場合の設定ファイルと同様なので説明を省く。
+SSL/TLS認証に関わる設定は `tls:` 以降の行が該当する。
 各パラメータの意味を以下に示す。
 
 * `ca_certs`
@@ -233,8 +231,8 @@ service-kafka-ssl:
 
 ### SINETStreamを利用するプログラムを作成する
 
-SINETStreamを利用するプログラム自体は、SSL/TLS認証を行うKafkaブローカーを利用する場合
-と認証なしのKafkaブローカーを利用する場合で変わりはない。
+SINETStreamを利用するプログラム自体は、
+SSL/TLS認証を行うKafkaブローカーを利用する場合と認証なしのKafkaブローカーを利用する場合で変わりはない。
 
 Python APIの `MessageWriter` を利用する場合の例を以下に示す。認証に関わる処理は存在していない。
 

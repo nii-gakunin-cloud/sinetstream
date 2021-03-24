@@ -223,12 +223,12 @@ MessageReader(
 
 #### `MessageReader.open()`
 
-メッセージングシステムのブローカーに接続する。通常は明示的に呼び出すことはなく MessageReaderをwith文で
-用いた場合に、暗黙的に呼び出されることを想定している。
+メッセージングシステムのブローカーに接続する。
+通常は明示的に呼び出すことはなく MessageReaderをwith文で用いた場合に、暗黙的に呼び出されることを想定している。
 
 ##### 戻り値
 
-メッセージングシステムとの接続状態を保持しているハンドラ
+メッセージングシステムとの接続状態を保持しているハンドラ。
 
 ##### 例外
 
@@ -239,8 +239,8 @@ MessageReader(
 
 #### `MessageReader.close()`
 
-メッセージングシステムのブローカーとの通信を切断する。通常は明示的に呼び出すことはなく MessageReaderをwith文で
-用いた場合に、暗黙的に呼び出されることを想定している。
+メッセージングシステムのブローカーとの通信を切断する。
+通常は明示的に呼び出すことはなく MessageReaderをwith文で用いた場合に、暗黙的に呼び出されることを想定している。
 
 #### `MessageReader.__iter__()`
 
@@ -254,8 +254,8 @@ MessageReader(
     * 認可されていないトピックに対してメッセージの取得を行った
 
 メッセージングシステムによっては認可されていない操作をおこなっても上記の例外が発生しないことがある。
-MQTT(Mosquitto)がこれに該当し、認可されていない操作を行っても例外が発生しない。これは
-認可されていない操作を行った場合もブローカー側がクライアント側にエラーを返さないためである。
+MQTT(Mosquitto)がこれに該当し、認可されていない操作を行っても例外が発生しない。
+これは認可されていない操作を行った場合もブローカー側がクライアント側にエラーを返さないためである。
 
 ### AsyncMessageReaderクラス
 
@@ -349,7 +349,7 @@ AsyncMessageReader(
 
 ##### 戻り値
 
-メッセージングシステムとの接続状態を保持しているハンドラ
+メッセージングシステムとの接続状態を保持しているハンドラ。
 
 ##### 例外
 
@@ -360,8 +360,8 @@ AsyncMessageReader(
 
 #### `AsyncMessageReader.close()`
 
-メッセージングシステムのブローカーとの通信を切断する。通常は明示的に呼び出すことはなく AsyncMessageReaderをwith文で
-用いた場合に、暗黙的に呼び出されることを想定している。
+メッセージングシステムのブローカーとの通信を切断する。
+通常は明示的に呼び出すことはなく AsyncMessageReaderをwith文で用いた場合に、暗黙的に呼び出されることを想定している。
 
 #### プロパティ: `AsyncMessageReader.on_message`
 
@@ -452,12 +452,12 @@ MessageWriterクラスのコンストラクタ。
 
 #### `MessageWriter.open()`
 
-メッセージングシステムのブローカーに接続する。通常は明示的に呼び出すことはなく MessageWriterをwith文で
-用いた場合に、暗黙的に呼び出されることを想定している。
+メッセージングシステムのブローカーに接続する。
+通常は明示的に呼び出すことはなく MessageWriterをwith文で用いた場合に、暗黙的に呼び出されることを想定している。
 
 ##### 戻り値
 
-メッセージングシステムとの接続状態を保持しているハンドラ
+メッセージングシステムとの接続状態を保持しているハンドラ。
 
 ##### 例外
 
@@ -468,14 +468,13 @@ MessageWriterクラスのコンストラクタ。
 
 #### `MessageWriter.close()`
 
-メッセージングシステムのブローカーとの通信を切断する。通常は明示的に呼び出すことはなく MessageWriterをwith文で
-用いた場合に、暗黙的に呼び出されることを想定している。
+メッセージングシステムのブローカーとの通信を切断する。
+通常は明示的に呼び出すことはなく MessageWriterをwith文で用いた場合に、暗黙的に呼び出されることを想定している。
 
 #### `MessageWriter.publish(message)`
 
-メッセージをメッセージングシステムのブローカーに送信する。`message`は`MessageWriter`の
-パラメータ`value_type`あるいは`value_serializer`によってシリアライズされたうえで
-ブローカーに送信される。
+メッセージをメッセージングシステムのブローカーに送信する。
+`message`は`MessageWriter`のパラメータ`value_type`あるいは`value_serializer`によってシリアライズされたうえでブローカーに送信される。
 
 ##### 例外
 
@@ -484,8 +483,8 @@ MessageWriterクラスのコンストラクタ。
 * AuthorizationError
     * 認可されていないトピックに対してメッセージの送信を行った
 
-メッセージングシステムによっては認可されていない操作をおこなってもAuthorizationErrorの
-例外が発生しないことがある。以下のケースが該当する。
+メッセージングシステムによっては認可されていない操作をおこなってもAuthorizationErrorの例外が発生しないことがある。
+以下のケースが該当する。
 
 1. MQTT(Mosquitto)の場合
     * 認可されていない操作を行った場合もブローカー側がクライアント側にエラーを返さない。そのため例外が発生しない。
@@ -577,12 +576,12 @@ AsyncMessageWriterクラスのコンストラクタ。
 
 #### `AsyncMessageWriter.open()`
 
-メッセージングシステムのブローカーに接続する。通常は明示的に呼び出すことはなく AsyncMessageWriterをwith文で
-用いた場合に、暗黙的に呼び出されることを想定している。
+メッセージングシステムのブローカーに接続する。
+通常は明示的に呼び出すことはなく AsyncMessageWriterをwith文で用いた場合に、暗黙的に呼び出されることを想定している。
 
 ##### 戻り値
 
-メッセージングシステムとの接続状態を保持しているハンドラ
+メッセージングシステムとの接続状態を保持しているハンドラ。
 
 ##### 例外
 
@@ -593,14 +592,13 @@ AsyncMessageWriterクラスのコンストラクタ。
 
 #### `AsyncMessageWriter.close()`
 
-メッセージングシステムのブローカーとの通信を切断する。通常は明示的に呼び出すことはなく AsyncMessageWriterをwith文で
-用いた場合に、暗黙的に呼び出されることを想定している。
+メッセージングシステムのブローカーとの通信を切断する。
+通常は明示的に呼び出すことはなく AsyncMessageWriterをwith文で用いた場合に、暗黙的に呼び出されることを想定している。
 
 #### `AsyncMessageWriter.publish(message)`
 
-メッセージをメッセージングシステムのブローカーに送信する。`message`は`AsyncMessageWriter`の
-パラメータ`value_type`あるいは`value_serializer`によってシリアライズされたうえで
-ブローカーに送信される。
+メッセージをメッセージングシステムのブローカーに送信する。
+`message`は`AsyncMessageWriter`のパラメータ`value_type`あるいは`value_serializer`によってシリアライズされたうえでブローカーに送信される。
 
 `publish(message)`は非同期処理であり [promise](https://github.com/syrusakbary/promise)の`Promise`オブジェクトを返す。
 `Promise`オブジェクトのメソッド `.then()`, `.catch()`を用いることで、
@@ -618,8 +616,8 @@ with AsyncMessageWriter('service-1') as writer:
 * AuthorizationError
     * 認可されていないトピックに対してメッセージの送信を行った
 
-メッセージングシステムによっては認可されていない操作をおこなってもAuthorizationErrorの
-例外が発生しないことがある。以下のケースが該当する。
+メッセージングシステムによっては認可されていない操作をおこなってもAuthorizationErrorの例外が発生しないことがある。
+以下のケースが該当する。
 
 1. MQTT(Mosquitto)の場合
     * 認可されていない操作を行った場合もブローカー側がクライアント側にエラーを返さない。そのため例外が発生しない。
@@ -664,10 +662,9 @@ Reader/Writerオブジェクトに対してmetricsプロパティを参照する
 * AsyncMessageReader.metrics
 * AsyncMessageWriter.metrics
 
-Reader/Writerオブジェクトに対してreset_metrics()メソッドを呼び出すと
-Reader/Writerの統計情報がリセットされる。
-引数 `reset_raw` にTrueを指定した場合に限り、SINETStreamの統計情報だけでなく
-メッセージングシステム固有の統計情報もリセットされる(可能であれば)。
+Reader/Writerオブジェクトに対してreset_metrics()メソッドを呼び出すとReader/Writerの統計情報がリセットされる。
+引数 `reset_raw` にTrueを指定した場合に限り、
+SINETStreamの統計情報だけでなくメッセージングシステム固有の統計情報もリセットされる(可能であれば)。
 
 * MessageReader.reset_metrics(reset_raw=False)
 * MessageWriter.reset_metrics(reset_raw=False)

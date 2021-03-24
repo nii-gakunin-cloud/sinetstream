@@ -14,6 +14,7 @@
       <v-toolbar-title>SINETStream</v-toolbar-title>
       <v-spacer />
       <chart-dialog />
+      <settings-dialog />
     </v-app-bar>
 
     <v-main>
@@ -25,11 +26,13 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import ChartDialog from './components/ChartDialog.vue';
+import SettingsDialog from './components/SettingsDialog.vue';
 import SensorChart from './components/SensorChart.vue';
 
 @Component({
   components: {
     ChartDialog,
+    SettingsDialog,
     SensorChart,
   },
 })

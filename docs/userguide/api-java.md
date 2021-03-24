@@ -140,8 +140,7 @@ try (MessageReader<String> reader = factory.getReader()) {
 
 `MessageWriter` を取得するためのファクトリクラス。
 
-複数のパラメータを指定して `MessageWriter` のインスタンスを構築するための
-ビルダークラス `MessageWriterFactoryBuilder` が内部クラスとして用意されている。
+複数のパラメータを指定して `MessageWriter` のインスタンスを構築するためのビルダークラス `MessageWriterFactoryBuilder` が内部クラスとして用意されている。
 ビルダークラスでは以下のパラメータを指定できる。
 
 * service(String)
@@ -232,19 +231,19 @@ try (AsyncMessageWriter<String> writer = factory.getAsyncWriter()) {
 `write()`メソッドが返す`Promise`オブジェクトのメソッド `.done()`, `.fail()`を用いることで、
 送信結果（成功、失敗）に応じた処理を設定することができる。`Promise`の主なメソッドを以下に示す。
 
-* `done（）`
-   – 遅延オブジェクトの処理が正常に完了した場合にトリガーされる
-* `fail（）`
-   – 遅延オブジェクトの処理中に例外が発生したした場合にトリガーされる
-* `always（）`
-   – 遅延オブジェクトの処理結果によらず全ての場合にトリガーされる
+* `done()`
+    –  遅延オブジェクトの処理が正常に完了した場合にトリガーされる
+* `fail()`
+    –  遅延オブジェクトの処理中に例外が発生したした場合にトリガーされる
+* `always()`
+    –  遅延オブジェクトの処理結果によらず全ての場合にトリガーされる
 
 ### MessageReaderFactory
 
 `MessageReader` を取得するためのファクトリクラス。
 
-複数のパラメータを指定して `MessageReader` のインスタンスを構築するための
-ビルダークラス `MessageReaderFactoryBuilder` が内部クラスとして用意されている。
+複数のパラメータを指定して `MessageReader` のインスタンスを構築するためのビルダークラス
+`MessageReaderFactoryBuilder` が内部クラスとして用意されている。
 ビルダークラスでは以下のパラメータを指定できる。
 
 * service(String)
@@ -304,8 +303,7 @@ MessageReaderFactory<String> factory =
 
 ファクトリクラスのインスタンスに対して `getReader()` を呼び出すことで、リーダークラス `MessageReader` のインスタンスが取得できる。
 `MessageReader` には `AutoCloseable` が実装されているので try-with-resources 文を利用できる。
-メッセージを受信するメソッド`read()`はメッセージを受信するか`receiveTimeout()`に指定されている
-タイムアウト時間が経過するまではブロックする。
+メッセージを受信するメソッド`read()`はメッセージを受信するか`receiveTimeout()`に指定されているタイムアウト時間が経過するまではブロックする。
 
 以下に例を示す。
 
@@ -330,9 +328,8 @@ try (MessageReader<String> reader = factory.getReader()) {
 ファクトリクラスのインスタンスに対して `getAsyncReader()` を呼び出すことで、
 リーダークラス `AsyncMessageReader` のインスタンスが取得できる。
 
-受信したメッセージを処理するには`addOnMessageCallback()`メソッドでメッセージを受信
-した際に呼び出されるコールバックを設定する。コールバックの引数によって受信したメッセージ
-が受け渡される。
+受信したメッセージを処理するには`addOnMessageCallback()`メソッドでメッセージを受信した際に呼び出されるコールバックを設定する。
+コールバックの引数によって受信したメッセージが受け渡される。
 
 以下に例を示す。
 ```
@@ -374,10 +371,8 @@ Reader/Writerオブジェクトに対してgetMetrics()メソッドを呼び出�
 * MessageWriter#getMetrics()
 * AsyncMessageWriter#getMetrics()
 
-Reader/Writerオブジェクトに対してresetMetrics()メソッドを呼び出すと
-Reader/Writerの統計情報がリセットされる。
-引数 `reset_raw` にtrueを指定した場合に限り、SINETStreamの統計情報だけでなく
-メッセージングシステム固有の統計情報もリセットされる(可能であれば)。
+Reader/Writerオブジェクトに対してresetMetrics()メソッドを呼び出すとReader/Writerの統計情報がリセットされる。
+引数 `reset_raw` にtrueを指定した場合に限り、SINETStreamの統計情報だけでなくメッセージングシステム固有の統計情報もリセットされる(可能であれば)。
 
 * MessageReader#resetMetrics(boolean reset_raw)
 * MessageWriter#resetMetrics(boolean reset_raw)

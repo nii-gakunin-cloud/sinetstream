@@ -17,7 +17,7 @@ software distributed under the License is distributed on an
 KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
---->
+-->
 
 [日本語](index.md)
 
@@ -57,7 +57,7 @@ Writer and Reader are deployed on devices which are connected to the SINET mobil
 * kafka_2.12-2.3.0 (Kafka broker)
 * mosquitto-1.6.2 (MQTT broker)
 * SINETStream 1.0.0
-    * [Measurement program](https://github.com/nii-gakunin-cloud/sinetstream/tree/master/java/sample/perf)
+    * [Measurement program](https://github.com/nii-gakunin-cloud/sinetstream/tree/main/java/sample/perf)
         * `test.sh`: Performance measurement without encryption
         * `test-tls.sh`: Performance measurement with TLS communication encryption
         * `test-crypto.sh`: Performance measurement with data encryption
