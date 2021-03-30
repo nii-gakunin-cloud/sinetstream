@@ -1,5 +1,5 @@
 <!--
-Copyright (C) 2020 National Institute of Informatics
+Copyright (C) 2020-2021 National Institute of Informatics
 
 Licensed to the Apache Software Foundation (ASF) under one
 or more contributor license agreements.  See the NOTICE file
@@ -25,18 +25,18 @@ under the License.
 
 **目次**
 
-```
+<pre>
 1. 概要
-2. 動作環境
-    2.1 開発環境
-    2.2 実行用のAndroid実機またはエミュレータ
-    2.3 SINET接続環境
-    2.4 接続相手（ブローカ）
-3. 本書の記述範囲
+2. モジュール構成
+3. 作業準備
+    3.1 開発環境の導入
+    3.2 実行用の用意
 4. 作業手順
     4.1 ビルド環境設定
-        4.1.1 リポジトリ追加
-        4.1.2 依存関係追加
+        4.1.1 ライブラリファイルの取得
+        4.1.2 開発ソースへの組み込み
+        4.1.3 リポジトリ追加
+        4.1.4 依存関係追加
     4.2 マニフェストファイルの記述
         4.2.1 利用者権限追加
         4.2.2 サービスコンポーネント追加
@@ -48,47 +48,25 @@ under the License.
     4.4 SSL/TLSの利用設定
         4.4.1 SINETStream設定ファイルへのSSL/TLS項目追記
         4.4.2 SSL/TLS証明書ファイル群の導入
-    4.5 開発物のAndroid機材への導入
+    4.5 開発成果物のAndroid機材への導入
         4.5.1 Androidエミュレータに導入する場合
         4.5.2 Android実機に導入する場合
 5. まとめ
-```
+</pre>
 
-## 概要
+## 1. 概要
 
-Android向けSINETStream APIの実装「SINETStream for Android」
-（以降、簡素化のため「SINETStreamAndroid」と表記）を提供する
-にあたり、これを利用するユーザアプリケーションの開発者が考慮
-すべきことを概説する。
+Android向けSINETStream APIの実装「SINETStream for Android」（以降、
+簡素化のため「SINETStreamAndroid」と表記）を提供するにあたり、
+これを利用するユーザアプリケーションの開発者が考慮すべきことを概説する。
 
-## 動作環境
 
-### 開発環境
+## 2. モジュール構成
 
-Google社が提供する統合開発環境「AndroidStudio」を導入する。
+SINETStreamAndroidを利用するユーザアプリケーションは、
+一般的に下図のようなモジュール構成および依存関係となる。
 
-* [Download Android Studio and SDK tools](https://developer.android.com/studio)  
-  ページ最下部に記載されたシステム要件に注意すること
-
-### 実行用のAndroid実機またはエミュレータ
-
-Android 8.0 (APIレベル26）以上
-
-### SINET接続環境
-
-SINET-SIM装着端末を利用、あるいはローカルネットワーク経由で
-SINETに接続できる経路があること。
-
-### 接続相手（ブローカ）
-
-SINET内に所用のサーバを構築し実行しておく。
-
-## 本書の記述範囲
-
-SINETStreamAndroidを利用するユーザアプリケーションは、一般的に
-下図のようなモジュール構成および依存関係となる。
-
-```
+<pre>
                               ........................
                               : Option               :
                               :    +-----------+     :
@@ -114,200 +92,324 @@ SINETStreamAndroidを利用するユーザアプリケーションは、一般�
   | Android OS / HW     |
   +---------------------+
              A
-             | Internet
+             | IP network
              V
       [ SINETStream ]
+</pre>
+
+＜凡例＞
+1. 開発対象のユーザアプリケーション
+2. 参照する外部ライブラリ群
+3. SINETStream設定ファイル
+4. SSL/TLS接続用の証明書ファイル群
+
+> 上図の外部ライブラリ群の内訳:
+> * Android版のSINETStream（WriterおよびReader機能）
+> * Paho MQTT Android （Android版MQTTクライアント機能）[1]
+
+\[1\]:
+[Eclipse Paho Android Client](https://www.eclipse.org/paho/index.php?page=clients/java/index.php)
+
+## 3. 作業準備
+### 3.1 開発環境の導入
+
+Google社が提供する統合開発環境`AndroidStudio`を入手\[1\]して、
+手元の作業機材に導入する。
+
+\[1\]:
+[Download Android Studio and SDK tools](https://developer.android.com/studio)
+> ページ最下部に記載されたシステム要件に注意すること
+
+### 3.2 実行環境の用意
+
+Android実機、または`AndroidStudio`のエミュレータを用意する。
+
+* Android 8.0 (APIレベル26）以上
 
 
-        ＜凡例＞
-        1) 開発対象のユーザアプリケーション
-        2) 参照する外部ライブラリ群
-        3) SINETStream設定ファイル
-        4) SSL/TLS接続用の証明書ファイル群
+## 4. 作業手順
+### 4.1 ビルド環境設定
+
+ユーザアプリケーションにとって、`SINETStreamAndroid`も`Paho MQTT Android`も外部ライブラリとして参照するものである。
+すなわち、どこに何があるかという参照先と、どのバージョンのものを参照するかという二種類の情報を開発環境に設定する必要がある。
+
+Android開発環境では、`Gradle`によるビルド管理を行なっている\[1\]。
+ユーザアプリケーションが参照する外部ライブラリなどの設定情報を、
+`Gradle`制御ファイル`build.gradle`で指定する\[2\]\[3\]。
+
+以降では、ユーザのAndroid開発ソースから`SINETStreamAndroid`ライブラリを利用するための具体的な手順について記述する。
+
+> <em>注意</em>
+>
+> SINETStreamAndroid自身、およびその依存ライブラリである
+> `Paho MQTT Android`とでは参照方法が異なる。
+> 前者はAARファイルを手元にダウンロードして、それを直接参照する。
+> 後者はネット上のmavenリポジトリに配置されるのでそれを参照する。
+
+\[1\]:
+[Gradle Build Tool](https://gradle.org/)
+<br>
+\[2\]:
+[モジュールレベルビルドファイル](https://developer.android.com/studio/build#module-level)
+<br>
+\[3\]:
+[ビルド依存関係の追加](https://developer.android.com/studio/build/dependencies)
+
+
+#### 4.1.1 ライブラリファイルの取得
+
+`SINETStreamAndroid`ライブラリは、
+ソースおよびバイナリの形式で`GitHub`上で公開される。
+
+国立情報学研究所（NII）が管理するリポジトリ
+[sinetstream-android](https://github.com/nii-gakunin-cloud/sinetstream-android/releases)
+より、最新バージョンの`sinetstream-android-x.y.z.aar`を手元にダウンロードする。
+> 便宜的に、ダウンロード先を`$HOME/Downloads`として話を進める。
+
+
+#### 4.1.2 開発ソースへの組み込み
+
+Android開発環境で作業する対象プログラムを仮に`testapp`とすると、
+概略以下のようなディレクトリ内容になっているはずである。
+
+```console
+    % cd $(WORKDIR)/testapp
+    % ls -FC
+    app/          gradle/            gradlew      local.properties
+    build.gradle  gradle.properties  gradlew.bat  settings.gradle
 ```
 
-以降では、これらの各要素に関してアプリケーション開発者が設定
-すべきことを記述する。
+アプリケーションソース格納用の`app`サブディレクトリ直下に、
+ローカルライブラリ格納用のディレクトリ`libs`を用意する。
+既にあればそれを使い、なければ作成する。
+前項で取得した`SINETStreamAndroid`ライブラリをそこに格納する。
 
-## 作業手順
-
-### ビルド環境設定
-
-Android開発環境では、Gradleによるビルド管理を行なっている。
-ユーザアプリケーションがどの外部ライブラリを参照するかなどの
-設定は制御ファイル「build.gradle」で指定する。
-
-* [Gradle Build Tool](https://gradle.org/)
-* [モジュールレベルビルドファイル](https://developer.android.com/studio/build#module-level)
-
-#### リポジトリ追加
-
-SINETStreamAndroid自身、およびその依存ライブラリであるPaho
-MQTT Androidの取得先を定義する。
-
-* [Using the Paho Android Client](https://github.com/eclipse/paho.mqtt.android#gradle)
-
-「maven」ブロックに複数のURIをまとめて記述したくなるが、個別
-に記述しないと文法エラーとなるので注意すること。
-また「mavenCentral()」は「repositories」の最後に記述する。
-
-
+```console
+    % cd app
+    % mkdir libs
+    % cd libs
+    % cp $HOME/Downloads/sinetstream-android-x.y.z.aar .
 ```
+
+#### 4.1.3 リポジトリ追加
+
+SINETStreamAndroid、およびその依存ライブラリ`Paho MQTT Android`ではそれぞれ参照方法が異なるため、個別に記述する。
+
+`SINETStreamAndroid`ライブラリは、目的のものを手動で手元にダウンロードして、
+ローカルライブラリ格納用の`libs`ディレクトリに配置する。
+それを参照するよう、
+モジュールレベル（この場合`app`）の`build.gradle`に記述する。
+
 ----------（$TOP/app/build.gradle: 抜粋ここから）----------
+```build.gradle
 repositories {
-    [...]
-
-    maven {
-        // SINETStreamAndroid
-        url "https://niidp.pages.vcp-handson.org/sinetstream-android/"
+    flatDir {
+        // For SINETStreamAndroid library
+        dirs "libs"
     }
+}
+```
+----------（$TOP/app/build.gradle: 抜粋ここまで）----------
+
+`Paho MQTT Android`ライブラリは、ネット上の公開先（mavenブロック）を
+モジュールレベルの`build.gradle`に記述する\[1\]。
+
+----------（$TOP/app/build.gradle: 抜粋ここから）----------
+```build.gradle
+repositories {
     maven {
         // The Paho MQTT Android
         url "https://repo.eclipse.org/content/repositories/paho-snapshots/"
     }
     mavenCentral()
 }
+```
 ----------（$TOP/app/build.gradle: 抜粋ここまで）----------
-```
 
-#### 依存関係追加
+\[1\]:
+[Using the Paho Android Client](https://github.com/eclipse/paho.mqtt.android#gradle)
 
-リポジトリから参照するライブラリ名とバージョンを定義する。
+#### 4.1.4 依存関係追加
 
-* [ビルド依存関係の追加](https://developer.android.com/studio/build/dependencies)
+SINETStreamAndroid、およびその依存ライブラリ`Paho MQTT Android`ではそれぞれ参照方法が異なるため、個別に記述する。
 
-ライブラリ開発元での実装状況の進展により、ここで記述したバー
-ジョンより進んでいることがあるかもしれない。
-その場合、AndroidStudioにより該当ライブラリのバージョン更新
-を促される。
+`SINETStreamAndroid`ライブラリは、
+前述のようにローカルライブラリ格納用の`libs`ディレクトリに配置する。
+当該ファイル名の本体部分と拡張子部分に分けて、
+モジュールレベルの`build.gradle`に記述する\[1\]。
 
-```
 ----------（$TOP/app/build.gradle: 抜粋ここから）----------
+```build.gradle
 dependencies {
     // SINETStreamAndroid
-    implementation 'jp.ad.sinet.stream.android:sinetstream-android:0.2.4'
+    implementation(name: 'sinetstream-android-x.y.z', ext: 'aar')
+}
+```
+----------（$TOP/app/build.gradle: 抜粋ここまで）----------
 
+`Paho MQTT Android`ライブラリは、
+ネット上の公開先（mavenブロック）をリポジトリとして指定した。
+そこから参照するライブラリのMavenアーティファクト
+```
+    group-id:artifact-id:version
+```
+をモジュールレベルの`build.gradle`に記述する\[1\]\[2\]。
+
+ライブラリ開発元での実装状況の進展により、
+ここで記述したバージョンより進んでいることがあるかもしれない。
+その場合、`AndroidStudio`により該当ライブラリのバージョン更新を促される。
+
+----------（$TOP/app/build.gradle: 抜粋ここから）----------
+```build.gradle
+dependencies {
     // The Paho MQTT Android
     implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5'
     implementation 'org.eclipse.paho:org.eclipse.paho.android.service:1.1.1'
 }
-----------（$TOP/app/build.gradle: 抜粋ここまで）----------
 ```
+----------（$TOP/app/build.gradle: 抜粋ここまで）----------
+
+\[1\]:
+[ビルド依存関係を追加する](https://developer.android.com/studio/build/dependencies)
+<br>
+\[2\]:
+[Maven依存関係](https://pleiades.io/help/idea/work-with-maven-dependencies.html#generate_maven_dependency)
 
 
-### マニフェストファイルの記述
+### 4.2 マニフェストファイルの記述
 
-#### 利用者権限追加
+#### 4.2.1 利用者権限追加
 
-SINETStreamでは内部でメッセージングシステム（例えばMQTT）を
-用いてネットワーク接続が発生する。
-このため、開発対象のユーザアプリケーションではインターネット
-接続に必要な権限（uses-permission句）を定義する。
-さもないと実行時エラーが発生する。
-
-* [パーミッション](https://developer.android.com/guide/topics/manifest/manifest-intro#perms)
+SINETStreamでは内部でメッセージングシステム（例えば`MQTT`）を利用するため、
+外部との通信が発生する。
+このため、開発対象のユーザアプリケーションでは外部ネットワーク接続に必要な権限（`uses-permission`句）\[1\]を定義する。
+さもないとアプリケーション実行時に権限エラーが発生する。
 
 設定内容を以下に示す。
 
-```
 -----（$TOP/app/src/main/AndroidManifest.xml: 抜粋ここから）-----
-<!-- インターネット接続に必要な権限 -->
+```xml
+<!-- Permissions for the external network (such like INTERNET) access -->
 <uses-permission android:name="android.permission.INTERNET" />
 <uses-permission android:name="android.permission.WAKE_LOCK" />
 <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
------（$TOP/app/src/main/AndroidManifest.xml: 抜粋ここまで）-----
 ```
+-----（$TOP/app/src/main/AndroidManifest.xml: 抜粋ここまで）-----
 
-#### サービスコンポーネント追加
+\[1\]:
+[パーミッション](https://developer.android.com/guide/topics/manifest/manifest-intro#perms)
 
-SINETStreamAndroidの下位層に位置する「Paho MQTT Android」ラ
-イブラリは、ユーザインタフェースを提供するクライアント部分、
-および常駐型サービスから構成される。
-このため「Paho MQTT Android」が提供するサービス名（service句）
-をマニフェストに定義する必要がある。
+#### 4.2.2 サービスコンポーネント追加
 
-* [アプリのコンポーネント](https://developer.android.com/guide/topics/manifest/manifest-intro#components)
+SINETStreamAndroidの下位層に位置する「Paho MQTT Android」ライブラリは、
+ユーザインタフェースを提供するクライアント部分、
+および実際にMQTTメッセージ処理を担当する常駐型サービス\[1\]から構成される。
+このため「Paho MQTT Android」が提供するサービス名（service句）をマニフェストに定義する必要がある。
 
-この設定を忘れてもユーザプログラム自体は起動するが、Androidが
-当該サービスを起動しないため、publish/subscribeの要求が空回り
-する。アプリケーションからの要求は受け付けられるもののネット
-ワークとやりとりされない状態なのでエラーに気づきにくい。
-ともあれ記述を忘れないこと。
+> <em>注意<em>
+>
+> この設定を忘れても「Paho MQTT Android」を利用するユーザプログラム自体は
+> 起動するが、Androidシステムが当該サービスを起動しない。
+> このため、publishやsubscribeなどのAPI関数の処理が空回りする。
+> アプリケーションからの要求は受け付けられるものの、ネットワークとやりとり
+> されない状態なのでエラーに気づきにくい。
 
 設定内容を以下に示す。
 
-```
 -----（$TOP/app/src/main/AndroidManifest.xml: 抜粋ここから）-----
+```xml
 <application ... >
-    <!-- 「Paho MQTT Android」のサービスプロセスを利用 -->
+    <!-- MQTT service provided by Paho MQTT Android -->
     <service android:name="org.eclipse.paho.android.service.MqttService" />
 </application>
+```
 -----（$TOP/app/src/main/AndroidManifest.xml: 抜粋ここまで）-----
+
+\[1\]:
+[アプリのコンポーネント](https://developer.android.com/guide/topics/manifest/manifest-intro#components)
+
+
+### 4.3 SINETStream設定ファイル
+
+#### 4.3.1 配置
+
+SINETStreamを利用するユーザアプリケーションは、
+その動作内容を規定する`YAML`形式\[1\]の設定ファイル「sinetstream_config.yml」を所定の位置に配置する必要がある。
+具体的には、開発Androidアプリケーションソースのリソース領域
+```
+$TOP/app/src/main/res
+```
+配下にサブディレクトリ「raw」を手動で追加\[2\]し、そこに配置する。
+```
+$TOP/app/src/main/res/raw/sinetstream_config.yml
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^
 ```
 
-### SINETStream設定ファイル
-
-#### 配置
-
-SINETStreamを利用するユーザアプリケーションは、その動作内容
-を規定するYAML形式の設定ファイル「sinetstream_config.yml」
-を所定の位置に配置する必要がある。
-開発ソースのリソース領域（$TOP/app/src/main/res）配下にサブ
-ディレクトリ「raw」を手動で追加し、そこに配置する。
-
-* [The Official YAML Web Site](https://yaml.org/)
-* [リソースディレクトリを追加する](https://developer.android.com/studio/write/add-resources#add_a_resource_directory)
+\[1\]:
+[The Official YAML Web Site](https://yaml.org/)
+<br>
+\[2\]:
+[リソースディレクトリを追加する](https://developer.android.com/studio/write/add-resources#add_a_resource_directory)
 
 具体的な操作手順を以下に示す。
 
 **1) `res` ディレクトリ選択：**
 
-AndroidStudio画面左側のProjectペインにて「res」ディレクトリ
-アイコンを選択（カーソル表示された状態）とする。
+`AndroidStudio`画面左側の`Project`ペインにて「res」ディレクトリアイコンを選択（カーソル表示された状態）とする。
 
 **2. `raw` サブディレクトリ作成：**
 
-上記1)の状態でマウス右クリックまたは画面上部のFileメニュー
-から「New -> Android Resource Directory」を選択する。
-ポップアップウィンドウ「New Resource Directory」にて、上から
-２番目のプルダウンメニュー「Resource type」から「raw」を選択
-する。
-その状態で「OK」ボタンを押下すると「res/raw」ディレクトリが
-作成される。
+上記1)の状態でマウス右クリックまたは画面上部の`File`メニューから「New -> Android Resource Directory」を選択する。
+ポップアップウィンドウ「New Resource Directory」にて、
+上から２番目のプルダウンメニュー「Resource type」から「raw」を選択する。
+その状態で「OK」ボタンを押下すると「res/raw」ディレクトリが作成される。
 
 **3. `sinetstream_config.yml` ファイル作成：**
 
-AndroidStudio画面左側のProjectペインにて「raw」ディレクトリ
-アイコンが選択された状態（カーソル表示）とする。
-この状態でマウス右クリックまたは画面上部のFileメニューから
-「New -> File」を選択するとファイル名の入力を促される。
+`AndroidStudio`画面左側の`Project`ペインにて「raw」ディレクトリアイコンが選択された状態（カーソル表示）とする。
+この状態でマウス右クリックまたは画面上部の`File`メニューから「New -> File」を選択するとファイル名の入力を促される。
 ここでは「sinetstream_config.yml」を指定する。
 Enterキー押下により同名の空ファイルが作成される。
 
 **＜既知の問題＞**
-> 上記のように、設定ファイルはソースの一部として組み込まれる。
-> このため設定内容を変更するたびにユーザアプリケーションを再度
+> 上記のように、SINETStream設定ファイルはAndroidアプリケーション
+> ソースの一部として組み込まれる。
+> このため、設定内容を変更するたびにユーザアプリケーションを再度
 > 構築してAndroid実行環境に導入し直す必要がある。
 
-#### 基本設定
+**＜別解＞**
+> Android版のチュートリアル[1]で示したサンプルアプリケーション2種では、
+> GUIによる設定画面を用意して「利用者の操作内容を元にSINETStream設定
+> ファイルを動的に自動生成する」手法を採用している。
+> こちらの実装内容も参照されたい。
+
+\[1\]:
+[Android版クイックスタートガイド](../tutorial-android/index.md)
+
+
+#### 4.3.2 基本設定
 
 SINETStream接続に必要なパラメータ群を記述する。
 ここで書かれた内容は、アプリケーション固有のデータ領域
-（/data/data/\<PACKAGE\>/files）配下に転記され、これが
-「SINETStreamAndroid」内部で参照される。
+```
+/data/data/<PACKAGE>/files
+```
+配下に転記され、これが「SINETStreamAndroid」内部で参照される。
 
-設定ファイルの記述内容は必須項目とオプション項目がある。以下
-に示す項目は必ず記述する必要がある。
+設定ファイルの記述内容は必須項目とオプション項目がある。
+以下に示す項目は必ず記述する必要がある。
 
 * サービス名（任意文字列、検索鍵を兼ねる）
 * メッセージシステム種別（type）
 * 接続先ホスト・ポート（brokers）
 * トピック名（topic）
 
-オプション項目が省略された場合は「Paho MQTT Android」の既定
-値が使われる。
+オプション項目が省略された場合は「Paho MQTT Android」の既定値\[1\]が使われる。
 
-#### 接続先URIの決定方法
+\[1\]:
+[MqttConnectOptions: Constructor Detail](https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttConnectOptions.html)
+
+#### 4.3.3 接続先URIの決定方法
 
 接続先サーバ（ブローカ）URIは一般的に以下のように表現される。
 
@@ -316,9 +418,9 @@ schema://host[:port]
 ^^^^^ 1) ^^^^^^^^^^^ 2)
 ```
 
-SINETStream設定ファイルにおける項目「brokers」で指定するのは
-上記2)のホスト（＋ポート）部分の羅列であり、上記1)のスキーマ
-部分はいくつかの条件の組み合わせで決まる。
+SINETStream設定ファイルにおける項目「brokers」で指定するのは、
+後述のように上記2)の「ホスト（＋ポート）部分の羅列」である。
+なお、上記1)のスキーマ部分はいくつかの条件の組み合わせで決まる。
 
 | transport  | tls        | schema  |
 |------------|------------|---------|
@@ -328,59 +430,59 @@ SINETStream設定ファイルにおける項目「brokers」で指定するの�
 | websockets | なし       | ws      |
 | websockets | あり       | wss     |
 
-さらに、SSL/TLS通信を行うか否かの判定は、後述するように設定
-項目「tls」の記述方法で変わる。
-上記の「transport」および「tls」ともオプション項目であるため
-記述のバリエーションを頭に入れて設定しないと所望のスキーマが
-得られず、サーバとの接続失敗で苦労することになる。
+さらに、SSL/TLS通信を行うか否かの判定は、
+後述するように設定項目「tls」の記述方法で変わる。
+上記の「transport」および「tls」ともオプション項目であるため、
+記述のバリエーションを頭に入れて設定しないと所望のスキーマが得られず、
+サーバとの接続失敗で苦労することになる。
 
 
-#### 接続先ホスト・ポートが複数ある場合の振る舞い
+#### 4.3.4 接続先ホスト・ポートが複数ある場合の振る舞い
 
 SINETStream設定ファイルにおける項目「brokers」で指定する場合、
 次の3通りの書式を受け付ける。
 
 **1) 単一の接続先**
 
-```
+```YAML
 brokers: host1
 ```
 
 **2) 複数の接続先をコンマ接続でリスト指定**
 
-```
+```YAML
 brokers: host1,host2:port2,host3
 ```
 
 **3) 複数の接続先をYAMLリスト形式で指定**
 
-```
+```YAML
 brokers:
   - host1
   - host2:port2
   - host3
 ```
 
-```
+```YAML
 brokers: [host1, host2:port2, host3]
 ```
 
 複数の接続先を指定した場合の振る舞いは以下のようになる。
-「Paho MQTT Android」API仕様の公開文書によれば、サーバURIの
-配列として受け取った候補を上から順に試し、接続に失敗した場合
-は次の接続先を試すことを繰り返す。全滅の場合にエラーで返る。
+「Paho MQTT Android」API仕様の公開文書\[1\]によれば、
+サーバURIの配列として受け取った候補を上から順に試し、
+接続に失敗した場合は次の接続先を試すことを繰り返す。
+全滅の場合にエラーで返る。
 
-* [MqttConnectOptions: setServerURIs](https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttConnectOptions.html)
+\[1\]:
+[MqttConnectOptions: setServerURIs](https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttConnectOptions.html)
 
 
-### SSL/TLSの利用設定
+### 4.4 SSL/TLSの利用設定
 
-SINETStreamを利用するユーザアプリケーションは、対向の相手群
-（ブローカ）との通信路にSSL/TLSを利用することができる。
+SINETStreamを利用するユーザアプリケーションは、
+対向の相手群（ブローカ）との通信路にSSL/TLSを利用することができる。
 
-この場合、ブローカの動作設定と合わせてユーザアプリケーション
-のアセット領域にSSL/TLS証明書を組み込むとともに、その内容を
-設定ファイルに追記する必要がある。
+この場合、ブローカの動作設定と合わせてユーザアプリケーションのアセット領域にSSL/TLS証明書を組み込むとともに、その内容を設定ファイルに追記する必要がある。
 
 ```
 $(TOP)
@@ -392,35 +494,34 @@ $(TOP)
                       +-- raw/  <-- SINETStream設定ファイル
 ```
 
-SSL/TLS証明書ファイル（規定のファイル形式）の所用の場所への
-配置、およびSINETStream設定ファイルへのパラメータ設定を妥当
-にしないとSSL/TLS接続時のハンドシェークで失敗する。
+SSL/TLS証明書ファイル（規定のファイル形式）の所用の場所への配置、
+およびSINETStream設定ファイルへのパラメータ設定を妥当にしないと、
+SSL/TLS接続時のハンドシェークで失敗する。
 
-#### SINETStream設定ファイルへのSSL/TLS項目追記
+#### 4.4.1 SINETStream設定ファイルへのSSL/TLS項目追記
 
-SINETStream設定ファイルにおいてSSL/TLS設定をキーワード「tls」
-の論理値、または複数項目を扱うブロックとして追記する。
+SINETStream設定ファイルにおいてSSL/TLS設定をキーワード「tls」の論理値、
+または複数項目を扱うブロックとして追記する。
 
 **1) 論理値としての設定**
 
-```
-a) SSL/TLSを使わない場合：
+```YAML
+# a) SSL/TLSを使わない場合：
 tls: false （または記述省略）
 ```
 
-```
-b) SSL/TLSを使う場合：
+```YAML
+# b) SSL/TLSを使う場合：
 tls: true
 ```
 
-上記b)の設定は商用のサーバ証明書を購入利用かつクライ
-アント証明書なしで運用する場合限定となる。
+上記b)の設定は「商用のサーバ証明書を購入利用、かつクライアント証明書なし」で運用する場合限定となる。
 
 **2) ブロックで設定（SSL/TLSを使う場合のみ）**
 
    -> クライアント証明書を使う場合はこちらの書式を用いる。
 
-```
+```YAML
 # SSL/TLS設定ブロック
 # この書式の場合はSSL/TLSを使うものと看做す。
 tls:
@@ -438,13 +539,16 @@ tls:
   keyfilePassword: xxx
 ```
 
-ここでは、SINETStream設定ファイルにSSL/TLS証明書の情報を記載
-した。次項でこれら実体ファイルの導入方法を示す。
+ここでは、SINETStream設定ファイルにSSL/TLS証明書の情報を記載した。
+次項でこれら実体ファイルの導入方法を示す。
 
-#### SSL/TLS証明書ファイル群の導入
+#### 4.4.2 SSL/TLS証明書ファイル群の導入
 
-既述したSINETStream設定ファイルとは異なり、SSL/TLS証明書ファ
-イル群は開発ソースのアセット領域（$TOP/app/src/main/assets）
+既述したSINETStream設定ファイルとは異なり、
+SSL/TLS証明書ファイル群は開発ソースのアセット領域
+```
+$TOP/app/src/main/assets
+```
 配下に配置する。
 
 **1）自己署名サーバCA証明書**
@@ -456,8 +560,8 @@ tls:
 --> クライアント認証を必要とする場合に用意する
 
 導入手順はSINETStream設定ファイルの場合と同様である。
-開発環境AndroidStudio上の操作でサブディレクトリ「assets」を
-作成し、そこに所用のSSL/TLS証明書ファイルを配置する。
+開発環境`AndroidStudio`上の操作でサブディレクトリ「assets」を作成し、
+そこに所用のSSL/TLS証明書ファイルを配置する。
 
 **＜既知の問題＞**
 > 上記のように、SSL/TLS証明書ファイル群はソースの一部として組
@@ -468,61 +572,72 @@ tls:
 > 配置してそれをSINETStreamAndroidライブラリが直接参照するよう
 > な方式に改める。
 
-### 開発物のAndroid機材への導入
+### 4.5 開発成果物のAndroid端末への導入
 
-環境構築やソース実装を経てユーザアプリケーションを構築すると
-APK（Android package）アーカイブファイルが生成される。これは
-コード、データ、およびリソースファイルを一つにまとめたもので
-ある。
-最終的にはこのAPKを実行環境（エミュレータや実機）に導入して
-実行することになる。
+開発環境`AndroidStudio`を準備し、ユーザアプリケーションを実装\[1\]\[2\]すると、
+`APK`（Android package）と呼ばれるアーカイブファイルが生成される。
 
-* [アプリの基礎](https://developer.android.com/guide/components/fundamentals)
-* [アプリをビルドして実行する](https://developer.android.com/studio/run)
+APKとは、アプリケーションを構成する「コード、データ、およびリソースファイル」をパッケージとして一つにまとめたものである。
+この生成物`APK`ファイルを実行環境（エミュレータや実機）に導入する方法について述べる。
+
+\[1\]:
+[アプリの基礎](https://developer.android.com/guide/components/fundamentals)
+<br>
+\[2\]:
+[アプリをビルドして実行する](https://developer.android.com/studio/run)
+
+#### 4.5.1 Androidエミュレータに導入する場合
+
+以下の要領で`APK`ファイルをエミュレータに導入する\[1\]。
+
+1. Android仮想デバイス（AVD: Android Virtual Device）の用意
+
+> 開発環境`AndroidStudio`付属の`Android仮想デバイス`（AVD）ツールを用いて、
+> 所用の諸元（画面解像度、APIレベル、CPU種別など）に
+> 沿った`AVD`を事前作成しておく。
+
+2. AVDの起動
+
+> 目的の諸元を満たす`AVD`を起動するとAndroid端末イメージが表示される。
+> GUI経由で実機同様に操作したり、
+> 遠隔操作（`APK`導入やデバッグなど）ができるようになる。
+
+3. アプリケーションの導入と起動
+
+> エミュレータが実行中に`AndroidStudio`上の「Run」コマンドを実行する。
+> 必要に応じてソースが再構築され、生成`APK`ファイルがエミュレータに導入される。
+> 続けて、当該プログラムが自動的に動作を開始する。
+
+\[1\]:
+[Android Emulator上でアプリを実行する](https://developer.android.com/studio/run/emulator)
 
 
-#### Androidエミュレータに導入する場合
+#### 4.5.2 Android実機に導入する場合
 
-開発環境AndroidStudio付属のAndroid仮想デバイス（AVD）ツール
-を用いて、所用の仕様（画面解像度、APIレベル、CPU種別など）に
-沿ったAVDを事前作成しておく。
-このAVDを起動するとAndroid画面が表示され、AndroidStudioから
-実機同様に遠隔操作（APK導入やデバッグなど）できるようになる。
-エミュレータが実行中にAndroidStudio上の「Run」コマンドを実行
-すると（必要に応じてソースが再構築されて）生成APKファイルが
-エミュレータに導入され、自動的に動作を開始する。
+以下の要領で`APK`ファイルを実機に導入する\[1\]。
+1. Android実機の設定画面を操作し、開発者モードを有効化する。
+2. 設定コマンドの開発者メニュー経由で「USBデバッグ」を有効化する。
+3. 実機と開発機材をUSBケーブルで接続する。
+4. 実機に「デバッグモードで接続して良いか」を確認するダイアログが表示される。
+デバッグ接続を承認すると、`AndroidStudio`で認識される。
+5. この状態で`AndroidStudio`上の「Run」コマンドを実行する。
 
-* [Android Emulator上でアプリを実行する](https://developer.android.com/studio/run/emulator)
+あるいは開発機材上で`adb`コマンドを直接操作することで、
+対象`APK`ファイルを実機に導入できる\[2\]。
 
-#### Android実機に導入する場合
-
-以下の要領でAPKファイルを実機に導入する。
-Android実機の設定画面を操作し、開発者モードを有効化する。
-設定コマンドの開発者メニュー経由で「USBデバッグ」を有効化する。
-実機と開発機材をUSBケーブルで接続する。
-実機に「デバッグモードで接続して良いか」を確認するダイアログ
-が表示される。接続を承認すると、AndroidStudioで認識される。
-この状態でAndroidStudio上の「Run」コマンドを実行する。
-
-あるいはターミナル上でadbコマンドを直接操作することで対象の
-APKファイルを実機に導入できる。
-
-```
------（操作イメージ：ここから）-----
-PC% adb devices
-...  <-- デバイス識別子
-
+```console
 PC% adb install -r XXX.apk
 Success
------（操作イメージ：ここから）-----
 ```
 
+\[1\]:
+[ハードウェアデバイス上でのアプリの実行](https://developer.android.com/studio/run/device)
+<br>
+\[2\]:
+[Android Debug Bridge (adb)](https://developer.android.com/studio/command-line/adb)
 
-* [ハードウェアデバイス上でのアプリの実行](https://developer.android.com/studio/run/device)
-* [Android Debug Bridge (adb)](https://developer.android.com/studio/command-line/adb)
 
+## 5. まとめ
 
-## まとめ
-
-SINETStreamAndroidを用いるアプリケーション開発者が留意すべき
-項目について一通り概説した。
+SINETStreamAndroidを用いるアプリケーション開発者が留意すべき項目について、
+一通り概説した。
