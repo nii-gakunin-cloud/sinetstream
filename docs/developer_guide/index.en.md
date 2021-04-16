@@ -39,8 +39,6 @@ Plugins can be written in Python or Java supported by SINETStream.
     * [Python](plugin_value_type_python.md)
     * [Java](plugin_value_type_java.md)
 
-<!---
 ## External Specifications
 
-* [Data format](data_format.en.md)
---->
+* [Message format](message_format.md)

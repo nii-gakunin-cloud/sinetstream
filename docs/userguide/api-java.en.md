@@ -414,16 +414,19 @@ Therefore, a stream of encrypted massages will be measured if the data encryptio
 * getMsgCountRate()
     * The rate of the number of messages sent and received.
     * = msg_count_total / time
+    * return 0 if time is 0.
 * getMsgBytesTotal()
     * The Cumulative amount of messages sent and received in bytes.
 * getMsgBytesRate()
     * The rate of the amount of messages sent and received.
     * = msg_bytes_total / time
+    * return 0 if time is 0.
 * getMsgSizeMin()
     * The minimum size of messages sent and received in bytes.
 * getMsgSizeAvg()
     * The average size of messages sent and received in bytes.
     * = msg_bytes_total / msg_count_total
+    * return 0 if msg_count_total is 0.
 * getMsgSizeMax()
     * The maximum size of messages sent and received in bytes.
 * getErrorCountTotal()
@@ -431,6 +434,7 @@ Therefore, a stream of encrypted massages will be measured if the data encryptio
 * getErrorCountRate()
     * The error rate.
     * = error_count_total / time
+    * return 0 if time is 0.
 * getRaw()
     * The metrics provided by the specified messaging system client library.
 

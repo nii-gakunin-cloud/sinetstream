@@ -656,6 +656,7 @@ with AsyncMessageWriter('service-1') as writer:
 
 メトリクス情報のクラス。
 Reader/Writerオブジェクトに対してmetricsプロパティを参照すると得られる。
+Reader/Writerオブジェクトをclose()したあとはcloseしたときのメトリクス情報が得られる(ただしrawはNone)。
 
 * MessageReader.metrics
 * MessageWriter.metrics
@@ -704,6 +705,7 @@ SINETStreamの統計情報だけでなくメッセージングシステム固有
     * float
     * 送受信メッセージ数レート
     * = msg_count_total / time
+    * timeが0のときは0を返す。
 * msg_bytes_total
     * int
     * 累積送受信メッセージ量(bytes)
@@ -711,12 +713,15 @@ SINETStreamの統計情報だけでなくメッセージングシステム固有
     * float
     * 送受信メッセージ量レート
     * = msg_bytes_total / time
+    * timeが0のときは0を返す。
 * msg_size_min
     * int
     * 最小送受信メッセージサイズ(bytes)
 * msg_size_avg
     * float
     * 平均送受信メッセージサイズ(bytes)
+    * = msg_bytes_total / msg_count_total
+    * msg_count_totalが0のときは0を返す。
 * msg_size_max
     * int
     * 最大送受信メッセージサイズ(bytes)
@@ -727,6 +732,7 @@ SINETStreamの統計情報だけでなくメッセージングシステム固有
     * float
     * エラーレート
     * = error_count_total / time
+    * timeが0のときは0を返す。
 
 * raw
     * メッセージングシステム固有の統計情報

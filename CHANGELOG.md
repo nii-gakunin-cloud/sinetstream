@@ -1,5 +1,18 @@
 # Changelog
 
+## WIP: Changes from v1.5.1
+
+### Added
+
+- The message format specification
+- All-in-one tutorial container supports Raspberry Pi OS
+    - tested on Raspberry Pi 4 Model B with mem 4GB
+
+### Fixed
+
+- No division by zero occurs when calculating an average in a metrics information. (Python, Java)
+- A metrics can be gotten after close. (Python, Java)
+
 ## [v1.5.1] - 2021-03-24
 
 ### Fixed

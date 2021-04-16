@@ -1,0 +1,132 @@
+FROM node:14-buster-slim AS build
+
+COPY chart /opt/chart/
+
+WORKDIR /opt/chart
+
+RUN npm install -g @vue/cli \
+ && rm -rf node_modules package-lock.json \
+ && npm install
+
+RUN npm run build
+
+FROM debian:buster
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+RUN apt-get update \
+ && apt-get -y install --no-install-recommends \
+      curl \
+      gnupg \
+      procps \
+      ca-certificates \
+      software-properties-common \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
+
+# Install Apache Kafka(Confluent)
+ARG CONFLUENT_VERSION=6.0
+ARG CONFLUENT_COMMUNITY_VERSION=2.13
+RUN curl -s https://packages.confluent.io/deb/${CONFLUENT_VERSION}/archive.key \
+    | apt-key add - \
+ && add-apt-repository "deb [arch=amd64] https://packages.confluent.io/deb/${CONFLUENT_VERSION} stable main"
+RUN apt-get update \
+ && apt-get -y install --no-install-recommends \
+      confluent-community-${CONFLUENT_COMMUNITY_VERSION} \
+      openjdk-11-jdk-headless \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
+RUN sed -i -e '/KAFKA_JVM_PERFORMANCE_OPTS/s/-XX:+UseG1GC//' /usr/bin/kafka-run-class
+RUN useradd -r -g 101 cp-kafka \
+ && useradd -r -g 101 cp-kafka-connect \
+ && mkdir -p /var/lib/zookeeper /var/lib/kafka /var/log/kafka \
+ && chown cp-kafka:confluent /var/lib/zookeeper /var/lib/kafka /var/log/kafka \
+ && chmod 775 /var/log/kafka
+VOLUME /var/lib/kafka
+VOLUME /var/lib/zookeeper
+
+# Install Eclipse Mosquitto
+RUN apt-get update \
+ && apt-get -y install --no-install-recommends \
+      mosquitto \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
+
+# Install Python 3
+RUN apt-get update \
+ && apt-get -y install --no-install-recommends \
+      python3 \
+      python3-pip \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/* \
+ && pip3 install -U --no-cache-dir pip setuptools PyYAML
+
+# Kafka Connect: S3
+RUN apt-get update \
+ && apt-get -y install --no-install-recommends \
+      confluent-hub-client \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/* \
+ && confluent-hub install --no-prompt confluentinc/kafka-connect-s3:latest
+
+# Kafka Connect: MQTT
+# ARG STREAM_REACTOR_VERSION=2.1.3
+ARG STREAM_REACTOR_VERSION=2.1.1
+ARG STREAM_REACTOR_KAFKA_VERSION=2.5.0
+RUN mkdir -p /usr/share/java/stream-reactor \
+ && curl -L https://github.com/lensesio/stream-reactor/releases/download/${STREAM_REACTOR_VERSION}/kafka-connect-mqtt-${STREAM_REACTOR_VERSION}-${STREAM_REACTOR_KAFKA_VERSION}-all.tar.gz | \
+      tar xzf - -C /usr/share/java/stream-reactor
+
+# Nginx
+RUN apt-get update \
+ && apt-get -y install --no-install-recommends \
+      nginx \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
+RUN sed -i -r -e '/gzip/s/^(\s*)gzip/#\1gzip/' \
+      -e '/sites-enabled/s/^(\s*)include/#\1include/' /etc/nginx/nginx.conf
+COPY nginx/* /etc/nginx/conf.d/
+
+# MinIO
+RUN curl -L -o /usr/bin/minio https://dl.min.io/server/minio/release/linux-arm/minio \
+ && curl -L -o /usr/bin/mc https://dl.min.io/client/mc/release/linux-arm/mc \
+ && chmod +x /usr/bin/minio /usr/bin/mc \
+ && mkdir -p /var/lib/minio
+VOLUME /var/lib/minio
+
+# intall tools
+RUN apt-get update \
+ && apt-get -y install --no-install-recommends \
+      sudo \
+      vim \
+      iproute2 \
+      netcat-openbsd \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
+
+# Install Supervisor
+RUN pip3 install --no-cache-dir -U supervisor \
+ && mkdir -m 0700 /var/run/supervisor /var/log/supervisor
+COPY supervisord.conf /etc/supervisord.conf
+
+RUN curl -L -o /usr/local/bin/wait-for-it.sh \
+      https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh \
+ && chmod a+x /usr/local/bin/wait-for-it.sh
+
+CMD ["/usr/local/bin/supervisord", "-n", "-c", "/etc/supervisord.conf"]
+
+EXPOSE 80 1883
+
+COPY java /usr/share/java/
+COPY scripts/* /usr/local/bin/
+COPY --from=build /opt/chart/dist /var/www/html
+RUN ln -s /var/www/html/index.html /var/www/html/chart.html
+
+# Add user
+ARG USERNAME=user01
+RUN useradd -m $USERNAME \
+ && echo "${USERNAME}:${USERNAME}" | chpasswd \
+ && echo "${USERNAME} ALL=(ALL) ALL" > /etc/sudoers.d/90-${USERNAME} \
+ && chmod 400 /etc/sudoers.d/90-${USERNAME}
+WORKDIR /home/$USERNAME
+

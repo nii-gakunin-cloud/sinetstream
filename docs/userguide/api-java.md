@@ -413,16 +413,19 @@ Reader/Writerオブジェクトに対してresetMetrics()メソッドを呼び�
 * getMsgCountRate()
     * 送受信メッセージ数レート
     * = msg_count_total / time
+    * timeが0のときは0を返す。
 * getMsgBytesTotal()
     * 累積送受信メッセージ量(bytes)
 * getMsgBytesRate()
     * 送受信メッセージ量レート
     * = msg_bytes_total / time
+    * timeが0のときは0を返す。
 * getMsgSizeMin()
     * 最小送受信メッセージサイズ(bytes)
 * getMsgSizeAvg()
     * 平均送受信メッセージサイズ(bytes)
     * = msg_bytes_total / msg_count_total
+    * msg_count_totalが0のときは0を返す。
 * getMsgSizeMax()
     * 最大送受信メッセージサイズ(bytes)
 * getErrorCountTotal()
@@ -430,6 +433,7 @@ Reader/Writerオブジェクトに対してresetMetrics()メソッドを呼び�
 * getErrorCountRate()
     * エラーレート
     * = error_count_total / time
+    * timeが0のときは0を返す。
 
 * getRaw()
     * メッセージングシステム固有の統計情報

@@ -656,6 +656,7 @@ All the properties are read only.
 
 Metrics class
 You can get metrics information by referencing the metrics property for Reader/Writer objects.
+After close() Reader/Writer objects, you can get metrics information when it is closed (but raw is None).
 
 * MessageReader.metrics
 * MessageWriter.metrics
@@ -703,6 +704,7 @@ Therefore, a stream of encrypted massages will be measured if the data encryptio
     * float
     * The rate of the number of messages sent and received.
     * = msg_count_total / time
+    * return 0 if time is 0.
 * msg_bytes_total
     * int
     * The Cumulative amount of messages sent and received in bytes.
@@ -710,12 +712,15 @@ Therefore, a stream of encrypted massages will be measured if the data encryptio
     * float
     * The rate of the amount of messages sent and received.
     * = msg_bytes_total / time
+    * return 0 if time is 0.
 * msg_size_min
     * int
     * The minimum size of messages sent and received in bytes.
 * msg_size_avg
     * float
     * The average size of messages sent and received in bytes.
+    * = msg_bytes_total / msg_count_total
+    * return 0 if msg_count_total is 0.
 * msg_size_max
     * int
     * The maximum size of messages sent and received in bytes.
@@ -726,6 +731,7 @@ Therefore, a stream of encrypted massages will be measured if the data encryptio
     * float
     * The error rate.
     * = error_count_total / time
+    * return 0 if time is 0.
 * raw
     * The metrics provided by the specified messaging system client library.
 

@@ -1,9 +1,9 @@
 FROM centos:7.9.2009
 
 # Install Apache Kafka
-ARG KAFKA_VERSION=2.6.0
+ARG KAFKA_VERSION=2.7.0
 ENV KAFKA_VERSION $KAFKA_VERSION
-ARG KAFKA_URL=http://ftp.riken.jp/net/apache/kafka/${KAFKA_VERSION}/kafka_2.13-${KAFKA_VERSION}.tgz
+ARG KAFKA_URL=https://archive.apache.org/dist/kafka/${KAFKA_VERSION}/kafka_2.13-${KAFKA_VERSION}.tgz
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN curl -s $KAFKA_URL | tar xzf - -C /srv \
  && yum -y install java-11-openjdk-headless \
@@ -26,11 +26,10 @@ RUN yum -y install \
 
 
 # Install Python 3.6
-RUN yum -y --enablerepo=epel install \
-      python36 \
-      python36-PyYAML \
+RUN yum -y install \
+      python3 \
  && yum clean all \
- && pip3 install -U pip setuptools
+ && pip3 install -U pip setuptools PyYAML
 
 
 # intall tools

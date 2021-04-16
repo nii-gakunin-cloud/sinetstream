@@ -46,7 +46,7 @@ curl -f -X POST ${CONNECTOR_URL} \
 EOS
 }
 
-if /usr/local/bin/wait-for-it.sh localhost:8083 -t 120 ; then
+if /usr/local/bin/wait-for-it.sh localhost:8083 -t 1200 ; then
   for ((i=0; i < $retry; i++)); do
       if setup_mqtt_connector; then
           break
