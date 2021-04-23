@@ -1,6 +1,6 @@
 # Changelog
 
-## WIP: Changes from v1.5.1
+## [v1.5.2] - 2021-04-23
 
 ### Added
 
