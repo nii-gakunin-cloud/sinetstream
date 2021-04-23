@@ -4,9 +4,12 @@
 
 ### Added
 
+- English documents for tutorial-android
 - The message format specification
 - All-in-one tutorial container supports Raspberry Pi OS
     - tested on Raspberry Pi 4 Model B with mem 4GB
+- python/sample/perftool
+    - send/receive data and output the obtained metrics information
 
 ### Fixed
 

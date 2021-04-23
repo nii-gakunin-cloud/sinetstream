@@ -26,10 +26,12 @@ import pytest
 from sinetstream import (
     MessageReader, AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE,
     InvalidArgumentError, AlreadyConnectedError,
+    Metrics,
 )
 from conftest import SERVICE, TOPIC, TOPIC2
 
 logging.basicConfig(level=logging.CRITICAL)
+logger = logging.getLogger(__name__)
 pytestmark = pytest.mark.usefixtures('setup_config')
 
 
@@ -80,6 +82,9 @@ def test_reader_timeout():
     with MessageReader(SERVICE, TOPIC, receive_timeout_ms=3000) as f:
         for msg in f:
             pass
+        m = f.metrics
+        assert isinstance(m, Metrics)
+        assert isinstance(m.raw, dict)
 
 
 def test_reader_kafka_opt():

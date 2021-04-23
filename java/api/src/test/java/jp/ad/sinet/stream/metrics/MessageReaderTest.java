@@ -40,8 +40,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MessageReaderTest implements ConfigFileAware {
@@ -60,6 +61,13 @@ class MessageReaderTest implements ConfigFileAware {
 
         try (MessageReader<String> reader = readerBuilder.getReader();
              MessageWriter<String> writer = writerFactory.getWriter()) {
+            //System.err.println("XXX:TEST " + reader.getMetrics().toString());
+            assertNotNull(reader.getMetrics().toString());
+            assertNotNull(writer.getMetrics().toString());
+            assertEquals(0, writer.getMetrics().getMsgCountRate());
+            assertEquals(0, writer.getMetrics().getMsgBytesRate());
+            assertEquals(0, writer.getMetrics().getMsgSizeAvg());
+            assertEquals(0, writer.getMetrics().getErrorCountRate());
             lines.forEach(writer::write);
             assertIterableEquals(lines, reader.stream().map(Message::getValue).collect(Collectors.toList()));
             Metrics mr = reader.getMetrics();

@@ -96,9 +96,11 @@ class MetricsTest {
                             .config(getConfigFile(workdir)).service(getServiceName())
                             .receiveTimeout(Duration.ofSeconds(3))
                             .build();
+            MessageReader<String> reader0 = null;
+            int count = 0;
             try (MessageReader<String> reader = builder.getReader()) {
+                reader0 = reader;
                 Message<String> msg;
-                int count = 0;
                 while (Objects.nonNull(msg = reader.read())) {
                     assertNotNull(msg.getValue());
                     count++;
@@ -109,6 +111,10 @@ class MetricsTest {
                 Object raw_metrics = metrics.getRaw();
                 assertTrue(raw_metrics instanceof java.util.Map);
             }
+            Metrics metrics = reader0.getMetrics();
+            assertEquals(metrics.getMsgCountTotal(), count);
+            Object raw_metrics = metrics.getRaw();
+            assertNull(raw_metrics);
         }
     }
 }

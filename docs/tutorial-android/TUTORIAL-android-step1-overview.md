@@ -19,7 +19,7 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-[English](TUTORIAL-ANDROID-STEP1-OVERVIEW.en.md)
+[English](TUTORIAL-android-step1-overview.en.md)
 
 # チュートリアル - STEP1: テキスト送受信アプリの実行
 
@@ -164,7 +164,7 @@ Android版`SINETStream`ライブラリの提供する全ての機能を網羅し
 
 * `Broker`接続失敗のエラーダイアログが表示される
     * Android端末が外部ネットワークに到達可能、
-すなわち携帯電話網またはWiFiが有効（= 機内モードでない）ことを確認してください。
+すなわち携帯電話網またはWi-Fiが有効（= 機内モードでない）ことを確認してください。
     * バックエンド側で`Broker`が稼働中であることを確認してください。
 
 * `Broker`との接続タイムアウトになる

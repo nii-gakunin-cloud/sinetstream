@@ -4,15 +4,15 @@ services:
     build: broker
     image: mqtt_test_broker
     hostname: broker
-    ports:
-    - "1883:1883" # MQTT
-    - "1884:1884" # MQTT password authentication
-    - "1885:1885" # MQTT WebSocket
-    - "8883:8883" # MQTT TLS
-    - "8884:8884" # MQTT TLS password authentication
-    - "8885:8885" # MQTT TLS client certificate
-    - "8886:8886" # MQTT Secure WebSocket
-    - "18080:8080" # certs
+    #ports:
+    #- "1883:1883" # MQTT
+    #- "1884:1884" # MQTT password authentication
+    #- "1885:1885" # MQTT WebSocket
+    #- "8883:8883" # MQTT TLS
+    #- "8884:8884" # MQTT TLS password authentication
+    #- "8885:8885" # MQTT TLS client certificate
+    #- "8886:8886" # MQTT Secure WebSocket
+    #- "18080:8080" # certs
     networks:
       mqtt_net:
         ipv4_address: 192.168.65.10
@@ -39,8 +39,8 @@ services:
       MQTT_BROKER_HOSTNAME: broker
       CERT_URL: http://broker:8080
     working_dir: /build/plugin-mqtt
-    command: ../gradlew check
-#    command: /bin/bash
+    command: sh -c "sed -i.bak '/^jdk.tls.disabledAlgorithms=/,/^$$/{s/^/#/}' /usr/local/openjdk-8/jre/lib/security/java.security && ../gradlew check"
+#    command: sh -c "sed -i.bak '/^jdk.tls.disabledAlgorithms=/,/^$$/{s/^/#/}' /usr/local/openjdk-8/jre/lib/security/java.security && /bin/bash"
 #    tty: true
 #    stdin_open: true
     networks:

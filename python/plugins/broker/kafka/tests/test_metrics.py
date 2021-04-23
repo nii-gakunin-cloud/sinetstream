@@ -46,8 +46,8 @@ consistency = AT_LEAST_ONCE
 def test_metrics0_reader():
     with MessageReader(SERVICE, TOPIC) as f:
         m = f.metrics
-        assert type(m) == Metrics
-        assert type(m.raw) is dict
+        assert isinstance(m, Metrics)
+        assert isinstance(m.raw, dict)
         assert m.start_time > 0
         assert m.end_time > 0
         assert m.end_time >= m.start_time
@@ -56,13 +56,16 @@ def test_metrics0_reader():
         assert m.msg_size_min is None
         assert m.msg_size_max is None
         assert m.error_count_total == 0
+    m2 = f.metrics
+    assert isinstance(m2, Metrics)
+    assert m2.raw is None
 
 
 def test_metrics0_writer():
     with MessageWriter(SERVICE, TOPIC) as f:
         m = f.metrics
-        assert type(m) == Metrics
-        assert type(m.raw) is dict
+        assert isinstance(m, Metrics)
+        assert isinstance(m.raw, dict)
         assert m.start_time > 0
         assert m.end_time > 0
         assert m.end_time >= m.start_time
@@ -71,6 +74,9 @@ def test_metrics0_writer():
         assert m.msg_size_min is None
         assert m.msg_size_max is None
         assert m.error_count_total == 0
+    m2 = f.metrics
+    assert isinstance(m2, Metrics)
+    assert m2.raw is None
 
 
 def test_metrics(setup_messages, config_topic):
@@ -98,8 +104,8 @@ def test_metrics(setup_messages, config_topic):
     msg_size_min = min(msg_sizes)
     msg_size_max = max(msg_sizes)
 
-    assert type(writer_metrics) == Metrics
-    assert type(writer_metrics.raw) is dict
+    assert isinstance(writer_metrics, Metrics)
+    assert isinstance(writer_metrics.raw, dict)
     assert writer_metrics.start_time > 0
     assert writer_metrics.end_time > 0
     assert writer_metrics.end_time >= writer_metrics.start_time
@@ -109,8 +115,8 @@ def test_metrics(setup_messages, config_topic):
     assert writer_metrics.msg_size_max >= msg_size_max
     assert writer_metrics.error_count_total == 0
 
-    assert type(reader_metrics) == Metrics
-    assert type(reader_metrics.raw) is dict
+    assert isinstance(reader_metrics, Metrics)
+    assert isinstance(reader_metrics.raw, dict)
     assert reader_metrics.start_time > 0
     assert reader_metrics.end_time > 0
     assert reader_metrics.end_time >= reader_metrics.start_time
@@ -119,6 +125,19 @@ def test_metrics(setup_messages, config_topic):
     assert reader_metrics.msg_size_min >= msg_size_min
     assert reader_metrics.msg_size_max >= msg_size_max
     assert reader_metrics.error_count_total == 0
+
+
+# XXX this test cannot reproduce the reported probrem:
+# XXX     getting metrics after timedout causes exception.
+# def test_metrics_reader_timeout():
+#     with MessageReader(SERVICE, TOPIC, receive_timeout_ms=3000) as f:
+#         for msg in f:
+#             pass
+#         m = f.metrics
+#         # print(f"XXX metrics={m}")
+#         # print(f"XXX metrics.raw={m.raw}")
+#         assert type(m) == Metrics
+#         assert m.raw is None
 
 
 @pytest.fixture()

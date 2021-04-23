@@ -103,12 +103,12 @@ public class SinetStreamIO<T extends PluginMessageIO> {
         metrics.setMsgSizeMin(this.ioMetrics.msgSizeMin != Long.MAX_VALUE ? this.ioMetrics.msgSizeMin : -1);
         metrics.setMsgSizeMax(this.ioMetrics.msgSizeMax);
         metrics.setErrorCountTotal(this.ioMetrics.errorCountTotal);
-        metrics.setRaw(target.getMetrics());
+        metrics.setRaw(closed.get() ? null : target.getMetrics());
         return metrics;
     }
     public void resetMetrics(boolean reset_raw) {
         this.ioMetrics.resetMetrics();
-        if (reset_raw)
+        if (reset_raw && !closed.get())
             target.resetMetrics();
     }
 

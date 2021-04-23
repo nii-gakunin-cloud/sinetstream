@@ -19,7 +19,7 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-[English](TUTORIAL-ANDROID-STEP2-OVERVIEW.en.md)
+[English](TUTORIAL-android-step2-overview.en.md)
 
 # チュートリアル - STEP2: センサ情報収集アプリの実行
 
@@ -123,13 +123,13 @@ Android端末のセンサー情報収集アプリを実際に動かす前に、
     http://<server_address>/chart.html
 ```
 
-URLのサーバのアドレス（IPアドレス指定、またはFQDN指定）部分は、
-バックエンドシステムが稼動するホスト機材のものです。
+上記URLのサーバアドレス部分は、
+バックエンドシステム用のコンテナイメージが稼動するホスト機材を指定します。
 ポート番号は標準の80番を使いますが、
-変更する場合は上記`docker run`の引数「-p 80:80」で調整してください。
+変更する場合は上記`docker run`の引数「-p」で調整してください。
 
 グラフ表示画面の構成や表示対象の編集など、詳細に関しては別紙
-[チュートリアル - SINETStream Androidのチュートリアル用ウェブブラウザ](TUTORIAL-android-step2-webbrowser.md)
+[チュートリアル - センサーデータ可視化用のウェブインタフェース](TUTORIAL-android-step2-webbrowser.md)
 を参照ください。
 
 
@@ -165,8 +165,8 @@ Android版`SINETStream`ライブラリの提供する全ての機能を網羅し
     * ユーザ認証、SSL/TLS接続、データ暗号化のいずれも実施せず、
 最も簡易な方法で接続します。
 
-* トピック名の制約
-    * `Broker`の背後にあるバックエンドシステムは、特定のトピック名`sensor-data`を鍵にしてメッセージを抽出します。
+* 固定トピック名の使用
+    * `Broker`の背後にあるバックエンドシステムは、固定トピック名`sensor-data`を検索鍵にしてメッセージを抽出します。
     * トピック名が合っていないと「`Broker`には届くのにバックエンドシステムに処理されない」状態になりますのでご注意ください。
 
 * センサー情報取得時の制約
@@ -213,7 +213,7 @@ Android版`SINETStream`ライブラリの提供する全ての機能を網羅し
 
 * `Broker`接続失敗のエラーダイアログが表示される
     * Android端末が外部ネットワークに到達可能、
-すなわち携帯電話網またはWiFiが有効（= 機内モードでない）ことを確認してください。
+すなわち携帯電話網またはWi-Fiが有効（= 機内モードでない）ことを確認してください。
     * バックエンド側で`Broker`が稼働中であることを確認してください。
 
 * `Broker`との接続タイムアウトになる
@@ -239,11 +239,14 @@ Android版`SINETStream`ライブラリの提供する全ての機能を網羅し
         * 照度計（light）
         * 加速度計（accelerometer）
     * 上記以外のセンサー種別を観測したい場合、あるいはAndroid端末側で対応していない場合は、グラフ画面操作により表示対象のセンサー種別を設定してください。
+    * 詳細に関しては別紙
+[チュートリアル - センサーデータ可視化用のウェブインタフェース](TUTORIAL-android-step2-webbrowser.md)
+を参照ください。
 
 * 利用者が権限を許可していないセンサー種別を指定した
     * センサー種別によっては利用者が明示的に権限を設定する必要があります。
     * 現状では「step_counter, step_detector」が該当します。
-    * 以下の手順でアプリケーションの`Phisical activity`権限を許可してください。
+    * 以下の手順でアプリケーションの`Physical activity`権限を許可してください。
 ```
     Settings
     --> Apps & notifications

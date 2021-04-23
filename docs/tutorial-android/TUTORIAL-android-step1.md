@@ -19,7 +19,7 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-[English](TUTORIAL-ANDROID-STEP1.en.md)
+[English](TUTORIAL-android-step1.en.md)
 
 # チュートリアル - ANDROID-STEP1
 
@@ -31,9 +31,9 @@ under the License.
 2. テキスト送受信アプリの導入
 3. テキスト送受信アプリの操作
 3.1 画面遷移
-3.2. 初期画面
-3.3. 設定画面
-3.4. 主画面
+3.2 初期画面
+3.3 設定画面
+3.4 主画面
 
 付録
 A.1 ソースコード
@@ -91,7 +91,7 @@ TUTORIAL-android-step1-overview.md#4-バックエンド側の作業)
 * ネットワーク環境
 
   * 本アプリを実行するAndroid端末と`Broker`とはIP（Internet Protocol）ネットワークで接続されます。
-携帯電話網やWiFiを介して両者のIP疎通を確保してください。
+携帯電話網やWi-Fiを介して両者のIP疎通を確保してください。
 
 
 ## 2. テキスト送受信アプリの導入
@@ -120,7 +120,7 @@ TUTORIAL-android-step1-overview.md#4-バックエンド側の作業)
 各画面の構成および操作詳細は後述します。
 
 
-### 3.2. 初期画面
+### 3.2 初期画面
 
 ![初期画面](images/step1/activity_launcher.png)
 
@@ -134,8 +134,8 @@ TUTORIAL-android-step1-overview.md#4-バックエンド側の作業)
   * 設定画面の処理が終わると、この初期画面に戻る
 * メニューボタン
   * 画面上部のタイトル右端の「縦3つの点」を押下すると、メニューが展開される
-    * `About`：このアプリについて
     * `Help`：ヘルプ表示
+    * `About`：このアプリについて
 
 本アプリ導入直後のように、
 [SINETStream設定ファイル](../userguide/config-android.html)
@@ -144,7 +144,7 @@ TUTORIAL-android-step1-overview.md#4-バックエンド側の作業)
 このような場合、まずは`Settings`ボタンを押下してSINETStreamの動作環境設定操作を実行してください。
 
 
-### 3.3. 設定画面
+### 3.3 設定画面
 
 Android版の
 [SINETStreamライブラリ](../userguide/android.html)
@@ -152,9 +152,8 @@ Android版の
 [SINETStream設定ファイル](../userguide/config-android.html)
 を「対向`Broker`との接続条件に適合するよう」設定する必要があります。
 
-Androidアプリケーション単体で「上記設定ファイルを直接編集して本アプリに反映させる」には煩雑な手順が必要となるため、実用的でありません。
-その代わり、GUI操作によるSINETStream設定画面（Settings）を用意しています。
-こちらは、以下に示すように項目内容に応じた階層構造の画面構成となっています。
+このためGUI操作によるSINETStream設定画面（Settings）を用意しています。
+以下に示すように項目内容に応じた階層構造の画面構成となっています。
 
 ![設定画面](images/step1/activity_settings.png)
 
@@ -178,11 +177,11 @@ Androidアプリケーション単体で「上記設定ファイルを直接編�
 |test-service|test-topic|xx.xx.xx.xx|1883|
 
 > ここで`Topic Name`は通信チャネル識別子として使われる文字列です。
-> 任意の値を指定して構わないのですが、STEP1の使い方においては、
+> 任意の値を指定して構わないのですが、特にSTEP1の使い方においては、
 > バックエンドシステムの都合上、予約語`sensor-data`を**避けて**ください。
 
 
-### 3.4. 主画面
+### 3.4 主画面
 
 初期画面からボタン`Run`を押下して主画面（Main）を表示し、GUI操作による文字列データ送受信を実行します。
 主画面は上下2段（上段が送信欄、下段が受信欄）に分割されており、それぞれ`Writer`機能と`Reader`機能を提供します。
@@ -200,14 +199,14 @@ Androidアプリケーション単体で「上記設定ファイルを直接編�
 3. 適当な文字列を入力すると、`SEND`ボタンが有効になる。
 4. `SEND`ボタンを押下すると、入力文字列が`Broker`宛に送信される。
 5. `Broker`から配信された内容が受信欄に表示される。
-7. 主画面から初期画面に戻る際に、`Writer`と`Reader`の双方が`Broker`との接続を切る。
+6. 主画面から初期画面に戻る際に、`Writer`と`Reader`の双方が`Broker`との接続を切る。
 
 なお、主画面の送信欄でユーザが入力した内容は`SINETStreamメッセージv1.2`形式のペイロードとして`Broker`に送信されます。
 受信欄では、SINETStreamメッセージの各項目（`timestamp`, `data`）と`Broker`接続時のトピック名を併せて`Message`として表示します。
 
 * Message
   * topic: トピック名
-  * timestamp: ISO8601形式の時刻情報
+  * timestamp: ISO8601形式の日付時刻情報
   * data: 入力したテキストデータ
 
 

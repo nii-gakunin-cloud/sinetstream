@@ -60,8 +60,13 @@ class MetricsTest {
                             .valueType(SimpleValueType.TEXT)
                             .receiveTimeout(Duration.ofSeconds(10))
                             .build();
+            MessageWriter<String> writer0 = null;
+            MessageReader<String> reader0 = null;
             try (MessageWriter<String> writer = writer_builder.getWriter();
                  MessageReader<String> reader = reader_builder.getReader()) {
+                writer0 = writer;
+                reader0 = reader;
+
                 writer.write("message-1");
 
                 Message<String> msg;
@@ -77,6 +82,13 @@ class MetricsTest {
                 assertEquals(reader_metrics.getMsgCountTotal(), 1);
                 assertNull(reader_metrics.getRaw());
             }
+            Metrics writer_metrics = writer0.getMetrics();
+            assertEquals(writer_metrics.getMsgCountTotal(), 1);
+            assertNull(writer_metrics.getRaw());
+
+            Metrics reader_metrics = reader0.getMetrics();
+            assertEquals(reader_metrics.getMsgCountTotal(), 1);
+            assertNull(reader_metrics.getRaw());
         }
     }
 }

@@ -26,6 +26,7 @@ import pytest
 from sinetstream import (
     MessageReader, AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE,
     InvalidArgumentError, AlreadyConnectedError,
+    Metrics,
 )
 from conftest import SERVICE, TOPIC, TOPIC2
 
@@ -80,6 +81,9 @@ def test_reader_timeout():
     with MessageReader(SERVICE, TOPIC, receive_timeout_ms=3000) as f:
         for msg in f:
             pass
+        m = f.metrics
+        assert isinstance(m, Metrics)
+        assert m.raw is None  # paho doesn't have metrics.
 
 
 def test_open_close():

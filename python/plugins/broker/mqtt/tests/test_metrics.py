@@ -43,6 +43,42 @@ pytestmark = pytest.mark.usefixtures('setup_config')
 consistency = AT_LEAST_ONCE
 
 
+def test_metrics0_reader(config_topic):
+    with MessageReader(SERVICE, topic=config_topic) as f:
+        m = f.metrics
+        assert isinstance(m, Metrics)
+        assert m.raw is None
+        assert m.start_time > 0
+        assert m.end_time > 0
+        assert m.end_time >= m.start_time
+        assert m.msg_count_total == 0
+        assert m.msg_bytes_total >= 0
+        assert m.msg_size_min is None
+        assert m.msg_size_max is None
+        assert m.error_count_total == 0
+    m2 = f.metrics
+    assert isinstance(m2, Metrics)
+    assert m2.raw is None
+
+
+def test_metrics0_writer(config_topic):
+    with MessageWriter(SERVICE, topic=config_topic) as f:
+        m = f.metrics
+        assert isinstance(m, Metrics)
+        assert m.raw is None
+        assert m.start_time > 0
+        assert m.end_time > 0
+        assert m.end_time >= m.start_time
+        assert m.msg_count_total == 0
+        assert m.msg_bytes_total >= 0
+        assert m.msg_size_min is None
+        assert m.msg_size_max is None
+        assert m.error_count_total == 0
+    m2 = f.metrics
+    assert isinstance(m2, Metrics)
+    assert m2.raw is None
+
+
 def test_metrics(setup_messages, config_topic):
     nmsg = len(setup_messages)
     with MessageReader(SERVICE, topic=config_topic, value_type=TEXT) as reader:
@@ -65,7 +101,7 @@ def test_metrics(setup_messages, config_topic):
     msg_size_min = min(msg_sizes)
     msg_size_max = max(msg_sizes)
 
-    assert type(writer_metrics) == Metrics
+    assert isinstance(writer_metrics, Metrics)
     assert writer_metrics.raw is None  # paho doesn't have metrics.
     assert writer_metrics.start_time > 0
     assert writer_metrics.end_time > 0
@@ -76,7 +112,7 @@ def test_metrics(setup_messages, config_topic):
     assert writer_metrics.msg_size_max >= msg_size_max
     assert writer_metrics.error_count_total == 0
 
-    assert type(reader_metrics) == Metrics
+    assert isinstance(reader_metrics, Metrics)
     assert reader_metrics.raw is None  # paho doesn't have metrics.
     assert reader_metrics.start_time > 0
     assert reader_metrics.end_time > 0
@@ -86,6 +122,19 @@ def test_metrics(setup_messages, config_topic):
     assert reader_metrics.msg_size_min >= msg_size_min
     assert reader_metrics.msg_size_max >= msg_size_max
     assert reader_metrics.error_count_total == 0
+
+
+# XXX this test cannot reproduce the reported probrem:
+# XXX     getting metrics after timedout causes exception.
+# def test_metrics_reader_timeout():
+#     with MessageReader(SERVICE, TOPIC, receive_timeout_ms=3000) as f:
+#         for msg in f:
+#             pass
+#         m = f.metrics
+#         # print(f"XXX metrics={m}")
+#         # print(f"XXX metrics.raw={m.raw}")
+#         assert type(m) == Metrics
+#         assert m.raw is None
 
 
 @pytest.fixture()

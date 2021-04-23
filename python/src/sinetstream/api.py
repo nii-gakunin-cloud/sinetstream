@@ -299,19 +299,23 @@ class Metrics(object):
 
     @property
     def msg_count_rate(self):
-        return self.msg_count_total / self.time
+        t = self.time
+        return self.msg_count_total / t if t != 0 else 0
 
     @property
     def msg_bytes_rate(self):
-        return self.msg_bytes_total / self.time
+        t = self.time
+        return self.msg_bytes_total / t if t != 0 else 0
 
     @property
     def msg_size_avg(self):
-        return self.msg_bytes_total / self.msg_count_total
+        c = self.msg_count_total
+        return self.msg_bytes_total / c if c != 0 else 0
 
     @property
     def error_count_rate(self):
-        return self.error_count_total / self.time
+        t = self.time
+        return self.error_count_total / t if t != 0 else 0
 
     def __str__(self):
         return (f"time={self.time},"
@@ -433,13 +437,14 @@ class MessageIO(object):
     @property
     def metrics(self):
         metrics = self.iometrics.get_metrics()
-        metrics.raw = self._plugin.metrics()
+        metrics.raw = self._plugin.metrics() if self._plugin else None
         return metrics
 
     def reset_metrics(self, reset_raw=False):
         self.iometrics = IOMetrics()
         if reset_raw:
-            self._plugin.reset_metrics()
+            if self._plugin is not None:
+                self._plugin.reset_metrics()
 
 
 class BaseMessageReader(MessageIO):

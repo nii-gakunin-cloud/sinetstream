@@ -158,7 +158,7 @@ CONTAINER ID        IMAGE               COMMAND             CREATED             
 お手元の適当なPC機材（macOS/Windows/Linux）が`Docker Engine`の動作条件を満足し、
 かつインターネットに接続可能であるなら、それをホスト機材として活用できます。
 ```
-    [Android]-----[WiFi_AP]-----(LAN)-----[Local PC]
+    [Android]-----[Wi-Fi_AP]-----(LAN)-----[Local PC]
 ```
 この場合、Android端末上のクライアントと当該機材とはLANで接続します。
 

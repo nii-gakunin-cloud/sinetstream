@@ -19,7 +19,7 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-[English](TUTORIAL-ANDROID-INSTALL.en.md)
+[English](TUTORIAL-android-install.en.md)
 
 # チュートリアル - Androidサンプルアプリケーションの導入
 

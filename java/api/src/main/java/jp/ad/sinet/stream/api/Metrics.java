@@ -43,19 +43,33 @@ public class Metrics {
     @Setter
     private long msgCountTotal;
 
-    public double getMsgCountRate() { return (double)msgCountTotal / getTime(); }
+    public double getMsgCountRate() {
+        double t = getTime();
+        if (t == 0)
+            return 0;
+        return (double)msgCountTotal / t;
+    }
 
     @Getter
     @Setter
     private long msgBytesTotal;
 
-    public double getMsgBytesRate() { return (double)msgBytesTotal / getTime(); }
+    public double getMsgBytesRate() {
+        double t = getTime();
+        if (t == 0)
+            return 0;
+        return (double)msgBytesTotal / t;
+    }
 
     @Getter
     @Setter
     private long msgSizeMin;
 
-    public double getMsgSizeAvg() { return (double)msgBytesTotal / msgCountTotal; }
+    public double getMsgSizeAvg() {
+        if (msgCountTotal == 0)
+            return 0;
+        return (double)msgBytesTotal / msgCountTotal;
+    }
 
     @Getter
     @Setter
@@ -65,7 +79,12 @@ public class Metrics {
     @Setter
     private long errorCountTotal;
 
-    public double getErrorCountRate() { return (double)errorCountTotal / getTime(); }
+    public double getErrorCountRate() {
+        double t = getTime();
+        if (t == 0)
+            return 0;
+        return (double)errorCountTotal / t;
+    }
 
     @Getter
     @Setter

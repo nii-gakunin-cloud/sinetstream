@@ -88,6 +88,8 @@ def assert_metrics(m):
 
 def test_sync_thru(config_topic):
     with MessageWriter(SERVICE, value_type=TEXT) as fw:
+        m0 = fw.metrics
+        logger.info(f"writer.metrics: {m0}")
         for msg in msgs:
             fw.publish(msg)
         m = fw.metrics
