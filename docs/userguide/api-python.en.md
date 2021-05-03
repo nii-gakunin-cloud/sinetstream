@@ -113,7 +113,7 @@ Open this instance with a `with` statement, loop the iterator for `f` in the blo
 > it automatically closes the connection when exiting the `with` block.
 
 By default, the message reader process does not time out and the `for` statement becomes an infinite loop.
-To exit the `for` loop, specify the `receive_timeout_ms` parameter in the constructor of the [MessageReader class](@messager3eader-class) or perform a signal handling.
+To exit the `for` loop, specify the `receive_timeout_ms` parameter in the constructor of the [MessageReader class](#messagereader-class) or perform a signal handling.
 
 ## Summary of Python API classes
 
