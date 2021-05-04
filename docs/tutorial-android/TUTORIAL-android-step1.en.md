@@ -96,8 +96,7 @@ will be automatically started afterward.
   * The back-end system should be up and running before working on
 the Android device.
   * Back to the previous document and see the section
-[3.1 Works on the back-end side (part 1)](
-TUTORIAL-android-step1-overview.en.md#31-works-on-the-back-end-side-part-1)
+[3.1 Works on the back-end side (part 1)](TUTORIAL-android-step1-overview.en.md#31-works-on-the-back-end-side-part-1)
 for details.
 
 * Network environment

@@ -50,7 +50,7 @@ A.2 既知の問題
 Android版の
 [SINETStreamライブラリ](../userguide/android.html)
 および
-[SINETStreamHelperライブラリ](../userguide/android_helper.html)
+[SINETStreamHelperライブラリ](../userguide/libhelper.html)
 の使用例として、Android端末上の
 [センサーデバイス](https://developer.android.com/reference/android/hardware/Sensor)
 の読取値をSINETStream経由で送信する「センサー情報収集アプリ」
@@ -65,7 +65,7 @@ Android版の
 
 本アプリは、`Writer`機能のみを具備します。
 当該Android端末上で収集したセンサー値は
-[SINETStreamHelperライブラリ](../userguide/android_helper.html)
+[SINETStreamHelperライブラリ](../userguide/libhelper.html)
 によりJSON形式に成形されて本アプリ制御部に非同期通知されます。
 これをSINETStreamメッセージとして対向の`Broker`に送信します。
 
@@ -190,7 +190,7 @@ Android端末で収集したセンサー情報は、別紙
 から非同期的に通知されますが、その契機はセンサー種別ごとにまちまち（継続的に出力されたり、値の変化時に出力されたりなど）であり、
 複数のセンサー種別を同時に観測する場合は高頻度の通知となる可能性があります。
 ネットワーク負荷を抑止するため、個々のセンサーデータは
-[SINETStreamHelperライブラリ](../userguide/android_helper.html)
+[SINETStreamHelperライブラリ](../userguide/libhelper.html)
 内部に最新データとして蓄積しつつ、本アプリの設定画面で指定した標本化間隔を下回らない頻度でJSONデータを生成するようにしています。
 
 ```
@@ -299,7 +299,7 @@ Android版の
 ＜凡例＞
 1. センサー稼動状態表示
 * 星のアイコンは、
-[SINETStreamHelperライブラリ](../userguide/android_helper.html)
+[SINETStreamHelperライブラリ](../userguide/libhelper.html)
 内部の`SensorService`が稼働中であることを示す。
 
 2. センサー種別一覧

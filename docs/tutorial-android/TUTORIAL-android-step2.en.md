@@ -50,7 +50,7 @@ A.2 Known problems
 We implemented an Android application "Sensor", as a sample usage of
 the Android
 [SINETStream library](../userguide/android.en.html) and
-[SINETStreamHelper library](../userguide/android_helper.en.html).
+[SINETStreamHelper library](../userguide/libhelper.en.html).
 The application collects the readout values of the
 [Sensor](https://developer.android.com/reference/android/hardware/Sensor)
 devices, then send them as a message over the SINETStream.
@@ -64,7 +64,7 @@ to an Android device, how to setup and operate it.
 
 The "Sensor" application has only `Writer` functionality.
 This application uses the
-[SINETStreamHelper library](../userguide/android_helper.en.html)
+[SINETStreamHelper library](../userguide/libhelper.en.html)
 to collect sensor readout values in JSON format. Then the JSON data
 will be sent to the peer `Broker` as a SINETStream message.
 
@@ -216,7 +216,7 @@ you will likely to get frequent notifications.
 
 To suppress the network overload, each sensor readout values are
 cached in the
-[SINETStreamHelper library](../userguide/android_helper.html)
+[SINETStreamHelper library](../userguide/libhelper.en.html)
 as the latest ones. At the certain sampling timing (not shorter
 than `Interval timer`), JSON data is generated in the library.
 
@@ -345,7 +345,7 @@ blue belt is the control panel.
 \<Legends\>
 1. Sensor status indicator
 * The star icon shows that the internal `SensorService` of the
-[SINETStreamHelper library](../userguide/android_helper.en.html)
+[SINETStreamHelper library](../userguide/libhelper.en.html)
 is up and running.
 
 2. List of sensor types

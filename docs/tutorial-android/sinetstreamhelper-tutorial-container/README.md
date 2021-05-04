@@ -19,7 +19,7 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-[English](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/tutorial-android/sinetstreamhelper-tutorial-container/README.html "google translate")
+[English](README.en.md)
 
 # SINETStream Android Tutorial Container
 

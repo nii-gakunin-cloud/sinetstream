@@ -95,7 +95,7 @@ Then execute `docker run` to install the container image for STEP2.
 Finally, start all required server programs.
 
 Go through the companion document
-[TUTORIAL DOCKER-CONTAINER](sinetstreamhelper-tutorial-container/TUTORIAL-docker-container.md)
+[TUTORIAL - DOCKER-CONTAINER](sinetstreamhelper-tutorial-container/TUTORIAL-docker-container.en.md)
 for the actual procedure details.
 
 ```console
@@ -107,7 +107,7 @@ and starting of server processes are automatically executed.
 
 As for the system details on the back-end side, see the companion
 document
-[The container image for the SINETStream Android tutorial](sinetstreamhelper-tutorial-container/README.md).
+[The container image for the SINETStream Android tutorial](sinetstreamhelper-tutorial-container/README.en.md).
 
 
 ### 3.2 Works on the Android side
