@@ -44,7 +44,7 @@ A.2 既知の問題
 ## 1. 概要
 
 Android版の
-[SINETStreamライブラリ](../userguide/android.html)
+[SINETStreamライブラリ](../userguide/android.md)
 の使用例として、
 GUI操作でユーザが入力した任意文字列をSINETStream経由で送受信する「テキスト送受信アプリ」（以降「本アプリ」と略記）を実装しました。
 本書では、本アプリのAndroid端末への導入と設定、操作方法などについて概説します。
@@ -59,7 +59,7 @@ GUI操作でユーザが入力した任意文字列をSINETStream経由で送受
 `Broker`が配信した内容を再び本アプリで受信してGUI画面に表示するという動作の流れになります。
 また`Broker`への接続情報やSINETStreamの動作パラメータなどの諸元をGUI操作で設定し、
 その内容に応じてAndroid版の
-[SINETStream設定ファイル](../userguide/config-android.html)
+[SINETStream設定ファイル](../userguide/config-android.md)
 を自動生成するための設定画面も用意してあります。
 `Broker`に関しては本書の範囲外ですので、別途記述されたものを参照ください。
 
@@ -70,7 +70,7 @@ GUI操作でユーザが入力した任意文字列をSINETStream経由で送受
 
   * Android 8.0（APIレベル26）以上であること
     * Android版の
-[SINETStreamライブラリ](../userguide/android.html)
+[SINETStreamライブラリ](../userguide/android.md)
 は、足回りのメッセージングシステムとして
 [MQTT(Eclipse Mosquitto)](https://mosquitto.org/)
 に対応しています。
@@ -137,7 +137,7 @@ Android側の作業着手前にこちらを済ませてください。
     * `About`：このアプリについて
 
 本アプリ導入直後のように、
-[SINETStream設定ファイル](../userguide/config-android.html)
+[SINETStream設定ファイル](../userguide/config-android.md)
 が存在していない、あるいは現在の設定内容が必須項目を満足していない場合、
 `Run`ボタンが無効化（灰色表示）され、画面下部にはユーザに対応を促すメッセージが表示されます。
 このような場合、まずは`Settings`ボタンを押下してSINETStreamの動作環境設定操作を実行してください。
@@ -146,9 +146,9 @@ Android側の作業着手前にこちらを済ませてください。
 ### 3.3 設定画面
 
 Android版の
-[SINETStreamライブラリ](../userguide/android.html)
+[SINETStreamライブラリ](../userguide/android.md)
 を使うためには、
-[SINETStream設定ファイル](../userguide/config-android.html)
+[SINETStream設定ファイル](../userguide/config-android.md)
 を「対向`Broker`との接続条件に適合するよう」設定する必要があります。
 
 このためGUI操作によるSINETStream設定画面（Settings）を用意しています。
@@ -186,7 +186,7 @@ Android版の
 主画面は上下2段（上段が送信欄、下段が受信欄）に分割されており、それぞれ`Writer`機能と`Reader`機能を提供します。
 
 `Writer`と`Reader`が同じ
-[SINETStream設定ファイル](../userguide/config-android.html)
+[SINETStream設定ファイル](../userguide/config-android.md)
 を参照するため、対向`Broker`に関してサービスとトピックを共有しており、
 結果的に`Broker`折り返しでメッセージを送受信する動作となります。
 
@@ -229,6 +229,6 @@ Android版の
 
 * GUIの設定画面とSINETStream設定ファイルの対応
   * 実装の都合上、GUIの設定画面での対応項目は
-[SINETStream設定ファイル](../userguide/config-android.html)
+[SINETStream設定ファイル](../userguide/config-android.md)
 を網羅しておらず、サブセットとなります。
 

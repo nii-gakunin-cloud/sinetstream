@@ -49,8 +49,8 @@ A.2 Known problems
 
 We implemented an Android application "Sensor", as a sample usage of
 the Android
-[SINETStream library](../userguide/android.en.html) and
-[SINETStreamHelper library](../userguide/libhelper.en.html).
+[SINETStream library](../userguide/android.en.md) and
+[SINETStreamHelper library](../userguide/libhelper.en.md).
 The application collects the readout values of the
 [Sensor](https://developer.android.com/reference/android/hardware/Sensor)
 devices, then send them as a message over the SINETStream.
@@ -64,7 +64,7 @@ to an Android device, how to setup and operate it.
 
 The "Sensor" application has only `Writer` functionality.
 This application uses the
-[SINETStreamHelper library](../userguide/libhelper.en.html)
+[SINETStreamHelper library](../userguide/libhelper.en.md)
 to collect sensor readout values in JSON format. Then the JSON data
 will be sent to the peer `Broker` as a SINETStream message.
 
@@ -76,7 +76,7 @@ The "Sensor" application has its own "Settings" screen, and thus user
 can set configuration parameters such like the `Broker` connection
 or the SINETStream behaviors.
 Once user has set those parameters, the Android
-[SINETStream configuration file](../userguide/config-android.en.html)
+[SINETStream configuration file](../userguide/config-android.en.md)
 will be automatically generated.
 
 
@@ -86,7 +86,7 @@ will be automatically generated.
 
   * Android 8.0 (API level 26) or later
     * The Android
-[SINETStream library](../userguide/android.en.html)
+[SINETStream library](../userguide/android.en.md)
 uses the
 [MQTT(Eclipse Mosquitto)](https://mosquitto.org/)
 as a messaging system.
@@ -165,7 +165,7 @@ a small menu will be deployed.
     * `About`: Show brief information about this application.
 
 If the
-[SINETStream configuration file](../userguide/config-android.en.html)
+[SINETStream configuration file](../userguide/config-android.en.md)
 does not yet exist (just like after the fresh installation),
 or if current configuration does not meet the mandatory conditions,
 `Run` button is set disabled (gray out) and a guide message will be
@@ -216,7 +216,7 @@ you will likely to get frequent notifications.
 
 To suppress the network overload, each sensor readout values are
 cached in the
-[SINETStreamHelper library](../userguide/libhelper.en.html)
+[SINETStreamHelper library](../userguide/libhelper.en.md)
 as the latest ones. At the certain sampling timing (not shorter
 than `Interval timer`), JSON data is generated in the library.
 
@@ -286,9 +286,9 @@ value "T" (settings item `Interval timer`).
 ### 3.3.2 Settings for the SINETStream
 
 To use the Android
-[SINETStream library](../userguide/android.en.html),
+[SINETStream library](../userguide/android.en.md),
 its own
-[SINETStream configuration file](../userguide/config-android.html)
+[SINETStream configuration file](../userguide/config-android.md)
 must be set properly, so that the user application using the library
 can connect to the peer `Broker`.
 
@@ -345,7 +345,7 @@ blue belt is the control panel.
 \<Legends\>
 1. Sensor status indicator
 * The star icon shows that the internal `SensorService` of the
-[SINETStreamHelper library](../userguide/libhelper.en.html)
+[SINETStreamHelper library](../userguide/libhelper.en.md)
 is up and running.
 
 2. List of sensor types
@@ -409,5 +409,5 @@ in the next version.
 
 * The mapping of the GUI `Settings` and the SINETStream configuration file
   * As of `SINETStream v1.5`, the GUI `Settings` does not fully cover the
-[SINETStream configuration file](../userguide/config-android.en.html).
+[SINETStream configuration file](../userguide/config-android.en.md).
 

@@ -19,7 +19,7 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-[English](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/userguide/config-android.html "google translate")
+[English](config-android.en.md)
 
 # SINETStream ユーザガイド
 

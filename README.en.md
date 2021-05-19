@@ -156,7 +156,7 @@ using a Docker container.
 
 * Tutorial
     * [Quick Start Guide (Python/Java)](docs/tutorial/index.en.md)
-    * [Quick Start Guide (Android)](docs/tutorial-andoid/index.en.md)
+    * [Quick Start Guide (Android)](docs/tutorial-android/index.en.md)
 * [User Guide](docs/userguide/index.en.md)
 * [Performance measurement of SINETStream](docs/performance/index.en.md)
 * [Developer guide](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/developer_guide/index.html)

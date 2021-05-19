@@ -45,7 +45,7 @@ A.2 Known problems
 
 We implemented an Android application "Echo", as a sample usage of
 the Android
-[SINETStream library](../userguide/android.en.html).
+[SINETStream library](../userguide/android.en.md).
 The application sends and receives text messages over the SINETStream.
 In this document, we briefly describe how to install this application
 to an Android device, how to setup and operate it.
@@ -65,7 +65,7 @@ The "Echo" application has its own "Settings" screen, and thus user
 can set configuration parameters such like the `Broker` connection
 or the SINETStream behaviors.
 Once user has set those parameters, the Android
-[SINETStream configuration file](../userguide/config-android.en.html)
+[SINETStream configuration file](../userguide/config-android.en.md)
 will be automatically generated.
 
 As for the `Broker` details, it is not mentioned here.
@@ -78,7 +78,7 @@ Please refer to the companion document.
 
   * Android 8.0 (API level 26) or later
     * The Android
-[SINETStream library](../userguide/android.en.html)
+[SINETStream library](../userguide/android.en.md)
 uses the
 [MQTT(Eclipse Mosquitto)](https://mosquitto.org/)
 as a messaging system.
@@ -156,7 +156,7 @@ a small menu will be deployed.
     * `About`: Show brief information about this application.
 
 If the
-[SINETStream configuration file](../userguide/config-android.en.html)
+[SINETStream configuration file](../userguide/config-android.en.md)
 does not yet exist (just like after the fresh installation),
 or if current configuration does not meet the mandatory conditions,
 `Run` button is set disabled (gray out) and a guide message will be
@@ -168,9 +168,9 @@ SINETStream parameters.
 ### 3.3 Settings screen
 
 To use the Android
-[SINETStream library](../userguide/android.en.html),
+[SINETStream library](../userguide/android.en.md),
 its own
-[SINETStream configuration file](../userguide/config-android.html)
+[SINETStream configuration file](../userguide/config-android.en.md)
 must be set properly, so that the user application using the library
 can connect to the peer `Broker`.
 
@@ -220,7 +220,7 @@ pane provides the `Writer` functionality, while the lower pane
 provides the `Reader` functionality.
 
 Both the `Writer` and the `Reader` refer to the same
-[SINETStream configuration file](../userguide/config-android.en.html).
+[SINETStream configuration file](../userguide/config-android.en.md).
 Therefore, the both two share the same service and topic for the
 peer `Broker`. This means that a message sent by the `Writer` is
 echoed back to the `Reader`.
@@ -275,5 +275,5 @@ in the next version.
 
 * The mapping of the GUI `Settings` and the SINETStream configuration file
   * As of `SINETStream v1.5`, the GUI `Settings` does not fully cover the
-[SINETStream configuration file](../userguide/config-android.en.html).
+[SINETStream configuration file](../userguide/config-android.en.md).
 

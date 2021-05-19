@@ -98,7 +98,7 @@ Python/Java版のチュートリアルと同様に、`Broker`機能はアプリ�
 ## 4. チュートリアルの実行
 
 Android版の
-[SINETStreamライブラリ](../userguide/android.html)
+[SINETStreamライブラリ](../userguide/android.md)
 の使用例として、2種類のサンプルアプリ
 ケーションを用意しました。
 

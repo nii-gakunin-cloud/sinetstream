@@ -1,5 +1,55 @@
 # Changelog
 
+<!---
+https://keepachangelog.com/
+--->
+
+## [v1.5.3] - 2021-05-20
+
+### sinetstream-android-echo
+#### Added
+
+- MainActivity: Show receiver fragment contents with history.
+
+#### Changed
+
+- build.gradle: Update build environ for the Android Studio 4.1.2.
+- MainActivity: Adjust screen layout.
+- SettingsActivity: Use fixed service name.
+
+#### Fixed
+
+- MainActivity: Resolve race conditions between modal dialogs.
+- MainActivity: Keep the receiver fragment contents, even if the activity
+has re-created after suspend/resume.
+
+### sinetstream-android-sensor-publisher
+#### Changed
+
+- build.gradle: Update build environ for the Android Studio 4.1.2.
+
+#### Fixed
+
+- MainActivity: Resolve race conditions between modal dialogs.
+
+## [v1.5.2] for Android - 2021-05-20
+
+### sinetstream-android
+#### Changed
+
+- build.gradle: Update build environ for the Android Studio 4.1.2.
+- AndroidConfigLoader: Rewrite usage of obsoleted Kotlin functions.
+
+#### Fixed
+
+- CipherXXX: Resolve implementation compatibility issues (work in progress).
+- MqttAsyncMessageIO: Now user can abort the ongoing connection request.
+
+### sinetstream-android-helper
+#### Changed
+
+- build.gradle: Update build environ for the Android Studio 4.1.2.
+
 ## [v1.5.2] - 2021-04-23
 
 ### Added

@@ -48,9 +48,9 @@ A.2 既知の問題
 ## 1. 概要
 
 Android版の
-[SINETStreamライブラリ](../userguide/android.html)
+[SINETStreamライブラリ](../userguide/android.md)
 および
-[SINETStreamHelperライブラリ](../userguide/libhelper.html)
+[SINETStreamHelperライブラリ](../userguide/libhelper.md)
 の使用例として、Android端末上の
 [センサーデバイス](https://developer.android.com/reference/android/hardware/Sensor)
 の読取値をSINETStream経由で送信する「センサー情報収集アプリ」
@@ -65,7 +65,7 @@ Android版の
 
 本アプリは、`Writer`機能のみを具備します。
 当該Android端末上で収集したセンサー値は
-[SINETStreamHelperライブラリ](../userguide/libhelper.html)
+[SINETStreamHelperライブラリ](../userguide/libhelper.md)
 によりJSON形式に成形されて本アプリ制御部に非同期通知されます。
 これをSINETStreamメッセージとして対向の`Broker`に送信します。
 
@@ -74,7 +74,7 @@ Webインタフェースでグラフ化するという動作の流れになり�
 
 
 また`Broker`への接続情報やSINETStreamの動作パラメータなどの諸元をGUI操作で設定し、その内容に応じてAndroid版の
-[SINETStream設定ファイル](../userguide/config-android.html)
+[SINETStream設定ファイル](../userguide/config-android.md)
 を自動生成するための設定画面も用意してあります。
 
 
@@ -84,7 +84,7 @@ Webインタフェースでグラフ化するという動作の流れになり�
 
   * Android 8.0（APIレベル26）以上であること
     * Android版の
-[SINETStreamライブラリ](../userguide/android.html)
+[SINETStreamライブラリ](../userguide/android.md)
 は、足回りのメッセージングシステムとして
 [MQTT(Eclipse Mosquitto)](https://mosquitto.org/)
 に対応しています。
@@ -153,7 +153,7 @@ TUTORIAL-android-step2-overview.md#4-バックエンド側の作業)
     * `About`：このアプリについて
 
 本アプリ導入直後のように、
-[SINETStream設定ファイル](../userguide/config-android.html)
+[SINETStream設定ファイル](../userguide/config-android.md)
 が存在していない、あるいは現在の設定内容が必須項目を満足していない場合、
 `Run`ボタンが無効化（灰色表示）され、画面下部にはユーザに対応を促すメッセージが表示されます。
 このような場合、まずは`Settings`ボタンを押下してSINETStreamの動作環境設定操作を実行してください。
@@ -190,7 +190,7 @@ Android端末で収集したセンサー情報は、別紙
 から非同期的に通知されますが、その契機はセンサー種別ごとにまちまち（継続的に出力されたり、値の変化時に出力されたりなど）であり、
 複数のセンサー種別を同時に観測する場合は高頻度の通知となる可能性があります。
 ネットワーク負荷を抑止するため、個々のセンサーデータは
-[SINETStreamHelperライブラリ](../userguide/libhelper.html)
+[SINETStreamHelperライブラリ](../userguide/libhelper.md)
 内部に最新データとして蓄積しつつ、本アプリの設定画面で指定した標本化間隔を下回らない頻度でJSONデータを生成するようにしています。
 
 ```
@@ -251,9 +251,9 @@ Android端末で収集したセンサー情報は、別紙
 #### 3.3.2 SINETStream動作設定用
 
 Android版の
-[SINETStreamライブラリ](../userguide/android.html)
+[SINETStreamライブラリ](../userguide/android.md)
 を使うためには、
-[SINETStream設定ファイル](../userguide/config-android.html)
+[SINETStream設定ファイル](../userguide/config-android.md)
 を「対向`Broker`との接続条件に適合するよう」設定する必要があります。
 
 このためGUI操作によるSINETStream設定画面（Settings）を用意しています。
@@ -299,7 +299,7 @@ Android版の
 ＜凡例＞
 1. センサー稼動状態表示
 * 星のアイコンは、
-[SINETStreamHelperライブラリ](../userguide/libhelper.html)
+[SINETStreamHelperライブラリ](../userguide/libhelper.md)
 内部の`SensorService`が稼働中であることを示す。
 
 2. センサー種別一覧
@@ -352,6 +352,6 @@ Android版の
 
 * GUIの設定画面とSINETStream設定ファイルの対応
   * 実装の都合上、GUIの設定画面での対応項目は
-[SINETStream設定ファイル](../userguide/config-android.html)
+[SINETStream設定ファイル](../userguide/config-android.md)
 を網羅しておらず、サブセットとなります。
 

@@ -44,7 +44,7 @@ SINETStream provides three API versions, i.e., Python API, Java API and Android 
 * [User Guide for Android](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/userguide/android.html)
     * [Android API](api-android.en.md)
     * [Android API (Javadoc)](http://javadoc.android.sinetstream.net/sinetstream-android/)
-    * [Configuration file for Android](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/userguide/config-android.html)
+    * [Configuration file for Android](config-android.en.md)
 * [Configuration file](config.en.md)
 * [Authentication and authorization](auth.en.md)
 
