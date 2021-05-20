@@ -49,7 +49,7 @@ A.2 Known problems
 
 We implemented an Android application "Sensor", as a sample usage of
 the Android
-[SINETStream library](../userguide/android.en.md) and
+[SINETStream library](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/tutorial-android/../userguide/android.html) and
 [SINETStreamHelper library](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/tutorial-android/../userguide/libhelper.html).
 The application collects the readout values of the
 [Sensor](https://developer.android.com/reference/android/hardware/Sensor)
@@ -86,7 +86,7 @@ will be automatically generated.
 
   * Android 8.0 (API level 26) or later
     * The Android
-[SINETStream library](../userguide/android.en.md)
+[SINETStream library](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/tutorial-android/../userguide/android.html)
 uses the
 [MQTT(Eclipse Mosquitto)](https://mosquitto.org/)
 as a messaging system.
@@ -286,7 +286,7 @@ value "T" (settings item `Interval timer`).
 ### 3.3.2 Settings for the SINETStream
 
 To use the Android
-[SINETStream library](../userguide/android.en.md),
+[SINETStream library](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/tutorial-android/../userguide/android.html),
 its own
 [SINETStream configuration file](../userguide/config-android.md)
 must be set properly, so that the user application using the library
