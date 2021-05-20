@@ -45,7 +45,7 @@ A.2 Known problems
 
 We implemented an Android application "Echo", as a sample usage of
 the Android
-[SINETStream library](../userguide/android.en.md).
+[SINETStream library](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/tutorial-android/../userguide/android.html).
 The application sends and receives text messages over the SINETStream.
 In this document, we briefly describe how to install this application
 to an Android device, how to setup and operate it.
@@ -78,7 +78,7 @@ Please refer to the companion document.
 
   * Android 8.0 (API level 26) or later
     * The Android
-[SINETStream library](../userguide/android.en.md)
+[SINETStream library](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/tutorial-android/../userguide/android.html)
 uses the
 [MQTT(Eclipse Mosquitto)](https://mosquitto.org/)
 as a messaging system.
@@ -168,7 +168,7 @@ SINETStream parameters.
 ### 3.3 Settings screen
 
 To use the Android
-[SINETStream library](../userguide/android.en.md),
+[SINETStream library](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/tutorial-android/../userguide/android.html),
 its own
 [SINETStream configuration file](../userguide/config-android.en.md)
 must be set properly, so that the user application using the library
