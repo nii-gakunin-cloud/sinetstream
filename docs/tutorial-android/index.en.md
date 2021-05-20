@@ -113,7 +113,7 @@ as an casual test environment.
 ## 4. Run tutorial scenarios
 
 To show sample usages of
-[SINETStream for Android](../userguide/android.en.md),
+[SINETStream for Android](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/tutorial-android/../userguide/android.en.html),
 we provide two scenarios below.
 
 * [STEP1: Send and receive text messages (sinetstream-android-echo)](TUTORIAL-android-step1-overview.en.md)
