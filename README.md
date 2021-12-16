@@ -159,6 +159,9 @@ Dockerコンテナをつかった
 * [SINETStream性能測定結果](docs/performance/index.md)
 * [プラグイン開発ガイド](docs/developer_guide/index.md)
 * [SINETStreamサーバ構築手順](server/brokers/index.md)
+* コンフィグサーバー
+    * [github](https://github.com/nii-gakunin-cloud/sinetstream-config-server)
+    * [manual](http://manual.config-server.sinetstream.net/manual/docs/home/index.html)
 * [更新履歴](CHANGELOG.md)
 
 ## ライセンス

@@ -161,6 +161,9 @@ using a Docker container.
 * [Performance measurement of SINETStream](docs/performance/index.en.md)
 * [Developer guide](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/developer_guide/index.html)
 * [Build SINETStream server](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/server/brokers/index.html)
+* Config Server
+    * [github](https://github.com/nii-gakunin-cloud/sinetstream-config-server)
+    * [manual](http://manual.config-server.sinetstream.net/manual/docs/home/index.html)
 * [Update log](CHANGELOG.md)
 
 ## License
