@@ -49,7 +49,7 @@ class MessageWriterTest implements ConfigFileAware {
     void testGetWriter() {
         MessageWriterFactory<String> builder =
                 MessageWriterFactory.<String>builder()
-                        .config(getConfigFile(workdir)).service(getServiceName())
+                        .configFile(getConfigFile(workdir)).service(getServiceName())
                         .build();
         try (MessageWriter<String> writer = builder.getWriter()) {
             assertNotNull(writer);
@@ -61,7 +61,7 @@ class MessageWriterTest implements ConfigFileAware {
     void configIsReadonly() {
         MessageWriterFactory<String> builder =
                 MessageWriterFactory.<String>builder()
-                        .config(getConfigFile(workdir)).service(getServiceName()).build();
+                        .configFile(getConfigFile(workdir)).service(getServiceName()).build();
         try (MessageWriter<String> writer = builder.getWriter()) {
             assertNotNull(writer);
             assertThrows(UnsupportedOperationException.class,
@@ -73,7 +73,7 @@ class MessageWriterTest implements ConfigFileAware {
     void serviceType() {
         MessageWriterFactory<String> builder =
                 MessageWriterFactory.<String>builder()
-                        .config(getConfigFile(workdir)).service(getServiceName()).build();
+                        .configFile(getConfigFile(workdir)).service(getServiceName()).build();
         try (MessageWriter<String> writer = builder.getWriter()) {
             assertNotNull(writer);
             assertEquals(getServiceName(), writer.getService());
@@ -89,7 +89,7 @@ class MessageWriterTest implements ConfigFileAware {
             String topic = generateTopic();
             MessageWriterFactory<String> builder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .topic(topic).build();
             try (MessageWriter<String> writer = builder.getWriter()) {
                 writer.write("message-1");
@@ -102,7 +102,7 @@ class MessageWriterTest implements ConfigFileAware {
         void consistency(Consistency consistency) {
             MessageWriterFactory<String> builder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .consistency(consistency)
                             .build();
             try (MessageWriter<String> writer = builder.getWriter()) {
@@ -118,7 +118,7 @@ class MessageWriterTest implements ConfigFileAware {
                 String clientId = RandomStringUtils.randomAlphabetic(10);
                 MessageWriterFactory<String> builder =
                         MessageWriterFactory.<String>builder()
-                                .config(getConfigFile(workdir)).service(getServiceName())
+                                .configFile(getConfigFile(workdir)).service(getServiceName())
                                 .clientId(clientId)
                                 .build();
                 try (MessageWriter<String> writer = builder.getWriter()) {
@@ -131,7 +131,7 @@ class MessageWriterTest implements ConfigFileAware {
             void defaultClientId() {
                 MessageWriterFactory<String> builder =
                         MessageWriterFactory.<String>builder()
-                                .config(getConfigFile(workdir)).service(getServiceName())
+                                .configFile(getConfigFile(workdir)).service(getServiceName())
                                 .build();
                 try (MessageWriter<String> writer = builder.getWriter()) {
                     writer.write("message-1");
@@ -144,7 +144,7 @@ class MessageWriterTest implements ConfigFileAware {
             void emptyAndNull(String clientId) {
                 MessageWriterFactory<String> builder =
                         MessageWriterFactory.<String>builder()
-                                .config(getConfigFile(workdir)).service(getServiceName())
+                                .configFile(getConfigFile(workdir)).service(getServiceName())
                                 .clientId(clientId)
                                 .build();
                 try (MessageWriter<String> writer = builder.getWriter()) {
@@ -161,7 +161,7 @@ class MessageWriterTest implements ConfigFileAware {
         void valueType(SimpleValueType valueType) {
             MessageWriterFactory builder =
                     MessageWriterFactory.builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .valueType(valueType)
                             .build();
             try (MessageWriter writer = builder.getWriter()) {

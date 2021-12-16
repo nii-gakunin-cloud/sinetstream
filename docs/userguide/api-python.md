@@ -141,6 +141,7 @@ MessageReaderクラスのコンストラクタ。
 MessageReader(
     service,
     topics=None,
+    config=None,
     consistency=AT_MOST_ONCE,
     client_id=DEFAULT_CLIENT_ID,
     value_type="byte_array",
@@ -159,6 +160,11 @@ MessageReader(
     * `str` または `list` を指定できる
     * 複数のトピックをsubscribeする場合は `list` を指定すること
     * 指定を行わなかった場合は設定ファイルに記述されている値が用いられる
+* config
+    * コンフィグ名
+    * コンフィグ名が指定されるとコンフィグサーバからコンフィグ情報を取得する。
+    * コンフィグ情報のなかで定義されているサービスが1つしかないとわかっている場合はサービス名にNoneを指定してもよい。
+    * コンフィグ名が指定されなかった場合、コンフィグ情報を得るために設定ファイルが読み込まれる。
 * consistency
     * メッセージ配信の信頼性を指定する
     * AT_MOST_ONCE (=0)
@@ -207,6 +213,7 @@ MessageReader(
     * service に指定した値に対応するサービスが設定ファイルに存在しない
 * NoConfigError
     * 設定ファイルが存在しない、あるいは読み込めない
+    * コンフィグサーバからコンフィグ情報が得られない、あるいはコンフィグ名に対応するコンフィグ情報が存在しない。
 * InvalidArgumentError
     * 指定した引数の形式が正しくない。 `consistency` の値が範囲外、 `topic` 名として許容されない文字列などの場合
 * UnsupportedServiceTypeError
@@ -267,6 +274,7 @@ AsyncMessageReaderクラスのコンストラクタ。
 AsyncMessageReader(
     service,
     topics=None,
+    config=None,
     consistency=AT_MOST_ONCE,
     client_id=DEFAULT_CLIENT_ID,
     value_type="byte_array",
@@ -284,6 +292,11 @@ AsyncMessageReader(
     * `str` または `list` を指定できる
     * 複数のトピックをsubscribeする場合は `list` を指定すること
     * 指定を行わなかった場合は設定ファイルに記述されている値が用いられる
+* config
+    * コンフィグ名
+    * コンフィグ名が指定されるとコンフィグサーバからコンフィグ情報を取得する。
+    * コンフィグ情報のなかで定義されているサービスが1つしかないとわかっている場合はサービス名にNoneを指定してもよい。
+    * コンフィグ名が指定されなかった場合、コンフィグ情報を得るために設定ファイルが読み込まれる。
 * consistency
     * メッセージ配信の信頼性を指定する
     * AT_MOST_ONCE (=0)
@@ -329,6 +342,7 @@ AsyncMessageReader(
     * service に指定した値に対応するサービスが設定ファイルに存在しない
 * NoConfigError
     * 設定ファイルが存在しない、あるいは読み込めない
+    * コンフィグサーバからコンフィグ情報が得られない、あるいはコンフィグ名に対応するコンフィグ情報が存在しない。
 * InvalidArgumentError
     * 指定した引数の形式が正しくない。 `consistency` の値が範囲外、 `topic` 名として許容されない文字列などの場合
 * UnsupportedServiceTypeError
@@ -375,6 +389,7 @@ AsyncMessageReader(
 MessageWriter(
     service,
     topic,
+    config=None,
     consistency=AT_MOST_ONCE,
     client_id=DEFAULT_CLIENT_ID,
     value_type="byte_array",
@@ -392,6 +407,11 @@ MessageWriterクラスのコンストラクタ。
 * topic
     * トピック名
     * 指定を行わなかった場合は設定ファイルに記述されている値が用いられる
+* config
+    * コンフィグ名
+    * コンフィグ名が指定されるとコンフィグサーバからコンフィグ情報を取得する。
+    * コンフィグ情報のなかで定義されているサービスが1つしかないとわかっている場合はサービス名にNoneを指定してもよい。
+    * コンフィグ名が指定されなかった場合、コンフィグ情報を得るために設定ファイルが読み込まれる。
 * consistency
     * メッセージ配信の信頼性を指定する
     * AT_MOST_ONCE (=0)
@@ -436,6 +456,7 @@ MessageWriterクラスのコンストラクタ。
     * `service` に指定した値に対応するサービスが設定ファイルに存在しない
 * NoConfigError
     * 設定ファイルが存在しない、あるいは読み込めない
+    * コンフィグサーバからコンフィグ情報が得られない、あるいはコンフィグ名に対応するコンフィグ情報が存在しない。
 * InvalidArgumentError
     * 指定した引数の形式が正しくない。`consistency` の値が範囲外、`topic` 名として許容されない文字列などの場合
 * UnsupportedServiceTypeError
@@ -499,6 +520,7 @@ MessageWriterクラスのコンストラクタ。
 AsyncMessageWriter(
     service,
     topic,
+    config=None,
     consistency=AT_MOST_ONCE,
     client_id=DEFAULT_CLIENT_ID,
     value_type="byte_array",
@@ -516,6 +538,11 @@ AsyncMessageWriterクラスのコンストラクタ。
 * topic
     * トピック名
     * 指定を行わなかった場合は設定ファイルに記述されている値が用いられる
+* config
+    * コンフィグ名
+    * コンフィグ名が指定されるとコンフィグサーバからコンフィグ情報を取得する。
+    * コンフィグ情報のなかで定義されているサービスが1つしかないとわかっている場合はサービス名にNoneを指定してもよい。
+    * コンフィグ名が指定されなかった場合、コンフィグ情報を得るために設定ファイルが読み込まれる。
 * consistency
     * メッセージ配信の信頼性を指定する
     * AT_MOST_ONCE (=0)
@@ -560,6 +587,7 @@ AsyncMessageWriterクラスのコンストラクタ。
     * `service` に指定した値に対応するサービスが設定ファイルに存在しない
 * NoConfigError
     * 設定ファイルが存在しない、あるいは読み込めない
+    * コンフィグサーバからコンフィグ情報が得られない、あるいはコンフィグ名に対応するコンフィグ情報が存在しない。
 * InvalidArgumentError
     * 指定した引数の形式が正しくない。`consistency` の値が範囲外、`topic` 名として許容されない文字列などの場合
 * UnsupportedServiceTypeError
@@ -816,23 +844,43 @@ with reader as f:
 SINETStreamをインストール後 `python3 -m sinetstream` を実行するとチートシートが表示される。
 
 ```
-$ python3.6 -m sinetstream
+$ python3 -m sinetstream
 ==================================================
 Default parameters:
 MessageReader(
     service=SERVICE,                 # Service name defined in the configuration file. (REQUIRED)
     topics=TOPICS,                   # The topic to receive.
+    config=CONFIG,                   # Config name on the config-server.
     consistency=AT_MOST_ONCE,        # consistency: AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE
     client_id=DEFAULT_CLIENT_ID,     # If not specified, the value is automatically generated.
-    value_type="byte_array",         # The type of message.
+    value_type=BYTE_ARRAY,           # The type of message.
     value_deserializer=None          # If not specified, use default deserializer according to valueType.
 )
 MessageWriter(
     service=SERVICE,                 # Service name defined in the configuration file. (REQUIRED)
     topic=TOPIC,                     # The topic to send.
+    config=CONFIG,                   # Config name on the config-server.
     consistency=AT_MOST_ONCE,        # consistency: AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE
     client_id=DEFAULT_CLIENT_ID,     # If not specified, the value is automatically generated.
-    value_type="byte_array",         # The type of message.
+    value_type=BYTE_ARRAY,           # The type of message.
+    value_serializer=None            # If not specified, use default serializer according to valueType.
+)
+AsyncMessageReader(
+    service=SERVICE,                 # Service name defined in the configuration file. (REQUIRED)
+    topics=TOPICS,                   # The topic to receive.
+    config=CONFIG,                   # Config name on the config-server.
+    consistency=AT_MOST_ONCE,        # consistency: AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE
+    client_id=DEFAULT_CLIENT_ID,     # If not specified, the value is automatically generated.
+    value_type=BYTE_ARRAY,           # The type of message.
+    value_deserializer=None          # If not specified, use default deserializer according to valueType.
+)
+AsyncMessageWriter(
+    service=SERVICE,                 # Service name defined in the configuration file. (REQUIRED)
+    topic=TOPIC,                     # The topic to send.
+    config=CONFIG,                   # Config name on the config-server.
+    consistency=AT_MOST_ONCE,        # consistency: AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE
+    client_id=DEFAULT_CLIENT_ID,     # If not specified, the value is automatically generated.
+    value_type=BYTE_ARRAY,           # The type of message.
     value_serializer=None            # If not specified, use default serializer according to valueType.
 )
 ```

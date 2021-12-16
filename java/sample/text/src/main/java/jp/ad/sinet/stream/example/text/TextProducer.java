@@ -33,15 +33,18 @@ import java.util.Scanner;
 public class TextProducer {
 
     private final String service;
+    private final String config;
 
-    public TextProducer(String service) {
+    public TextProducer(String service, String config) {
         this.service = service;
+        this.config = config;
     }
 
     public void run() {
         MessageWriterFactory<String> factory =
                 MessageWriterFactory.<String>builder()
                         .service(service)
+                        .configName(config)
                         .consistency(Consistency.AT_LEAST_ONCE).valueType(SimpleValueType.TEXT).build();
         try (MessageWriter<String> writer = factory.getWriter(); Scanner scanner = new Scanner(System.in)) {
             while (scanner.hasNextLine()) {
@@ -53,13 +56,18 @@ public class TextProducer {
 
     public static void main(String[] args) {
         Options opts = new Options();
-        opts.addOption(Option.builder("s").required().hasArg().longOpt("service").build());
+        opts.addOption(Option.builder("s").hasArg().longOpt("service").build());
+        opts.addOption(Option.builder("c").hasArg().longOpt("config").build());
 
         CommandLineParser parser = new DefaultParser();
         TextProducer producer = null;
         try {
             CommandLine cmd = parser.parse(opts, args);
-            producer = new TextProducer(cmd.getOptionValue("service"));
+            String service = cmd.getOptionValue("service");
+            String config = cmd.getOptionValue("config");
+            if (service == null && config == null)
+                throw new ParseException("-s/--service must be specified if -c/--config is not specified.");
+            producer = new TextProducer(service, config);
         } catch (ParseException e) {
             System.err.println("Parsing failed: " + e.getMessage());
             new HelpFormatter().printHelp(TextProducer.class.getSimpleName(), opts, true);

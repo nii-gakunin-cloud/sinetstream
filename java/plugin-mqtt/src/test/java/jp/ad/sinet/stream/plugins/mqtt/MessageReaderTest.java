@@ -63,7 +63,7 @@ class MessageReaderTest {
         void testGetReader() {
             MessageReaderFactory<String> builder =
                     MessageReaderFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .receiveTimeout(Duration.ofSeconds(10)).build();
             try (MessageReader<String> reader = builder.getReader()) {
                 assertNotNull(reader);
@@ -75,7 +75,7 @@ class MessageReaderTest {
         void consistency(Consistency consistency, TestReporter reporter) {
             MessageReaderFactory<String> builder =
                     MessageReaderFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .consistency(consistency)
                             .receiveTimeout(Duration.ofSeconds(10))
                             .valueType(SimpleValueType.TEXT)
@@ -94,7 +94,7 @@ class MessageReaderTest {
         void streamTest(Consistency consistency, TestReporter reporter) {
             MessageReaderFactory<String> builder =
                     MessageReaderFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .consistency(consistency)
                             .receiveTimeout(Duration.ofSeconds(3))
                             .valueType(SimpleValueType.TEXT)
@@ -118,7 +118,7 @@ class MessageReaderTest {
             @Test
             void topic() {
                 MessageReaderFactory<String> builder = MessageReaderFactory.<String>builder()
-                        .config(getConfigFile(workdir)).service(getServiceName())
+                        .configFile(getConfigFile(workdir)).service(getServiceName())
                         .topic(topic)
                         .build();
                 try (MessageReader<String> reader = builder.getReader()) {
@@ -139,7 +139,7 @@ class MessageReaderTest {
             @Test
             void topics() {
                 MessageReaderFactory<String> builder = MessageReaderFactory.<String>builder()
-                        .config(getConfigFile(workdir)).service(getServiceName())
+                        .configFile(getConfigFile(workdir)).service(getServiceName())
                         .topics(topics)
                         .build();
                 try (MessageReader<String> reader = builder.getReader()) {
@@ -162,7 +162,7 @@ class MessageReaderTest {
         void consistency(Consistency consistency) {
             MessageReaderFactory<String> builder =
                     MessageReaderFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .consistency(consistency)
                             .build();
             try (MessageReader<String> reader = builder.getReader()) {
@@ -177,7 +177,7 @@ class MessageReaderTest {
                 String clientId = RandomStringUtils.randomAlphabetic(10);
                 MessageReaderFactory<String> builder =
                         MessageReaderFactory.<String>builder()
-                                .config(getConfigFile(workdir)).service(getServiceName())
+                                .configFile(getConfigFile(workdir)).service(getServiceName())
                                 .clientId(clientId)
                                 .build();
                 try (MessageReader<String> reader = builder.getReader()) {
@@ -189,7 +189,7 @@ class MessageReaderTest {
             void defaultClientId() {
                 MessageReaderFactory<String> builder =
                         MessageReaderFactory.<String>builder()
-                                .config(getConfigFile(workdir)).service(getServiceName())
+                                .configFile(getConfigFile(workdir)).service(getServiceName())
                                 .build();
                 try (MessageReader<String> reader = builder.getReader()) {
                     assertNotNull(reader.getClientId());
@@ -201,7 +201,7 @@ class MessageReaderTest {
             void emptyAndNull(String clientId) {
                 MessageReaderFactory<String> builder =
                         MessageReaderFactory.<String>builder()
-                                .config(getConfigFile(workdir)).service(getServiceName())
+                                .configFile(getConfigFile(workdir)).service(getServiceName())
                                 .clientId(clientId)
                                 .build();
                 try (MessageReader<String> reader = builder.getReader()) {
@@ -217,7 +217,7 @@ class MessageReaderTest {
         void valueType(ValueType valueType) {
             MessageReaderFactory builder =
                     MessageReaderFactory.builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .valueType(valueType)
                             .build();
             try (MessageReader reader = builder.getReader()) {
@@ -231,7 +231,7 @@ class MessageReaderTest {
             void defaultTimeout() {
                 MessageReaderFactory<String> builder =
                         MessageReaderFactory.<String>builder()
-                                .config(getConfigFile(workdir)).service(getServiceName())
+                                .configFile(getConfigFile(workdir)).service(getServiceName())
                                 .build();
                 try (MessageReader<String> reader = builder.getReader()) {
                     assertEquals(Duration.ofNanos(Long.MAX_VALUE), reader.getReceiveTimeout());
@@ -243,7 +243,7 @@ class MessageReaderTest {
             void receiveTimeout(Duration timeout) {
                 MessageReaderFactory<String> builder =
                         MessageReaderFactory.<String>builder()
-                                .config(getConfigFile(workdir)).service(getServiceName())
+                                .configFile(getConfigFile(workdir)).service(getServiceName())
                                 .receiveTimeout(timeout)
                                 .build();
                 try (MessageReader<String> reader = builder.getReader()) {

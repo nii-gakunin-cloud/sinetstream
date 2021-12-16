@@ -27,6 +27,7 @@ import jp.ad.sinet.stream.utils.MessageReaderFactory;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
+import java.io.File;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +46,8 @@ public class ReaderParameters implements SinetStreamParameters {
 
     private String clientId;
 
+    private final List<File> tmpLst;
+
     public ReaderParameters(MessageReaderFactory<?> builder) {
         this.service = builder.getService();
         this.topics = builder.getTopics();
@@ -54,5 +57,6 @@ public class ReaderParameters implements SinetStreamParameters {
         this.receiveTimeout = builder.getReceiveTimeout();
         this.clientId = builder.getClientId();
         this.dataEncryption = builder.getDataEncryption();
+        this.tmpLst = builder.getTmpLst();
     }
 }

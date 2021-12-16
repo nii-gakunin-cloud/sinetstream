@@ -25,7 +25,7 @@ from .api import (
 from .error import (
     SinetError, NoServiceError, NoConfigError, InvalidArgumentError,
     ConnectionError, AlreadyConnectedError, UnsupportedServiceTypeError,
-    InvalidMessageError, AuthorizationError,
+    InvalidMessageError, AuthorizationError, InvalidConfigError,
 )
 from .value_type import TEXT, BYTE_ARRAY
 
@@ -36,7 +36,7 @@ __all__ = [
 
     SinetError, NoServiceError, NoConfigError, InvalidArgumentError,
     ConnectionError, AlreadyConnectedError, UnsupportedServiceTypeError,
-    InvalidMessageError, AuthorizationError,
+    InvalidMessageError, AuthorizationError, InvalidConfigError,
 
     TEXT, BYTE_ARRAY
 ]

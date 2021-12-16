@@ -1,111 +1,141 @@
-service-00:
-  type: dummy
-  brokers:
-    - dummy0.example.org:1717
-    - dummy1.example.org:1718
-    - dummy2.example.org
-service-0:
-  type: dummy
-  brokers:
-    - dummy0.example.org:1717
-    - dummy1.example.org:1718
-    - dummy2.example.org
-  value_type: text
-service-1:
-  type: kafka
-  brokers:
-    - kafka0.example.org:9092
-    - kafka1.example.org
-service-Z:
-  brokers:
-    - kafka0.example.org:9092
-    - kafka1.example.org
-service-with-topic:
-  type: dummy
-  brokers:
-    - kafka0.example.org:9092
-    - kafka1.example.org
-  topic: test-topic-java-001
-service-with-multiple-topics:
-  type: dummy
-  brokers:
-    - kafka0.example.org:9092
-    - kafka1.example.org
-  topic:
-    - test-topic-java-001
-    - test-topic-java-002
-service-with-topic-as-list:
-  type: dummy
-  brokers:
-    - kafka0.example.org:9092
-    - kafka1.example.org
-  topic:
-    - test-topic-java-001
-service-with-empty-topic-list:
-  type: dummy
-  brokers:
-    - kafka0.example.org:9092
-    - kafka1.example.org
-  topic: []
-service-with-encrypt-cbc:
-  type: dummy
-  brokers:
-    - dummy.example.org
-  value_type: text
-  crypto:
-    algorithm: AES
-    key_length: 128
-    mode: CBC
-    padding: pkcs7
-    key_derivation:
-      algorithm: pbkdf2
-      salt_bytes: 16
-      iteration: 10000
-    password: secret-000
-service-with-encrypt-eax:
-  type: dummy
-  brokers:
-    - dummy.example.org
-  value_type: text
-  crypto:
-    algorithm: AES
-    key_length: 256
-    mode: EAX
-    key_derivation:
-      algorithm: pbkdf2
-    password: secret-000
-service-with-parameters-for-reader:
-  type: dummy
-  brokers: dummy0.example.org:1718,dummy1.example.org
-  topic:
-    - topic-001
-    - topic-002
-  client_id: client-001
-  consistency: AT_LEAST_ONCE
-  data_encryption: true
-  value_type: byte_array
-  receive_timeout_ms: 10000
-  crypto:
-    algorithm: AES
-    mode: EAX
-    password: secret-000
-service-with-parameters:
-  type: dummy
-  brokers: dummy0.example.org:1718,dummy1.example.org
-  topic: topic-001
-  client_id: client-001
-  consistency: AT_LEAST_ONCE
-  data_encryption: true
-  value_type: byte_array
-  receive_timeout_ms: 10000
-  crypto:
-    algorithm: AES
-    mode: EAX
-    password: secret-00
-service-with-serializer-deserializer:
-  type: dummy
-  brokers: dummy.example.org
-  topic: topic-001
-  value_type: byte_array
-  value_serializer: jp.ad.sinet.stream.api.valuetype.StringSerializer
-  value_deserializer: jp.ad.sinet.stream.api.valuetype.StringDeserializer
+header:
+  version: 2
+config:
+  service-00:
+    type: dummy
+    brokers:
+      - dummy0.example.org:1717
+      - dummy1.example.org:1718
+      - dummy2.example.org
+  service-0:
+    type: dummy
+    brokers:
+      - dummy0.example.org:1717
+      - dummy1.example.org:1718
+      - dummy2.example.org
+    value_type: text
+  service-1:
+    type: kafka
+    brokers:
+      - kafka0.example.org:9092
+      - kafka1.example.org
+  service-Z:
+    brokers:
+      - kafka0.example.org:9092
+      - kafka1.example.org
+  service-with-topic:
+    type: dummy
+    brokers:
+      - kafka0.example.org:9092
+      - kafka1.example.org
+    topic: test-topic-java-001
+  service-with-multiple-topics:
+    type: dummy
+    brokers:
+      - kafka0.example.org:9092
+      - kafka1.example.org
+    topic:
+      - test-topic-java-001
+      - test-topic-java-002
+  service-with-topic-as-list:
+    type: dummy
+    brokers:
+      - kafka0.example.org:9092
+      - kafka1.example.org
+    topic:
+      - test-topic-java-001
+  service-with-empty-topic-list:
+    type: dummy
+    brokers:
+      - kafka0.example.org:9092
+      - kafka1.example.org
+    topic: []
+  service-with-encrypt-cbc:
+    type: dummy
+    brokers:
+      - dummy.example.org
+    value_type: text
+    crypto:
+      algorithm: AES
+      key_length: 128
+      mode: CBC
+      padding: pkcs7
+      key_derivation:
+        algorithm: pbkdf2
+        salt_bytes: 16
+        iteration: 10000
+      password: secret-000
+  service-with-encrypt-eax:
+    type: dummy
+    brokers:
+      - dummy.example.org
+    value_type: text
+    crypto:
+      algorithm: AES
+      key_length: 256
+      mode: EAX
+      key_derivation:
+        algorithm: pbkdf2
+      password: secret-000
+  service-with-parameters-for-reader:
+    type: dummy
+    brokers: dummy0.example.org:1718,dummy1.example.org
+    topic:
+      - topic-001
+      - topic-002
+    client_id: client-001
+    consistency: AT_LEAST_ONCE
+    data_encryption: true
+    value_type: byte_array
+    receive_timeout_ms: 10000
+    crypto:
+      algorithm: AES
+      mode: EAX
+      password: secret-000
+  service-with-parameters:
+    type: dummy
+    brokers: dummy0.example.org:1718,dummy1.example.org
+    topic: topic-001
+    client_id: client-001
+    consistency: AT_LEAST_ONCE
+    data_encryption: true
+    value_type: byte_array
+    receive_timeout_ms: 10000
+    crypto:
+      algorithm: AES
+      mode: EAX
+      password: secret-00
+  service-with-serializer-deserializer:
+    type: dummy
+    brokers: dummy.example.org
+    topic: topic-001
+    value_type: byte_array
+    value_serializer: jp.ad.sinet.stream.api.valuetype.StringSerializer
+    value_deserializer: jp.ad.sinet.stream.api.valuetype.StringDeserializer
+  service-with-binary:
+    type: dummy
+    brokers:
+      - kafka0.example.org:9092
+      - kafka1.example.org
+    topic: test-topic-java-001
+    binparam: !!binary VGhpcyBpcyBhIHRlc3Q=
+    #encparam: !sinetstream/encrypted VGhpcyBpcyBhIHRlc3Q=
+    hoge_data: hoge contents
+    boke_data: !!binary AAECAwQFBgcICQoL
+    fuga:
+      hoge_data: hoge contents 2
+  service-with-encrypted:
+    type: dummy
+    brokers:
+      - kafka0.example.org:9092
+      - kafka1.example.org
+    topic: test-topic-java-001
+    test-secret: !sinetstream/encrypted |-
+      AAEBAXALXKkxceuVRo0bRQxSIjZ2cn6RPWGriqTtQ4j4aIj+cm+1RIDJ61Gp+tWWz8X75QwAMv
+      R1+rnGPVJ6iKopLavN9V+F260RdPBeypNvgo/wCfeQmFswDIkKwpY2gGxt/wfRZ4ZF7Agz2BON
+      KEYT0uWV2gzb28vtmldmNgcJVcPQIy9v0Ljf/eouvJZbwfP1YX6gxqnB1IA2oJxKz9ZDmPsKyY
+      SPC0w2qFrHx6IU/WCozsW27f8drW4YBwUz+Evrj9ivuhfYhVBSEaVolc+8NZ+NEe7grTyb6m9V
+      BOShE296VahfHkRFK7ybJFPBNBPKgb1N5UrMAg3kEa4TLnrcJXJpOTVOeKreB8dBaN5r5lELxv
+      5ikYFt+uCRv+GQxDyhrgaGUewsU74bBz3ZQQnhf4p//6TFgArQ1PpDtVWZDM1zPCeqfkaYndUP
+      WccCUBSXdxJxs7NIOlWiMjTMbkxEGPeMEXCrSruuRpRpARIJJKtLlT25+wJ4RycpnHt7TIcaMz
+      oO0S+IRMhkC8nsPNrwFyMAObIm70Df6kZCkFtWB7X1ayHRq3pKIKlJMbZ0aA==

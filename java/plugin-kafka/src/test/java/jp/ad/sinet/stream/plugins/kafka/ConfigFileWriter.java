@@ -134,13 +134,13 @@ public abstract class ConfigFileWriter {
         // ファクトリ初期化
         MessageWriterFactory<String> writerBuilder =
                 MessageWriterFactory.<String>builder()
-                        .config(config)
+                        .configFile(config)
                         .service(service)
                         .build();
 
         MessageReaderFactory<String> readerBuilder =
                 MessageReaderFactory.<String>builder()
-                        .config(config)
+                        .configFile(config)
                         .service(service)
                         .receiveTimeout(Duration.ofSeconds(1))
                         .build();

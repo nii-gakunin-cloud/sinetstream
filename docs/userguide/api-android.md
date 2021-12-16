@@ -21,246 +21,176 @@ under the License.
 
 [English](api-android.en.md)
 
-SINETStream ユーザガイド
+SINETStream ユーザガイド：Android版SINETStreamライブラリ
 
-# Android版のAPI
+**目次**
+<pre>
+1. 概要
+2. Android版SINETStreamライブラリの位置づけ
+3. 総称型（Generics）の利用
+4. Android版SINETStreamライブラリのAPI詳細
+4.1 SinetStreamReader
+4.2 SinetStreamReaderStream
+4.3 SinetStreamReaderBytes
+4.4 SinetStreamWriter
+4.5 SinetStreamWriterStream
+4.6 SinetStreamWriterBytes
+</pre>
 
-* パッケージ
-    * jp.ad.sinet.stream.android.api
 
-* 公開インタフェース
-    * SinetStreamReader.SinetStreamReaderListener
-    * SinetStreamWriter.SinetStreamWriterListener
+# 1. 概要
 
-* 公開クラス
-    * SinetStreamReader
-    * SinetStreamWriter
+Android版SINETStreamライブラリが提供する公開API関数群およびインタフェース群に関して述べる。
 
 
-## インタフェース SinetStreamReader.SinetStreamReaderListener
+# 2. Android版SINETStreamライブラリの位置づけ
 
-### メソッド概要
-* onError
-    * エラー検出時に呼ばれる。
-* onMessageReceived
-    * 購読トピックのメッセージを受信したときに呼ばれる。
-* onReaderStatusChanged
-    * 受信可否状態が変化したときに呼ばれる。
-
-### メソッド詳細
-#### onReaderStatusChanged
+ユーザアプリケーションがAndroid版SINETStreamライブラリを用いてMQTTメッセージの送受信を行う場合、概略以下のような3階層構成となる。
+図中、二重線（=）で区切られた中央部分がAndroid版SINETStreamライブラリである。
 
 ```
-void onReaderStatusChanged(boolean isReady)
+===========================================================================
+< User Application >
+
+      #---------------------------+     #---------------------------+
+      | UserAPP (Publisher)       |     | UserApp (Subscriber)      |
+      +---------------------------+     +---------------------------+
+              |              A                  |              A
+==============|==============|==================|==============|===========
+< SINETStream for Android >  |                  |              |
+              |              |                  |              |
+              V              |                  V              |
+      +-------------+ +-----------+     +-------------+ +-----------+
+      | SinetStream | | WriterXXX |     | SinetStream | | WriterXXX |
+      | WriterXXX   | | Listener  |     | ReaderXXX   | | Listener  |
+      +-------------+ +-----------+     +-------------+ +-----------+
+                ...                                  ...
+      +---------------------------+     +---------------------------+
+      | MqttAsyncMessageWriter    |     | MqttAsyncMessageReader    |
+      +---------------------------+     +---------------------------+
+                 |                                    A
+=================|====================================|====================
+< Paho MQTT library for Android >                     |
+                 |                                    |
+                 V                                    |
+      +---------------------------+     +---------------------------+
+      | MqttAndroidClient         |     | MqttAndroidClient         |
+      +---------------------------+     +---------------------------+
+      +-------------------------------------------------------------+
+      | MqttService                                                 |
+      +-------------------------------------------------------------+
+                 |                                    A
+                 V                                    |
+           MQTT messages                        MQTT messages
 ```
 
-* 説明：
-    * 受信可否状態が変化したときに呼ばれる。
-* 引数:
-    * isReady - ブローカに「接続済みかつ登録済み」であれば真、さもなくば偽
 
+# 3. 総称型（Generics）の利用
 
-#### onMessageReceived
+`Reader`や`Writer`を表現する基本クラスは総称型（Generics）の抽象クラスとする。
+これらを文字列型やバイト列型など特定のデータ型用に拡張した具象クラスを併せて用意し、ユーザアプリケーションは用途に応じて後者を使うことを想定する。
 
-```
-void onMessageReceived(@NonNull
-                       java.lang.String data)
-```
+例えば、`SinetStreamWriter<T>`クラスで定義するメッセージ発行メソッド`publish(T data)`は「総称型」の引数`data`を取る。
 
-* 説明：
-    * 購読トピックのメッセージを受信したときに呼ばれる。
-* 引数:
-    * data - 受信メッセージ内容
-
-#### onError
-
-```
-void onError(@NonNull
-             java.lang.String description)
+```java
+      public abstract class
+      SinetStreamWriter<T>
+      +---------------------+
+      | initialize()        |
+      | terminate()         |
+      | publish(T data)     |
+      | ...                 |
+      +---------------------+
 ```
 
-* 説明：
-    * 何らかのエラー条件を満たしたときに呼ばれる。そのエラーはAndroid版のSINETStreamライブラリ内部、あるいはより下位層で検出したものかもしれない。
-* 引数:
-    * description - エラー内容の簡単な説明
+この`SinetStreamWriter<T>`クラスを「文字列型」として拡張した`SinetStreamWriterString`クラスでは、上記`publish`の引数は「文字列型」を取るものとして再定義される。
+同様に、「バイト列型」として拡張した`SinetStreamWriterBytes`の場合は`publish`の引数は「バイト列型」を取るものとして再定義される。
 
+```java
+       public class
+       SinetStreamWriterString
+         extends SinetStreamWriter<String>
+      +-------------------------+
+      |                         |
+      |  public abstract class  |
+      |  SinetStreamWriter<T>   |
+      | +---------------------+ |
+      | | initialize()        | |
+      | | terminate()         | |
+      | | publish(T data)   <------ publish(String data)
+      | | ...                 | |
+      | +---------------------+ |
+      +-------------------------+
 
-## インタフェース SinetStreamWriter.SinetStreamWriterListener
-
-### メソッド概要
-* onError
-    * エラー検出時に呼ばれる。
-* onWriterStatusChanged
-    * 送信可否状態が変化したときに呼ばれる。
-
-### メソッド詳細
-#### onWriterStatusChanged
-
-```
-void onWriterStatusChanged(boolean isReady)
-```
-
-* 説明：
-    * 送信可否状態が変化したときに呼ばれる。
-* 引数:
-    * isReady - ブローカに「接続済み」であれば真、さもなくば偽
-
-#### onError
-
-```
-void onError(@NonNull
-             java.lang.String description)
-```
-
-* 説明：
-    * 何らかのエラー条件を満たしたときに呼ばれる。そのエラーはAndroid版のSINETStreamライブラリ内部、あるいはより下位層で検出したものかもしれない。
-* 引数:
-    * description - エラー内容の簡単な説明
-
-
-## クラスSinetStreamReader
-
-* SINETStreamシステムにおいて、リーダ（= サブスクライバ）として機能するためのAPI関数一式を提供する。
-* メッセージングシステムの性質上、下記のメソッドはいずれも非同期型の要求として扱う必要がある。
-    * initialize
-    * terminate
-* 本クラスの利用者は、呼び出し側の[Activity](https://developer.android.com/guide/components/activities/intro-activities)において`SinetStreamReader.SinetStreamReaderListener`を実装し、処理結果やエラーの非同期通知を受けられるようにしなければならない。
-
-
-### 入れ子クラス概要
-* SinetStreamReader.SinetStreamReaderListener
-    * 内部インタフェース
-
-
-### コンストラクタ概要
-* SinetStreamReader
-    * SinetStreamReaderのインスタンスを生成する。
-
-
-### メソッド概要
-* initialize
-    * ブローカに接続し、サブスクライバとしての初期処理を実施する。
-* terminate
-    * ブローカから切断し、確保した資源を解放する。
-
-
-### コンストラクタ詳細
-
-```
-public SinetStreamReader(@NonNull
-                         android.content.Context context)
+       public class
+       SinetStreamWriterBytes
+         extends SinetStreamWriter<byte[]>
+      +-------------------------+
+      |                         |
+      |  public abstract class  |
+      |  SinetStreamWriter<T>   |
+      | +---------------------+ |
+      | | initialize()        | |
+      | | terminate()         | |
+      | | publish(T data)   <------ publish(byte[] data)
+      | | ...                 | |
+      | +---------------------+ |
+      +-------------------------+
 ```
 
-* 説明：
-    * SinetStreamReaderのインスタンスを生成する。
-* 引数:
-    * context - `SinetStreamReader.SinetStreamReaderListener`を実装したアプリケーション[コンテクスト](https://developer.android.com/reference/android/content/Context)、すなわち呼出側のActivityそのもの。
-* 例外:
-    * java.lang.RuntimeException - 付与のコンテクストが所用のリスナーを実装していない
+インタフェース定義に関しても考え方は同様である。
+例えば、インタフェース`SinetStreamReaderListener<T>`は、受信メッセージ通知用のコールバック関数`onReceiveData`の第3引数で「総称型」の`data`を持つ。
+これを文字列に拡張した`SinetStreamReaderStringListener`では、同じ`onReceiveData`の第3引数は「文字列型」の`data`と再定義される。
 
-
-### メソッド詳細
-#### initialize
-
-```
-public void initialize(@NonNull
-                       java.lang.String serviceName)
-```
-
-* 説明：
-    * ブローカに接続し、サブスクライバとしての初期処理を実施する。
-    * 接続パラメータは外部の[設定ファイル](config.md)で規定される。
-* 引数:
-    * serviceName - 設定ファイルで検索鍵となるサービス名
-
-#### terminate
-
-```
-public void terminate()
+```java
+       public interface
+       SinetStreamReaderStringListener
+         extends SinetStreamReaderListener<String>
+      +------------------------------------------+
+      |                                          |
+      |  public interface                        |
+      |  SinetStreamReaderListener<T>            |
+      | +--------------------------------------+ |
+      | | ...                                  | |
+      | | void                                 | |
+      | | onReceiveData(@NonNull String topic, | |
+      | |               long timestamp,        | |
+      | |               @NonNull T data);   <-------- "@NonNull String data"
+      | | ...                                  | |
+      | +--------------------------------------+ |
+      +------------------------------------------+
 ```
 
-* 説明：
-    * ブローカから切断し、確保した資源を解放する。
 
-## クラスSinetStreamWriter
+# 4. Android版SINETStreamライブラリのAPI詳細
 
-* SINETStreamシステムにおいて、ライタ（= パブリッシャ）として機能するためのAPI関数一式を提供する。
-* メッセージングシステムの性質上、下記のメソッドはいずれも非同期型の要求として扱う必要がある。
-    * initialize
-    * publish
-    * terminate
-* 本クラスの利用者は、呼び出し側の[Activity](https://developer.android.com/guide/components/activities/intro-activities)において`SinetStreamWriter.SinetStreamWriterListener`を実装し、処理結果やエラーの非同期通知を受けられるようにしなければならない。
+## 4.1 SinetStreamReader
 
+受信側の抽象クラスおよびインタフェース：
+[SinetStreamReader](sinetstream_android_api/sinetstream_reader.md)
 
-### 入れ子クラス概要
-* SinetStreamWriter.SinetStreamWriterListener
-    * 内部インタフェース
+## 4.2 SinetStreamReaderStream
 
+文字列型データ受信用の派生クラスおよびインタフェース：
+[SinetStreamReaderStream](sinetstream_android_api/sinetstream_reader_string.md)
 
-### コンストラクタ概要
-* SinetStreamWriter
-    * SinetStreamWriterのインスタンスを生成する。
+## 4.3 SinetStreamReaderBytes
 
+バイト型データ受信用の派生クラスおよびインタフェース：
+[SinetStreamReaderBytes](sinetstream_android_api/sinetstream_reader_bytes.md)
 
-### メソッド概要
-* initialize
-    * ブローカに接続し、パブリッシャとしての初期処理を実施する。
-* terminate
-    * ブローカから切断し、確保した資源を解放する。
-* publish
-    * 付与のメッセージをブローカに発行する。
+## 4.4 SinetStreamWriter
 
+送信側の抽象クラスおよびインタフェース：
+[SinetStreamWriter](sinetstream_android_api/sinetstream_writer.md)
 
-### コンストラクタ詳細
+## 4.5 SinetStreamWriterStream
 
-```
-public SinetStreamWriter(@NonNull
-                         android.content.Context context)
-```
+文字列型データ送信用の派生クラスおよびインタフェース：
+[SinetStreamWriterStream](sinetstream_android_api/sinetstream_writer_string.md)
 
-* 説明：
-    * SinetStreamWriterのインスタンスを生成する。
-* 引数:
-    * context - `SinetStreamWriter.SinetStreamWriterListener`を実装したアプリケーション[コンテクスト](https://developer.android.com/reference/android/content/Context)、すなわち呼出側のActivityそのもの。
-* 例外:
-    * java.lang.RuntimeException - 付与のコンテクストが所用のリスナーを実装していない
+## 4.6 SinetStreamWriterBytes
 
-### メソッド詳細
-#### initialize
-
-```
-public void initialize(@NonNull
-                       java.lang.String serviceName)
-```
-
-* 説明：
-    * ブローカに接続し、パブリッシャとしての初期処理を実施する。
-    * 接続パラメータは外部の[設定ファイル](config.md)で規定される。
-* 引数:
-    * serviceName - 設定ファイルで検索鍵となるサービス名
-
-#### terminate
-
-```
-public void terminate()
-```
-
-* 説明：
-    * ブローカから切断し、確保した資源を解放する。
-
-
-#### publish
-
-```
-public void publish(@NonNull
-                    java.lang.String message,
-                    @Nullable
-                    java.lang.Object userData)
-```
-
-* 説明：
-    * 付与のメッセージをブローカに発行する。
-* 引数:
-    * message - 発行対象のメッセージ
-    * userData - ユーザ指定の不透明オブジェクト。`WriterMessageCallback#onPublished()`でそのまま返却される。
+バイト列型データ送信用の派生クラスおよびインタフェース：
+[SinetStreamWriterBytes](sinetstream_android_api/sinetstream_writer_bytes.md)
 

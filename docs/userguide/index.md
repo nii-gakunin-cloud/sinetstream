@@ -48,7 +48,7 @@ Android版に関しては、IoT (Internet of Things) 端末としてセンサー
     * [Android API (Javadoc)](http://javadoc.android.sinetstream.net/sinetstream-android/)
     * [Android版設定ファイル](config-android.md)
 * [SINETStreamHelperユーザガイド](libhelper.md)
-    * [SINETStreamHelper API](libhelper-api.md)
+    * [SINETStreamHelper API](api-libhelper.md)
     * [SINETStreamHelper API (Javadoc)](http://javadoc.android.sinetstream.net/sinetstream-android-helper/)
 * [設定ファイル](config.md)
 * [認証と認可](auth.md)

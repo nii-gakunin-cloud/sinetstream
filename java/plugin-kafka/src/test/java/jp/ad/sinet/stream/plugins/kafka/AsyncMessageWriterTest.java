@@ -56,7 +56,7 @@ class AsyncMessageWriterTest implements ConfigFileAware {
         final AtomicInteger count = new AtomicInteger(0);
         CountDownLatch done = new CountDownLatch(lines.size());
         MessageWriterFactory<String> factory = MessageWriterFactory.<String>builder()
-                .config(getConfigFile(workdir))
+                .configFile(getConfigFile(workdir))
                 .service(getServiceName())
                 .consistency(consistency)
                 .build();

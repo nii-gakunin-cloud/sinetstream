@@ -64,13 +64,13 @@ class AsyncMessageReaderTest implements ConfigFileAware {
         final AtomicInteger count = new AtomicInteger(0);
         final CountDownLatch done = new CountDownLatch(lines.size());
         MessageReaderFactory<String> readerFactory = MessageReaderFactory.<String>builder()
-                .config(getConfigFile(workdir))
+                .configFile(getConfigFile(workdir))
                 .service(getServiceName())
                 .consistency(consistency)
                 .topic(topic)
                 .build();
         MessageWriterFactory<String> writerFactory = MessageWriterFactory.<String>builder()
-                .config(getConfigFile(workdir))
+                .configFile(getConfigFile(workdir))
                 .service(getServiceName())
                 .consistency(consistency)
                 .topic(topic)
@@ -105,13 +105,13 @@ class AsyncMessageReaderTest implements ConfigFileAware {
         final AtomicInteger count = new AtomicInteger(0);
         final CountDownLatch done = new CountDownLatch(lines.size());
         MessageReaderFactory<String> readerFactory = MessageReaderFactory.<String>builder()
-                .config(getConfigFile(workdir))
+                .configFile(getConfigFile(workdir))
                 .service(getServiceName())
                 .consistency(consistency)
                 .topic(topic)
                 .build();
         MessageWriterFactory<String> writerFactory = MessageWriterFactory.<String>builder()
-                .config(getConfigFile(workdir))
+                .configFile(getConfigFile(workdir))
                 .service(getServiceName())
                 .consistency(consistency)
                 .topic(topic)
@@ -172,13 +172,13 @@ class AsyncMessageReaderTest implements ConfigFileAware {
             final AtomicInteger count = new AtomicInteger(0);
             final CountDownLatch done = new CountDownLatch(lines.size());
             MessageReaderFactory<String> readerFactory = MessageReaderFactory.<String>builder()
-                    .config(getConfigFile(workdir))
+                    .configFile(getConfigFile(workdir))
                     .service(getServiceName())
                     .consistency(Consistency.AT_LEAST_ONCE)
                     .topic(topic)
                     .build();
             MessageWriterFactory<String> writerFactory = MessageWriterFactory.<String>builder()
-                    .config(getConfigFile(workdir))
+                    .configFile(getConfigFile(workdir))
                     .service(getServiceName())
                     .consistency(Consistency.AT_LEAST_ONCE)
                     .topic(topic)

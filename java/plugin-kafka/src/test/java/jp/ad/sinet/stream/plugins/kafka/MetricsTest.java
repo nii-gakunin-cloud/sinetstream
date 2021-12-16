@@ -78,7 +78,7 @@ class MetricsTest {
         void writer() {
             MessageWriterFactory<String> builder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName()).build();
+                            .configFile(getConfigFile(workdir)).service(getServiceName()).build();
             try (MessageWriter<String> writer = builder.getWriter()) {
                 writer.write("message-1");
                 Metrics metrics = writer.getMetrics();
@@ -93,7 +93,7 @@ class MetricsTest {
         void reader() {
             MessageReaderFactory<String> builder =
                     MessageReaderFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .receiveTimeout(Duration.ofSeconds(3))
                             .build();
             MessageReader<String> reader0 = null;

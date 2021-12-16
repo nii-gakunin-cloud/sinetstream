@@ -84,10 +84,14 @@ Java版やPython版とは異なり、Android版のSINETStreamライブラリは�
 
 |大分類|中分類|小分類|型|値域|必須|備考|
 |:-----|:-----|:-----|:-|:---|:---|:---|
-||tls|ca_certs|String|Any|x|自己署名サーバ証明書（xxx.crt）のファイル名|
-||tls|certfile|String|Any|x|クライアント証明書（xxx.pfx）のファイル名|
-||tls|keyfilePassword|String|Any|x|クライアント証明書（xxx.pfx）のパスワード|
+||tls|protocol|String|{TLSv1.1,TLSv1.2}|x|省略時は"TLSv1.2"|
+||tls|client_certs|Boolean|{true,false}|x|省略時はfalse|
+||tls|server_certs|Boolean|{true,false}|x|省略時はfalse|
 ||tls|check_hostname|Boolean|{true,false}|x|省略時はtrue|
+
+* SSL/TLS関連の証明書は、事前にAndroidシステム秘匿領域（`KeyChain`）に格納されたものを参照する運用とする。
+  * クライアント証明書を使う場合は`client_certs`をtrueとする。
+  * 自己署名サーバ証明書（いわゆるオレオレサーバ証明書）を使う場合は`server_certs`をtrueとする。
 
 
 ### MQTT固有のパラメータ
@@ -96,20 +100,26 @@ Java版やPython版とは異なり、Android版のSINETStreamライブラリは�
 |大分類|中分類|小分類|型|値域|必須|備考|
 |:-----|:-----|:-----|:-|:---|:---|:---|
 ||clean_session||Boolean|{true,false}|x|省略時はtrue|
-||protocol||String|{"MQTTv31","MQTTv311","DEFAULT"}|x|省略時は"DEFAULT"|
-||transport||String|{"tcp","websockets"}|x|省略時は"tcp"|
+||protocol \[1\]||String|{"MQTTv31","MQTTv311","DEFAULT"}|x|省略時は"DEFAULT"|
+||transport||String|{"tcp","websocket"}|x|省略時は"tcp"|
 ||qos||Integer|{0,1,2}|x|省略時は1|
 ||retain||Boolean|{true,false}|x|省略時はtrue|
-||max_inflight_messages_set|inflight|Integer|正整数|x|省略時は0|
-||reconnect_delay_set|max_delay|Integer|正整数|x|省略時は0|
-||connect|keepalive|Integer|正整数|x|省略時は0|
-||connect|automatic_reconnect|Boolean|{true,false}|x|省略時はtrue|
-||connect|connection_timeout|Integer|正整数|x|省略時は0|
+||max_inflight_messages_set|inflight|Integer|正整数|x|省略時は10|
+||reconnect_delay_set|max_delay|Integer|正整数|x|省略時は128000|
+||connect|keepalive|Integer|正整数|x|省略時は60|
+||connect|automatic_reconnect|Boolean|{true,false}|x|省略時はfalse|
+||connect|connection_timeout|Integer|正整数|x|省略時は30|
+||mqtt_debug \[2\]||Boolean|{true,false}|x|Default: false|
 
 * 項目`protocol`での`"DEFAULT"`指定時は、
 [まずMQTTv311を試し、次にMQTTv31を試す](https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttConnectOptions.html#MQTT_VERSION_DEFAULT)という振る舞いとなる。
 * 項目`qos`に関しては、上記共通部の「APIのパラメータ」の項目`consistency`より
 こちらが優先される。
+
+\[1\]: 項目`protocol`の別名として`mqtt_version`を使っても良い。
+両者を同時に指定した場合、`protocol`を採用する。
+
+\[2\]: 開発者向け。MqttAndroidClientのデバッグトレースの有無を設定する。
 
 
 #### MQTTのユーザ認証に関するパラメータ
@@ -146,5 +156,5 @@ Java版やPython版とは異なり、Android版のSINETStreamライブラリは�
 ||tls_set|keyfilePassword|String|Any|x|クライアント証明書（xxx.pfx）のパスワード|
 ||tls_insecure_set|value|Boolean|{true,false}|x|省略時はtrue|
 
-* 上記共通部の「SSL/TLSに関するパラメータ」よりこちらが優先される。
+* 本項目は無効とする。上記共通部の「SSL/TLSに関するパラメータ」を使うこと。
 

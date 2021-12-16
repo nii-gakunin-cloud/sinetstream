@@ -27,6 +27,8 @@ import jp.ad.sinet.stream.utils.MessageWriterFactory;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
+import java.io.File;
+import java.util.List;
 import java.util.Map;
 
 @Data
@@ -41,6 +43,8 @@ public class WriterParameters implements SinetStreamParameters {
 
     private String clientId;
 
+    private final List<File> tmpLst;
+
     public WriterParameters(MessageWriterFactory<?> builder) {
         this.service = builder.getService();
         this.topic = builder.getTopic();
@@ -49,5 +53,6 @@ public class WriterParameters implements SinetStreamParameters {
         this.config = builder.getParameters();
         this.clientId = builder.getClientId();
         this.dataEncryption = builder.getDataEncryption();
+        this.tmpLst = builder.getTmpLst();
     }
 }

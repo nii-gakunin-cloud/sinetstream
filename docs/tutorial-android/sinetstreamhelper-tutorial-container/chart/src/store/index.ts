@@ -1,8 +1,8 @@
-import { DataPoint, fetchSensorData } from '@/api/sensor';
 import { ChartData } from 'chart.js';
 import Vue from 'vue';
 import Vuex from 'vuex';
 import createPersistedState from 'vuex-persistedstate';
+import { DataPoint, fetchSensorData } from '@/api/sensor';
 import { ChartOption } from './chart-state-type';
 import initChartOptions from './init-data';
 

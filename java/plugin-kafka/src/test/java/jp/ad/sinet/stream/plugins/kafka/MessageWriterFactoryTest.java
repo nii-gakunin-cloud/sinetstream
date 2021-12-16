@@ -47,7 +47,7 @@ class MessageWriterFactoryTest implements ConfigFileAware {
         String topic = generateTopic();
         MessageWriterFactory<String> builder =
                 MessageWriterFactory.<String>builder()
-                        .config(getConfigFile(workdir)).service(getServiceName())
+                        .configFile(getConfigFile(workdir)).service(getServiceName())
                         .topic(topic).build();
         try (MessageWriter<String> writer = builder.getWriter()) {
             assertNotNull(writer);
@@ -61,7 +61,7 @@ class MessageWriterFactoryTest implements ConfigFileAware {
         String clientId = "client-000";
         MessageWriterFactory<String> builder =
                 MessageWriterFactory.<String>builder()
-                        .config(getConfigFile(workdir)).service(getServiceName())
+                        .configFile(getConfigFile(workdir)).service(getServiceName())
                         .clientId(clientId).build();
         try (MessageWriter<String> writer = builder.getWriter()) {
             assertNotNull(writer);
@@ -73,7 +73,7 @@ class MessageWriterFactoryTest implements ConfigFileAware {
     void defaultClientId() {
         MessageWriterFactory<String> builder =
                 MessageWriterFactory.<String>builder()
-                        .config(getConfigFile(workdir)).service(getServiceName()).build();
+                        .configFile(getConfigFile(workdir)).service(getServiceName()).build();
         try (MessageWriter<String> writer = builder.getWriter()) {
             assertNotNull(writer);
             assertNotNull(writer.getClientId());
@@ -85,7 +85,7 @@ class MessageWriterFactoryTest implements ConfigFileAware {
     void consistency(Consistency consistency) {
         MessageWriterFactory<String> builder =
                 MessageWriterFactory.<String>builder()
-                        .config(getConfigFile(workdir)).service(getServiceName())
+                        .configFile(getConfigFile(workdir)).service(getServiceName())
                         .consistency(consistency).build();
         try (MessageWriter<String> writer = builder.getWriter()) {
             assertNotNull(writer);
@@ -97,7 +97,7 @@ class MessageWriterFactoryTest implements ConfigFileAware {
     void defaultConsistency() {
         MessageWriterFactory<String> builder =
                 MessageWriterFactory.<String>builder()
-                        .config(getConfigFile(workdir)).service(getServiceName()).build();
+                        .configFile(getConfigFile(workdir)).service(getServiceName()).build();
         try (MessageWriter<String> writer = builder.getWriter()) {
             assertNotNull(writer);
             assertEquals(AT_MOST_ONCE, writer.getConsistency());

@@ -24,6 +24,8 @@ package jp.ad.sinet.stream.spi;
 import jp.ad.sinet.stream.api.Consistency;
 import jp.ad.sinet.stream.api.ValueType;
 
+import java.io.File;
+import java.util.List;
 import java.util.Map;
 
 public interface SinetStreamParameters {
@@ -32,4 +34,5 @@ public interface SinetStreamParameters {
     ValueType getValueType();
     boolean isDataEncryption();
     Map<String, Object> getConfig();
+    List<File> getTmpLst();
 }

@@ -53,7 +53,7 @@ class MqttParametersTest implements ConfigFileAware {
         void cleanSession(boolean cleanSession) {
             MessageWriterFactory<String> builder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .parameter("clean_session", cleanSession)
                             .build();
             try (MessageWriter<String> writer = builder.getWriter()) {
@@ -69,7 +69,7 @@ class MqttParametersTest implements ConfigFileAware {
         void qos(Consistency consistency) {
             MessageWriterFactory<String> builder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .parameter("qos", Integer.toString(consistency.getQos()))
                             .build();
             try (MessageWriter<String> writer = builder.getWriter()) {
@@ -83,7 +83,7 @@ class MqttParametersTest implements ConfigFileAware {
         void intValueQos(Consistency consistency) {
             MessageWriterFactory<String> builder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .parameter("qos", consistency.getQos())
                             .build();
             try (MessageWriter<String> writer = builder.getWriter()) {
@@ -96,7 +96,7 @@ class MqttParametersTest implements ConfigFileAware {
         void badQos() {
             MessageWriterFactory<String> builder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .parameter("qos", "xxx")
                             .build();
             try (MessageWriter<String> writer = builder.getWriter()) {
@@ -109,7 +109,7 @@ class MqttParametersTest implements ConfigFileAware {
         void badValueQos() {
             MessageWriterFactory<String> builder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .parameter("qos", "10")
                             .build();
             try (MessageWriter<String> writer = builder.getWriter()) {
@@ -123,7 +123,7 @@ class MqttParametersTest implements ConfigFileAware {
         void qosAndConsistency(Consistency consistency) {
             MessageWriterFactory<String> builder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .parameter("qos", consistency.getQos())
                             .consistency(consistency.equals(EXACTLY_ONCE) ? AT_MOST_ONCE : EXACTLY_ONCE)
                             .build();
@@ -140,7 +140,7 @@ class MqttParametersTest implements ConfigFileAware {
         void defaultRetain() {
             MessageWriterFactory<String> builder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .consistency(Consistency.AT_LEAST_ONCE)
                             .build();
             try (MessageWriter<String> writer = builder.getWriter()) {
@@ -153,7 +153,7 @@ class MqttParametersTest implements ConfigFileAware {
         void badRetain() {
             MessageWriterFactory<String> builder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .consistency(Consistency.AT_LEAST_ONCE)
                             .parameter("retain", "xxx")
                             .build();
@@ -168,7 +168,7 @@ class MqttParametersTest implements ConfigFileAware {
         void retain(boolean retain) {
             MessageWriterFactory<String> builder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .consistency(Consistency.AT_LEAST_ONCE)
                             .parameter("retain", Boolean.toString(retain))
                             .build();
@@ -186,7 +186,7 @@ class MqttParametersTest implements ConfigFileAware {
         void protocol(MqttVersion version) {
             MessageWriterFactory<String> builder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .consistency(Consistency.AT_LEAST_ONCE)
                             .parameter("protocol", version.name())
                             .build();
@@ -199,7 +199,7 @@ class MqttParametersTest implements ConfigFileAware {
         void badProtocol() {
             MessageWriterFactory<String> builder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .consistency(Consistency.AT_LEAST_ONCE)
                             .parameter("protocol", "xxx")
                             .build();
@@ -216,7 +216,7 @@ class MqttParametersTest implements ConfigFileAware {
         void maxInflightMessages() {
             MessageWriterFactory<String> builder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .consistency(Consistency.AT_LEAST_ONCE)
                             .parameter("max_inflight_messages_set", "50")
                             .build();
@@ -229,7 +229,7 @@ class MqttParametersTest implements ConfigFileAware {
         void badValueMaxInflightMessages() {
             MessageWriterFactory<String> builder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .consistency(Consistency.AT_LEAST_ONCE)
                             .parameter("max_inflight_messages_set", "xxx")
                             .build();
@@ -242,7 +242,7 @@ class MqttParametersTest implements ConfigFileAware {
         void intValueMaxInflightMessages() {
             MessageWriterFactory<String> builder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .consistency(Consistency.AT_LEAST_ONCE)
                             .parameter("max_inflight_messages_set", 30)
                             .build();
@@ -260,7 +260,7 @@ class MqttParametersTest implements ConfigFileAware {
             will.put("payload", "message ZZZ");
             MessageWriterFactory<String> builder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .consistency(Consistency.AT_LEAST_ONCE)
                             .parameter("will_set", will)
                             .build();
@@ -279,7 +279,7 @@ class MqttParametersTest implements ConfigFileAware {
 
             MessageWriterFactory<String> builder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .consistency(Consistency.AT_LEAST_ONCE)
                             .parameter("will_set", will)
                             .build();
@@ -298,7 +298,7 @@ class MqttParametersTest implements ConfigFileAware {
 
             MessageWriterFactory<String> builder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .consistency(Consistency.AT_LEAST_ONCE)
                             .parameter("reconnect_delay_set", opts)
                             .build();
@@ -317,7 +317,7 @@ class MqttParametersTest implements ConfigFileAware {
 
             MessageWriterFactory<String> builder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .consistency(Consistency.AT_LEAST_ONCE)
                             .parameter("connect", opts)
                             .build();
@@ -333,7 +333,7 @@ class MqttParametersTest implements ConfigFileAware {
 
             MessageWriterFactory<String> builder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .consistency(Consistency.AT_LEAST_ONCE)
                             .parameter("connect", opts)
                             .build();
@@ -349,7 +349,7 @@ class MqttParametersTest implements ConfigFileAware {
 
             MessageWriterFactory<String> builder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .consistency(Consistency.AT_LEAST_ONCE)
                             .parameter("connect", opts)
                             .build();
@@ -365,7 +365,7 @@ class MqttParametersTest implements ConfigFileAware {
 
             MessageWriterFactory<String> builder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .consistency(Consistency.AT_LEAST_ONCE)
                             .parameter("connect", opts)
                             .build();

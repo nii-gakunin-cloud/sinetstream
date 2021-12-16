@@ -2,11 +2,111 @@
 
 <!---
 https://keepachangelog.com/
+### Added
+### Changed
+### Deprecated
+### Removed
+### Fixed
+### Security
 --->
+
+## [v1.6.0] - 2021-12-XX
+
+### Added
+
+#### Python, Java, Document
+
+- Support for config-server
+
+#### sinetstream-android (lib)
+
+- Support for getting SSL/TLS certificates from the Android Keystore.
+- Support for data encryption/decription.
+- Add type-specific Reader/Writer classes extended from generic ones.
+
+#### sinetstream-android-helper (lib)
+
+- Support for getting SSL/TLS certificates from the Android Keystore.
+- Support automatic location update for the output JSON data.
+
+#### sinetstream-andorid-echo (app)
+
+- SettingsActivity: SINETStream: Add detailed parameters for MQTT and SSL/TLS.
+
+#### sinetstream-andorid-sensor-publisher (app)
+
+- SettingsActivity: SINETStream: Add detailed parameters for MQTT and SSL/TLS.
+- SettingsActivity: Sensor: Add `automatic location update` mode with GPS or FLP.
+- MainActivity: Add location tracker and foreground services for GPS and FLP.
+- MainActivity: Show location monitor window if location is enabled.
+
+### Changed
+
+#### Common
+
+- build.gradle: Use MavenCentral instead of jCenter
+- build.gradle: Use JDK 11 instead of JDK 8, from Android Studio Arctic Fox.
+
+#### sinetstream
+
+- Support Python 3.8 since Python 3.6 will be EoL. (Python)
+
+#### sinetstream-android (lib)
+
+- misc/Dockerfile: Update `openjdk`, `Command line tools` and `SDK Build Tools`.
+- API: Split initialization process to 2 phases; initialize() and setup().
+- API: User can now abort initialization process if something goes wrong.
+
+#### sinetstream-android-helper (lib)
+
+- misc/Dockerfile: Update `openjdk`, `Command line tools` and `SDK Build Tools`.
+
+#### sinetstream-android-echo (app)
+
+- SettingsActivity: Rearrange menu hierarchy.
+- MainActivity: For SSL/TLS connection, operation will be intercepted by a system dialog to pick up credentials.
+- MainActivity: Received message will be shown in timeline, instead of the latest only.
+- MainActivity: Use typed Reader/Writer classes in `sinetstream-android` library.
+
+#### sinetstream-andorid-sensor-publisher (app)
+
+- SettingsActivity: Rearrange menu hierarchy.
+- MainActivity: For SSL/TLS connection, operation will be intercepted by a system dialog to pick up credentials.
+- MainActivity: For `automatic location update` mode, operation might be intercepted by several system dialogs to set appropriate permissions.
+
+### Removed
+
+#### sinetstream-android-echo (app)
+
+- SettingsActivity: Exclude TLSv1 and TLSv1.1 from menu items, and set TLSv1.2 as default.
+
+#### sinetstream-android-sensor-publisher (app)
+
+- SettingsActivity: Exclude TLSv1 and TLSv1.1 from menu items, and set TLSv1.2 as default.
+
+### Fixed
+
+#### sinetstream-android (lib)
+
+- Make MQTT connection setup/close in robust way.
+- Add missing try-catch clause.
+- Resolve NullpointerException cases.
+- Resolve some lint warnings.
+
+#### sinetstream-andorid-echo (app)
+
+- MainActivity: Keep some attributes beyond Activity's lifecycle.
+
+#### sinetstream-android-sensor-publisher (app)
+
+- MainActivity: Keep some attributes beyond Activity's lifecycle.
+- MainActivity: Fix location notation: (longitude,latitude) -> (latitude,longitude)
+- MainActivity: Resolve race conditions between Sensor and Network; bind SensorService after connection has established, and unbind SensorService after connection has closed.
 
 ## [v1.5.3] - 2021-05-20
 
 ### sinetstream-android-echo
+
 #### Added
 
 - MainActivity: Show receiver fragment contents with history.
@@ -24,6 +124,7 @@ https://keepachangelog.com/
 has re-created after suspend/resume.
 
 ### sinetstream-android-sensor-publisher
+
 #### Changed
 
 - build.gradle: Update build environ for the Android Studio 4.1.2.
@@ -35,6 +136,7 @@ has re-created after suspend/resume.
 ## [v1.5.2] for Android - 2021-05-20
 
 ### sinetstream-android
+
 #### Changed
 
 - build.gradle: Update build environ for the Android Studio 4.1.2.
@@ -46,6 +148,7 @@ has re-created after suspend/resume.
 - MqttAsyncMessageIO: Now user can abort the ongoing connection request.
 
 ### sinetstream-android-helper
+
 #### Changed
 
 - build.gradle: Update build environ for the Android Studio 4.1.2.

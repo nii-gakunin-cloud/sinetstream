@@ -57,7 +57,7 @@ class AuthTest {
         void passwordAuthWrite(Consistency consistency) {
             MessageWriterFactory<String> writerBuilder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir))
+                            .configFile(getConfigFile(workdir))
                             .service(getServiceName())
                             .consistency(consistency)
                             .build();
@@ -75,14 +75,14 @@ class AuthTest {
 
             MessageWriterFactory<String> writerBuilder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir))
+                            .configFile(getConfigFile(workdir))
                             .service(getServiceName())
                             .consistency(Consistency.AT_LEAST_ONCE)
                             .build();
 
             MessageReaderFactory<String> readerBuilder =
                     MessageReaderFactory.<String>builder()
-                            .config(getConfigFile(workdir))
+                            .configFile(getConfigFile(workdir))
                             .service(getServiceName())
                             .consistency(consistency)
                             .receiveTimeout(Duration.ofSeconds(3))
@@ -122,7 +122,7 @@ class AuthTest {
         void passwordBadAuthWrite(Consistency consistency) {
             MessageWriterFactory<String> writerBuilder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir))
+                            .configFile(getConfigFile(workdir))
                             .service(getServiceName())
                             .consistency(consistency)
                             .build();
@@ -140,7 +140,7 @@ class AuthTest {
         void passwordBadAuthRead(Consistency consistency) {
             MessageReaderFactory<String> readerBuilder =
                     MessageReaderFactory.<String>builder()
-                            .config(getConfigFile(workdir))
+                            .configFile(getConfigFile(workdir))
                             .service(getServiceName())
                             .consistency(consistency)
                             .receiveTimeout(Duration.ofSeconds(3))
@@ -160,7 +160,7 @@ class AuthTest {
         void passwordBadAuthAsyncWrite(Consistency consistency) throws InterruptedException {
             MessageWriterFactory<String> writerBuilder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir))
+                            .configFile(getConfigFile(workdir))
                             .service(getServiceName())
                             .consistency(consistency)
                             .build();
@@ -185,7 +185,7 @@ class AuthTest {
         void passwordBadAuthAsyncWriteEOS(Consistency consistency) {
             MessageWriterFactory<String> writerBuilder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir))
+                            .configFile(getConfigFile(workdir))
                             .service(getServiceName())
                             .consistency(consistency)
                             .build();
@@ -202,7 +202,7 @@ class AuthTest {
         void passwordBadAuthAsyncRead(Consistency consistency) {
             MessageReaderFactory<String> readerBuilder =
                     MessageReaderFactory.<String>builder()
-                            .config(getConfigFile(workdir))
+                            .configFile(getConfigFile(workdir))
                             .service(getServiceName())
                             .consistency(consistency)
                             .build();
@@ -238,7 +238,7 @@ class AuthTest {
         void readAuthorizeUserWrite(Consistency consistency) throws Throwable {
             MessageWriterFactory<String> writerBuilder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir))
+                            .configFile(getConfigFile(workdir))
                             .service(getServiceName())
                             .consistency(consistency)
                             .build();
@@ -260,7 +260,7 @@ class AuthTest {
         void readAuthorizeUserAsyncWrite(Consistency consistency) throws Throwable {
             MessageWriterFactory<String> writerBuilder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir))
+                            .configFile(getConfigFile(workdir))
                             .service(getServiceName())
                             .consistency(consistency)
                             .build();
@@ -315,14 +315,14 @@ class AuthTest {
 
             MessageWriterFactory<String> writerBuilder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir))
+                            .configFile(getConfigFile(workdir))
                             .service(getServiceName())
                             .consistency(consistency)
                             .build();
 
             MessageReaderFactory<String> readerBuilder =
                     MessageReaderFactory.<String>builder()
-                            .config(getConfigFile(workdir))
+                            .configFile(getConfigFile(workdir))
                             .service(getServiceName())
                             .consistency(consistency)
                             .receiveTimeout(Duration.ofSeconds(3))
@@ -344,14 +344,14 @@ class AuthTest {
 
             MessageWriterFactory<String> writerBuilder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir))
+                            .configFile(getConfigFile(workdir))
                             .service(getServiceName())
                             .consistency(consistency)
                             .build();
 
             MessageReaderFactory<String> readerBuilder =
                     MessageReaderFactory.<String>builder()
-                            .config(getConfigFile(workdir))
+                            .configFile(getConfigFile(workdir))
                             .service(getServiceName())
                             .consistency(consistency)
                             .receiveTimeout(Duration.ofSeconds(3))

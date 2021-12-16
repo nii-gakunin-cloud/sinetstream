@@ -58,7 +58,7 @@ class AsyncMessageWriterTest implements ConfigFileAware {
         final AtomicInteger count = new AtomicInteger(0);
         CountDownLatch done = new CountDownLatch(lines.size());
         MessageWriterFactory<String> factory = MessageWriterFactory.<String>builder()
-                .config(getConfigFile(workdir)).service(getServiceName())
+                .configFile(getConfigFile(workdir)).service(getServiceName())
                 .consistency(consistency)
                 .parameter("max_inflight_messages_set", 20)
                 .build();

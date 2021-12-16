@@ -38,15 +38,18 @@ import java.util.Objects;
 public class TextConsumer {
 
     private final String service;
+    private final String config;
 
-    public TextConsumer(String service) {
+    public TextConsumer(String service, String config) {
         this.service = service;
+        this.config = config;
     }
 
     public void run() {
         MessageReaderFactory<String> factory =
                 MessageReaderFactory.<String>builder()
                         .service(service)
+                        .configName(config)
                         .consistency(Consistency.AT_LEAST_ONCE)
                         .valueType(SimpleValueType.TEXT)
                         .receiveTimeout(Duration.ofSeconds(30))
@@ -68,13 +71,18 @@ public class TextConsumer {
 
     public static void main(String[] args) {
         Options opts = new Options();
-        opts.addOption(Option.builder("s").required().hasArg().longOpt("service").build());
+        opts.addOption(Option.builder("s").hasArg().longOpt("service").build());
+        opts.addOption(Option.builder("c").hasArg().longOpt("config").build());
 
         CommandLineParser parser = new DefaultParser();
         TextConsumer consumer = null;
         try {
             CommandLine cmd = parser.parse(opts, args);
-            consumer = new TextConsumer(cmd.getOptionValue("service"));
+            String service = cmd.getOptionValue("service");
+            String config = cmd.getOptionValue("config");
+            if (service == null && config == null)
+                throw new ParseException("-s/--service must be specified if -c/--config is not specified.");
+            consumer = new TextConsumer(service, config);
         } catch (ParseException e) {
             System.err.println("Parsing failed: " + e.getMessage());
             new HelpFormatter().printHelp(TextProducer.class.getSimpleName(), opts, true);

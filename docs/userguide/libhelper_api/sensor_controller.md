@@ -19,11 +19,94 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-[English](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/userguide/libhelper-api.html "google translate")
+[English](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/userguide/libhelper_api/sensor_controller.html "google translate")
 
-SINETStreamHelper ユーザガイド
+SINETStreamHelper ユーザガイド（センサー制御部）
 
-# API概要
+**目次**
+<pre>
+1. モジュール構成
+2. API概要
+3. インタフェース SensorListener
+3.1 メソッド概要
+3.2 メソッド詳細
+3.2.1 onSensorTypesReceived
+3.2.2 onSensorEngaged
+3.2.3 onSensorDisengaged
+3.2.4 onSensorDataReceived
+3.2.5 onError
+4. クラスSensorController
+4.1 コンストラクタ概要
+4.2 メソッド概要
+4.3 コンストラクタ詳細
+4.4 メソッド詳細
+4.4.1 bindSensorService
+4.4.2 unbindSensorService
+4.4.3 getAvailableSensorTypes
+4.4.4 enableSensors
+4.4.5 disableSensors
+4.4.6 setIntervalTimer
+4.4.7 setLocation
+4.4.8 resetLocation
+4.4.9 setUserData
+
+付録
+A.1 ライフサイクル
+</pre>
+
+
+# 1. モジュール構成
+
+`SINETStreamHelper`ライブラリにおける「センサー読み取り値の収集」機能のモジュール構成を以下に示す。
+
+```
+        #---------------------------------------+
+        | User Application                      |
+        +---------------------------------------+
+             |                      A
+    =========|======================|=============== API functions
+             |                      |
+      +------|----------------------|-------------+
+      |      V                      | [JSON]      |
+      | +------------------+   +----------------+ |
+      | | SensorController |-->| SensorListener | |
+      | +------------------+   +----------------+ |
+      |      |      A                             |
+      |      V      |                             |
+      | +------------------+                      |
+      | |  SensorService   |                      |
+      | +------------------+    SINETStreamHelper |
+      +------|------A-----------------------------+
+             |      |
+    =========|======|==================================== Android System
+             |      |
+             V      | [SensorEvent]
+        +------------------+
+        |  SensorManager   |
+        +------------------+
+               |  A
+    ===========|==|============================================= Devices
+               V  | [Raw Data]
+            +--------+
+            | Sensor |+
+            | Device ||+
+            +--------+||
+              +-------+|
+               +-------+
+```
+〈凡例〉
+* SensorController
+    * `SINETStreamHelper`ライブラリのフロントエンドとして、
+センサー制御用のAPI関数一式を提供する。
+* SensorService
+    * `SINETStreamHelper`ライブラリのバックエンドとして、
+Androidの`SensorManager`経由でセンサーデバイスを制御する。
+* SensorListener
+    * `SINETStreamHelper`ライブラリからの非同期通知を受けるため、
+コールバックインタフェースを定義する。
+
+
+# 2. API概要
 
 * パッケージ
     * jp.ad.sinet.stream.android.helper
@@ -35,9 +118,9 @@ SINETStreamHelper ユーザガイド
     * SensorController
 
 
-# インタフェース SensorListener
+# 3. インタフェース SensorListener
 
-## メソッド概要
+## 3.1 メソッド概要
 * onError
     * エラー検出時に呼ばれる。
 * onSensorDataReceived
@@ -53,10 +136,10 @@ SINETStreamHelper ユーザガイド
 `SensorService`が「センサー種別、センサー種別名称」の組を返却した場合に呼ばれる。
 
 
-## メソッド詳細
-### onSensorTypesReceived
+## 3.2 メソッド詳細
+### 3.2.1 onSensorTypesReceived
 
-```
+```java
 void onSensorTypesReceived(@NonNull
                            java.util.ArrayList<java.lang.Integer> sensorTypes,
                            @NonNull
@@ -86,9 +169,9 @@ void onSensorTypesReceived(@NonNull
 の配列リスト
 
 
-### onSensorEngaged
+### 3.2.2 onSensorEngaged
 
-```
+```java
 void onSensorEngaged(@NonNull
                      java.lang.String info)
 ```
@@ -102,9 +185,9 @@ void onSensorEngaged(@NonNull
     * info - システムからの通知メッセージ（なければ空文字）
 
 
-### onSensorDisengaged
+### 3.2.3 onSensorDisengaged
 
-```
+```java
 void onSensorDisengaged(@NonNull
                         java.lang.String info)
 ```
@@ -118,9 +201,9 @@ void onSensorDisengaged(@NonNull
     * info - システムからの通知メッセージ（なければ空文字）
 
 
-### onSensorDataReceived
+### 3.2.4 onSensorDataReceived
 
-```
+```java
 void onSensorDataReceived(@NonNull
                           java.lang.String jsonData)
 ```
@@ -157,9 +240,9 @@ void onSensorDataReceived(@NonNull
     * jsonData - JSON形式データ
 
 
-### onError
+### 3.2.5 onError
 
-```
+```java
 void onError(@NonNull
              java.lang.String errmsg)
 ```
@@ -170,7 +253,7 @@ void onError(@NonNull
     * errmsg - エラー内容メッセージ
 
 
-# クラスSensorController
+# 4. クラスSensorController
 
 * 本クラスは、SINETStreamHelperライブラリのフロントエンドとしてセンサー
 制御用のAPI関数一式を提供する。
@@ -188,12 +271,12 @@ void onError(@NonNull
 において`SensorListener`を実装し、処理結果やエラーの非同期通知を受けられるようにしなければならない。
 
 
-## コンストラクタ概要
+## 4.1 コンストラクタ概要
 * SensorController
     * SinetControllerのインスタンスを生成する。
 
 
-## メソッド概要
+## 4.2 メソッド概要
 * bindSensorService
     * `SensorService`と結合し、センサー処理を開始する。
 * disableSensors
@@ -207,17 +290,18 @@ void onError(@NonNull
     * `SensorService`に対し、`SensorListener.onSensorDataReceived`で
 センサー読取値が通知される際の`最小時間間隔`を指定する。
 * setLocation
-    * `SensorService`に対し、地理的な位置情報（緯度、軽度）を内部で
-保管するよう要求する。
+    * `SensorService`に対し、地理的な位置情報（緯度、軽度）を内部で保管するよう要求する。
+* resetLocation
+    * `SensorService`に対し、地理的な位置情報（緯度、軽度）を初期化するよう要求する。
 * setUserData
     * `SensorService`に対し、利用者の情報を内部で保管するよう要求する。
 * unbindSensorService
     * `SensorService`と切断し、センサー処理を終了する。
 
 
-## コンストラクタ詳細
+## 4.3 コンストラクタ詳細
 
-```
+```java
 public SensorController(@NonNull
                         android.content.Context context,
                         int clientId)
@@ -235,10 +319,10 @@ public SensorController(@NonNull
     * java.lang.RuntimeException - 付与のコンテクストが所用のリスナーを実装していない
 
 
-## メソッド詳細
-### bindSensorService
+## 4.4 メソッド詳細
+### 4.4.1 bindSensorService
 
-```
+```java
 public void bindSensorService()
 ```
 
@@ -251,9 +335,9 @@ public void bindSensorService()
 * 参考：
     * [Bound services overview](https://developer.android.com/guide/components/bound-services)
 
-### unbindSensorService
+### 4.4.2 unbindSensorService
 
-```
+```java
 public void unbindSensorService()
 ```
 
@@ -267,9 +351,9 @@ public void unbindSensorService()
     * [Bound services overview](https://developer.android.com/guide/components/bound-services)
 
 
-### getAvailableSensorTypes
+### 4.4.3 getAvailableSensorTypes
 
-```
+```java
 public void getAvailableSensorTypes()
 ```
 
@@ -290,9 +374,9 @@ public void getAvailableSensorTypes()
     * [Sensor Values](https://developer.android.com/reference/android/hardware/SensorEvent#values)
 
 
-### enableSensors
+### 4.4.4 enableSensors
 
-```
+```java
 public void enableSensors(@NonNull
                           java.util.ArrayList<java.lang.Integer> sensorTypes)
 ```
@@ -313,9 +397,9 @@ public void enableSensors(@NonNull
     * sensorTypes - センサー種別の配列リスト
 
 
-### disableSensors
+### 4.4.5 disableSensors
 
-```
+```java
 public void disableSensors(@NonNull
                            java.util.ArrayList<java.lang.Integer> sensorTypes)
 ```
@@ -335,9 +419,9 @@ public void disableSensors(@NonNull
     * sensorTypes - センサー種別の配列リスト
 
 
-### setIntervalTimer
+### 4.4.6 setIntervalTimer
 
-```
+```java
 public void setIntervalTimer(long seconds)
 ```
 
@@ -351,11 +435,10 @@ public void setIntervalTimer(long seconds)
     > Long.MAX_VALUE = 0x7fffffffffffffffL (2<sup>63</sup>-1)
 
 
-### setLocation
+### 4.4.7 setLocation
 
-```
-public void setLocation(float longitude,
-                        float latitude)
+```java
+public void setLocation(double latitude, double longitude)
 ```
 
 * 説明：
@@ -367,13 +450,25 @@ public void setLocation(float longitude,
     * 本メソッドの利用は任意である。省略時は位置情報が空要素となる。
 
 * 引数：
-    * longitude - デバイスの緯度（-180.0 <= longitude <= 180.0）
-    * latitude - デバイスの経度（-90.0 <= latitude <= 90.0）
+    * latitude - デバイスの緯度（-90.0 <= latitude <= 90.0）
+    * longitude - デバイスの経度（-180.0 <= longitude <= 180.0）
 
 
-### setUserData
+### 4.4.8 resetLocation
 
+```java
+public void resetLocation()
 ```
+
+* 説明：
+    * デバイスの地理的な位置情報（緯度、経度）を初期化（非指定）するよう
+`SensorService`に要求する。
+    * 本メソッドの典型的な利用状況は、ユーザアプリケーション実行中に発生したシステム設定の変化（位置情報の設定ON/OFF）に動的に対応する場合であろう。
+
+
+### 4.4.9 setUserData
+
+```java
 public void setUserData(@Nullable
                         java.lang.String publisher,
                         @Nullable
@@ -390,4 +485,46 @@ public void setUserData(@Nullable
 * 引数：
     * publisher - ユーザ情報
     * note - 備考
+
+
+# 付録
+## A.1 ライフサイクル
+
+```
+           ( constructor )
+                  |
+                  | <---- setIntervalTimer()
+                  | <---- setLocation()
+                  | <---- setUserData()
+    +-----------> |
+    |             V
+    |        bindSensorService()
+    |             |
+    |             |-----> onSensorEngaged()
+    |             V
+    |        getAvailableSensorTypes()
+    |             |
+    |             |-----> onSensorTypesReceived()
+    |             |
+    |    +------> |
+    |    |        V
+    |    |   enableSensors()
+    |    |        |
+    |    |        |-----> onSensorDataReceived()
+    //   //       //           :
+    |    |        |-----> onSensorDataReceived()
+    |    |        V
+    |    |   disableSensors()
+    |    |        |
+    |    +--------<>
+    |             |
+    |             V
+    |        unbindSensorService()
+    |             |
+    |             |-----> onSensorDisengaged()
+    |             |
+    +-------------<>
+                  |
+                  V
+```
 

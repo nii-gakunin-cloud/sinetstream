@@ -19,9 +19,15 @@
  * under the License.
  */
 
+wrapper {
+    // To upgrade: rewrite the version and run "./gradlew wrapper"
+    gradleVersion = '6.8.3'
+}
+
 allprojects {
-    group = 'jp.ad.sinet.sinetstream'
-    version '1.5.2'
+    group = 'net.sinetstream'
+    version currentVersion
+    // currentVersion is defined in gradle.properties
 
     repositories {
         mavenCentral()
@@ -36,23 +42,22 @@ allprojects {
 }
 
 buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.+'
-    }
 }
 
 subprojects {
     apply plugin: 'java'
     apply plugin: 'jacoco'
     apply plugin: 'maven-publish'
-    apply plugin: 'com.jfrog.bintray'
+    apply plugin: 'signing'
 
     sourceCompatibility = 1.8
     compileJava.options.encoding = 'UTF-8'
     compileTestJava.options.encoding = 'UTF-8'
+
+    java {
+        withJavadocJar()
+        withSourcesJar()
+    }
 
     test {
         useJUnitPlatform()
@@ -70,52 +75,70 @@ subprojects {
         testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
     }
 
-    bintray {
-        user = project.hasProperty('bintray_user') ? bintray_user : System.getenv('BINTRAY_USER')
-        key = project.hasProperty('bintray_key') ? bintray_key : System.getenv('BINTRAY_API_KEY')
-        publications = ['mavenJava']
-        pkg {
-            repo = 'maven'
-            name = project.name
-            licenses = ['Apache-2.0']
-            websiteUrl = 'https://sinetstream.net'
-            vcsUrl = 'https://github.com/nii-gakunin-cloud/sinetstream.git'
-            version {
-                name = project.version
-            }
-        }
-    }
-
+    /*
     task sourcesJar(type: Jar) {
         from sourceSets.main.allJava
         archiveClassifier.set('sources')
     }
+    */
 
     publishing {
         publications {
             mavenJava(MavenPublication) {
                 from components.java
-                artifact sourcesJar
                 afterEvaluate {
-                    groupId = 'jp.ad.sinet.sinetstream'
+                    groupId = 'net.sinetstream'
                     artifactId = project.name
                     version = currentVersion
                 }
                 pom {
+                    name = 'SINETStream'
+                    description = 'The SINETStream is a messaging system that adopts a topic-based publish/subscribe model.'
+                    url = 'https://www.sinetstream.net/'
                     licenses {
                         license {
                             name = 'The Apache License, Version 2.0'
                             url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
                         }
                     }
+                    developers {
+                        developer {
+                            name = 'nii-gakunin-cloud'
+                            email = 'sinetstream-support@nii.ac.jp'
+                        }
+                    }
                     scm {
                         connection = 'scm:git:https://github.com/nii-gakunin-cloud/sinetstream.git'
+                        //developerConnection = 'scm:git:https://github.com/nii-gakunin-cloud/sinetstream.git'
                         url = 'https://github.com/nii-gakunin-cloud/sinetstream'
                     }
                 }
             }
         }
         repositories {
-        } 
+            maven { // begin-maven-spec
+                //def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+                //def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
+                def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+                def snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+                url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+                credentials {
+                    // to publish: ossrhUsername and ossrhPassword must be defined in ~/.gradle/gradle.properties
+                    username = project.hasProperty('ossrhUsername') ? "${ossrhUsername}" : System.getenv('OSSRH_USERNAME')
+                    password = project.hasProperty('ossrhPassword') ? "${ossrhPassword}" : System.getenv('OSSRH_PASSWORD')
+                }
+            } // end-maven-spec
+        }
+    }
+
+    signing {
+        // to publish: signing.keyId, .password and .secretKeyRingFile must be defined in ~/.gradle/gradle.properties
+        sign publishing.publications.mavenJava
+    }
+
+    javadoc {
+        if (JavaVersion.current().isJava9Compatible()) {
+            options.addBooleanOption('html5', true)
+        }
     }
 }

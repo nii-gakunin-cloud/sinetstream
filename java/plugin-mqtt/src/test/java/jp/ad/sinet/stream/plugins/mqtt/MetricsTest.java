@@ -51,12 +51,12 @@ class MetricsTest {
         void readwrite() {
             MessageWriterFactory<String> writer_builder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .valueType(SimpleValueType.TEXT)
                             .build();
             MessageReaderFactory<String> reader_builder =
                     MessageReaderFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .valueType(SimpleValueType.TEXT)
                             .receiveTimeout(Duration.ofSeconds(10))
                             .build();

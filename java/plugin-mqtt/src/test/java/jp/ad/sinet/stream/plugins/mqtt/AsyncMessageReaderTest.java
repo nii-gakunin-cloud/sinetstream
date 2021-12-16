@@ -62,10 +62,10 @@ class AsyncMessageReaderTest implements ConfigFileAware {
         final AtomicInteger count = new AtomicInteger(0);
         final CountDownLatch done = new CountDownLatch(lines.size());
         MessageReaderFactory<String> readerFactory = MessageReaderFactory.<String>builder()
-                .config(getConfigFile(workdir)).service(getServiceName())
+                .configFile(getConfigFile(workdir)).service(getServiceName())
                 .topic(topic).consistency(consistency).build();
         MessageWriterFactory<String> writerFactory = MessageWriterFactory.<String>builder()
-                .config(getConfigFile(workdir)).service(getServiceName())
+                .configFile(getConfigFile(workdir)).service(getServiceName())
                 .topic(topic).consistency(consistency).build();
 
         try (AsyncMessageReader<String> reader = readerFactory.getAsyncReader();
@@ -99,10 +99,10 @@ class AsyncMessageReaderTest implements ConfigFileAware {
         final AtomicInteger count = new AtomicInteger(0);
         final CountDownLatch done = new CountDownLatch(lines.size());
         MessageReaderFactory<String> readerFactory = MessageReaderFactory.<String>builder()
-                .config(getConfigFile(workdir)).service(getServiceName())
+                .configFile(getConfigFile(workdir)).service(getServiceName())
                 .topic(topic).consistency(consistency).build();
         MessageWriterFactory<String> writerFactory = MessageWriterFactory.<String>builder()
-                .config(getConfigFile(workdir)).service(getServiceName())
+                .configFile(getConfigFile(workdir)).service(getServiceName())
                 .topic(topic).consistency(consistency).build();
         try (AsyncMessageReader<String> reader = readerFactory.getAsyncReader();
              AsyncMessageWriter<String> writer = writerFactory.getAsyncWriter()) {

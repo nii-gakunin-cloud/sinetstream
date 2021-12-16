@@ -35,11 +35,11 @@
 </template>
 
 <script lang="ts">
-import { ChartOption } from '@/store';
 import { ChartData } from 'chart.js';
 import {
   Component, Emit, Prop, Vue,
 } from 'vue-property-decorator';
+import { ChartOption } from '@/store';
 import BarChart from './BarChart';
 import LineChart from './LineChart';
 

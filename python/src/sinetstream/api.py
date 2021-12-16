@@ -1,5 +1,4 @@
-#!/usr/local/bin/python3.6
-# vim: expandtab shiftwidth=4
+#!/usr/bin/env python3
 
 # Copyright (C) 2019 National Institute of Informatics
 #
@@ -22,16 +21,17 @@
 
 import copy
 import logging
-import os
 import time
-import yaml
 from concurrent.futures import ThreadPoolExecutor
 from enum import Enum, auto
 from threading import Lock, RLock
+from os import unlink
+from tempfile import NamedTemporaryFile
 
+from sinetstream.configs import get_config_params
 from sinetstream.crypto import CipherAES
 from sinetstream.error import (
-    InvalidArgumentError, NoConfigError, NoServiceError,
+    InvalidArgumentError,
     UnsupportedServiceTypeError, InvalidMessageError, AlreadyConnectedError)
 from sinetstream.marshal import Marshaller, Unmarshaller
 from sinetstream.spi import (
@@ -57,67 +57,6 @@ EXACTLY_ONCE = Consistency.EXACTLY_ONCE
 DEFAULT_CLIENT_ID = None
 
 
-def yaml_load(s):
-    try:
-        yml = yaml.safe_load(s)
-        return yml
-    except yaml.scanner.ScannerError:
-        return None
-
-
-config_files = [
-    ".sinetstream_config.yml",
-    "~/.config/sinetstream/config.yml",
-]
-
-
-def load_config(config_file=None):
-    if config_file is not None:
-        ret = load_config_from_file(config_file)
-        if ret is None:
-            logger.error("No configuration file exist: {config_file}")
-            raise NoConfigError(f"No configuration file exist: {config_file}")
-        return ret
-
-    url = os.environ.get("SINETSTREAM_CONFIG_URL")
-    if url:
-        logger.info(f"SINETSTREAM_CONFIG_URL={url}")
-        ret = load_config_from_url(url)
-        if ret:
-            return ret
-
-    for file in config_files:
-        ret = load_config_from_file(file)
-        if ret is not None:
-            return ret
-
-    logger.error("No configuration file exist")
-    raise NoConfigError()
-
-
-def load_config_from_url(url):
-    import urllib.request
-    try:
-        with urllib.request.urlopen(url) as res:
-            contents = res.read().decode("utf-8")
-            return yaml_load(contents)
-    except OSError as ex:
-        logger.debug('load config file from URL', stack_info=True)
-        logger.warning(f'Could not load from the specified URL: {ex}')
-        return None
-
-
-def load_config_from_file(file):
-    try:
-        with open(os.path.expanduser(file)) as fp:
-            logger.debug(f"load config file from {os.path.abspath(file)}")
-            yml = yaml_load(fp.read())
-            if yml:
-                return yml
-    except FileNotFoundError:
-        logger.info(f"{file}: not found")
-
-
 def convert_params(params):
     consistency = params.get("consistency")
     if consistency is None:
@@ -130,16 +69,6 @@ def convert_params(params):
         return new_params
     except KeyError:
         raise InvalidArgumentError(f'invalid consistency: {consistency}')
-
-
-def load_params(service, config_file=None):
-    config = load_config(config_file)
-    params = config.get(service)
-    if params is None:
-        logger.error(f"invalid service: {service}")
-        raise NoServiceError()
-
-    return convert_params(params)
 
 
 class Message(object):
@@ -237,8 +166,9 @@ def normalize_params(params):
             crypto["password"] = {"value": password}
 
 
-def merge_parameter(service, kwargs, default_values, config_file=None):
-    svc_params = load_params(service, config_file)
+def merge_parameter(service, kwargs, default_values, config=None, config_file=None):
+    service, raw_params = get_config_params(service, config, config_file)
+    svc_params = convert_params(raw_params)
     # Merge parameters
     # Priority:
     #  ctor's argument (highest)
@@ -249,7 +179,7 @@ def merge_parameter(service, kwargs, default_values, config_file=None):
     deepupdate(params, svc_params)
     deepupdate(params, convert_params(kwargs))
     normalize_params(params)
-    return params
+    return service, params
 
 
 default_params = {
@@ -379,11 +309,50 @@ class MessageIO(object):
         validate_config(params)
         self._service = service
         self.params = params
+        self._tmpfile_list = []
+        self._convert_inline_data(self.params)
         self._plugin = self._find_plugin(registry, params["type"])
         self.cipher = make_cipher(params["crypto"]) if params["data_encryption"] else None
         self._opened = False
         self.iometrics = IOMetrics()
         self._lock = RLock()
+
+    def __del__(self):
+        self._cleanup_tmpfile()
+
+    def _convert_inline_data(self, x):
+        _data = "_data"
+        if isinstance(x, dict):
+            x2 = {}
+            for k, v in x.items():
+                if isinstance(v, dict):
+                    self._convert_inline_data(v)
+                else:
+                    if k.endswith(_data):
+                        k2 = k[0:-len(_data)]
+                        with NamedTemporaryFile(mode=("wt" if isinstance(v, str) else "wb"),
+                                                prefix="sinetstream-",
+                                                suffix=".tmp",
+                                                delete=False) as f:
+                            fn = f.name
+                            self._tmpfile_list.append(fn)
+                            logger.debug(f"{k} is written to {fn}")
+                            f.write(v)
+                        x2[k2] = fn
+                        logger.debug(f"{k2}={fn}")
+            x.update(x2)
+        elif isinstance(x, list):
+            for e in x:
+                self._convert_inline_data(e)
+        else:
+            pass
+
+    def _cleanup_tmpfile(self):
+        if "_tmpfile_list" in dir(self):
+            for fn in self._tmpfile_list:
+                logger.debug(f"unlink {fn}")
+                unlink(fn)
+            self._tmpfile_list = []
 
     def _find_plugin(self, registry, service_type):
         plugin_class = registry.get(service_type)
@@ -453,11 +422,12 @@ class BaseMessageReader(MessageIO):
         "receive_timeout_ms": float("inf"),
     }
 
-    def __init__(self, registry, service, topics=None, config_file=None, **kwargs):
-        params = merge_parameter(service,
-                                 kwargs,
-                                 BaseMessageReader.default_params,
-                                 config_file=config_file)
+    def __init__(self, registry, service, topics=None, config=None, config_file=None, **kwargs):
+        service, params = merge_parameter(service,
+                                          kwargs,
+                                          BaseMessageReader.default_params,
+                                          config=config,
+                                          config_file=config_file)
         params["topics"] = _setup_topics(params, topics)
         super().__init__(service, params, registry)
         self.unmarshaller = Unmarshaller()
@@ -503,18 +473,20 @@ class BaseMessageReader(MessageIO):
 READER_USAGE = '''MessageReader(
     service=SERVICE,                 # Service name defined in the configuration file. (REQUIRED)
     topics=TOPICS,                   # The topic to receive.
+    config=CONFIG,                   # Config name on the config-server.
     consistency=AT_MOST_ONCE,        # consistency: AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE
     client_id=DEFAULT_CLIENT_ID,     # If not specified, the value is automatically generated.
-    value_type=byte_array,           # The type of message.
+    value_type=BYTE_ARRAY,           # The type of message.
     value_deserializer=None          # If not specified, use default deserializer according to valueType.
 )'''
 
-ASYNC_READER_USAGE = '''ASYNC_MessageReader(
+ASYNC_READER_USAGE = '''AsyncMessageReader(
     service=SERVICE,                 # Service name defined in the configuration file. (REQUIRED)
     topics=TOPICS,                   # The topic to receive.
+    config=CONFIG,                   # Config name on the config-server.
     consistency=AT_MOST_ONCE,        # consistency: AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE
     client_id=DEFAULT_CLIENT_ID,     # If not specified, the value is automatically generated.
-    value_type=byte_array,           # The type of message.
+    value_type=BYTE_ARRAY,           # The type of message.
     value_deserializer=None          # If not specified, use default deserializer according to valueType.
 )'''
 
@@ -526,9 +498,9 @@ class MessageReader(BaseMessageReader):
     def usage():
         return READER_USAGE
 
-    def __init__(self, service, topics=None, config_file=None, **kwargs):
+    def __init__(self, service, topics=None, config=None, config_file=None, **kwargs):
         logger.debug("MessageReader:init")
-        super().__init__(MessageReader.registry, service, topics, config_file, **kwargs)
+        super().__init__(MessageReader.registry, service, topics, config, config_file, **kwargs)
         self.debug_inject_msg_bytes = None  # for injection: None or tuple (message, topic, raw)
 
     def __iter__(self):
@@ -552,18 +524,20 @@ class MessageReader(BaseMessageReader):
 WRITER_USAGE = '''MessageWriter(
     service=SERVICE,                 # Service name defined in the configuration file. (REQUIRED)
     topic=TOPIC,                     # The topic to send.
+    config=CONFIG,                   # Config name on the config-server.
     consistency=AT_MOST_ONCE,        # consistency: AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE
     client_id=DEFAULT_CLIENT_ID,     # If not specified, the value is automatically generated.
-    value_type=byte_array,           # The type of message.
+    value_type=BYTE_ARRAY,           # The type of message.
     value_serializer=None            # If not specified, use default serializer according to valueType.
 )'''
 
 ASYNC_WRITER_USAGE = '''AsyncMessageWriter(
     service=SERVICE,                 # Service name defined in the configuration file. (REQUIRED)
     topic=TOPIC,                     # The topic to send.
+    config=CONFIG,                   # Config name on the config-server.
     consistency=AT_MOST_ONCE,        # consistency: AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE
     client_id=DEFAULT_CLIENT_ID,     # If not specified, the value is automatically generated.
-    value_type=byte_array,           # The type of message.
+    value_type=BYTE_ARRAY,           # The type of message.
     value_serializer=None            # If not specified, use default serializer according to valueType.
 )'''
 
@@ -573,12 +547,13 @@ class BaseMessageWriter(MessageIO):
         **default_params
     }
 
-    def __init__(self, registry, service, topic=None, config_file=None, **kwargs):
+    def __init__(self, registry, service, topic=None, config=None, config_file=None, **kwargs):
         logger.debug("MessageWriter:init")
-        params = merge_parameter(service,
-                                 kwargs,
-                                 MessageWriter.default_params,
-                                 config_file=config_file)
+        service, params = merge_parameter(service,
+                                          kwargs,
+                                          MessageWriter.default_params,
+                                          config=config,
+                                          config_file=config_file)
         params["topic"] = _setup_topic(params, topic)
         super().__init__(service, params, registry)
         self.marshaller = Marshaller()
@@ -634,8 +609,8 @@ class MessageWriter(BaseMessageWriter):
     def usage():
         return WRITER_USAGE
 
-    def __init__(self, service, topic=None, config_file=None, **kwargs):
-        super().__init__(MessageWriter.registry, service, topic, config_file, **kwargs)
+    def __init__(self, service, topic=None, config=None, config_file=None, **kwargs):
+        super().__init__(MessageWriter.registry, service, topic, config, config_file, **kwargs)
 
     def publish(self, msg):
         try:
@@ -686,8 +661,8 @@ class AsyncMessageWriter(BaseMessageWriter):
     def usage():
         return ASYNC_WRITER_USAGE
 
-    def __init__(self, service, topic=None, config_file=None, **kwargs):
-        super().__init__(AsyncMessageWriter.registry, service, topic, config_file, **kwargs)
+    def __init__(self, service, topic=None, config=None, config_file=None, **kwargs):
+        super().__init__(AsyncMessageWriter.registry, service, topic, config, config_file, **kwargs)
 
     def _err(self, e):
         self.iometrics.update_err()
@@ -705,9 +680,9 @@ class AsyncMessageReader(BaseMessageReader):
     def usage():
         return ASYNC_READER_USAGE
 
-    def __init__(self, service, topics=None, config_file=None, **kwargs):
+    def __init__(self, service, topics=None, config=None, config_file=None, **kwargs):
         logger.debug("AsyncMessageReader:init")
-        super().__init__(AsyncMessageReader.registry, service, topics, config_file, **kwargs)
+        super().__init__(AsyncMessageReader.registry, service, topics, config, config_file, **kwargs)
         self._executor = None
         self._on_message = None
         self._on_failure = None

@@ -125,14 +125,14 @@ public abstract class ConfigFileWriter {
         // ファクトリ初期化
         MessageWriterFactory<String> writerBuilder =
                 MessageWriterFactory.<String>builder()
-                        .config(config)
+                        .configFile(config)
                         .service(service)
                         .valueType(SimpleValueType.TEXT)
                         .build();
 
         MessageReaderFactory<String> readerBuilder =
                 MessageReaderFactory.<String>builder()
-                        .config(config)
+                        .configFile(config)
                         .service(service)
                         .receiveTimeout(Duration.ofSeconds(5))
                         .valueType(SimpleValueType.TEXT)
@@ -164,7 +164,7 @@ public abstract class ConfigFileWriter {
         // ファクトリ初期化
         MessageWriterFactory<String> writerBuilder =
                 MessageWriterFactory.<String>builder()
-                        .config(config)
+                        .configFile(config)
                         .service(service)
                         .valueType(SimpleValueType.TEXT)
                         .build();
@@ -191,7 +191,7 @@ public abstract class ConfigFileWriter {
         // ファクトリ初期化
         MessageReaderFactory<String> readerBuilder =
                 MessageReaderFactory.<String>builder()
-                        .config(config)
+                        .configFile(config)
                         .service(service)
                         .receiveTimeout(Duration.ofSeconds(5))
                         .valueType(SimpleValueType.TEXT)

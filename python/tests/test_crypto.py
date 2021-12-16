@@ -1,5 +1,4 @@
-#!/usr/local/bin/python3.6
-# vim: expandtab shiftwidth=4
+#!/usr/bin/env python3
 
 # Copyright (C) 2019 National Institute of Informatics
 #
@@ -27,6 +26,7 @@ import pytest
 from conftest import SERVICE
 
 from sinetstream import MessageReader, MessageWriter, AsyncMessageReader, TEXT, BYTE_ARRAY
+from sinetstream.error import InvalidArgumentError
 
 logging.basicConfig(level=logging.ERROR)
 pytestmark = pytest.mark.usefixtures('setup_config', 'dummy_reader_plugin', 'dummy_writer_plugin')
@@ -126,6 +126,32 @@ def test_enc_mode(crypto, config_topic):
         for expected, msg in zip(msgs, fr):
             assert msg.topic == config_topic
             assert msg.value == expected
+
+
+@pytest.mark.parametrize(
+    "param", [
+        {"key": b"k" * int(128/8), "password": None,         "ex": None},
+        {"key": None,              "password": "secret-001", "ex": None},
+        {"key": b"k" * int(128/8), "password": "secret-001", "ex": InvalidArgumentError},
+        {"key": b"k" * int(128/7), "password": None,         "ex": InvalidArgumentError},
+        {"key":  "k" * int(128/8), "password": None,         "ex": InvalidArgumentError},
+    ])
+def test_key(param, config_topic):
+    crypto = {}
+    crypto["key"] = param["key"]
+    crypto["password"] = param["password"]
+
+    try:
+        with MessageWriter(SERVICE, value_type=TEXT, data_encryption=True, crypto=crypto) as fw:
+            for msg in msgs:
+                fw.publish(msg)
+        with MessageReader(SERVICE, value_type=TEXT, data_encryption=True, crypto=crypto) as fr:
+            for expected, msg in zip(msgs, fr):
+                assert msg.topic == config_topic
+                assert msg.value == expected
+        assert param["ex"] is None
+    except Exception as ex:
+        assert type(ex) == param["ex"]
 
 
 @pytest.fixture()

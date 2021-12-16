@@ -337,7 +337,7 @@ class TlsTest {
         void read() {
             MessageReaderFactory<String> readerBuilder =
                     MessageReaderFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .receiveTimeout(Duration.ofSeconds(3))
                             .consistency(Consistency.AT_LEAST_ONCE)
                             .build();
@@ -354,7 +354,7 @@ class TlsTest {
         void write() {
             MessageWriterFactory<String> writerBuilder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .consistency(Consistency.AT_LEAST_ONCE)
                             .build();
 
@@ -376,7 +376,7 @@ class TlsTest {
         void read() {
             MessageReaderFactory<String> readerBuilder =
                     MessageReaderFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .receiveTimeout(Duration.ofSeconds(3))
                             .consistency(Consistency.AT_LEAST_ONCE)
                             .build();
@@ -392,7 +392,7 @@ class TlsTest {
         void write() {
             MessageWriterFactory<String> writerBuilder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .consistency(Consistency.AT_LEAST_ONCE)
                             .build();
             assertThrows(AuthenticationException.class, () -> {

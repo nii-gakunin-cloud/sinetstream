@@ -27,6 +27,7 @@ import lombok.Getter;
 import lombok.extern.java.Log;
 import org.apache.commons.beanutils.PropertyUtils;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -45,6 +46,8 @@ public class SinetStreamIO<T extends PluginMessageIO> {
 
     @Getter
     private final Map<String, Object> config;
+
+    private final List<File> tmpLst;
 
     protected final T target;
 
@@ -119,6 +122,7 @@ public class SinetStreamIO<T extends PluginMessageIO> {
         this.isDataEncryption = parameters.isDataEncryption();
         this.valueType = parameters.getValueType();
         this.ioMetrics = new IOMetrics();
+        this.tmpLst = parameters.getTmpLst();
     }
 
     public String getClientId() {
@@ -132,6 +136,10 @@ public class SinetStreamIO<T extends PluginMessageIO> {
     public void close() {
         if (!closed.getAndSet(true)) {
             target.close();
+        }
+        if (tmpLst != null) {
+            for (File f : tmpLst)
+                f.delete();
         }
     }
 

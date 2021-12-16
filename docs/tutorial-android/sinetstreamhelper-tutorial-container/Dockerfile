@@ -49,13 +49,14 @@ RUN yum -y install epel-release \
  && rm -rf /var/cache/yum/* \
  && yum-config-manager --disable epel
 
-# Install Python 3.6
-RUN yum -y --enablerepo=epel install \
-      python36 \
-      python36-PyYAML \
+# Install Python 3.8
+ARG PYTHON3="scl enable rh-python38"
+ARG PIP3INSTALL="pip3_install_-U_--no-cache-dir_pip_setuptools"
+RUN yum -y install centos-release-scl \
+ && yum -y install rh-python38 rh-python38-python-pyyaml \
  && yum clean all \
  && rm -rf /var/cache/yum/* \
- && pip3 install -U --no-cache-dir pip setuptools
+ && ${PYTHON3} "pip3 install -U --no-cache-dir pip setuptools"
 
 # Kafka Connect: S3
 RUN yum -y install --enablerepo=Confluent confluent-hub-client \
@@ -118,7 +119,7 @@ RUN useradd -m $USERNAME \
 WORKDIR /home/$USERNAME
 
 # Install Supervisor
-RUN pip3 install --no-cache-dir supervisor \
+RUN ${PYTHON3} "pip3 install --no-cache-dir supervisor" \
  && mkdir -m 0700 /var/run/supervisor /var/log/supervisor
 COPY supervisord.conf /etc/supervisord.conf
 
@@ -126,7 +127,7 @@ RUN curl -L -o /usr/local/bin/wait-for-it.sh \
       https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh \
  && chmod a+x /usr/local/bin/wait-for-it.sh
 
-CMD ["/usr/local/bin/supervisord", "-n", "-c", "/etc/supervisord.conf"]
+CMD ["scl", "enable", "rh-python38", "/opt/rh/rh-python38/root/usr/local/bin/supervisord -n -c /etc/supervisord.conf"]
 
 EXPOSE 80 1883
 

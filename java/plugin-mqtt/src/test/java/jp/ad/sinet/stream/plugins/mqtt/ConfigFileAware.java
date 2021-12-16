@@ -105,7 +105,7 @@ public interface ConfigFileAware {
         void read() {
             MessageReaderFactory<String> readerBuilder =
                     MessageReaderFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .receiveTimeout(Duration.ofSeconds(3))
                             .consistency(Consistency.AT_LEAST_ONCE)
                             .build();
@@ -122,7 +122,7 @@ public interface ConfigFileAware {
         void write() {
             MessageWriterFactory<String> writerBuilder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .consistency(Consistency.AT_LEAST_ONCE)
                             .build();
 
@@ -144,7 +144,7 @@ public interface ConfigFileAware {
         void read() {
             MessageReaderFactory<String> builder =
                     MessageReaderFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .receiveTimeout(Duration.ofSeconds(3))
                             .consistency(Consistency.AT_LEAST_ONCE)
                             .build();
@@ -156,7 +156,7 @@ public interface ConfigFileAware {
         void asyncRead() {
             MessageReaderFactory<String> builder =
                     MessageReaderFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .receiveTimeout(Duration.ofSeconds(3))
                             .consistency(Consistency.AT_LEAST_ONCE)
                             .build();
@@ -168,7 +168,7 @@ public interface ConfigFileAware {
         void write() {
             MessageWriterFactory<String> builder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .consistency(Consistency.AT_LEAST_ONCE)
                             .build();
             assertThrows(error, builder::getWriter);
@@ -178,7 +178,7 @@ public interface ConfigFileAware {
         void asyncWrite() {
             MessageWriterFactory<String> builder =
                     MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .consistency(Consistency.AT_LEAST_ONCE)
                             .build();
             assertThrows(error, builder::getAsyncWriter);

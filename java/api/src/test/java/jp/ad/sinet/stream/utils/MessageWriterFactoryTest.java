@@ -23,12 +23,14 @@ package jp.ad.sinet.stream.utils;
 
 import jp.ad.sinet.stream.ConfigFileAware;
 import jp.ad.sinet.stream.api.InvalidConfigurationException;
+import jp.ad.sinet.stream.api.UnsupportedServiceTypeException;
 import jp.ad.sinet.stream.api.MessageWriter;
 import jp.ad.sinet.stream.api.NoServiceException;
 import jp.ad.sinet.stream.api.ValueType;
 import jp.ad.sinet.stream.api.valuetype.SimpleValueType;
 import jp.ad.sinet.stream.api.valuetype.ValueTypeFactory;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Disabled;
 
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
@@ -50,6 +52,11 @@ class MessageWriterFactoryTest implements ConfigFileAware {
     void nullService() {
         MessageWriterFactory<String> factory = MessageWriterFactory.<String>builder().service(null).build();
         assertThrows(NoServiceException.class, factory::getWriter);
+        /* XXX:FIXME: service(null)はNoServiceException()を引き起こしていたが、
+         * service(null)はサービスが1つしか定義されていないときにサービス名指定を省略できる手段に変更になったので、
+         * このテストはよくないものになった。
+         * many services are defined in "api/src/test/resources/sinetstream_config.yml" now.
+         */
     }
 
     @Test
@@ -64,6 +71,46 @@ class MessageWriterFactoryTest implements ConfigFileAware {
                 MessageWriterFactory.builder().service("service-1").service(DEFAULT_SERVICE).topic(TOPIC).build();
         try (MessageWriter<Object> writer = factory.getWriter()) {
             assertNotNull(writer);
+        }
+    }
+
+    @Test
+    @Disabled
+    /*
+        FIXME: 実サーバにつないでテストするのダメ
+        FIXME: ~/.config/sinetstream/auth.jsonをつかうからダメ
+    */
+    void configName() {
+        MessageWriterFactory<Object> factory =
+                MessageWriterFactory.builder().configName("stream009").service("service-kafka-001").topic(TOPIC).build();
+        try (MessageWriter<Object> writer = factory.getWriter()) {
+            assertNotNull(writer);
+        }
+        catch (UnsupportedServiceTypeException e) {
+            // ok: kafka is not supported in this test.
+        }
+    }
+    @Test
+    @Disabled
+    /*
+        FIXME: 実サーバにつないでテストするのダメ
+        FIXME: ~/.config/sinetstream/auth.jsonをつかうからダメ
+    */
+    void configNameNullService() {
+        MessageWriterFactory<Object> factory =
+                MessageWriterFactory.builder().configName("stream009").topic(TOPIC).build();
+        try (MessageWriter<Object> writer = factory.getWriter()) {
+            assertNotNull(writer);
+        }
+        catch (NoServiceException e) {
+            if (e.getMessage().equals("too many services defined")) {
+                // ok
+            } else {
+                throw e; // NG
+            }
+        }
+        catch (UnsupportedServiceTypeException e) {
+            // ok: kafka is not supported in this test.
         }
     }
 

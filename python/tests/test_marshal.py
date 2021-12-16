@@ -1,5 +1,4 @@
-#!/usr/local/bin/python3.6
-# vim: expandtab shiftwidth=4
+#!/usr/bin/env python3
 
 # Copyright (C) 2019 National Institute of Informatics
 #

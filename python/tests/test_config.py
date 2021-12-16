@@ -1,5 +1,4 @@
-#!/usr/local/bin/python3.6
-# vim: expandtab shiftwidth=4
+#!/usr/bin/env python3
 
 # Copyright (C) 2019 National Institute of Informatics
 #
@@ -33,36 +32,44 @@ logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
 
-def test_load_config(setup_config):
-    config = sinetstream.api.load_config()
-    logger.info(f"config={config}")
-    assert config[SERVICE] is not None
-    assert config[SERVICE]["type"] == SERVICE_TYPE
-    assert set(config[SERVICE]["brokers"]) == {BROKER}
+@pytest.mark.parametrize("service", [SERVICE, None])
+def test_load_config(setup_config, service):
+    svc, params = sinetstream.configs.get_config_params(service)
+    logger.info(f"params={params}")
+    assert svc == SERVICE
+    assert params is not None
+    assert params["type"] == SERVICE_TYPE
+    assert set(params["brokers"]) == {BROKER}
 
 
-def test_load_home_config(setup_home_config):
-    config = sinetstream.api.load_config()
-    logger.info(f"config={config}")
-    assert config[SERVICE] is not None
-    assert config[SERVICE]["type"] == SERVICE_TYPE
-    assert set(config[SERVICE]["brokers"]) == {BROKER}
+@pytest.mark.parametrize("service", [SERVICE, None])
+def test_load_home_config(setup_home_config, service):
+    svc, params = sinetstream.configs.get_config_params(service)
+    logger.info(f"params={params}")
+    assert svc == SERVICE
+    assert params is not None
+    assert params["type"] == SERVICE_TYPE
+    assert set(params["brokers"]) == {BROKER}
 
 
-def test_load_env_config(setup_env_config):
-    config = sinetstream.api.load_config()
-    logger.info(f"config={config}")
-    assert config[SERVICE] is not None
-    assert config[SERVICE]["type"] == SERVICE_TYPE
-    assert set(config[SERVICE]["brokers"]) == {BROKER}
+@pytest.mark.parametrize("service", [SERVICE, None])
+def test_load_env_config(setup_env_config, service):
+    svc, params = sinetstream.configs.get_config_params(service)
+    logger.info(f"params={params}")
+    assert svc == SERVICE
+    assert params is not None
+    assert params["type"] == SERVICE_TYPE
+    assert set(params["brokers"]) == {BROKER}
 
 
-def test_load_config_and_bad_env(setup_bad_env_config):
-    config = sinetstream.api.load_config()
-    logger.info(f"config={config}")
-    assert config[SERVICE] is not None
-    assert config[SERVICE]["type"] == SERVICE_TYPE
-    assert set(config[SERVICE]["brokers"]) == {BROKER}
+@pytest.mark.parametrize("service", [SERVICE, None])
+def test_load_config_and_bad_env(setup_bad_env_config, service):
+    svc, params = sinetstream.configs.get_config_params(service)
+    logger.info(f"params={params}")
+    assert svc == SERVICE
+    assert params is not None
+    assert params["type"] == SERVICE_TYPE
+    assert set(params["brokers"]) == {BROKER}
 
 
 @pytest.fixture()

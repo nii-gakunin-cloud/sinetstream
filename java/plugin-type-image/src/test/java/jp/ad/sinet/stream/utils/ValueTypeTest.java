@@ -56,7 +56,7 @@ class ValueTypeTest {
                     MessageWriterFactory.<byte[]>builder()
                             .service(SERVICE)
                             .topic(topic)
-                            .config(configFile)
+                            .configFile(configFile)
                             .build();
             try (MessageWriter<byte[]> writer = builder.getWriter()) {
                 assertEquals(SimpleValueType.BYTE_ARRAY, writer.getValueType());
@@ -70,7 +70,7 @@ class ValueTypeTest {
                     MessageWriterFactory.<String>builder()
                             .service(SERVICE)
                             .topic(topic)
-                            .config(configFile)
+                            .configFile(configFile)
                             .valueType(SimpleValueType.TEXT)
                             .build();
             try (MessageWriter<String> writer = builder.getWriter()) {
@@ -87,7 +87,7 @@ class ValueTypeTest {
                     MessageWriterFactory.<BufferedImage>builder()
                             .service(SERVICE)
                             .topic(topic)
-                            .config(configFile)
+                            .configFile(configFile)
                             .valueType(new ValueTypeFactory().get("image"))
                             .build();
             try (MessageWriter<BufferedImage> writer = builder.getWriter()) {
@@ -111,7 +111,7 @@ class ValueTypeTest {
                     MessageWriterFactory.<byte[]>builder()
                             .service(SERVICE)
                             .topic(topic)
-                            .config(configFile)
+                            .configFile(configFile)
                             .valueType(SimpleValueType.BYTE_ARRAY)
                             .build();
             try (MessageWriter<byte[]> writer = builder.getWriter()) {
@@ -126,7 +126,7 @@ class ValueTypeTest {
                     MessageWriterFactory.<String>builder()
                             .service(SERVICE)
                             .topic(topic)
-                            .config(configFile)
+                            .configFile(configFile)
                             .valueType(new ValueTypeFactory().get("image"))
                             .build();
             try (MessageWriter<String> writer = builder.getWriter()) {
@@ -145,7 +145,7 @@ class ValueTypeTest {
                     MessageWriterFactory.<BufferedImage>builder()
                             .service(SERVICE)
                             .topic(topic)
-                            .config(configFile)
+                            .configFile(configFile)
                             .valueType(SimpleValueType.TEXT)
                             .build();
             try (MessageWriter<BufferedImage> writer = builder.getWriter()) {
@@ -169,14 +169,14 @@ class ValueTypeTest {
                     MessageReaderFactory.<byte[]>builder()
                             .service(SERVICE)
                             .topic(topic)
-                            .config(configFile)
+                            .configFile(configFile)
                             .receiveTimeout(Duration.ofSeconds(3))
                             .build();
             MessageWriterFactory<byte[]> writerBuilder =
                     MessageWriterFactory.<byte[]>builder()
                             .service(SERVICE)
                             .topic(topic)
-                            .config(configFile)
+                            .configFile(configFile)
                             .build();
             try (MessageReader<byte[]> reader = readerBuilder.getReader();
                  MessageWriter<byte[]> writer = writerBuilder.getWriter()) {
@@ -194,7 +194,7 @@ class ValueTypeTest {
                     MessageReaderFactory.<String>builder()
                             .service(SERVICE)
                             .topic(topic)
-                            .config(configFile)
+                            .configFile(configFile)
                             .valueType(SimpleValueType.TEXT)
                             .receiveTimeout(Duration.ofSeconds(3))
                             .build();
@@ -202,7 +202,7 @@ class ValueTypeTest {
                     MessageWriterFactory.<String>builder()
                             .service(SERVICE)
                             .topic(topic)
-                            .config(configFile)
+                            .configFile(configFile)
                             .valueType(SimpleValueType.TEXT)
                             .build();
             try (MessageReader<String> reader = readerBuilder.getReader();
@@ -221,7 +221,7 @@ class ValueTypeTest {
                     MessageReaderFactory.<BufferedImage>builder()
                             .service(SERVICE)
                             .topic(topic)
-                            .config(configFile)
+                            .configFile(configFile)
                             .valueType(new ValueTypeFactory().get("image"))
                             .receiveTimeout(Duration.ofSeconds(3))
                             .build();
@@ -229,7 +229,7 @@ class ValueTypeTest {
                     MessageWriterFactory.<BufferedImage>builder()
                             .service(SERVICE)
                             .topic(topic)
-                            .config(configFile)
+                            .configFile(configFile)
                             .valueType(new ValueTypeFactory().get("image"))
                             .build();
             try (MessageReader<BufferedImage> reader = readerBuilder.getReader();
@@ -247,7 +247,7 @@ class ValueTypeTest {
                     MessageReaderFactory.<byte[]>builder()
                             .service(SERVICE)
                             .topic(topic)
-                            .config(configFile)
+                            .configFile(configFile)
                             .receiveTimeout(Duration.ofSeconds(3))
                             .valueType(SimpleValueType.BYTE_ARRAY)
                             .build();
@@ -255,7 +255,7 @@ class ValueTypeTest {
                     MessageWriterFactory.<byte[]>builder()
                             .service(SERVICE)
                             .topic(topic)
-                            .config(configFile)
+                            .configFile(configFile)
                             .valueType(SimpleValueType.BYTE_ARRAY)
                             .build();
             try (MessageReader<byte[]> reader = readerBuilder.getReader();
@@ -275,7 +275,7 @@ class ValueTypeTest {
                     MessageReaderFactory.<String>builder()
                             .service(SERVICE)
                             .topic(topic)
-                            .config(configFile)
+                            .configFile(configFile)
                             .valueType(new ValueTypeFactory().get("image"))
                             .receiveTimeout(Duration.ofSeconds(3))
                             .build();
@@ -283,7 +283,7 @@ class ValueTypeTest {
                     MessageWriterFactory.<BufferedImage>builder()
                             .service(SERVICE)
                             .topic(topic)
-                            .config(configFile)
+                            .configFile(configFile)
                             .valueType(new ValueTypeFactory().get("image"))
                             .build();
             try (MessageReader<String> reader = readerBuilder.getReader();
@@ -306,7 +306,7 @@ class ValueTypeTest {
                     MessageReaderFactory.<BufferedImage>builder()
                             .service(SERVICE)
                             .topic(topic)
-                            .config(configFile)
+                            .configFile(configFile)
                             .valueType(SimpleValueType.TEXT)
                             .receiveTimeout(Duration.ofSeconds(3))
                             .build();
@@ -314,7 +314,7 @@ class ValueTypeTest {
                     MessageWriterFactory.<String>builder()
                             .service(SERVICE)
                             .topic(topic)
-                            .config(configFile)
+                            .configFile(configFile)
                             .valueType(SimpleValueType.TEXT)
                             .build();
             try (MessageReader<BufferedImage> reader = readerBuilder.getReader();

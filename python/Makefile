@@ -1,6 +1,6 @@
 # vim:noexpandtab tabstop=8 shiftwidth=8
 
-PYTHON3 = python3.6
+PYTHON3 = python3
 SETUP = $(PYTHON3) setup.py
 LINT = flake8
 
@@ -64,3 +64,6 @@ tags::
 doc:: README.html
 README.html: README.md
 	markdown README.md > README.html
+
+testenv:
+	IMAGE=`$(PYTHON3) -c 'with open(".gitlab-ci.yml") as f: import yaml; print(yaml.safe_load(f)["test-api"]["image"]);'`; docker run --interactive --tty --rm --volume $(PWD):$(PWD) --env $(HOME)=$(HOME) --workdir $(PWD) $$IMAGE bash

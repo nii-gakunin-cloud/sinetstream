@@ -59,7 +59,7 @@ class MessageReaderTest implements ConfigFileAware {
     @Test
     void testGetReader() {
         MessageReaderFactory<String> builder = MessageReaderFactory.<String>builder()
-                .config(getConfigFile(workdir)).service(getServiceName())
+                .configFile(getConfigFile(workdir)).service(getServiceName())
                 .receiveTimeout(Duration.ofSeconds(10)).build();
         try (MessageReader<String> reader = builder.getReader()) {
             assertNotNull(reader);
@@ -71,7 +71,7 @@ class MessageReaderTest implements ConfigFileAware {
     void consistency(Consistency consistency) {
         MessageReaderFactory<String> builder =
                 MessageReaderFactory.<String>builder()
-                        .config(getConfigFile(workdir)).service(getServiceName())
+                        .configFile(getConfigFile(workdir)).service(getServiceName())
                         .consistency(consistency)
                         .receiveTimeout(Duration.ofSeconds(10))
                         .build();
@@ -91,7 +91,7 @@ class MessageReaderTest implements ConfigFileAware {
     void streamForEachTest(Consistency consistency) {
         MessageReaderFactory<String> builder =
                 MessageReaderFactory.<String>builder()
-                        .config(getConfigFile(workdir))
+                        .configFile(getConfigFile(workdir))
                         .service(getServiceName())
                         .consistency(consistency)
                         .receiveTimeout(Duration.ofSeconds(10))
@@ -99,7 +99,7 @@ class MessageReaderTest implements ConfigFileAware {
 
 		MessageWriterFactory<String> writerBuilder =
 				MessageWriterFactory.<String>builder()
-                        .config(getConfigFile(workdir))
+                        .configFile(getConfigFile(workdir))
                         .service(getServiceName())
                         .consistency(consistency)
 						.build();
@@ -129,14 +129,14 @@ class MessageReaderTest implements ConfigFileAware {
 		void initWriter() {
 			MessageReaderFactory<String> readerBuilder =
 					MessageReaderFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
 							.receiveTimeout(Duration.ofSeconds(3))
 							.consistency(Consistency.EXACTLY_ONCE)
 							.build();
 
 			MessageWriterFactory<String> writerBuilder =
 					MessageWriterFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
 							.consistency(Consistency.EXACTLY_ONCE)
 							.build();
 
@@ -179,7 +179,7 @@ class MessageReaderTest implements ConfigFileAware {
             void topic() {
                 String topic = generateTopic();
                 MessageReaderFactory<String> builder = MessageReaderFactory.<String>builder()
-                        .config(getConfigFile(workdir)).service(getServiceName())
+                        .configFile(getConfigFile(workdir)).service(getServiceName())
                         .topic(topic).build();
                 try (MessageReader<String> reader = builder.getReader()) {
                     assertEquals(topic, reader.getTopic());
@@ -193,7 +193,7 @@ class MessageReaderTest implements ConfigFileAware {
                                 .collect(Collectors.toList());
 
                 MessageReaderFactory<String> builder = MessageReaderFactory.<String>builder()
-                        .config(getConfigFile(workdir)).service(getServiceName())
+                        .configFile(getConfigFile(workdir)).service(getServiceName())
                         .topics(topics).build();
                 try (MessageReader<String> reader = builder.getReader()) {
                     assertIterableEquals(topics, reader.getTopics());
@@ -206,7 +206,7 @@ class MessageReaderTest implements ConfigFileAware {
         void consistency(Consistency consistency) {
             MessageReaderFactory<String> builder =
                     MessageReaderFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .consistency(consistency)
                             .build();
             try (MessageReader<String> reader = builder.getReader()) {
@@ -221,7 +221,7 @@ class MessageReaderTest implements ConfigFileAware {
                 String clientId = RandomStringUtils.randomAlphabetic(10);
                 MessageReaderFactory<String> builder =
                         MessageReaderFactory.<String>builder()
-                                .config(getConfigFile(workdir)).service(getServiceName())
+                                .configFile(getConfigFile(workdir)).service(getServiceName())
                                 .clientId(clientId)
                                 .build();
                 try (MessageReader<String> reader = builder.getReader()) {
@@ -233,7 +233,7 @@ class MessageReaderTest implements ConfigFileAware {
             void defaultClientId() {
                 MessageReaderFactory<String> builder =
                         MessageReaderFactory.<String>builder()
-                                .config(getConfigFile(workdir)).service(getServiceName())
+                                .configFile(getConfigFile(workdir)).service(getServiceName())
                                 .build();
                 try (MessageReader<String> reader = builder.getReader()) {
                     assertNotNull(reader.getClientId());
@@ -245,7 +245,7 @@ class MessageReaderTest implements ConfigFileAware {
             void emptyAndNull(String clientId) {
                 MessageReaderFactory<String> builder =
                         MessageReaderFactory.<String>builder()
-                                .config(getConfigFile(workdir)).service(getServiceName())
+                                .configFile(getConfigFile(workdir)).service(getServiceName())
                                 .clientId(clientId)
                                 .build();
                 try (MessageReader<String> reader = builder.getReader()) {
@@ -261,7 +261,7 @@ class MessageReaderTest implements ConfigFileAware {
         void valueType(SimpleValueType valueType) {
             MessageReaderFactory builder =
                     MessageReaderFactory.builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .valueType(valueType)
                             .build();
             try (MessageReader reader = builder.getReader()) {
@@ -275,7 +275,7 @@ class MessageReaderTest implements ConfigFileAware {
             void defaultTimeout() {
                 MessageReaderFactory<String> builder =
                         MessageReaderFactory.<String>builder()
-                                .config(getConfigFile(workdir)).service(getServiceName()).build();
+                                .configFile(getConfigFile(workdir)).service(getServiceName()).build();
                 try (MessageReader<String> reader = builder.getReader()) {
                     assertEquals(Duration.ofNanos(Long.MAX_VALUE), reader.getReceiveTimeout());
                 }
@@ -286,7 +286,7 @@ class MessageReaderTest implements ConfigFileAware {
             void receiveTimeout(Duration timeout) {
                 MessageReaderFactory<String> builder =
                         MessageReaderFactory.<String>builder()
-                                .config(getConfigFile(workdir)).service(getServiceName())
+                                .configFile(getConfigFile(workdir)).service(getServiceName())
                                 .receiveTimeout(timeout)
                                 .build();
                 try (MessageReader<String> reader = builder.getReader()) {

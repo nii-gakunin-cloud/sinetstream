@@ -91,10 +91,15 @@ file, `service` is used as the search key.
 
 |Major classification|Middle classification|Subcategory|Type|Range|Mandatory|Remarks|
 |:-----|:-----|:-----|:-|:---|:---|:---|
-||tls|ca_certs|String|Any|NO|File name of the self-signed server certificate (xxx.crt)|
-||tls|certfile|String|Any|NO|File name of the client certificate (xxx.pfx)|
-||tls|keyfilePassword|String|Any|NO|Password of the client certificate (xxx.pfx)|
-||tls|check_hostname|Boolean|{true,false}|NO|Default: true|
+||tls|protocol|String|{TLSv1.1,TLSv1.2}|NO|Default: "TLSv1.2"|
+||tls|client_certs|Boolean|{true,false}|NO|Default: false|
+||tls|server_certs|Boolean|{true,false}|NO|Default: false|
+||tls|check_hostname|Boolean|{true,false}|NO|Default: false|
+
+* SSL/TLS related certificates are expected to be stored beforehand in the Android system credential storage (`KeyChain`).
+  * Set `client_certs` true, if preinstalled client certificate should be used.
+  * Set `server_certs` true, if preinstalled self-signed server certificate
+should be used.
 
 
 ### MQTT specific parameters
@@ -103,21 +108,27 @@ file, `service` is used as the search key.
 |Major classification|Middle classification|Subcategory|Type|Range|Mandatory|Remarks|
 |:-----|:-----|:-----|:-|:---|:---|:---|
 ||clean_session||Boolean|{true,false}|NO|Default: true|
-||protocol||String|{"MQTTv31","MQTTv311","DEFAULT"}|NO|Default: "DEFAULT"|
-||transport||String|{"tcp","websockets"}|NO|Default: "tcp"|
+||protocol \[1\]||String|{"MQTTv31","MQTTv311","DEFAULT"}|NO|Default: "DEFAULT"|
+||transport||String|{"tcp","websocket"}|NO|Default: "tcp"|
 ||qos||Integer|{0,1,2}|NO|Default: 1|
 ||retain||Boolean|{true,false}|NO|Default: true|
-||max_inflight_messages_set|inflight|Integer|Positive integer|NO|Default: 0|
-||reconnect_delay_set|max_delay|Integer|Positive integer|NO|Default: 0|
-||connect|keepalive|Integer|Positive integer|NO|Default: 0|
-||connect|automatic_reconnect|Boolean|{true,false}|NO|Default: true|
-||connect|connection_timeout|Integer|Positive integer|NO|Default: 0|
+||max_inflight_messages_set|inflight|Integer|Positive integer|NO|Default: 10|
+||reconnect_delay_set|max_delay|Integer|Positive integer|NO|Default: 128000|
+||connect|keepalive|Integer|Positive integer|NO|Default: 60|
+||connect|automatic_reconnect|Boolean|{true,false}|NO|Default: false|
+||connect|connection_timeout|Integer|Positive integer|NO|Default: 30|
+||mqtt_debug \[2\]||Boolean|{true,false}|NO|Default: false|
 
 * If `"DEFAULT"` is specified as the value of item `protocol`, it is
 interpreted as to
 [try v3.1.1 first, then try v3.1 if that fails](https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttConnectOptions.html#MQTT_VERSION_DEFAULT).
 * The item `qos` has a higher precedence over the item `consistency`
 in the "API parameters" above.
+
+\[1\]: `mqtt_version` can be used as an alias of the item `protocol`.
+If both are specified, `protocol` is taken.
+
+\[2\]: Option for developers; Turn on/off debug trace in MqttAndroidClient.
 
 
 #### MQTT user authentication parameters
@@ -157,6 +168,4 @@ the parent item `will_set`.
 ||tls_set|keyfilePassword|String|Any|NO|Password of the client certificate (xxx.pfx)|
 ||tls_insecure_set|value|Boolean|{true,false}|NO|Default: true|
 
-* The parameter items under `tls_set` or `tls_insecure_set` have a
-higher precedence over the ones in the "SSL/TLS parameters".
-
+* This category will be <em>ignored</em>. Use "SSL/TLS parameters" instead.

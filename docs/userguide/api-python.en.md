@@ -813,23 +813,43 @@ can be specified as parameters.
 After installing SINETStream, run `python3 -m sinetstream` to show a cheat sheet.
 
 ```
-$ python3.6 -m sinetstream
+$ python3 -m sinetstream
 ==================================================
 Default parameters:
 MessageReader(
     service=SERVICE,                 # Service name defined in the configuration file. (REQUIRED)
     topics=TOPICS,                   # The topic to receive.
+    config=CONFIG,                   # Config name on the config-server.
     consistency=AT_MOST_ONCE,        # consistency: AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE
     client_id=DEFAULT_CLIENT_ID,     # If not specified, the value is automatically generated.
-    value_type="byte_array",         # The type of message.
+    value_type=BYTE_ARRAY,           # The type of message.
     value_deserializer=None          # If not specified, use default deserializer according to valueType.
 )
 MessageWriter(
     service=SERVICE,                 # Service name defined in the configuration file. (REQUIRED)
     topic=TOPIC,                     # The topic to send.
+    config=CONFIG,                   # Config name on the config-server.
     consistency=AT_MOST_ONCE,        # consistency: AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE
     client_id=DEFAULT_CLIENT_ID,     # If not specified, the value is automatically generated.
-    value_type="byte_array",         # The type of message.
+    value_type=BYTE_ARRAY,           # The type of message.
+    value_serializer=None            # If not specified, use default serializer according to valueType.
+)
+AsyncMessageReader(
+    service=SERVICE,                 # Service name defined in the configuration file. (REQUIRED)
+    topics=TOPICS,                   # The topic to receive.
+    config=CONFIG,                   # Config name on the config-server.
+    consistency=AT_MOST_ONCE,        # consistency: AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE
+    client_id=DEFAULT_CLIENT_ID,     # If not specified, the value is automatically generated.
+    value_type=BYTE_ARRAY,           # The type of message.
+    value_deserializer=None          # If not specified, use default deserializer according to valueType.
+)
+AsyncMessageWriter(
+    service=SERVICE,                 # Service name defined in the configuration file. (REQUIRED)
+    topic=TOPIC,                     # The topic to send.
+    config=CONFIG,                   # Config name on the config-server.
+    consistency=AT_MOST_ONCE,        # consistency: AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE
+    client_id=DEFAULT_CLIENT_ID,     # If not specified, the value is automatically generated.
+    value_type=BYTE_ARRAY,           # The type of message.
     value_serializer=None            # If not specified, use default serializer according to valueType.
 )
 ```

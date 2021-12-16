@@ -93,6 +93,71 @@ class JCEProcessorTest {
         assertArrayEquals(data, data1);
     }
 
+    @ParameterizedTest
+    @ValueSource(ints = {128, 192, 256})
+    void keySpecfiedNG(int keylen) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("algorithm", "AES");
+        params.put("mode", "GCM");
+
+        params.put("key_length", keylen);
+        params.put("key", Arrays.copyOfRange("12345678901234567890123456789012".getBytes(), 0, keylen/8));
+
+        JCEProvider provider = new JCEProvider();
+        assertTrue(provider.isSupported(params));
+        Crypto crypto = provider.getCrypto(params);
+        Function<byte[], byte[]> enc = crypto.getEncoder(params);
+
+
+        Map<String, Object> params2 = new HashMap<>();
+        params2.put("algorithm", "AES");
+        params2.put("mode", "GCM");
+
+        params2.put("key_length", keylen);
+        params2.put("key", Arrays.copyOfRange("12345678901234567890123456789012".getBytes(), 0, keylen/8));
+
+        JCEProvider provider2 = new JCEProvider();
+        assertTrue(provider2.isSupported(params2));
+        params2.put("key", Arrays.copyOfRange("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX".getBytes(), 0, keylen/8));
+        Crypto crypto2 = provider.getCrypto(params2);
+        Function<byte[], byte[]> dec = crypto2.getDecoder(params2);
+
+        byte[] data = "abcdefg".getBytes(StandardCharsets.UTF_8);
+        boolean caught = false;
+        try {
+            byte[] encrypted = enc.apply(data);
+            byte[] data1 = dec.apply(encrypted);
+            assertArrayEquals(data, data1);
+        }
+        catch (Exception e) {
+            System.err.println("caught: " + e);
+            caught = true;
+        }
+        assert(caught);
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {128, 192, 256})
+    void keySpecfied(int keylen) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("algorithm", "AES");
+        params.put("mode", "GCM");
+
+        params.put("key_length", keylen);
+        params.put("key", Arrays.copyOfRange("12345678901234567890123456789012".getBytes(), 0, keylen/8));
+
+        JCEProvider provider = new JCEProvider();
+        assertTrue(provider.isSupported(params));
+        Crypto crypto = provider.getCrypto(params);
+        Function<byte[], byte[]> enc = crypto.getEncoder(params);
+        Function<byte[], byte[]> dec = crypto.getDecoder(params);
+
+        byte[] data = "abcdefg".getBytes(StandardCharsets.UTF_8);
+        byte[] encrypted = enc.apply(data);
+        byte[] data1 = dec.apply(encrypted);
+        assertArrayEquals(data, data1);
+    }
+
     @Disabled
     @Test
     void aesECB() {

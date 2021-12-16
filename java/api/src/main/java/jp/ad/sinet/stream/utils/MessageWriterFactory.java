@@ -29,6 +29,7 @@ import lombok.Getter;
 import lombok.Singular;
 import lombok.extern.java.Log;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Function;
@@ -78,9 +79,29 @@ public class MessageWriterFactory<T> {
     private Boolean dataEncryption;
 
     @Getter
-    @Parameter("config")
+    @Parameter(value="config_file", hide=true)
     @Description("configuration file.")
-    private Path config;
+    private Path configFile;
+
+    @Getter
+    @Parameter("config_name")
+    @Description("configuration name.")
+    private String configName;
+
+    @Getter
+    @Parameter(hide=true)
+    @Description("auth_file")
+    private Path authFile;
+
+    @Getter
+    @Parameter(hide=true)
+    @Description("private_key_file")
+    private Path privKeyFile;
+
+    @Getter
+    @Parameter(hide=true)
+    @Description("debugHttpTransport")
+    private Object debugHttpTransport;
 
     @DefaultParameters
     public static final Map<String, Object> defaultValues;
@@ -128,11 +149,17 @@ public class MessageWriterFactory<T> {
         }
     }
 
+    @Parameter(hide=true)
+    private List<File> tmpLst;
+    public List<File> getTmpLst() { return tmpLst; }
+
     private void setupServiceParameters() {
         MessageUtils utils = new MessageUtils();
         Map<String, Object> serviceParameters = new HashMap<>(defaultValues);
-        serviceParameters.putAll(utils.loadServiceParameters(service, config));
+        serviceParameters.putAll(utils.loadServiceParameters(service, configFile, configName, authFile, privKeyFile, debugHttpTransport));
         utils.mergeParameters(serviceParameters, parameters);
+        tmpLst = new LinkedList<File>();
+        ConfigLoader.replaceInlineData(serviceParameters, tmpLst);
         updateFactoryParameters(serviceParameters);
         if (Objects.isNull(topic)) {
             throw new InvalidConfigurationException("Topic has not been set.");

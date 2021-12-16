@@ -23,17 +23,95 @@ package jp.ad.sinet.stream.utils;
 
 import jp.ad.sinet.stream.api.*;
 import jp.ad.sinet.stream.api.valuetype.ValueTypeFactory;
+import jp.ad.sinet.stream.crypto.SecretDecoder;
 
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class MessageUtils {
-    Map<String, Object> loadServiceParameters(String service, Path config) {
-        return Optional.ofNullable((new ConfigLoader(config).loadConfigFile()).get(service))
-                .orElseThrow(NoServiceException::new);
+    @SuppressWarnings("unchecked")
+    Map<String,Object> loadServiceParameters(String service, Path configFile, String configName, Path authFile, Path privKeyFile, Object debugHttpTransport) {
+        Map<String,Object> params;
+        if (configName != null) {
+            params = ConfigClient.getConfig(service, configName, authFile, debugHttpTransport);
+        } else {
+            Map<String,Map<String,Object>> configs = new ConfigLoader(configFile).loadConfigFile();
+            Map<String,Object> header = configs.get("header");
+            if (header != null) {
+                Object ver = header.get("version");
+                if (ver == null)
+                    throw new NoServiceException("No config version in the header");
+                if (!(ver instanceof Integer))
+                    throw new NoServiceException("config version must be int");
+                if ((Integer)ver != 2)
+                    throw new InvalidConfigurationException("config verison must be 2, but " + ver);
+                Map<String,Object> config = configs.get("config");
+                if (config == null)
+                    throw new InvalidConfigurationException("config section does not exist");
+                params = (Map<String,Object>) getServiceParam(config, service);
+            } else {
+                // assume version 1
+                params = getServiceParam(configs, service);
+            }
+        }
+        if (params == null)
+            throw new NoServiceException();
+        try {
+            if (privKeyFile == null)
+                privKeyFile= Paths.get(System.getProperty("user.home"), ".config", "sinetstream", "private_key.pem");
+            return decryptoParameters(params, privKeyFile);
+        }
+        catch (Exception e) {
+            throw new NoServiceException(e);
+        }
+    }
+    @SuppressWarnings("unchecked")
+    public static <V> V getServiceParam(Map<String,V> configs, String service) {
+        if (service == null) {
+            Set<String> services = configs.keySet();
+            if (services.isEmpty())
+                throw new NoServiceException();
+            if (services.size() > 1)
+                throw new NoServiceException("too many services defined");
+            service = services.iterator().next();
+        }
+        return configs.get(service);
+    }
+    @SuppressWarnings("unchecked")
+    private Map<String,Object> decryptoParameters(Map<String,Object> params, Path privKeyFile) throws Exception {
+        return (Map<String,Object>) decryptoParameters1(params, new SecretDecoder(privKeyFile));
+    }
+    @SuppressWarnings("unchecked")
+    public Map<String,Object> debugDecryptoParameters(Map<String,Object> params, SecretDecoder decoder) throws Exception {
+        return (Map<String,Object>) decryptoParameters1(params, decoder);
+    }
+    @SuppressWarnings("unchecked")
+    private Object decryptoParameters1(Object x, SecretDecoder decoder) throws Exception {
+        if (x instanceof Map) {
+            Map<String,Object> map = (Map<String,Object>) x;
+            Map<String,Object> map2 = new LinkedHashMap<String,Object>(map.size());
+            for (Map.Entry<String, Object> e : map.entrySet()) {
+                map2.put(e.getKey(), decryptoParameters1(e.getValue(), decoder));
+            }
+            return map2;
+        } else if (x instanceof List) {
+            List<Object> lst = (List<Object>) x;
+            List<Object> lst2 = new ArrayList<Object>(lst.size());
+            for (Object o : lst) {
+                lst2.add(decryptoParameters1(o, decoder));
+            }
+            return lst2;
+        } else if (x instanceof SecretValue) {
+            SecretValue sv = (SecretValue) x;
+            byte[] v2 = decoder.decode(sv.getValue(), sv.getFingerprint());
+            return v2;
+        } else {
+            return x;
+        }
     }
 
     void mergeParameters(Map<String, Object> target, Map<String, Object> newValues) {

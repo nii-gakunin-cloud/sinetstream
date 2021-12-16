@@ -35,6 +35,7 @@ import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -64,6 +65,7 @@ public class JCEProcessor implements Crypto {
     private int keyLength;
     private SecretKeyFactory keyFactory;
     private char[] password;
+    private byte[] key1;
     private int saltBytes;
     private int iterationCount;
     private String mode;
@@ -78,9 +80,17 @@ public class JCEProcessor implements Crypto {
     }
 
     private void setupKeyFactory(Map<String,?> parameters) {
-        keyLength =
-                Optional.ofNullable(parameters.get("key_length"))
-                        .filter(Integer.class::isInstance).map(Integer.class::cast).orElse(128);
+        Object key_length = parameters.get("key_length");
+        if (key_length != null) {
+            if (key_length instanceof Integer)
+                keyLength = (Integer)key_length;
+            else if (key_length instanceof BigDecimal)
+                keyLength = ((BigDecimal)key_length).intValue();
+            else
+                throw new InvalidConfigurationException("key_length must be a number");
+        } else {
+            keyLength = 128;
+        }
 
         if (parameters.get("algorithm").equals("AES")) {
             // The IV length is the same as the block length of the cipher, which in the case of AES is 128 bits.
@@ -152,6 +162,20 @@ public class JCEProcessor implements Crypto {
                 .filter(Integer.class::isInstance).map(Integer.class::cast).orElse(8);
         this.iterationCount = Optional.ofNullable(keyParams.get("iteration"))
                 .filter(Integer.class::isInstance).map(Integer.class::cast).orElse(10000);
+        if (parameters.containsKey("key")) {
+            Object o = parameters.get("key");
+            if (o instanceof byte[]) {
+                this.key1 = (byte[]) o;
+            } else {
+                throw new InvalidConfigurationException();
+            }
+            if (this.key1.length != keyLength / 8) {
+                throw new InvalidConfigurationException("key_length mismatch");
+            }
+        }
+        if (this.key1 != null && this.password != null) {
+            throw new InvalidConfigurationException("both key and password are specified");
+        }
     }
 
     @EqualsAndHashCode
@@ -175,15 +199,17 @@ public class JCEProcessor implements Crypto {
         };
         saltCache = CacheBuilder.newBuilder().expireAfterWrite(60, TimeUnit.MINUTES).build(saltLoader);
 
-        CacheLoader<SaltBytes, byte[]> keyCacheLoader = new CacheLoader<SaltBytes, byte[]>() {
-            @Override
-            public byte[] load(SaltBytes salt) throws InvalidKeySpecException {
-                PBEKeySpec keySpec = new PBEKeySpec(password, salt.getSalt(), iterationCount, keyLength);
-                SecretKey pbeKey = keyFactory.generateSecret(keySpec);
-                return pbeKey.getEncoded();
-            }
-        };
-        keyCache = CacheBuilder.newBuilder().maximumSize(5).build(keyCacheLoader);
+        if (this.key1 == null) {
+            CacheLoader<SaltBytes, byte[]> keyCacheLoader = new CacheLoader<SaltBytes, byte[]>() {
+                @Override
+                public byte[] load(SaltBytes salt) throws InvalidKeySpecException {
+                    PBEKeySpec keySpec = new PBEKeySpec(password, salt.getSalt(), iterationCount, keyLength);
+                    SecretKey pbeKey = keyFactory.generateSecret(keySpec);
+                    return pbeKey.getEncoded();
+                }
+            };
+            keyCache = CacheBuilder.newBuilder().maximumSize(5).build(keyCacheLoader);
+        }
     }
 
     @Override
@@ -234,7 +260,7 @@ public class JCEProcessor implements Crypto {
     }
 
     private SecretKeySpec getSecretKeySpec(byte[] salt) {
-        byte[] key = keyCache.getUnchecked(new SaltBytes(salt));
+        byte[] key = this.key1 != null ? this.key1 : keyCache.getUnchecked(new SaltBytes(salt));
         return new SecretKeySpec(key, cipher.getAlgorithm());
     }
 

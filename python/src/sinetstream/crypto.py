@@ -1,5 +1,4 @@
-#!/usr/local/bin/python3.6
-# vim: expandtab shiftwidth=4
+#!/usr/bin/env python3
 
 # Copyright (C) 2019 National Institute of Informatics
 #
@@ -47,6 +46,13 @@ logger = logging.getLogger(__name__)
 #         prf:        HMAC-SHA256
 
 
+def hexlify(x):
+    if x is None:
+        return "None"
+    else:
+        return binascii.hexlify(x).decode()
+
+
 def get_password(crypto_params):
     password = crypto_params["password"]
     typ = type(password)
@@ -81,47 +87,50 @@ def conv_param(s, d, kwd):
 
 
 def make_key(crypto_params, salt=None):
+    key = crypto_params.get("key")
+    key_length = crypto_params["key_length"]
     kd_params = crypto_params["key_derivation"]
     algorithm = kd_params["algorithm"]
     salt_bytes = kd_params["salt_bytes"]
     iteration = kd_params["iteration"]
     prf = kd_params["prf"]
-    password = get_password(crypto_params)
-    key_length = crypto_params["key_length"]
 
-    hmac_hash_module = conv_param(prf,
-                                  {
-                                      "HMAC-SHA256": SHA256,
-                                      "HMAC-SHA384": SHA384,
-                                      "HMAC-SHA512": SHA512,
-                                  },
-                                  "crypto:key_derivation:prf")
-
-    if algorithm == "pbkdf2" or algorithm == "PBKDF2WithHmacSHA256":
-        if salt is None:
-            salt = get_random_bytes(salt_bytes)
-        else:
-            assert len(salt) == salt_bytes
-        key = PBKDF2(password,
-                     salt,
-                     dkLen=int(key_length/8),
-                     count=iteration,
-                     hmac_hash_module=hmac_hash_module)
+    if salt is None:
+        salt = get_random_bytes(salt_bytes)
     else:
-        logger.error("invalid crypto:key_derivation:algorithm")
-        raise InvalidArgumentError()
+        assert len(salt) == salt_bytes
+
+    if key is not None:
+        if crypto_params.get("password") is not None:
+            raise InvalidArgumentError("only one of crypto.key or crypto.password can be specified.")
+        if type(key) != bytes:
+            raise InvalidArgumentError("crypto.key must be bytes")
+        if len(key) * 8 != key_length:
+            emsg = f"length of crypto.key (={len(key) * 8}) must be same as crypto.key_length(={key_length})"
+            raise InvalidArgumentError(emsg)
+    else:
+        password = get_password(crypto_params)
+        if algorithm == "pbkdf2" or algorithm == "PBKDF2WithHmacSHA256":
+            hmac_hash_module = conv_param(prf,
+                                          {
+                                              "HMAC-SHA256": SHA256,
+                                              "HMAC-SHA384": SHA384,
+                                              "HMAC-SHA512": SHA512,
+                                          },
+                                          "crypto:key_derivation:prf")
+            key = PBKDF2(password,
+                         salt,
+                         dkLen=int(key_length/8),
+                         count=iteration,
+                         hmac_hash_module=hmac_hash_module)
+        else:
+            logger.error("invalid crypto:key_derivation:algorithm")
+            raise InvalidArgumentError()
 
     logger.debug(f"XXX:make_key: salt={hexlify(salt)}")
     logger.debug(f"XXX:make_key: key={hexlify(key)}")
     assert len(key) == int(key_length/8)
     return key, salt
-
-
-def hexlify(x):
-    if x is None:
-        return "None"
-    else:
-        return binascii.hexlify(x).decode()
 
 
 class CipherAES(object):

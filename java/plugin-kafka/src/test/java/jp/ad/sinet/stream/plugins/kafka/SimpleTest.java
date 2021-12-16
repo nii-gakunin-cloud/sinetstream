@@ -132,12 +132,12 @@ class SimpleTest {
         @Test
         public void readWrite() {
             MessageWriterFactory<String> writerFactory = MessageWriterFactory.<String>builder()
-                    .config(getConfigFile(workdir))
+                    .configFile(getConfigFile(workdir))
                     .service(getServiceName())
                     .consistency(Consistency.AT_LEAST_ONCE)
                     .build();
             MessageReaderFactory<String> readerFactory = MessageReaderFactory.<String>builder()
-                    .config(getConfigFile(workdir))
+                    .configFile(getConfigFile(workdir))
                     .service(getServiceName())
                     .consistency(Consistency.AT_LEAST_ONCE)
                     .receiveTimeout(Duration.ofSeconds(3))

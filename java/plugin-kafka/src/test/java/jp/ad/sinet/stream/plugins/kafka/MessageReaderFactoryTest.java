@@ -49,7 +49,7 @@ class MessageReaderFactoryTest implements ConfigFileAware {
     void serviceAndTopic() {
         String topic = generateTopic();
         MessageReaderFactory<String> builder = MessageReaderFactory.<String>builder()
-                .config(getConfigFile(workdir)).service(getServiceName())
+                .configFile(getConfigFile(workdir)).service(getServiceName())
                 .topic(topic).build();
         try (MessageReader<String> reader = builder.getReader()) {
             assertNotNull(reader);
@@ -63,7 +63,7 @@ class MessageReaderFactoryTest implements ConfigFileAware {
     void topics() {
         List<String> topics = Arrays.asList(generateTopic(), generateTopic());
         MessageReaderFactory<String> builder = MessageReaderFactory.<String>builder()
-                .config(getConfigFile(workdir)).service(getServiceName())
+                .configFile(getConfigFile(workdir)).service(getServiceName())
                 .topics(topics).build();
         try (MessageReader<String> reader = builder.getReader()) {
             assertNotNull(reader);
@@ -77,7 +77,7 @@ class MessageReaderFactoryTest implements ConfigFileAware {
         String clientId = "client-000";
         MessageReaderFactory<String> builder =
                 MessageReaderFactory.<String>builder()
-                        .config(getConfigFile(workdir)).service(getServiceName())
+                        .configFile(getConfigFile(workdir)).service(getServiceName())
                         .clientId(clientId).build();
         try (MessageReader<String> reader = builder.getReader()) {
             assertNotNull(reader);
@@ -90,7 +90,7 @@ class MessageReaderFactoryTest implements ConfigFileAware {
     void consistency(Consistency consistency) {
         MessageReaderFactory<String> builder =
                 MessageReaderFactory.<String>builder()
-                        .config(getConfigFile(workdir)).service(getServiceName())
+                        .configFile(getConfigFile(workdir)).service(getServiceName())
                         .consistency(consistency).build();
         try (MessageReader<String> reader = builder.getReader()) {
             assertNotNull(reader);
@@ -102,7 +102,7 @@ class MessageReaderFactoryTest implements ConfigFileAware {
     void defaultConsistency() {
         MessageReaderFactory<String> builder =
                 MessageReaderFactory.<String>builder()
-                        .config(getConfigFile(workdir)).service(getServiceName()).build();
+                        .configFile(getConfigFile(workdir)).service(getServiceName()).build();
         try (MessageReader<String> reader = builder.getReader()) {
             assertNotNull(reader);
             assertEquals(AT_MOST_ONCE, reader.getConsistency());
@@ -114,7 +114,7 @@ class MessageReaderFactoryTest implements ConfigFileAware {
         Duration timeout = Duration.ofSeconds(10);
         MessageReaderFactory<String> builder =
                 MessageReaderFactory.<String>builder()
-                        .config(getConfigFile(workdir)).service(getServiceName())
+                        .configFile(getConfigFile(workdir)).service(getServiceName())
                         .receiveTimeout(timeout).build();
         try (MessageReader<String> reader = builder.getReader()) {
             assertNotNull(reader);
@@ -126,7 +126,7 @@ class MessageReaderFactoryTest implements ConfigFileAware {
     void defaultReceiveTimeout() {
         MessageReaderFactory<String> builder =
                 MessageReaderFactory.<String>builder()
-                        .config(getConfigFile(workdir)).service(getServiceName()).build();
+                        .configFile(getConfigFile(workdir)).service(getServiceName()).build();
         try (MessageReader<String> reader = builder.getReader()) {
             assertNotNull(reader);
             assertEquals(Duration.ofNanos(Long.MAX_VALUE), reader.getReceiveTimeout());

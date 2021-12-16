@@ -37,6 +37,9 @@ under the License.
 5.3 Android Studioへのソースコードの読み込み
 5.4 Android端末側の準備
 5.5 開発機材でのビルドおよびAndroid端末への導入
+
+付録
+A1. ブローカとSSL/TLS通信を行う場合の追加設定
 </pre>
 
 
@@ -232,4 +235,13 @@ Android端末のファイル操作アプリケーション`Files`を起動する
 
 ＜参考＞
 [ハードウェアデバイス上でのアプリの実行](https://developer.android.com/studio/run/device#connect)
+
+
+## <em>付録</em>
+
+### A1. ブローカとSSL/TLS通信を行う場合の追加設定
+
+ブローカ運用上のセキュリティ方針によっては、Android端末側に所用のSSL/TLS証明書を事前に導入する必要があります。詳細についてはリンク先を参照してください。
+
+[システム秘匿領域への証明書ファイルの導入](TUTORIAL-android-keychain.md)
 

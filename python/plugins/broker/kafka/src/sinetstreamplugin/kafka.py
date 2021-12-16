@@ -1,5 +1,4 @@
-#!/usr/local/bin/python3.6
-# vim: expandtab shiftwidth=4
+#!/usr/bin/env python3
 
 # Copyright (C) 2019 National Institute of Informatics
 #
@@ -67,7 +66,7 @@ def conv_tls(tls_params):
             }
             configs, rem = trans_dict1(tls_params, t)
             if len(rem) > 0:
-                logger.warning(f"XXX INVALID PARAMTERS in tls: {rem}")
+                logger.warning(f"unknown parameters in tls are ignored: {rem}")
             configs["security_protocol"] = "SSL"
     return configs
 

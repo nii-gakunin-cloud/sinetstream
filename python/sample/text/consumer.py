@@ -26,8 +26,8 @@ from sys import stderr
 from sinetstream import MessageReader
 
 
-def consumer(service):
-    with MessageReader(service) as reader:
+def consumer(service, **kwargs):
+    with MessageReader(service, **kwargs) as reader:
         for message in reader:
             show_message(message)
 
@@ -40,13 +40,23 @@ def show_message(message):
 if __name__ == '__main__':
     parser = ArgumentParser(description="SINETStream Consumer")
     parser.add_argument(
-        "-s", "--service", metavar="SERVICE_NAME", required=True)
+        "-s", "--service", metavar="SERVICE_NAME", required=False)
+    parser.add_argument(
+        "-c", "--config", metavar="CONFIG_NAME", required=False)
     args = parser.parse_args()
+
+    kwargs = {}
+    if args.config is None:
+        if args.service is None:
+            print("ERROR: -s/--service must be specified if -c/--config is not specified.", file=stderr)
+            exit(1)
+    else:
+        kwargs["config"] = args.config
 
     print("Press ctrl-c to exit the program.", file=stderr)
     print(f": service={args.service}", file=stderr)
 
     try:
-        consumer(args.service)
+        consumer(args.service, **kwargs)
     except KeyboardInterrupt:
         pass

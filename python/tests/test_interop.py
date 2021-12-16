@@ -1,5 +1,4 @@
-#!/usr/local/bin/python3.6
-# vim: expandtab shiftwidth=4
+#!/usr/bin/env python3
 
 # Copyright (C) 2021 National Institute of Informatics
 #
@@ -135,6 +134,7 @@ def sink():
 
 
 @pytest.mark.timeout(1800)
+@pytest.mark.skipif("QUICKTEST" in os.environ, reason="QUICKTEST")
 def test_writer():
     init_config()
     drain()

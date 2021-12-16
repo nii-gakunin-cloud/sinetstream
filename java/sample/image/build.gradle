@@ -26,19 +26,18 @@ plugins {
 
 sourceCompatibility = 1.8
 
-version = '1.5.2'
+version = '1.6.0'
 
 repositories {
-    jcenter()
     mavenCentral()
 }
 
 dependencies {
     implementation 'commons-cli:commons-cli:1.4'
-    implementation 'jp.ad.sinet.sinetstream:SINETStream-api:1.+'
-    implementation 'jp.ad.sinet.sinetstream:SINETStream-kafka:1.+'
-    implementation 'jp.ad.sinet.sinetstream:SINETStream-mqtt:1.+'
-    implementation 'jp.ad.sinet.sinetstream:SINETStream-type-image:1.+'
+    implementation 'net.sinetstream:SINETStream-api:1.+'
+    implementation 'net.sinetstream:SINETStream-kafka:1.+'
+    implementation 'net.sinetstream:SINETStream-mqtt:1.+'
+    implementation 'net.sinetstream:SINETStream-type-image:1.+'
     implementation group: 'org.bytedeco', name: 'javacv-platform', version: '1.5.2'
     runtimeOnly 'org.slf4j:slf4j-nop:1.7.30'
 }

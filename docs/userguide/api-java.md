@@ -148,6 +148,11 @@ try (MessageReader<String> reader = factory.getReader()) {
     * 対応するサービスが設定ファイルに記述されている必要がある
 * topic(String)
     * メッセージの送信先となるトピック名
+* configName(String)
+    * コンフィグ名
+    * コンフィグ名が指定されるとコンフィグサーバからコンフィグ情報を取得する。
+    * コンフィグ情報のなかで定義されているサービスが1つしかないとわかっている場合はサービス名にnullを指定してもよい。
+    * コンフィグ名が指定されなかった場合、コンフィグ情報を得るために設定ファイルが読み込まれる。
 * clientId(String)
     * クライアントID
     * 指定されなかった場合は、値をライブラリ内部で自動生成する
@@ -252,6 +257,11 @@ try (AsyncMessageWriter<String> writer = factory.getAsyncWriter()) {
 * topic(String)
     * メッセージの受信元となるトピック名
     * topicsパラメータが指定されているときは無視される
+* configName(String)
+    * コンフィグ名
+    * コンフィグ名が指定されるとコンフィグサーバからコンフィグ情報を取得する。
+    * コンフィグ情報のなかで定義されているサービスが1つしかないとわかっている場合はサービス名にnullを指定してもよい。
+    * コンフィグ名が指定されなかった場合、コンフィグ情報を得るために設定ファイルが読み込まれる。
 * topics(Collection\<String\>)
     * メッセージの受信元となるトピックのコレクション
     * `MessageReader` では複数のトピックからメッセージを受信することができる
@@ -503,7 +513,7 @@ try (MessageReader<String> reader = factory.getReader()) {
 APIのjarファイルを `java -jar` の後に指定して実行すると、チートシートが表示される。
 
 ```
-$ java -jar SINETStream-api-1.1.0.jar
+$ java -jar SINETStream-api-1.6.0.jar
 
 ==================================================
 MessageWriter example
@@ -521,6 +531,8 @@ MessageWriterFactory parameters:
         Service name defined in the configuration file. (REQUIRED)
     clientId(String clientId)
         If not specified, the value is automatically generated.
+    configName(String configName)
+        configuration name.
     consistency(Consistency consistency[=AT_MOST_ONCE])
         consistency: AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE
     dataEncryption(Boolean dataEncryption[=false])
@@ -533,7 +545,7 @@ MessageWriterFactory parameters:
         If not specified, use default serializer according to valueType.
     topic(String topic)
         The topic to send.
-    valueType(ValueType valueType[=SimpleValueType.BYTE_ARRAY])
+    valueType(ValueType valueType[=BYTE_ARRAY])
         The type of message.
 ==================================================
 MessageReader example
@@ -554,6 +566,8 @@ MessageReaderFactory parameters:
         Service name defined in the configuration file. (REQUIRED)
     clientId(String clientId)
         If not specified, the value is automatically generated.
+    configName(String configName)
+        configuration name.
     consistency(Consistency consistency[=AT_MOST_ONCE])
         consistency: AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE
     dataEncryption(Boolean dataEncryption[=false])
@@ -568,6 +582,6 @@ MessageReaderFactory parameters:
         The topic to receive.
     topics(Collection topics)
         A list of topics to receive.
-    valueType(ValueType valueType[=SimpleValueType.BYTE_ARRAY])
+    valueType(ValueType valueType[=BYTE_ARRAY])
         The type of message.
 ```

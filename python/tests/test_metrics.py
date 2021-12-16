@@ -1,5 +1,4 @@
-#!/usr/local/bin/python3.6
-# vim: expandtab shiftwidth=4
+#!/usr/bin/env python3
 
 # Copyright (C) 2020 National Institute of Informatics
 #
@@ -230,6 +229,7 @@ def test_async_read_err(config_topic):
             assert message.value in expected
             expected.remove(message.value)
             called += 1
+            # print(f"XXX assert_messages: called={called} ++, message={message}")
             cv.notify_all()
 
     def failed(e, traceback=None):
@@ -238,6 +238,7 @@ def test_async_read_err(config_topic):
         with cv:
             called += 1
             err += 1
+            # print(f"XXX failed: called={called} ++, e={e}, traceback={traceback}")
             cv.notify_all()
 
     global test_qread_failure
@@ -255,9 +256,11 @@ def test_async_read_err(config_topic):
         deadline = time.time() + 5
         with cv:
             while called != nmsg:
+                # print(f"XXX AsyncMessageReader: called={called} nmsg={nmsg}")
                 if time.time() >= deadline:
                     raise Exception("TIMEOUT")
                 cv.wait(1)
+            # print(f"XXX AsyncMessageReader: FIN called={called} nmsg={nmsg}")
             assert called == nmsg
 
         m = reader.metrics

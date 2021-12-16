@@ -352,6 +352,7 @@ Avro Sigle-object EncodingはAvro Binary Encodingの前にAvro markerとスキ�
 - salt
     - 鍵導出につかった乱数
     - バイト長: kd_salt_bytes
+        - パスワードから鍵導出したのではなく鍵を直接指定した場合は長さ0である。
 - IV
     - 暗号モードの初期ベクトル
     - バイト長: 16
@@ -407,19 +408,20 @@ Avro Sigle-object EncodingはAvro Binary Encodingの前にAvro markerとスキ�
                                   | Avro encode
                                   V
                                Avro Single-object encodedメッセージ
-                                 /|
-                                / | encrypt <--- 暗号鍵 <-------------------- password <-+- ConfigServer.getKey()
-              _________________/  |       A                 key derivation               |
-             |非暗号時            |       |                           A                  V
-             |                    |      IV(乱数)                     |                key version
-             |                    V                                  salt(乱数)
+                                 /|                       +------------------- key <-------+--- ConfigServer.getKey()
+                                / |                       |                                |                   or
+                               /  | encrypt <--- 暗号鍵 <-+------------------- password <-+)--- ConfigServer.getPasswd()
+              ________________/   |       A                  key derivation               ||
+             |非暗号時            |       |                            A                  VV
+             |                    |      IV(乱数)                      |                key version
+             |                    V                                   salt(乱数)
              |     salt + IV + ciphertext (+ auth tag)
              |    \___________________________________/
              |                    |
              |____________________|
                                   |
                  message          V
-         marker + key version + {   }
+         marker + key_version + {   }
         \____________________________/
            |
            V
@@ -438,23 +440,32 @@ Avro Sigle-object EncodingはAvro Binary Encodingの前にAvro markerとスキ�
                                   |_______________________________|
                                   |
                                   | Avro decode
-                                  |                                           ConfigServer.getKey(key_version)
-                               Avro Single-object encodedメッセージ              |            when cache miss
-                                  A                                              |
-                                 /|                                           ___V________
-                                / | decrypt <--- 暗号鍵 <--------------------|password|ver|<--- key version
+                                  |
+                               Avro Single-object encodedメッセージ
+                                  A
+                                  |                           ConfigServer.getKey(key_version)
+                                  |                            |            when cache-miss
+                                  |                           _V_____
+                                  |                       +--|key|ver|<--- key version
+                                  |                       |  |   |   |    (受信メッセージから)
+                                  |                       |  |___|___|
+                                  |                       |   cache
+                                  |                       |                   ConfigServer.getPasswd(key_version)
+                                  |                       |                      |            when cache-miss
+                                 /|                       |                   ___V________
+                                / | decrypt <--- 暗号鍵 <-+------------------|password|ver|<--- key version
               _________________/  |       A                 key derivation   |        |   |    (受信メッセージから)
              |非暗号時            |       |                           A      |________|___|
-             |                    |     IV(受信メッセージから)        |
-             |                    V                                  salt(受信メッセージから)
-             |     salt + IV + ciphertext (+ auth tag)
+             |                    |     IV(受信メッセージから)        |       cache
+             |                    V                                   |
+             |     salt + IV + ciphertext (+ auth tag)               salt(受信メッセージから)
              |    \___________________________________/
              |                    A
              |                    | 分解
              |____________________|
                                   |
          message                  |
-         marker + key version + {   }
+         marker + key_version + {   }
         \____________________________/
            A
            | 分解

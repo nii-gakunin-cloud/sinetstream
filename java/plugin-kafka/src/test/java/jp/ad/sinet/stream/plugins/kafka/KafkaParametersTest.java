@@ -46,7 +46,7 @@ class KafkaParametersTest implements ConfigFileAware {
             String groupId = "group-001";
             MessageReaderFactory<String> readerBuilder =
                     MessageReaderFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName())
+                            .configFile(getConfigFile(workdir)).service(getServiceName())
                             .parameter("group_id", groupId)
                             .build();
             try (MessageReader<String> reader = readerBuilder.getReader()) {
@@ -58,7 +58,7 @@ class KafkaParametersTest implements ConfigFileAware {
         void defaultGroupId() {
             MessageReaderFactory<String> readerBuilder =
                     MessageReaderFactory.<String>builder()
-                            .config(getConfigFile(workdir)).service(getServiceName()).build();
+                            .configFile(getConfigFile(workdir)).service(getServiceName()).build();
             try (MessageReader<String> reader = readerBuilder.getReader()) {
                 assertNotNull(reader.getConfig().get("groupId"));
             }
@@ -70,7 +70,7 @@ class KafkaParametersTest implements ConfigFileAware {
         int fetchMinBytes = 1000;
         MessageReaderFactory<String> readerBuilder =
                 MessageReaderFactory.<String>builder()
-                        .config(getConfigFile(workdir)).service(getServiceName())
+                        .configFile(getConfigFile(workdir)).service(getServiceName())
                         .parameter("fetch_min_bytes", fetchMinBytes)
                         .build();
         try (MessageReader<String> reader = readerBuilder.getReader()) {
@@ -83,7 +83,7 @@ class KafkaParametersTest implements ConfigFileAware {
         int fetchMaxBytes = 10000000;
         MessageReaderFactory<String> readerBuilder =
                 MessageReaderFactory.<String>builder()
-                        .config(getConfigFile(workdir)).service(getServiceName())
+                        .configFile(getConfigFile(workdir)).service(getServiceName())
                         .parameter("fetch_max_bytes", fetchMaxBytes)
                         .build();
         try (MessageReader<String> reader = readerBuilder.getReader()) {
@@ -96,7 +96,7 @@ class KafkaParametersTest implements ConfigFileAware {
         int fetchMaxWaitMs = 10000;
         MessageReaderFactory<String> readerBuilder =
                 MessageReaderFactory.<String>builder()
-                        .config(getConfigFile(workdir)).service(getServiceName())
+                        .configFile(getConfigFile(workdir)).service(getServiceName())
                         .parameter("fetch_max_wait_ms", fetchMaxWaitMs)
                         .build();
         try (MessageReader<String> reader = readerBuilder.getReader()) {
@@ -109,7 +109,7 @@ class KafkaParametersTest implements ConfigFileAware {
         int heartbeatIntervalMs = 1000;
         MessageReaderFactory<String> readerBuilder =
                 MessageReaderFactory.<String>builder()
-                        .config(getConfigFile(workdir)).service(getServiceName())
+                        .configFile(getConfigFile(workdir)).service(getServiceName())
                         .parameter("heartbeat_interval_ms", heartbeatIntervalMs)
                         .build();
         try (MessageReader<String> reader = readerBuilder.getReader()) {

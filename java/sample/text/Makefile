@@ -10,3 +10,7 @@ build::
 	./gradlew build
 clean::
 	./gradlew clean
+
+run::
+	-./text-producer-*/bin/text-producer -h
+	-./text-producer-*/bin/text-consumer -h

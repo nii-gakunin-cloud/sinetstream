@@ -37,6 +37,9 @@ under the License.
 5.3 Load the source tree into the Android Studio
 5.4 Preparations on the Android device
 5.5 Build and install an APK to the Android device
+
+Appendix
+A1. Additional setup for the SSL/TLS communication with the broker
 </pre>
 
 
@@ -282,4 +285,16 @@ build an `APK` and install it to the Android device.
 
 \<Reference\><br>
 [Run apps on a hardware device](https://developer.android.com/studio/run/device#connect)
+
+
+## <em>Appendix</em>
+
+### A1. Additional setup for the SSL/TLS communication with the broker
+
+Depending on the security policy for the broker operation, you need to
+install the required SSL/TLS certificate files on your Android device
+beforehand.
+See the following link for details.
+
+[Installation of certificates in the system credential storage](TUTORIAL-android-keychain.en.md)
 

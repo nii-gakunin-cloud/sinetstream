@@ -23,6 +23,24 @@ from pkg_resources import iter_entry_points
 
 logger = logging.getLogger(__name__)
 
+user_config_dir = "~/.config/sinetstream"
+
+
+# class SecretValue(yaml.YAMLObject):
+class SecretValue(object):
+    def __init__(self, v, fp):
+        self.v = v
+        self.fp = fp
+
+    def get(self):
+        return (self.v, self.fp)
+
+    def __repr__(self):
+        return f"SecretValue(v='{self.v}', fp='{self.fp}')"
+
+    def __str__(self):
+        return self.__repr__()
+
 
 class Registry(object):
 
