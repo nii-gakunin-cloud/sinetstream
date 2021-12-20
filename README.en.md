@@ -84,7 +84,7 @@ Writers and Readers send/receive a message specifying a topic, allowing differen
 The Python/Java SINETStream API is implemented with following programing
 languages.
 
-* Python 3.6
+* Python 3.7
 * Java 8
 
 The Python/Java SINETStream API supports the following messaging systems.
@@ -95,7 +95,7 @@ The Python/Java SINETStream API supports the following messaging systems.
 
 The Python/Java SINETStream runs on following operating systems.
 
-* CentOS 7.6
+* CentOS 7
 * Windows 10
 
 ### Android version

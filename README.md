@@ -88,7 +88,7 @@ Writer/Readerはトピックを指定してメッセージの送受信を行う�
 
 Python/Java版の`SINETStream API`は、以下のプログラム言語で実装される。
 
-* Python 3.6
+* Python 3.7
 * Java 8
 
 Python/Java版のSINETStreamは、以下のメッセージングシステムに対応する。
@@ -99,7 +99,7 @@ Python/Java版のSINETStreamは、以下のメッセージングシステムに�
 
 Python/Java版のSINETStreamが対応するOS条件は以下の通り。
 
-* CentOS 7.6
+* CentOS 7
 * Windows 10
 
 ### Android版
