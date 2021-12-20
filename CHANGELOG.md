@@ -10,7 +10,7 @@ https://keepachangelog.com/
 ### Security
 --->
 
-## [v1.6.0] - 2021-12-16
+## [v1.6.0] - 2021-12-22
 
 ### Added
 
