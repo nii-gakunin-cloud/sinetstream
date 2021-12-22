@@ -24,6 +24,20 @@ under the License.
 
 [English](README.en.md)
 
+## リンク
+
+* チュートリアル
+    * [クイックスタートガイド (Python/Java版)](docs/tutorial/index.md)
+    * [クイックスタートガイド (Android版)](docs/tutorial-android/index.md)
+* [ユーザガイド](docs/userguide/index.md)
+* [SINETStream性能測定結果](docs/performance/index.md)
+* [プラグイン開発ガイド](docs/developer_guide/index.md)
+* [SINETStreamサーバ構築手順](server/brokers/index.md)
+* コンフィグサーバー
+    * [github](https://github.com/nii-gakunin-cloud/sinetstream-config-server)
+    * [manual](http://manual.config-server.sinetstream.net/manual/docs/home/index.html)
+* [更新履歴](CHANGELOG.md)
+
 ## メッセージングシステムの概念
 
 SINETStreamは
@@ -149,20 +163,6 @@ MQTTブローカー部分をAndroid対向用に流用することで構わない
 Dockerコンテナをつかった
 [クイックスタートガイド (Android版)](docs/tutorial-android/index.md)
 も参考のこと。
-
-## リンク
-
-* チュートリアル
-    * [クイックスタートガイド (Python/Java版)](docs/tutorial/index.md)
-    * [クイックスタートガイド (Android版)](docs/tutorial-android/index.md)
-* [ユーザガイド](docs/userguide/index.md)
-* [SINETStream性能測定結果](docs/performance/index.md)
-* [プラグイン開発ガイド](docs/developer_guide/index.md)
-* [SINETStreamサーバ構築手順](server/brokers/index.md)
-* コンフィグサーバー
-    * [github](https://github.com/nii-gakunin-cloud/sinetstream-config-server)
-    * [manual](http://manual.config-server.sinetstream.net/manual/docs/home/index.html)
-* [更新履歴](CHANGELOG.md)
 
 ## ライセンス
 
