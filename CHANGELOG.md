@@ -10,6 +10,12 @@ https://keepachangelog.com/
 ### Security
 --->
 
+## [v1.6.1] - 2021-12-22
+
+### Security
+
+- use avro-1.11.0 (Java)
+
 ## [v1.6.0] - 2021-12-22
 
 ### Added
