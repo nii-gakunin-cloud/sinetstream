@@ -23,12 +23,13 @@ package jp.ad.sinet.stream.crypto;
 
 import jp.ad.sinet.stream.api.InvalidMessageException;
 import lombok.extern.java.Log;
-import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.openssl.PEMDecryptorProvider;
+import org.bouncycastle.openssl.PEMEncryptedKeyPair;
+import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
-import org.bouncycastle.util.io.pem.PemObject;
-import org.bouncycastle.util.io.pem.PemReader;
+import org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
@@ -38,15 +39,12 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
 import java.io.*;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.KeyFactory;
+import java.security.KeyPair;
 import java.security.Security;
 import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
 import java.security.spec.MGF1ParameterSpec;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
-import java.util.Base64;
+import java.security.spec.RSAPrivateCrtKeySpec;
 
 @Log
 public class SecretDecoder {
@@ -54,7 +52,7 @@ public class SecretDecoder {
         Security.addProvider(new BouncyCastleProvider());
     }
 
-    private Path privKeyFile;
+    private final Path privKeyFile;
     private RSAPrivateKey privKey;
 
     public SecretDecoder(Path privKeyFile) {
@@ -78,17 +76,39 @@ public class SecretDecoder {
         return privKey;
     }
 
+    static public String SINETSTREAM_PRIVATE_KEY_PASSPHRASE;
+    private String getPass(String tgt) {
+        if (SINETSTREAM_PRIVATE_KEY_PASSPHRASE != null)
+            return SINETSTREAM_PRIVATE_KEY_PASSPHRASE;
+
+        String env = System.getenv("SINETSTREAM_PRIVATE_KEY_PASSPHRASE");
+        if (env != null)
+            return env;
+
+        Console console = System.console();
+        if (console == null)
+            return "";
+        char[] passphrase = console.readPassword("Enter pass phrase for %s: ", tgt);
+        return new String(passphrase);
+    }
+
     private RSAPrivateKey readPrivateKey(File file) throws Exception {
-        KeyFactory factory = KeyFactory.getInstance("RSA");
+        PEMParser pemParser = new PEMParser(new FileReader(file));
+        Object object = pemParser.readObject();
+        JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider("BC");
 
-        try (FileReader keyReader = new FileReader(file);
-             PemReader pemReader = new PemReader(keyReader)) {
-
-            PemObject pemObject = pemReader.readPemObject();
-            byte[] content = pemObject.getContent();
-            PKCS8EncodedKeySpec privKeySpec = new PKCS8EncodedKeySpec(content);
-            return (RSAPrivateKey) factory.generatePrivate(privKeySpec);
+        KeyPair kp;
+        if (object instanceof PEMEncryptedKeyPair) {
+            String password = getPass(file.getAbsolutePath());
+            PEMEncryptedKeyPair ekp = (PEMEncryptedKeyPair) object;
+            PEMDecryptorProvider decProv = new JcePEMDecryptorProviderBuilder().build(password.toCharArray());
+            kp = converter.getKeyPair(ekp.decryptKeyPair(decProv));
+        } else {
+            kp = converter.getKeyPair((PEMKeyPair) object);
         }
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        RSAPrivateCrtKeySpec privKeySpec = keyFactory.getKeySpec(kp.getPrivate(), RSAPrivateCrtKeySpec.class);
+        return (RSAPrivateKey) keyFactory.generatePrivate(privKeySpec);
     }
 
     private byte[] decryptKey(byte[] encryptedKey, RSAPrivateKey privKey) throws Exception {

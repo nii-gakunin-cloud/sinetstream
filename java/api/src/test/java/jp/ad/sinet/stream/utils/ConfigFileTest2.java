@@ -85,4 +85,23 @@ public class ConfigFileTest2 implements ConfigFileAware {
             Files.deleteIfExists(privateKeyFile);
         }
     }
+
+    @Test
+    void testEncryptedWithPassphrase() throws Exception {
+        Path privateKeyFile = Paths.get("private_key.pem-withpass");
+        jp.ad.sinet.stream.crypto.SecretDecoder.SINETSTREAM_PRIVATE_KEY_PASSPHRASE = "hogehoge";
+        try (InputStream in = ConfigClientTest.class.getResourceAsStream("/private_key.pem-withpass")) {
+            Files.copy(in, privateKeyFile);
+            final String SERVICE = "service-with-encrypted";
+            MessageReaderFactory<String> readerBuilder =
+                    MessageReaderFactory.<String>builder().service(SERVICE).privKeyFile(privateKeyFile).build();
+            try (MessageReader<String> reader = readerBuilder.getReader()) {
+                byte[] actual = (byte[])reader.getConfig().get("test-secret");
+                assertArrayEquals("This is a test.\r\n".getBytes(), actual);
+            }
+        }
+        finally {
+            Files.deleteIfExists(privateKeyFile);
+        }
+    }
 }

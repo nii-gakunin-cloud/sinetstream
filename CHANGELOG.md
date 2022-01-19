@@ -10,6 +10,12 @@ https://keepachangelog.com/
 ### Security
 --->
 
+## [v1.6.2] - 2022-01-19
+
+### Fixed
+
+- Enter the passphrase of private_key.pem if encrypted.
+
 ## [v1.6.1] - 2021-12-22
 
 ### Security
