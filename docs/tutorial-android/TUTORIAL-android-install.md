@@ -113,9 +113,11 @@ OS違いにより画面構成や文言表現が多少変わるかもしれませ
 Android端末のブラウザ`Chrome`で以下のURLにアクセスし、対象のファイル`xxx.apk`を手元にダウンロードしてください。
 
 * STEP1: テキスト送受信アプリ
-[sinetstream-android-echo v1.5.3](https://github.com/nii-gakunin-cloud/sinetstream-android-echo/releases/download/v1.5.3/sinetstream-android-echo-v1.5.3.apk)
+[sinetstream-android-echo v1.6.0](https://github.com/nii-gakunin-cloud/sinetstream-android-echo/releases/download/v1.6.0/sinetstream-android-echo-v1.6.0.apk)
+
 * STEP2: センサ情報収集アプリ
-[sinetstream-android-sensor-publisher v1.5.3](https://github.com/nii-gakunin-cloud/sinetstream-android-sensor-publisher/releases/download/v1.5.3/sinetstream-android-sensor-publisher-v1.5.3.apk)
+[sinetstream-android-sensor-publisher v1.6.0](https://github.com/nii-gakunin-cloud/sinetstream-android-sensor-publisher/releases/download/v1.6.0/sinetstream-android-sensor-publisher-v1.6.0.apk)
+
 
 入手に成功すれば、Android端末上の`Downloads`ディレクトリ配下に格納されます。
 

@@ -268,12 +268,15 @@ to your working machine, and load the source code.
 
 ### A.2 Known problems
 
-* Setup of SSL/TLS certification
-  * As of `SINETStream v1.5`, SSL/TLS certification does not work.
-  * The security functionality of the SINETStream will be released
-in the next version.
+* Implementation status of information security
+
+  |Functionality Item|Status|
+  |:-|:-|
+  |User Authentication|DONE|
+  |SSL/TLS communication|DONE|
+  |Data encryption/decription|Work in progress|
 
 * The mapping of the GUI `Settings` and the SINETStream configuration file
-  * As of `SINETStream v1.5`, the GUI `Settings` does not fully cover the
+  * The GUI `Settings` does not fully cover the items described in
 [SINETStream configuration file](../userguide/config-android.en.md).
 
