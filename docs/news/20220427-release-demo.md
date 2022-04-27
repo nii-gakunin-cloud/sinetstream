@@ -10,7 +10,7 @@
 
 この度，SINETStreamを用いたIoTシステムを構築するためのデモパッケージ最新版を公開いたしました．
 
-https://github.com/nii-gakunin-cloud/sinetstream-demo
+[https://github.com/nii-gakunin-cloud/sinetstream-demo](https://github.com/nii-gakunin-cloud/sinetstream-demo)
 
 本パッケージで提供する主な機能等は以下の通りです．
 
