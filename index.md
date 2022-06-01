@@ -84,6 +84,16 @@ SINETStreamの仕組みや動作環境などの詳細については以下のリ
 
 * [SINETStreamのライブデモ](docs/livedemo/livedemo.md)
 
+## 関連情報
+- SINETStream https://www.sinetstream.net/ <br>
+- A. Takefusa, J. Sun, I. Fujiwara, H. Yoshida, K. Aida and C. Pu, <br>
+"SINETStream: Enabling Research IoT Applications with Portability, Security and Performance Requirements," <br>
+2021 IEEE 45th Annual Computers, Software, and Applications Conference (COMPSAC), pp. 482-492, 2021.<br>
+doi: 10.1109/COMPSAC51774.2021.00073.<br>
+- SINETStream外部発表 https://nii-gakunin-cloud.github.io/#sinetstream
+- 国立情報学研究所 クラウド支援室 https://cloud.gakunin.jp/
+- モバイルSINET https://www.sinet.ad.jp/wadci
+
 ## プライバシーポリシー
 
 本サイトでは、より使いやすいウェブページへの改善の参考とするため、利用者のアクセス状況（アクセス日時、端末情報、ホスト名など）をアクセスログ（Google Analyticsほか）として記録しています。
