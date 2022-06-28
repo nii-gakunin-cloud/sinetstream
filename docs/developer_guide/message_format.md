@@ -29,8 +29,8 @@ under the License.
 |:--- |:--- |:--:|:--:|:--:|
 | Version 0 | 〜0.9.5 | No | No | No |
 | Version 1 | 0.9.7〜1.0 | Yes | No | No |
-| Version 2 | 1.1〜1.5 | Yes | Yes | No |
-| Version 3 | YET(1.6?〜) | Yes | Yes | Yes |
+| Version 2 | 1.1〜 | Yes | Yes | No |
+| Version 3 | YET | Yes | Yes | Yes |
 
 ### 互換性
 
