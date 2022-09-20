@@ -248,6 +248,6 @@ with MessageWriter(service='service-1', data_compression=True, compression={'alg
 
 ### 3.5 ソースコード
 ここまで記した実装例のファイルへのリンクを以下に示します。
-* [src/src/sinetstreamplugin/compression/lz4.py](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/python/plugins/compression/lz4/src/src/sinetstreamplugin/compression/lz4.py)
+* [src/sinetstreamplugin/compression/lz4.py](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/python/plugins/compression/lz4/src/sinetstreamplugin/compression/lz4.py)
 * [setup.py](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/python/plugins/compression/lz4/setup.py)
 * [setup.cfg](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/python/plugins/compression/lz4/setup.cfg)
