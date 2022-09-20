@@ -154,7 +154,7 @@ public void initialize(@NonNull java.lang.String serviceName,
 
 * 説明：
     * ブローカに接続し、文字列送信用パブリッシャとしての初期処理を実施する。
-    * 接続パラメータは外部の[設定ファイル](config.md)で規定される。
+    * 接続パラメータは外部の[設定ファイル](../config.md)で規定される。
     * 処理中に何らかのエラーが発生した場合は、リスナー関数「onError()」で通知する。
 * 引数:
     * serviceName - 設定ファイルで検索鍵となるサービス名
