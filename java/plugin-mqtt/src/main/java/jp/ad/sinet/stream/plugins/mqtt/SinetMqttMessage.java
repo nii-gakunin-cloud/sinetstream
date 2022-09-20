@@ -22,6 +22,8 @@
 package jp.ad.sinet.stream.plugins.mqtt;
 
 import jp.ad.sinet.stream.spi.PluginMessageWrapper;
+import jp.ad.sinet.stream.utils.Timestamped;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -42,7 +44,7 @@ class SinetMqttMessage implements PluginMessageWrapper {
     }
 
     @Override
-    public byte[] getValue() {
-        return raw.getPayload();
+    public Timestamped<byte[]> getValue() {
+        return new Timestamped<byte[]>(raw.getPayload(), 0);
     }
 }

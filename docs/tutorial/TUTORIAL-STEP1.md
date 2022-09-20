@@ -220,7 +220,7 @@ SINETStreamのPython3 APIを用いて作成された`Writer`のサンプルプ�
 
 `Reader`と`Writer`を実行して SINETStream を利用したメッセージの送受信が行えることを確認します。
 
-SINETStream v1.4では、利用可能なメッセージングシステムとして[Kafka](https://kafka.apache.org/) と [MQTT(Mosquitto)](https://mosquitto.org/)をサポートしています。
+SINETStreamで利用可能なメッセージングシステムには [Kafka](https://kafka.apache.org/) や [MQTT(Mosquitto)](https://mosquitto.org/) などがあります。
 ここでは、まず Kafkaブローカーとメッセージの送受信が行えることを確認します。
 その後、設定変更のみでプログラムを変更することなくMQTTブローカーともメッセージの送受信が行えることを確認します。
 
@@ -398,7 +398,7 @@ service-tutorial-mqtt:
 
 * type
     - メッセージングシステムの種別を指定します
-    - SINETStream v1.4 で指定できる値は `kafka`, `mqtt` のどちらかになります
+    - `kafka`, `mqtt` などが指定できます。
 * brokers
     - ブローカーのアドレスを指定します
     - アドレスの書式はホスト名とポート番号を `:` で繋げたものとします

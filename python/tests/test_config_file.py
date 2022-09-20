@@ -69,7 +69,7 @@ def config_file(tmp_path):
 
 def make_secret(x):
     import sinetstream
-    priv_key, rsa_cipher = sinetstream.configs.get_rsa_cipher()
+    priv_key, rsa_cipher, _fingerprint = sinetstream.configs.get_rsa_cipher()
     key_size = priv_key.size_in_bytes()
     key_size = 16
     import struct

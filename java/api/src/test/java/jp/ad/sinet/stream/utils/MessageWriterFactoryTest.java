@@ -22,15 +22,11 @@
 package jp.ad.sinet.stream.utils;
 
 import jp.ad.sinet.stream.ConfigFileAware;
-import jp.ad.sinet.stream.api.InvalidConfigurationException;
-import jp.ad.sinet.stream.api.UnsupportedServiceTypeException;
-import jp.ad.sinet.stream.api.MessageWriter;
-import jp.ad.sinet.stream.api.NoServiceException;
-import jp.ad.sinet.stream.api.ValueType;
+import jp.ad.sinet.stream.api.*;
 import jp.ad.sinet.stream.api.valuetype.SimpleValueType;
 import jp.ad.sinet.stream.api.valuetype.ValueTypeFactory;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.awt.image.BufferedImage;
 import java.util.Arrays;

@@ -39,13 +39,14 @@ logger = logging.getLogger(__name__)
 # FIXME: 実サーバにつないでテストするのダメ
 # FIXME: ~/.config/sinetstream/auth.jsonをつかうからダメ
 @pytest.mark.skip
-@pytest.mark.parametrize("svc", ["service-kafka-001", None])
-def test_get_config(svc):
+@pytest.mark.parametrize("svc, cfg", [("service-kafka-001", "test-sinetstream-client")])
+def test_get_config(svc, cfg):
     service, params = sinetstream.configs.get_config_params(
                 svc,
-                config="stream009")
+                config=cfg)
     logger.info(f"params={params}")
-    assert service == "service-kafka-001"
+    print(f"params={params}")
+    assert service == svc
     assert params is not None
 
 
@@ -247,7 +248,7 @@ configs_secret_resp["secrets"] = [
 ]
 
 
-def test_get_config__secret_4XX(setup_auth):
+def test_get_config__secret_4XX(setup_auth, setup_privkey):
     for statuscode, expected in [
             (401, sinetstream.AuthorizationError),
             (404, sinetstream.NoServiceError),
@@ -281,7 +282,7 @@ def test_get_config__secret_4XX(setup_auth):
 
 
 def make_secret(x):
-    priv_key, rsa_cipher = sinetstream.configs.get_rsa_cipher()
+    priv_key, rsa_cipher, _fingerprint = sinetstream.configs.get_rsa_cipher()
     key_size = priv_key.size_in_bytes()
     # logger.error(f"XXX key_size={key_size}")
     key_size = 16

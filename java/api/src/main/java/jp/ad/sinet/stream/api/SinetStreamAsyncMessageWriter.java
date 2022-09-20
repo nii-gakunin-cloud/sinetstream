@@ -23,6 +23,8 @@ package jp.ad.sinet.stream.api;
 
 import jp.ad.sinet.stream.spi.PluginAsyncMessageWriter;
 import jp.ad.sinet.stream.spi.WriterParameters;
+import jp.ad.sinet.stream.utils.Timestamped;
+
 import org.jdeferred2.Promise;
 
 public class SinetStreamAsyncMessageWriter<T> extends SinetStreamBaseWriter<T, PluginAsyncMessageWriter> implements AsyncMessageWriter<T> {
@@ -34,7 +36,7 @@ public class SinetStreamAsyncMessageWriter<T> extends SinetStreamBaseWriter<T, P
     @Override
     public Promise<?, ? extends Throwable, ?> write(T message) {
         try {
-            return target.write(toPayload(message))
+            return target.write(new Timestamped<byte[]>(toPayload(message)))
                     .fail((e) -> this.updateMetricsErr());
         }
         catch (Exception e) {

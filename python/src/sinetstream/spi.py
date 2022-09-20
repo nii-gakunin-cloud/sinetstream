@@ -32,6 +32,18 @@ def _subclasscheck(subclass, methods):
     return NotImplemented
 
 
+class PluginMessage(bytes):
+    def set_timestamp(self, timestamp):
+        self.timestamp = timestamp
+
+    def __str__(self):
+        s = super().__str__()
+        if hasattr(self, "timestamp"):
+            return f"{__class__}({s}, timestamp={self.timestamp})"
+        else:
+            return s
+
+
 class PluginMessageWriter(metaclass=ABCMeta):
     @abstractmethod
     def open(self):
@@ -46,6 +58,9 @@ class PluginMessageWriter(metaclass=ABCMeta):
 
     def reset_metrics(self):
         pass
+
+    def info(self, name, kwargs):
+        return None
 
     @abstractmethod
     def publish(self, message):
@@ -71,6 +86,9 @@ class PluginAsyncMessageWriter(metaclass=ABCMeta):
     def reset_metrics(self):
         pass
 
+    def info(self, name, kwargs):
+        return None
+
     @abstractmethod
     def publish(self, message):
         pass
@@ -95,6 +113,9 @@ class PluginMessageReader(metaclass=ABCMeta):
     def reset_metrics(self):
         pass
 
+    def info(self, name, kwargs):
+        return None
+
     @abstractmethod
     def __iter__(self):
         pass
@@ -118,6 +139,9 @@ class PluginAsyncMessageReader(metaclass=ABCMeta):
 
     def reset_metrics(self):
         pass
+
+    def info(self, name, kwargs):
+        return None
 
     @property
     @abstractmethod
@@ -159,3 +183,19 @@ class PluginValueType(metaclass=ABCMeta):
     @classmethod
     def __subclasshook__(cls, subclass):
         return _subclasscheck(subclass, ['serializer', 'deserializer'])
+
+
+class PluginCompression(metaclass=ABCMeta):
+    @property
+    @abstractmethod
+    def compressor(self):
+        pass
+
+    @property
+    @abstractmethod
+    def decompressor(self):
+        pass
+
+    @classmethod
+    def __subclasshook__(cls, subclass):
+        return _subclasscheck(subclass, ['compressor', 'decompressor'])

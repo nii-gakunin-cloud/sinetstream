@@ -24,6 +24,7 @@ package jp.ad.sinet.stream.plugins.mqtt;
 import jp.ad.sinet.stream.api.SinetStreamIOException;
 import jp.ad.sinet.stream.spi.PluginMessageWriter;
 import jp.ad.sinet.stream.spi.WriterParameters;
+import jp.ad.sinet.stream.utils.Timestamped;
 import lombok.Getter;
 import lombok.extern.java.Log;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -44,10 +45,10 @@ public class MqttMessageWriter extends MqttSyncBaseIO implements PluginMessageWr
     }
 
     @Override
-    public void write(byte[] message) {
+    public void write(Timestamped<byte[]> message) {
         try {
-            log.finer(() -> "MQTT publish: " + getClientId() + ": " + Arrays.toString(message));
-            client.publish(topic, message, consistency.getQos(), retain);
+            log.finer(() -> "MQTT publish: " + getClientId() + ": " + Arrays.toString(message.getValue()));
+            client.publish(topic, message.getValue(), consistency.getQos(), retain);
         } catch (MqttException e) {
             throw new SinetStreamIOException(e);
         }

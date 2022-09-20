@@ -70,9 +70,14 @@ Writer/Readerはトピックを指定してメッセージの送受信を行う�
                 * Python版SINETStreamのKafka固有部分
             * mqtt/
                 * Python版SINETStreamのMQTT固有部分
+            * s3/
+                * Python版SINETStreamのS3固有部分
         * value_type/
             * image/
                 * 画像メッセージのサポート
+        * compression/
+            * lz4/
+                * LZ4圧縮のサンプル実装
     * sample/
         * サンプルプログラム
 * java/
@@ -84,8 +89,12 @@ Writer/Readerはトピックを指定してメッセージの送受信を行う�
         * Java版SINETStreamのKafka固有部分
     * plugin-mqtt/
         * Java版SINETStreamのMQTT固有部分
+    * plugin-s3/
+        * Java版SINETStreamのs3固有部分
     * plugin-type-image/
         * 画像メッセージのサポート
+    * plugin-comp-lz4/
+        * LZ4圧縮のサンプル実装
     * sample/
         * サンプルプログラム
 * docs/
@@ -110,6 +119,9 @@ Python/Java版のSINETStreamは、以下のメッセージングシステムに�
 * [Apache Kafka](https://kafka.apache.org/) 2.2.1
 * MQTT v3.1, v3.1.1
     * [Eclipse Mosquitto](https://mosquitto.org/) v1.6.2
+* S3
+    * AWS S3
+    * [MinIO](https://min.io/)
 
 Python/Java版のSINETStreamが対応するOS条件は以下の通り。
 
@@ -120,8 +132,8 @@ Python/Java版のSINETStreamが対応するOS条件は以下の通り。
 
 Android版の`SINETStream API`は、以下のプログラム言語で実装される。
 
-* Java 8
-* Kotlin 1.4.x
+* Java 11
+* Kotlin 1.6.x
 
 Android版のSINETStreamは、以下のメッセージングシステムに対応する。
 
@@ -130,7 +142,7 @@ Android版のSINETStreamは、以下のメッセージングシステムに対�
 
 Android版のSINETStreamが対応するOS条件は以下の通り。
 
-* Android 8.0 以降
+* Android 8.0 (API level 26) 以降
 
 ## 準備
 ### Python/Java版

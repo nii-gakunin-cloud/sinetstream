@@ -30,9 +30,6 @@ import lombok.Singular;
 import lombok.extern.java.Log;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.*;
@@ -70,6 +67,11 @@ public class MessageReaderFactory<T> {
     private ValueType valueType;
 
     @Getter
+    @Parameter("user_data_only")
+    @Description("User data is recv from the messaging layer without appending SINETStream header.")
+    private Boolean userDataOnly;
+
+    @Getter
     @Parameter(value="receive_timeout_ms", hide=true)
     @Description("The maximum wait time for receiving a message.")
     private Duration receiveTimeout;
@@ -83,6 +85,11 @@ public class MessageReaderFactory<T> {
     @Getter
     @Description("If not specified, use default deserializer according to valueType.")
     private Deserializer<T> deserializer;
+
+    @Getter
+    @Parameter("data_compression")
+    @Description("Message compression.")
+    private Boolean dataCompression;
 
     @Getter
     @Parameter("data_encryption")
@@ -120,6 +127,8 @@ public class MessageReaderFactory<T> {
         Map<String, Object> values = new HashMap<>();
         values.put("consistency", AT_MOST_ONCE);
         values.put("value_type", SimpleValueType.BYTE_ARRAY);
+        values.put("user_data_only", false);
+        values.put("data_compression", false);
         values.put("data_encryption", false);
         values.put("receive_timeout_ms", Duration.ofNanos(Long.MAX_VALUE));
         defaultValues = Collections.unmodifiableMap(values);
@@ -189,6 +198,14 @@ public class MessageReaderFactory<T> {
         if (Objects.isNull(valueType)) {
             Optional.ofNullable(params.get("value_type")).map(MessageUtils::toMessageType)
                     .ifPresent(x -> valueType = x);
+        }
+        if (Objects.isNull(userDataOnly)) {
+            Optional.ofNullable(params.get("user_data_only")).map(MessageUtils::toBoolean)
+                    .ifPresent(x -> userDataOnly = x);
+        }
+        if (Objects.isNull(dataCompression)) {
+            Optional.ofNullable(params.get("data_compression")).map(MessageUtils::toBoolean)
+                    .ifPresent(x -> dataCompression = x);
         }
         if (Objects.isNull(dataEncryption)) {
             Optional.ofNullable(params.get("data_encryption")).map(MessageUtils::toBoolean)

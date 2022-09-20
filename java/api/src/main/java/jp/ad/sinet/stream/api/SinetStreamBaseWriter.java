@@ -21,6 +21,7 @@
 
 package jp.ad.sinet.stream.api;
 
+import jp.ad.sinet.stream.api.compression.CompressionFactory;
 import jp.ad.sinet.stream.crypto.CryptoSerializerWrapper;
 import jp.ad.sinet.stream.marshal.Marshaller;
 import jp.ad.sinet.stream.spi.PluginMessageIO;
@@ -28,6 +29,7 @@ import jp.ad.sinet.stream.spi.WriterParameters;
 import jp.ad.sinet.stream.utils.Timestamped;
 import lombok.Getter;
 
+import java.util.Map;
 import java.util.Objects;
 
 public class SinetStreamBaseWriter<T, U extends PluginMessageIO> extends SinetStreamIO<U> {
@@ -38,12 +40,32 @@ public class SinetStreamBaseWriter<T, U extends PluginMessageIO> extends SinetSt
     @Getter
     private final Serializer<T> serializer;
 
+    @Getter
+    private final Compressor compressor;
+
     private final Serializer<Timestamped<T>> compositeSerializer;
+
+    static private class CompressionMetrics {
+        public int compLen;
+        public int uncompLen;
+        void set(int compLen, int uncompLen) {
+            this.compLen = compLen;
+            this.uncompLen = uncompLen;
+        }
+    }
+    private static ThreadLocal<CompressionMetrics> compressionMetrics = new ThreadLocal<CompressionMetrics>() {
+        @Override
+        protected CompressionMetrics initialValue() {
+            return new CompressionMetrics();
+        }
+    };
+    // XXX we assume no nested SINETStream (aka broker is sinetstream)
 
     public SinetStreamBaseWriter(U pluginWriter, WriterParameters parameters, Serializer<T> serializer) {
         super(parameters, pluginWriter);
         this.topic = parameters.getTopic();
         this.serializer = setupSerializer(parameters, serializer);
+        this.compressor = setupCompressor(parameters);
         this.compositeSerializer = generateSerializer(parameters);
     }
 
@@ -55,18 +77,38 @@ public class SinetStreamBaseWriter<T, U extends PluginMessageIO> extends SinetSt
         return serializer;
     }
 
+    @SuppressWarnings("unchecked")
+    private Compressor setupCompressor(WriterParameters parameters) {
+        if (parameters.isDataCompression()) {
+            Object compression = parameters.getConfig().get("compression");
+            try {
+                return CompressionFactory.createCompressor((Map<String, Object>) compression);
+            }
+            catch (ClassCastException e) {
+                throw new InvalidConfigurationException("the parameter compression must be map", e);
+            }
+        } else
+            return (data) -> data;
+    }
+
     private Serializer<Timestamped<T>> generateSerializer(WriterParameters parameters) {
+        if (this.isUserDataOnly())
+            return (data) -> this.serializer.serialize(data.getValue());
+
         final Marshaller marshaller = new Marshaller();
         Serializer<Timestamped<T>> tsser = (data) -> {
             byte[] bytes = this.serializer.serialize(data.getValue());
-            return marshaller.encode(data.getTstamp(), bytes);
+            byte[] comped = this.compressor.compress(bytes);
+            compressionMetrics.get().set(comped.length, bytes.length);
+            return marshaller.encode(data.getTstamp(), comped);
         };
         return CryptoSerializerWrapper.getSerializer(parameters.getConfig(), tsser);
     }
 
     byte[] toPayload(T message) {
         byte[] payload = compositeSerializer.serialize(new Timestamped<>(message));
-        updateMetrics(payload.length);
+        CompressionMetrics cm = compressionMetrics.get();
+        updateMetrics(payload.length, cm.compLen, cm.uncompLen);
         return payload;
     }
 }

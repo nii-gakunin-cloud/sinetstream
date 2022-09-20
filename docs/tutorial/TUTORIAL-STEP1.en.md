@@ -393,7 +393,7 @@ Below is a brief description of each parameter.
 
 * type
     - Specify the type of the messaging system.
-    - In SINETStream, use either `kafka` or `mqtt`.
+    - Use `kafka`, `mqtt`, etc.
 * brokers
     - Specify the address(es) of the broker(s).
     - The format of the address is the host name and port number concatenated by a colon(`:`).

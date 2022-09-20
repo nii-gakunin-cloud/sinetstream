@@ -25,6 +25,7 @@ import jp.ad.sinet.stream.api.SinetStreamIOException;
 import jp.ad.sinet.stream.api.ValueType;
 import jp.ad.sinet.stream.spi.PluginMessageWriter;
 import jp.ad.sinet.stream.spi.WriterParameters;
+import jp.ad.sinet.stream.utils.Timestamped;
 
 import java.util.Collections;
 import java.util.Map;
@@ -46,7 +47,7 @@ public class QueueMessageWriter implements PluginMessageWriter {
     }
 
     @Override
-    public void write(byte[] aByte) {
+    public void write(Timestamped<byte[]> aByte) {
         QueueMessage msg = new QueueMessage(topic, aByte);
         try {
             queue.put(msg);

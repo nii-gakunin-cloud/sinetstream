@@ -50,7 +50,7 @@ public class TextConsumer {
                 MessageReaderFactory.<String>builder()
                         .service(service)
                         .configName(config)
-                        .consistency(Consistency.AT_LEAST_ONCE)
+                        //.consistency(Consistency.AT_LEAST_ONCE)
                         .valueType(SimpleValueType.TEXT)
                         .receiveTimeout(Duration.ofSeconds(30))
                         .build();

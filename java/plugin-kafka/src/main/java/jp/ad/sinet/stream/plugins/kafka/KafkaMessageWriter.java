@@ -24,6 +24,7 @@ package jp.ad.sinet.stream.plugins.kafka;
 import jp.ad.sinet.stream.api.Consistency;
 import jp.ad.sinet.stream.spi.PluginMessageWriter;
 import jp.ad.sinet.stream.spi.WriterParameters;
+import jp.ad.sinet.stream.utils.Timestamped;
 import lombok.extern.java.Log;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
@@ -36,8 +37,8 @@ public class KafkaMessageWriter extends KafkaBaseWriter implements PluginMessage
         super(parameters);
     }
 
-    public void write(byte[] message) {
-        ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, message);
+    public void write(Timestamped<byte[]> message) {
+        ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, message.getValue());
         sendRecord(record);
     }
 

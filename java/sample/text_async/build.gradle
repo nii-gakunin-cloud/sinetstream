@@ -24,20 +24,20 @@ plugins {
     id 'application'
 }
 
-sourceCompatibility = 1.8
+sourceCompatibility = 1.11
 
-version = '1.6.0'
+version = '1.7.2'
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation 'commons-cli:commons-cli:1.4'
+    implementation 'commons-cli:commons-cli:1.5.0'
     implementation 'net.sinetstream:SINETStream-api:[1.2,2.0)'
     runtimeOnly 'net.sinetstream:SINETStream-kafka:[1.2,2.0)'
     runtimeOnly 'net.sinetstream:SINETStream-mqtt:[1.2,2.0)'
-    runtimeOnly 'org.slf4j:slf4j-nop:1.7.30'
+    runtimeOnly 'org.slf4j:slf4j-nop:1.7.36'
     implementation group: 'org.jdeferred.v2', name: 'jdeferred-core', version: '2.0.+'
 }
 

@@ -22,6 +22,8 @@
 package jp.ad.sinet.stream.plugins.kafka;
 
 import jp.ad.sinet.stream.spi.PluginMessageWrapper;
+import jp.ad.sinet.stream.utils.Timestamped;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -41,8 +43,8 @@ public class KafkaMessage implements PluginMessageWrapper {
     }
 
     @Override
-    public byte[] getValue() {
-        return Optional.ofNullable(raw).map(ConsumerRecord::value).orElse(null);
+    public Timestamped<byte[]> getValue() {
+        return Optional.ofNullable(raw).map(ConsumerRecord::value).map(x -> new Timestamped<byte[]>(x, 0)).orElse(null);
     }
 
     @Override

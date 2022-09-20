@@ -25,7 +25,6 @@ import jp.ad.sinet.stream.api.Consistency;
 import jp.ad.sinet.stream.api.MessageWriter;
 import jp.ad.sinet.stream.api.valuetype.SimpleValueType;
 import jp.ad.sinet.stream.utils.MessageWriterFactory;
-import org.apache.commons.cli.*;
 
 import java.io.PrintWriter;
 import java.nio.file.Files;

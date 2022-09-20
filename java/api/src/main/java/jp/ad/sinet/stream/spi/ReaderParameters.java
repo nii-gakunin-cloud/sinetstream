@@ -39,6 +39,8 @@ public class ReaderParameters implements SinetStreamParameters {
     private final Consistency consistency;
     private final ValueType valueType;
     private final Map<String, Object> config;
+    private final boolean userDataOnly;
+    private final boolean dataCompression;
     private final boolean dataEncryption;
 
     private final List<String> topics;
@@ -56,6 +58,8 @@ public class ReaderParameters implements SinetStreamParameters {
         this.valueType = builder.getValueType();
         this.receiveTimeout = builder.getReceiveTimeout();
         this.clientId = builder.getClientId();
+        this.userDataOnly = builder.getUserDataOnly();
+        this.dataCompression = builder.getDataCompression();
         this.dataEncryption = builder.getDataEncryption();
         this.tmpLst = builder.getTmpLst();
     }

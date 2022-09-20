@@ -1,0 +1,49 @@
+version: '2.4'
+services:
+  broker:
+    build: container/broker/
+    #image: minio/minio:latest
+    # docker run --rm -p 9000:9000 -p 9001:9001 -v $(HOME)/miniodata:/data quay.io/minio/minio server /data --console-address ":9001"
+    ports:
+        - 9000:9000
+        - 9001:9001
+    #volumes:
+    #    - ./miniodata:/data
+    #environment:
+    #    # - MINIO_ACCESS_KEY=sinetstream-s3-access
+    #    # - MINIO_SECRET_KEY=sinetstream-s3-secret
+    #    - MINIO_ROOT_USER=sinetstream-s3-access
+    #    - MINIO_ROOT_PASSWORD=sinetstream-s3-secret
+    #command: minio server /data --console-address ":9001"
+    # command: sh -c 'rm -rf /data/* /data/.minio.sys && minio server /data --console-address ":9001"'
+    # XXX dockerscripts/docker-entrypoint.sh is f*ck.
+    hostname: broker
+    networks:
+      other-name-s3:
+        aliases:
+        - bad-broker
+  test:
+    build: container/test/
+    volumes:
+        - ../..:/opt/ss_test
+        - ../../../../../dist:/opt/ss_test/wheelhouse
+    #environment:
+        # - MINIO_ACCESS_KEY=sinetstream-s3-access
+        # - MINIO_SECRET_KEY=sinetstream-s3-secret
+        # - MINIO_ROOT_USER=sinetstream-s3-access
+        # - MINIO_ROOT_PASSWORD=sinetstream-s3-secret
+        # - S3_ENDPOINT_URL=http://broker:9000
+        # - S3_BUCKET=sstest
+        # - S3_PREFIX=testprefix
+        # - S3_SUFFIX=.test
+        # - S3_NAME=minute
+        # - S3_AWS_ACCESS_KEY_ID=sinetstream-s3-access
+        # - S3_AWS_SECRET_ACCESS_KEY=sinetstream-s3-secret
+#    command: bash
+#    tty: true
+    # command: python setup.py test --addopts '-vv --log-level=warning'
+    # command: python setup.py test --addopts '-vv --log-level=debug tests/test_pubsub.py'
+    networks:
+    - other-name-s3
+networks:
+  other-name-s3:

@@ -38,7 +38,7 @@ TEST_IMAGE = Path('tests/test-00.png').absolute()
 
 
 def qwrite(topic, value):
-    assert type(value) is bytes
+    assert isinstance(value, bytes)
     que[topic].append(value)
 
 

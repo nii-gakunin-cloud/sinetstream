@@ -69,9 +69,10 @@ Please refer to the following link for details on the structure and operating en
 * [Live demo of the SINETStream](docs/livedemo/livedemo.en.md)
 
 ## About
+
 - [SINETStream https://sinetstream.net/](https://sinetstream.net/) <br>
 - A. Takefusa, J. Sun, I. Fujiwara, H. Yoshida, K. Aida and C. Pu, <br>
-"SINETStream: Enabling Research IoT Applications with Portability, Security and Performance Requirements," 
+"SINETStream: Enabling Research IoT Applications with Portability, Security and Performance Requirements,"
 2021 IEEE 45th Annual Computers, Software, and Applications Conference (COMPSAC), pp. 482-492, 2021.
 doi: 10.1109/COMPSAC51774.2021.00073.
 - [Publications](https://nii-gakunin-cloud.github.io/#sinetstream)

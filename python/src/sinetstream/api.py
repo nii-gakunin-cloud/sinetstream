@@ -35,11 +35,13 @@ from sinetstream.error import (
     UnsupportedServiceTypeError, InvalidMessageError, AlreadyConnectedError)
 from sinetstream.marshal import Marshaller, Unmarshaller
 from sinetstream.spi import (
-    PluginMessageReader, PluginMessageWriter, PluginAsyncMessageReader,
-    PluginAsyncMessageWriter,
+    PluginMessageReader, PluginMessageWriter,
+    PluginAsyncMessageReader, PluginAsyncMessageWriter,
+    PluginMessage,
 )
 from sinetstream.utils import Registry
 from sinetstream.value_type import BYTE_ARRAY, value_type_registry
+from sinetstream.compression import compression_registry
 
 logger = logging.getLogger(__name__)
 
@@ -72,6 +74,8 @@ def convert_params(params):
 
 
 class Message(object):
+    NOTSTAMP = 0
+
     def __init__(self, value, topic, tstamp, raw):
         self._value = value
         self._topic = topic
@@ -139,8 +143,7 @@ def make_client_id():
 
 
 def validate_config(params):
-    if 'brokers' not in params or not params['brokers']:
-        raise InvalidArgumentError("You must specify several brokers.")
+    pass
 
 
 def deepupdate(d1, d2):
@@ -185,7 +188,11 @@ def merge_parameter(service, kwargs, default_values, config=None, config_file=No
 default_params = {
     "consistency": AT_MOST_ONCE,
     "client_id": DEFAULT_CLIENT_ID,
-    "value_type": BYTE_ARRAY,
+    "value_type": {"name": BYTE_ARRAY},
+    "compression": {
+        "algorithm": "gzip",
+    },
+    "data_compression": False,
     "crypto": {
         "key_length": 128,
         "padding": None,
@@ -196,7 +203,7 @@ default_params = {
             "prf": "HMAC-SHA256",
         },
     },
-    "data_encryption": False
+    "data_encryption": False,
 }
 
 
@@ -206,6 +213,8 @@ class Metrics(object):
         # self.start_time
         # self.end_time
         # self.msg_count_total
+        # self.msg_uncompressed_bytes_total
+        # self.msg_compressed_bytes_total
         # self.msg_bytes_total
         # self.msg_size_min
         # self.msg_size_max
@@ -233,6 +242,12 @@ class Metrics(object):
         return self.msg_count_total / t if t != 0 else 0
 
     @property
+    def msg_compression_ratio(self):
+        u = self.msg_uncompressed_bytes_total
+        c = self.msg_compressed_bytes_total
+        return c / u if u > 0 else 1.0
+
+    @property
     def msg_bytes_rate(self):
         t = self.time
         return self.msg_bytes_total / t if t != 0 else 0
@@ -253,6 +268,9 @@ class Metrics(object):
                 f"end_time={self.end_time},"
                 f"msg_count_total={self.msg_count_total},"
                 f"msg_count_rate={self.msg_count_rate},"
+                f"msg_uncompressed_bytes_total={self.msg_uncompressed_bytes_total},"
+                f"msg_compressed_bytes_total={self.msg_compressed_bytes_total},"
+                f"msg_compression_ratio={self.msg_compression_ratio},"
                 f"msg_bytes_total={self.msg_bytes_total},"
                 f"msg_bytes_rate={self.msg_bytes_rate},"
                 f"msg_size_min={self.msg_size_min},"
@@ -275,15 +293,19 @@ class IOMetrics(object):
             self._metrics.start_time = time.time()
             self._metrics.end_time = self._metrics.start_time  # This is most likely unnecessary.
             self._metrics.msg_count_total = 0
+            self._metrics.msg_uncompressed_bytes_total = 0
+            self._metrics.msg_compressed_bytes_total = 0
             self._metrics.msg_bytes_total = 0
             self._metrics.msg_size_min = IOMetrics.MAXSIZE
             self._metrics.msg_size_max = -1
             self._metrics.error_count_total = 0
 
-    def update(self, length):
+    def update(self, length, compressed_length, uncompressed_length):
         with self._lock:
             self._metrics.end_time = time.time()
             self._metrics.msg_count_total += 1
+            self._metrics.msg_uncompressed_bytes_total += uncompressed_length
+            self._metrics.msg_compressed_bytes_total += compressed_length
             self._metrics.msg_bytes_total += length
             self._metrics.msg_size_min = min(length, self._metrics.msg_size_min)
             self._metrics.msg_size_max = max(length, self._metrics.msg_size_max)
@@ -387,6 +409,13 @@ class MessageIO(object):
             self._plugin = None
             self._opened = False
 
+    def _get_value_type_args(self, params):
+        if isinstance(params, dict) and "args" in params:
+            return params["args"]
+        if hasattr(params, "args"):
+            return getattr(params, "args")
+        return {}
+
     @property
     def service(self):
         return self._service
@@ -401,7 +430,12 @@ class MessageIO(object):
 
     @property
     def value_type(self):
-        return self.params["value_type"]
+        vtype = self.params["value_type"]
+        if isinstance(vtype, dict):
+            return vtype["name"]
+        if hasattr(vtype, "name"):
+            return getattr(vtype, "name")
+        return vtype
 
     @property
     def metrics(self):
@@ -414,6 +448,28 @@ class MessageIO(object):
         if reset_raw:
             if self._plugin is not None:
                 self._plugin.reset_metrics()
+
+    def info(self, name="", **kwargs):
+        ipath = name.split(".")
+        if ipath[-1] == "":
+            ipath = ipath[:-1]
+
+        lst = {
+            "client_id": lambda *_: self.client_id,
+            "metrics": lambda *_: self.metrics,
+            self.params["type"]: lambda ipath, kwargs: self._plugin.info(ipath, kwargs),
+        }
+
+        return MessageIO._fill_info(ipath, kwargs, lst)
+
+    def _fill_info(ipath, kwargs, lst):
+        if len(ipath) == 0:
+            return {k: f(ipath, kwargs) for k, f in lst.items()}
+        else:
+            f = lst.get(ipath[0], None)
+            if f is None:
+                return None
+            return f(ipath[1:], kwargs)
 
 
 class BaseMessageReader(MessageIO):
@@ -430,8 +486,9 @@ class BaseMessageReader(MessageIO):
                                           config_file=config_file)
         params["topics"] = _setup_topics(params, topics)
         super().__init__(service, params, registry)
-        self.unmarshaller = Unmarshaller()
+        self.unmarshaller = Unmarshaller() if not params.get("user_data_only") else None
         self.value_deserializer = self._setup_deserializer()
+        self.decompressor = self._setup_decompressor()
 
     @property
     def topics(self):
@@ -442,14 +499,23 @@ class BaseMessageReader(MessageIO):
         return self.params["receive_timeout_ms"]
 
     def _make_message(self, value, topic, raw):
-        self.iometrics.update(len(value))
-        assert type(value) == bytes
+        value_tstamp = value.timestamp if hasattr(value, "timestamp") else 0
+        mlen = len(value)
+        assert isinstance(value, bytes)
         if self.cipher is not None:
             value = self.cipher.decrypt(value)
-        assert type(value) == bytes
-        tstamp, value = self.unmarshaller.unmarshal(value)
+        assert isinstance(value, bytes)
+        if self.unmarshaller:
+            tstamp, value = self.unmarshaller.unmarshal(value)
+        else:
+            tstamp = value_tstamp
         assert type(tstamp) == int
-        assert type(value) == bytes
+        assert isinstance(value, bytes)
+        clen = len(value)
+        value = self.decompressor(value)
+        assert isinstance(value, bytes)
+        ulen = len(value)
+        self.iometrics.update(mlen, clen, ulen)
         if self.value_deserializer is not None:
             value = self.value_deserializer(value)
         return Message(value, topic, tstamp, raw)
@@ -461,7 +527,19 @@ class BaseMessageReader(MessageIO):
         value_type_class = value_type_registry.get(value_type)
         if value_type_class is None:
             raise InvalidArgumentError(f'invalid value_type: {value_type}')
-        return value_type_class().deserializer
+        args = self._get_value_type_args(value_type)
+        return value_type_class(**args).deserializer
+
+    def _setup_decompressor(self):
+        if not self.params.get("data_compression", False):
+            return lambda x: x
+        params = self.params.get("compression", {})
+        algorithm = params["algorithm"]
+        compression_class = compression_registry.get(algorithm)
+        if compression_class is None:
+            raise InvalidArgumentError(f"invalid compression algorithm: {algorithm}")
+        return compression_class(level=params.get("level"),
+                                 params=params.get(algorithm, {})).decompressor
 
     def seek_to_beginning(self):
         self._plugin.seek_to_beginning()
@@ -556,13 +634,15 @@ class BaseMessageWriter(MessageIO):
                                           config_file=config_file)
         params["topic"] = _setup_topic(params, topic)
         super().__init__(service, params, registry)
-        self.marshaller = Marshaller()
+        self.marshaller = Marshaller() if not params.get("user_data_only") else None
         self.value_serializer = self._setup_serializer()
+        self.compressor = self._setup_compressor()
         self.debug_last_msg_bytes = None  # for inspection
 
     def _publish(self, msg):
         tstamp = int(time.time() * 1000_000)
-        msg_bytes = self._to_bytes(msg, tstamp)
+        msg_bytes = PluginMessage(self._to_bytes(msg, tstamp))
+        msg_bytes.set_timestamp(tstamp)  # for s3-broker
         if self.debug_last_msg_bytes is not None:
             self.debug_last_msg_bytes = msg_bytes
             return True
@@ -579,7 +659,19 @@ class BaseMessageWriter(MessageIO):
         value_type_class = value_type_registry.get(value_type)
         if value_type_class is None:
             raise InvalidArgumentError(f'invalid value_type: {value_type}')
-        return value_type_class().serializer
+        args = self._get_value_type_args(value_type)
+        return value_type_class(**args).serializer
+
+    def _setup_compressor(self):
+        if not self.params.get("data_compression", False):
+            return lambda x: x
+        params = self.params.get("compression", {})
+        algorithm = params["algorithm"]
+        compression_class = compression_registry.get(algorithm)
+        if compression_class is None:
+            raise InvalidArgumentError(f"invalid compression algorithm: {algorithm}")
+        return compression_class(level=params.get("level"),
+                                 params=params.get(algorithm, {})).compressor
 
     def _invalid_message(self, msg_type):
         if self.value_serializer is not None:
@@ -594,11 +686,17 @@ class BaseMessageWriter(MessageIO):
             msg = self.value_serializer(msg)
         if type(msg) != bytes:
             raise self._invalid_message(type(msg))
-        msg = self.marshaller.marshal(msg, tstamp)
+        ulen = len(msg)
+        msg = self.compressor(msg)
+        clen = len(msg)
+        assert type(msg) == bytes
+        if self.marshaller:
+            msg = self.marshaller.marshal(msg, tstamp)
         if self.cipher:
             msg = self.cipher.encrypt(msg)
         assert type(msg) == bytes
-        self.iometrics.update(len(msg))
+        mlen = len(msg)
+        self.iometrics.update(mlen, clen, ulen)
         return msg
 
 

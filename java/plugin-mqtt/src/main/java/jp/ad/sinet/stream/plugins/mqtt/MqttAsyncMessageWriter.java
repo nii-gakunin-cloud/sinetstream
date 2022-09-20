@@ -26,6 +26,8 @@ import jp.ad.sinet.stream.api.SinetStreamIOException;
 import jp.ad.sinet.stream.spi.PluginAsyncMessageWriter;
 import jp.ad.sinet.stream.spi.WriterParameters;
 import jp.ad.sinet.stream.utils.MessageUtils;
+import jp.ad.sinet.stream.utils.Timestamped;
+
 import lombok.Getter;
 import lombok.extern.java.Log;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -77,11 +79,11 @@ public class MqttAsyncMessageWriter extends MqttAsyncBaseIO implements PluginAsy
     }
 
     @Override
-    public Promise<Void, Throwable, Void> write(byte[] message) {
+    public Promise<Void, Throwable, Void> write(Timestamped<byte[]> message) {
         try {
             sem.acquire();
-            log.finer(() -> "MQTT publish: " + getClientId() + ": " + Arrays.toString(message));
-            IMqttDeliveryToken token = publish(message);
+            log.finer(() -> "MQTT publish: " + getClientId() + ": " + Arrays.toString(message.getValue()));
+            IMqttDeliveryToken token = publish(message.getValue());
             return manager.when(new DeferredCallable<Void, Void>(DeferredManager.StartPolicy.AUTO) {
                 @Override
                 public Void call() {

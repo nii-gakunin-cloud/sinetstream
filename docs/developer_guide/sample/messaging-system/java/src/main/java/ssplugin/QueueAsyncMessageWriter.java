@@ -25,6 +25,7 @@ import jp.ad.sinet.stream.api.Consistency;
 import jp.ad.sinet.stream.api.SinetStreamIOException;
 import jp.ad.sinet.stream.spi.PluginAsyncMessageWriter;
 import jp.ad.sinet.stream.spi.WriterParameters;
+import jp.ad.sinet.stream.utils.Timestamped;
 import org.jdeferred2.Promise;
 import org.jdeferred2.impl.DefaultDeferredManager;
 
@@ -53,14 +54,14 @@ public class QueueAsyncMessageWriter implements PluginAsyncMessageWriter {
     }
 
     @Override
-    public Promise<?, ? extends Throwable, ?> write(byte[] bytes) {
+    public Promise<?, ? extends Throwable, ?> write(Timestamped<byte[]> bytes) {
         if (closed.get()) {
             throw new SinetStreamIOException();
         }
         return manager.when(() -> enqueue(bytes));
     }
 
-    private void enqueue(byte[] bytes) {
+    private void enqueue(Timestamped<byte[]> bytes) {
         QueueMessage msg = new QueueMessage(topic, bytes);
         try {
             queue.put(msg);

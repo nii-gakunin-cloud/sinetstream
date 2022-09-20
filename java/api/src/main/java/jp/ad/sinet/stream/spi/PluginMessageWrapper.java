@@ -21,8 +21,10 @@
 
 package jp.ad.sinet.stream.spi;
 
+import jp.ad.sinet.stream.utils.Timestamped;
+
 public interface PluginMessageWrapper {
-    byte[] getValue();
+    Timestamped<byte[]> getValue();
 
     String getTopic();
 

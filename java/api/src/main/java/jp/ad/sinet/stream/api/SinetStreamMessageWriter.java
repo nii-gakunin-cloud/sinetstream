@@ -23,6 +23,7 @@ package jp.ad.sinet.stream.api;
 
 import jp.ad.sinet.stream.spi.PluginMessageWriter;
 import jp.ad.sinet.stream.spi.WriterParameters;
+import jp.ad.sinet.stream.utils.Timestamped;
 
 import lombok.Getter;
 
@@ -38,7 +39,7 @@ public class SinetStreamMessageWriter<T> extends SinetStreamBaseWriter<T, Plugin
     @Override
     public void write(T message) {
         try {
-            target.write(debugLastMsgBytes = toPayload(message));
+            target.write(new Timestamped<byte[]>(debugLastMsgBytes = toPayload(message)));
         }
         catch (Exception e) {
             updateMetricsErr();

@@ -54,6 +54,33 @@ Java版やPython版とは異なり、Android版のSINETStreamライブラリは�
    +------------------------+
 ```
 
+## 設定サーバとの連携
+
+[SINETStream 1.6版](https://www.sinetstream.net/docs/news/20211223-release_v16.html)より、SINETStreamの設定情報を一元管理する`設定サーバ`を導入した。
+
+従来の「Android端末ごとにSINETStream設定ファイルを用意する」運用の他に、
+「システム管理者が`設定サーバ`に登録した内容をREST-API経由でAndroid端末に取り込む」運用も可能とする。
+前者の運用方法ではAndroid版のSINETStreamライブラリは単にYAML形式のローカルファイルを読み込むだけである。後者ではAndroid版のSINETStreamライブラリが`設定サーバ`からJSONデータをダウンロードしてメモリ上でのみ扱われる。
+
+`設定サーバ`からダウンロードされるJSONデータ構造の概略を以下に示す。
+このうち下図右端に示す部分が従来のSINETStream設定ファイル相当（JSON形式で表現）となる。
+`設定サーバ`は、複数の情報ブロック（基本情報としてのSINETStream設定、SSL/TLS証明書のような添付情報、公開鍵のような秘匿情報）を一括して管理できる。
+基本情報以外の付加情報がある場合、それぞれオプション要素（`attachments`、`secrets`）としてJSONデータに含まれるとともに、基本情報部分も拡張項目が設定される。
+SINETStream設定における記法のバージョン識別のため、下図中央に示すヘッダ情報が含まれる。ただしJSONデータに添付情報や秘匿情報を含まず、かつ従来の`SINETStream 1.6版`に準じた記法に閉じる場合はヘッダ情報が省略される。
+
+```
+    JSON data                 config part        sinetstream_config
+   +---------------+     - - +----------+        part
+   | name          |    /    | (header) |
+   +---------------+ - -     +----------+ - - - +----------------+
+   | config        |         | config   |       | +------------+ |
+   +---------------+ - - - - +----------+ - -   | | service #1 | |
+   | (attachments) |                         \  | |   ...      | |
+   +---------------+                          \ | +------------+ |
+   | (secrets)     |                            +----------------+
+   +---------------+
+```
+
 ## 設定項目一覧
 ### 基本的なパラメータ
 
@@ -63,35 +90,93 @@ Java版やPython版とは異なり、Android版のSINETStreamライブラリは�
 ||type||String|{"mqtt"}|o|現状では`"mqtt"`のみ|
 ||brokers||String|hostport1[,hostport2[, ...]]|o|複数要素の場合はコンマで連結する|
 
+* 項目`brokers`に複数要素を指定した場合、候補順に接続試行を繰り返す。
+  * 接続に成功した場合、あるいは全て接続失敗した場合に制御が戻る。
+
 
 ### APIのパラメータ
 
 |大分類|中分類|小分類|型|値域|必須|備考|
 |:-----|:-----|:-----|:-|:---|:---|:---|
 ||topics||String|topic1[,topic2[, ...]]|o|複数要素の場合はコンマで連結する|
-||client_id||String|Any|x|省略時は本ライブラリ内部で自動生成する|
+||client_id||String|Any|x|省略時はMQTTライブラリ内部で自動生成する|
 ||consistency||String|{"AT_MOST_ONCE","AT_LEAST_ONCE","EXACTLY_ONCE"}|x|省略時は"AT_LEAST_ONCE"|
+
+* 項目`client_id`は`無効`とする。
+
+  > ユーザ指定の`client_id`を用いると、PahoのMQTTライブラリ内部でエラーが発生する[不具合](https://github.com/eclipse/paho.mqtt.android/issues/238)がある。<br>
+  > 本現象を回避するため、SINETStream設定で`client_id`が指定されても無視する運用とする。
 
 
 ### SSL/TLSに関するパラメータ
-#### 形式1
+#### 形式1: SSL/TLS証明書の使用方法が限定的
 
 |大分類|中分類|小分類|型|値域|必須|備考|
 |:-----|:-----|:-----|:-|:---|:---|:---|
 ||tls||Boolean|{true,false}|x|省略時はfalse|
 
-#### 形式2
+* 子要素なしで「tls: true」指定の場合、以下に示す限定的な使用形態と看做す。
+  * クライアント証明書の提示をサーバ側から要求されない。
+  * 公的な認証局（CA）から払い出されたサーバ証明書が使われる。
+
+    > 上記以外の使用条件だとSSL/TLS証明書の設定が不十分のため接続に失敗する。
+
+
+#### 形式2: Androidのキーチェインに格納されたSSL/TLS証明書を使う
 
 |大分類|中分類|小分類|型|値域|必須|備考|
 |:-----|:-----|:-----|:-|:---|:---|:---|
-||tls|protocol|String|{TLSv1.1,TLSv1.2}|x|省略時は"TLSv1.2"|
+||tls|protocol|String|{TLSv1.2,TLSv1.3}|x|省略時は"TLSv1.2"|
 ||tls|client_certs|Boolean|{true,false}|x|省略時はfalse|
 ||tls|server_certs|Boolean|{true,false}|x|省略時はfalse|
 ||tls|check_hostname|Boolean|{true,false}|x|省略時はtrue|
 
-* SSL/TLS関連の証明書は、事前にAndroidシステム秘匿領域（`KeyChain`）に格納されたものを参照する運用とする。
-  * クライアント証明書を使う場合は`client_certs`をtrueとする。
-  * 自己署名サーバ証明書（いわゆるオレオレサーバ証明書）を使う場合は`server_certs`をtrueとする。
+* SSL/TLS関連の証明書は、事前にAndroidシステム秘匿領域「[キーチェイン](https://developer.android.com/reference/android/security/KeyChain)」に格納されたものを参照する運用とする。
+  * クライアント証明書を使う場合、項目`client_certs`をtrueとする。
+  * 自己署名サーバ証明書（いわゆるオレオレサーバ証明書）を使う場合、項目`server_certs`をtrueとする。
+
+    > 対象のSSL/TLS証明書は以下のシステム設定階層を辿って参照できる。<br>
+    >
+    > [クライアント証明書]<br>
+    > Settings -> Security & location -> Encryption & credentials -> User credentials
+    >
+    > [自己署名サーバ証明書]<br>
+    > Settings -> Security & location -> Encryption & credentials -> Trusted credentials -> USER
+
+* Androidの`キーチェイン`を利用する場合、項目`keyfilePassword`は無視される。
+  * クライアント証明書の登録時は対となるパスワード入力をシステムから要求される。証明書の登録処理に成功すると`エイリアス`が払い出される。
+  * クライアント証明書の参照時はこの`エイリアス`を指定する必要がある。
+
+* 項目`protocol`での`TLSv1.3`はAndroid 10 (APIレベル29）以降の対応となる。
+
+  > [Default configuration for different Android versions](https://developer.android.com/reference/javax/net/ssl/SSLSocket.html#default-configuration-for-different-android-versions)
+
+
+#### 形式3: 設定サーバからダウンロードしたSSL/TLS証明書を使う
+
+|大分類|中分類|小分類|型|値域|必須|備考|
+|:-----|:-----|:-----|:-|:---|:---|:---|
+||tls|protocol|String|{TLSv1.2,TLSv1.3}|x|省略時は"TLSv1.2"|
+||tls|keyfilePassword|String|Any|x|クライアント証明書（xxx.pfx）のパスワード|
+||tls|check_hostname|Boolean|{true,false}|x|省略時はtrue|
+
+* SSL/TLS関連の証明書は、設定サーバから取得したものを参照する。
+  * クライアント証明書は添付情報（`attachments`配列のうち、`target`の値が`*.tls.certfile_data`に対応する要素の値）として入手できる。
+
+    > 本要素の値はBase64エンコード文字列が埋め込まれた形となっているが、その実体はPFX形式のバイナリファイル（バイト列）が入っているはずである。
+
+  * 自己署名サーバ証明書（いわゆるオレオレサーバ証明書）は添付情報（`attachments`配列のうち、`target`の値が`*.tls.ca_certs_data`に対応する要素の値）として入手できる。
+
+    > 本要素の値はBase64エンコード文字列が埋め込まれた形となっているが、その実体はPEM形式のASCIIファイルが入っているはずである。
+
+* クライアント証明書が添付情報に含まれる場合、項目`keyfilePassword`の指定が必須となる。
+  * 逆に`keyfilePassword`が設定されてクライアント証明書が添付情報に含まれない場合は、このパスワードは無視される。
+
+* 設定サーバを利用する場合、項目`client_certs`および`server_certs`は無視される。
+
+* 項目`protocol`での`TLSv1.3`はAndroid 10 (APIレベル29）以降の対応となる。
+
+  > [Default configuration for different Android versions](https://developer.android.com/reference/javax/net/ssl/SSLSocket.html#default-configuration-for-different-android-versions)
 
 
 ### MQTT固有のパラメータ
@@ -144,17 +229,23 @@ Java版やPython版とは異なり、Android版のSINETStreamライブラリは�
 
 * 親項目`will_set`なしだと子項目（たとえば`topic`）が基本パラメータの
 ものと重複してしまう。
-* 曖昧さを防ぐため、上記４つの項目のいずれも必須とする。
+  * 曖昧さを防ぐため、上記４つの項目のいずれも必須とする。
+
+* 項目`payload`はバイト列として`Paho MQTT Android`ライブラリに渡される。
+  * SINETStream設定ファイル上はBase64エンコード文字列としてペイロードを指定すること。
 
 
 #### MQTTのSSL/TLSパラメータ
 
+<!-- OBSOLETED
 |大分類|中分類|小分類|型|値域|必須|備考|
 |:-----|:-----|:-----|:-|:---|:---|:---|
 ||tls_set|ca_certs|String|Any|x|自己署名サーバ証明書（xxx.crt）のファイル名|
 ||tls_set|certfile|String|Any|x|クライアント証明書（xxx.pfx）のファイル名|
 ||tls_set|keyfilePassword|String|Any|x|クライアント証明書（xxx.pfx）のパスワード|
 ||tls_insecure_set|value|Boolean|{true,false}|x|省略時はtrue|
+-->
 
-* 本項目は無効とする。上記共通部の「SSL/TLSに関するパラメータ」を使うこと。
+* 本カテゴリーは`無効`とする。
+  * 上記共通部の「SSL/TLSに関するパラメータ」を使うこと。
 

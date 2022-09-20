@@ -39,6 +39,8 @@ public class WriterParameters implements SinetStreamParameters {
     private final Consistency consistency;
     private final ValueType valueType;
     private final Map<String, Object> config;
+    private final boolean userDataOnly;
+    private final boolean dataCompression;
     private final boolean dataEncryption;
 
     private String clientId;
@@ -52,6 +54,8 @@ public class WriterParameters implements SinetStreamParameters {
         this.valueType = builder.getValueType();
         this.config = builder.getParameters();
         this.clientId = builder.getClientId();
+        this.userDataOnly = builder.getUserDataOnly();
+        this.dataCompression = builder.getDataCompression();
         this.dataEncryption = builder.getDataEncryption();
         this.tmpLst = builder.getTmpLst();
     }

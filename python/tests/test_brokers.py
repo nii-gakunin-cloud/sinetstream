@@ -28,6 +28,7 @@ BROKER2 = 'broker2'
 BROKER3 = 'broker3'
 
 
+@pytest.mark.skip  # becasuse: brokers is optional now.
 @pytest.mark.parametrize("io,config_brokers", [
     pytest.param(MessageReader, None),
     pytest.param(MessageWriter, None),
@@ -38,6 +39,7 @@ def test_no_broker(io):
             pass
 
 
+@pytest.mark.skip  # becasuse: brokers is optional now.
 @pytest.mark.parametrize("io,config_brokers", [
     pytest.param(MessageReader, []),
     pytest.param(MessageWriter, []),

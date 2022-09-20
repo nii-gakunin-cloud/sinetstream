@@ -21,11 +21,13 @@
 
 package jp.ad.sinet.stream.spi;
 
+import jp.ad.sinet.stream.utils.Timestamped;
+
 import org.jdeferred2.Promise;
 
 public interface PluginAsyncMessageWriter extends PluginMessageIO {
 
-    Promise<?, ? extends Throwable, ?> write(byte[] message);
+    Promise<?, ? extends Throwable, ?> write(Timestamped<byte[]> message);
 
     String getTopic();
 }

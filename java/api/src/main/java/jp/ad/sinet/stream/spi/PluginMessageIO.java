@@ -23,6 +23,7 @@ package jp.ad.sinet.stream.spi;
 
 import jp.ad.sinet.stream.api.Consistency;
 
+import java.util.List;
 import java.util.Map;
 
 public interface PluginMessageIO {
@@ -37,4 +38,6 @@ public interface PluginMessageIO {
     default Object getMetrics() { return null; }
 
     default void resetMetrics() {}
+
+    default Object getInfo(List<String> ipath) { return null; }
 }

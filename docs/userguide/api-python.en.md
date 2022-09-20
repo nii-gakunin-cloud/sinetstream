@@ -808,6 +808,10 @@ can be specified as parameters.
 
 [MQTT-specific parameters](config-mqtt.en.md)
 
+### S3
+
+* [S3-specific parameters](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/userguide/config-s3.html)
+
 ## How to show a cheat sheet
 
 After installing SINETStream, run `python3 -m sinetstream` to show a cheat sheet.

@@ -22,9 +22,12 @@
 import logging
 
 import pytest
-from conftest import SERVICE
+from sinetstream import (
+    BYTE_ARRAY, TEXT, InvalidArgumentError, MessageReader, MessageWriter
+)
+from sinetstream.value_type import value_type_registry
 
-from sinetstream import MessageReader, MessageWriter, BYTE_ARRAY, TEXT, InvalidArgumentError
+from conftest import SERVICE
 
 logging.basicConfig(level=logging.ERROR)
 pytestmark = pytest.mark.usefixtures('setup_config', 'dummy_reader_plugin', 'dummy_writer_plugin')
@@ -61,3 +64,103 @@ def test_invalid(io):
     with pytest.raises(InvalidArgumentError):
         with io(SERVICE, value_type="invalid") as _:
             pass
+
+
+DEFAULT_ARG1 = "arg"
+DEFAULT_ARG2 = ()
+TEST_ARG1 = "abc"
+TEST_ARG2 = (1, 2)
+
+
+class DummyValueType:
+    def __init__(self, arg1=DEFAULT_ARG1, arg2=DEFAULT_ARG2):
+        self.args = dict(arg1=arg1, arg2=arg2)
+
+    @property
+    def serializer(self):
+        return self.args
+
+    @property
+    def deserializer(self):
+        return self.args
+
+
+class DummyValueTypeEntryPoint:
+    @classmethod
+    def load(cls):
+        return DummyValueType
+
+
+value_type_registry.register("dummy", DummyValueTypeEntryPoint)
+
+
+class DummyValueTypeParams:
+    @property
+    def name(self):
+        return "dummy"
+
+    @property
+    def args(self):
+        return dict(arg1=TEST_ARG1, arg2=TEST_ARG2)
+
+
+IO_TUPLE = [(MessageWriter, "value_serializer"), (MessageReader, "value_deserializer")]
+
+
+@pytest.mark.parametrize("io,prop", IO_TUPLE)
+def test_str_type(io, prop):
+    tgt = io(SERVICE, value_type="dummy")
+    args = getattr(tgt, prop)
+    assert args["arg1"] == DEFAULT_ARG1
+    assert args["arg2"] == DEFAULT_ARG2
+
+
+@pytest.mark.parametrize("io,prop", IO_TUPLE)
+def test_no_args(io, prop):
+    tgt = io(SERVICE, value_type={"name": "dummy"})
+    args = getattr(tgt, prop)
+    assert args["arg1"] == DEFAULT_ARG1
+    assert args["arg2"] == DEFAULT_ARG2
+
+
+@pytest.mark.parametrize("io,prop", IO_TUPLE)
+def test_no_args2(io, prop):
+    tgt = io(SERVICE, value_type={"name": "dummy", "arg1": TEST_ARG1})
+    args = getattr(tgt, prop)
+    assert args["arg1"] == DEFAULT_ARG1
+    assert args["arg2"] == DEFAULT_ARG2
+
+
+@pytest.mark.parametrize("io,prop", IO_TUPLE)
+def test_arg1(io, prop):
+    tgt = io(SERVICE, value_type={"name": "dummy", "args": {"arg1": TEST_ARG1}})
+    args = getattr(tgt, prop)
+    assert args["arg1"] == TEST_ARG1
+    assert args["arg2"] == DEFAULT_ARG2
+
+
+@pytest.mark.parametrize("io,prop", IO_TUPLE)
+def test_arg2(io, prop):
+    tgt = io(SERVICE, value_type={"name": "dummy", "args": {"arg2": TEST_ARG2}})
+    args = getattr(tgt, prop)
+    assert args["arg1"] == DEFAULT_ARG1
+    assert args["arg2"] == TEST_ARG2
+
+
+@pytest.mark.parametrize("io,prop", IO_TUPLE)
+def test_args(io, prop):
+    tgt = io(
+        SERVICE,
+        value_type={"name": "dummy", "args": {"arg1": TEST_ARG1, "arg2": TEST_ARG2}},
+    )
+    args = getattr(tgt, prop)
+    assert args["arg1"] == TEST_ARG1
+    assert args["arg2"] == TEST_ARG2
+
+
+@pytest.mark.parametrize("io,prop", IO_TUPLE)
+def test_args_obj(io, prop):
+    tgt = io(SERVICE, value_type=DummyValueTypeParams())
+    args = getattr(tgt, prop)
+    assert args["arg1"] == TEST_ARG1
+    assert args["arg2"] == TEST_ARG2

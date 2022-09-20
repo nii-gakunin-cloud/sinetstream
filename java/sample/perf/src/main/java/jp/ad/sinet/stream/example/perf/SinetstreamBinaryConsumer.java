@@ -26,10 +26,7 @@ import jp.ad.sinet.stream.api.Message;
 import jp.ad.sinet.stream.api.MessageReader;
 import jp.ad.sinet.stream.api.valuetype.SimpleValueType;
 import jp.ad.sinet.stream.utils.MessageReaderFactory;
-import org.apache.commons.cli.*;
 
-import java.io.FileWriter;
-import java.io.PrintWriter;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;

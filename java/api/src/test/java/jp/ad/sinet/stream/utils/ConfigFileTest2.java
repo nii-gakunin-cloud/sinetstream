@@ -25,15 +25,14 @@ import jp.ad.sinet.stream.ConfigFileAware;
 import jp.ad.sinet.stream.api.MessageReader;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-
-import java.util.Map;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.Files;
-import java.io.IOException;
-import java.io.InputStream;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 public class ConfigFileTest2 implements ConfigFileAware {
@@ -72,6 +71,7 @@ public class ConfigFileTest2 implements ConfigFileAware {
     void testEncrypted() throws Exception {
         Path privateKeyFile = Paths.get("private_key.pem");
         try (InputStream in = ConfigClientTest.class.getResourceAsStream("/private_key.pem")) {
+            Files.deleteIfExists(privateKeyFile);
             Files.copy(in, privateKeyFile);
             final String SERVICE = "service-with-encrypted";
             MessageReaderFactory<String> readerBuilder =

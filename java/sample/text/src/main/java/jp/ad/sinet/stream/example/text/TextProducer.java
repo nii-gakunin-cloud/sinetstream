@@ -45,7 +45,9 @@ public class TextProducer {
                 MessageWriterFactory.<String>builder()
                         .service(service)
                         .configName(config)
-                        .consistency(Consistency.AT_LEAST_ONCE).valueType(SimpleValueType.TEXT).build();
+                        //.consistency(Consistency.AT_LEAST_ONCE)
+                        .valueType(SimpleValueType.TEXT)
+                        .build();
         try (MessageWriter<String> writer = factory.getWriter(); Scanner scanner = new Scanner(System.in)) {
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();

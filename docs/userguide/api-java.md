@@ -401,6 +401,24 @@ Reader/Writerオブジェクトに対してresetMetrics()メソッドを呼び�
 
 統計情報はSINETStreamメインライブラリとメッセージングシステムプラグインの境界で測定した値が使われる。
 したがって、SINETStreamの暗号化機能が有効の場合は暗号化されたメッセージが測定される。
+統計情報の更新タイミングはWriterではメッセージングシステムプラグインにデータ渡す直前(メッセージングシステムが実際に送信したかは関知しない)、
+Readerではメッセージングシステムプラグインからデータを受け取った直後である。
+圧縮に関する統計統計情報は例外で圧縮処理の前後で測定される。
+
+```
+  <writer>                      <reader>
+  Application                   Application
+    ↓                            ↑
+  value serializer              value deserializer
+    ↓                            ↑                ←msg_uncompressed_bytes_total
+  compressor                    decompressor
+    ↓                            ↑                ←msg_compressed_bytes_total
+  Avro serializer               Avro deserializer
+    ↓                            ↑
+  encrypt                       decrypt
+- - ↓  - - - - - - - - - - - - - ↑ - - - - - - - -←メトリクス測定境界
+  messaging system → broker → messaging system
+```
 
 #### プロパティ
 
@@ -424,6 +442,14 @@ Reader/Writerオブジェクトに対してresetMetrics()メソッドを呼び�
     * 送受信メッセージ数レート
     * = msg_count_total / time
     * timeが0のときは0を返す。
+* getMsgUncompressedBytesTotal()
+    * ユーザデータ累積送受信メッセージ量(bytes)
+    * value serializerを通した直後・value deserializerを通す直前
+* getMsgCompressedBytesTotal()
+    * ユーザデータ圧縮後累積送受信メッセージ量(bytes)
+* getMsgCompressionRatio()
+    * メッセージ圧縮率 (0に近い方が高圧縮率、1に近い方が低圧縮率)
+    * = msg_compression_ratio / msg_uncompressed_bytes_total
 * getMsgBytesTotal()
     * 累積送受信メッセージ量(bytes)
 * getMsgBytesRate()
@@ -507,6 +533,7 @@ try (MessageReader<String> reader = factory.getReader()) {
 
 * [Kafka固有のパラメータ](config-kafka.md)
 * [MQTT固有のパラメータ](config-mqtt.md)
+* [S3固有のパラメータ](config-s3.md)
 
 ## チートシートの表示方法
 

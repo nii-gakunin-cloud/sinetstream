@@ -21,13 +21,11 @@
 
 package jp.ad.sinet.stream.metrics;
 
-import jp.ad.sinet.stream.api.AsyncMessageReader;
-import jp.ad.sinet.stream.api.AsyncMessageWriter;
+import jp.ad.sinet.stream.ConfigFileAware;
 import jp.ad.sinet.stream.api.Message;
 import jp.ad.sinet.stream.api.MessageReader;
 import jp.ad.sinet.stream.api.MessageWriter;
 import jp.ad.sinet.stream.api.Metrics;
-import jp.ad.sinet.stream.ConfigFileAware;
 import jp.ad.sinet.stream.utils.MessageReaderFactory;
 import jp.ad.sinet.stream.utils.MessageWriterFactory;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -40,10 +38,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertIterableEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class MessageReaderTest implements ConfigFileAware {
 

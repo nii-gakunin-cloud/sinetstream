@@ -33,11 +33,15 @@ The links below show developer guides for each plugin.
 Plugins can be written in Python or Java supported by SINETStream.
 
 * Plugin to support new messaging systems
-    * [Python](plugin_broker_python.md)
-    * [Java](plugin_broker_java.md)
+    * [Python](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/developer_guide/plugin_broker_python.html)
+    * [Java](plugin_broker_java.en.md)
 * Plugin to support new message types
-    * [Python](plugin_value_type_python.md)
-    * [Java](plugin_value_type_java.md)
+    * [Python](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/developer_guide/plugin_value_type_python.html)
+    * [Java](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/developer_guide/plugin_value_type_java.html)
+* Plugin to support new compression types
+    * [Python](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/developer_guide/plugin_compression_python.html)
+    * [Java](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/developer_guide/plugin_compression_java.html)
+
 
 ## External Specifications
 

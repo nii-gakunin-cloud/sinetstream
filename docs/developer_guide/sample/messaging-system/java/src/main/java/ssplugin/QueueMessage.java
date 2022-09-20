@@ -21,12 +21,13 @@
 package ssplugin;
 
 import jp.ad.sinet.stream.spi.PluginMessageWrapper;
+import jp.ad.sinet.stream.utils.Timestamped;
 
 public class QueueMessage implements PluginMessageWrapper {
     private final String topic;
-    private final byte[] value;
+    private final Timestamped<byte[]> value;
 
-    public QueueMessage(String topic, byte[] value) {
+    public QueueMessage(String topic, Timestamped<byte[]> value) {
         this.topic = topic;
         this.value = value;
     }
@@ -37,7 +38,7 @@ public class QueueMessage implements PluginMessageWrapper {
     }
 
     @Override
-    public byte[] getValue() {
+    public Timestamped<byte[]> getValue() {
         return value;
     }
 

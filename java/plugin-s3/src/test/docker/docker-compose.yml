@@ -1,0 +1,34 @@
+version: '3.7'
+services:
+  broker:
+    build: broker
+    image: s3_test_broker
+    hostname: broker
+    #ports:
+    #  - "9001:9001" # minio console
+    networks:
+      s3_net:
+        ipv4_address: 192.168.65.10
+  test:
+    image: openjdk:11-slim
+    volumes:
+    - ../../../..:/build
+    environment:
+      RUN_INTERGRATION_TEST: "true"
+      S3_ENDPOINT_URL: http://broker:9000
+      S3_AWS_ACCESS_KEY_ID: sinetstream-s3-access
+      S3_AWS_SECRET_ACCESS_KEY: sinetstream-s3-secret
+    working_dir: /build/plugin-s3
+    command: sh -c "sed -i.bak '/^jdk.tls.disabledAlgorithms=/,/^$$/{s/^/#/}' /usr/local/openjdk-11/conf/security/java.security && ../gradlew check"
+    #command: sh -c "sed -i.bak '/^jdk.tls.disabledAlgorithms=/,/^$$/{s/^/#/}' /usr/local/openjdk-11/conf/security/java.security && ../gradlew test --tests jp.ad.sinet.stream.plugins.s3.MessageWriterTest.getInfo"
+#    command: sh -c "sed -i.bak '/^jdk.tls.disabledAlgorithms=/,/^$$/{s/^/#/}' /usr/local/openjdk-11/conf/security/java.security && /bin/bash"
+#    tty: true
+#    stdin_open: true
+    networks:
+      s3_net: {}
+networks:
+  s3_net:
+    ipam:
+      driver: default
+      config:
+      - subnet: 192.168.65.0/24

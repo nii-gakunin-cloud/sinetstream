@@ -146,4 +146,9 @@ public class SinetStreamAsyncWrapperMessageReader<T> implements AsyncMessageRead
     public void resetMetrics(boolean reset_raw) {
         syncReader.resetMetrics(reset_raw);
     }
+
+    @Override
+    public Object getInfo(String ipath) {
+        return syncReader.getInfo(ipath);
+    }
 }

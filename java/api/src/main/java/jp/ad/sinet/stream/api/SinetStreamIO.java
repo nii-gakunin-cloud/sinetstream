@@ -36,6 +36,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class SinetStreamIO<T extends PluginMessageIO> {
 
     @Getter
+    private final boolean isUserDataOnly;
+
+    @Getter
     private final boolean isDataEncryption;
 
     @Getter
@@ -57,6 +60,8 @@ public class SinetStreamIO<T extends PluginMessageIO> {
         protected long startTimeMillis;
         protected long endTimeMillis;       // XXX This is most likely unnecessary.
         protected long msgCountTotal;
+        protected long msgUncompressedBytesTotal;
+        protected long msgCompressedBytesTotal;
         protected long msgBytesTotal;
         protected long msgSizeMin;
         protected long msgSizeMax;
@@ -66,6 +71,8 @@ public class SinetStreamIO<T extends PluginMessageIO> {
                 + "{startTimeMillis=" + startTimeMillis
                 + ",endTimeMillis="   + endTimeMillis
                 + ",msgCountTotal="   + msgCountTotal
+                + ",msgUncompressedBytesTotal=" + msgUncompressedBytesTotal
+                + ",msgCompressedBytesTotal=" + msgCompressedBytesTotal
                 + ",msgBytesTotal="   + msgBytesTotal
                 + ",msgSizeMin="      + msgSizeMin
                 + ",msgSizeMax="      + msgSizeMax
@@ -75,9 +82,11 @@ public class SinetStreamIO<T extends PluginMessageIO> {
         public IOMetrics() {
             resetMetrics();
         }
-        public synchronized void updateMetrics(int len) {
+        public synchronized void updateMetrics(int len, int compLen, int uncompLen) {
             this.endTimeMillis = System.currentTimeMillis();
             this.msgCountTotal++;
+            this.msgUncompressedBytesTotal += uncompLen;
+            this.msgCompressedBytesTotal += compLen;
             this.msgBytesTotal += len;
             this.msgSizeMin = Math.min(this.msgSizeMin, len);
             this.msgSizeMax = Math.max(this.msgSizeMax, len);
@@ -95,13 +104,15 @@ public class SinetStreamIO<T extends PluginMessageIO> {
         }
     }
     IOMetrics ioMetrics;
-    protected void updateMetrics(int len) { ioMetrics.updateMetrics(len); }
+    protected void updateMetrics(int len, int comp_len, int uncomp_len) { ioMetrics.updateMetrics(len, comp_len, uncomp_len); }
     protected void updateMetricsErr() { ioMetrics.updateMetricsErr(); }
     public Metrics getMetrics() {
         Metrics metrics = new Metrics();
         metrics.setStartTimeMillis(this.ioMetrics.startTimeMillis);
         metrics.setEndTimeMillis(this.ioMetrics.endTimeMillis);
         metrics.setMsgCountTotal(this.ioMetrics.msgCountTotal);
+        metrics.setMsgUncompressedBytesTotal(this.ioMetrics.msgUncompressedBytesTotal);
+        metrics.setMsgCompressedBytesTotal(this.ioMetrics.msgCompressedBytesTotal);
         metrics.setMsgBytesTotal(this.ioMetrics.msgBytesTotal);
         metrics.setMsgSizeMin(this.ioMetrics.msgSizeMin != Long.MAX_VALUE ? this.ioMetrics.msgSizeMin : -1);
         metrics.setMsgSizeMax(this.ioMetrics.msgSizeMax);
@@ -115,10 +126,29 @@ public class SinetStreamIO<T extends PluginMessageIO> {
             target.resetMetrics();
     }
 
+    public Object getInfo(String ipath) {
+        Object r = null;
+        String type = (String) config.get("type");
+        if (ipath == null) {
+            r = target.getInfo(null);
+            if (r instanceof Map) {
+                Map<String, Object> rr = new HashMap<>();
+                rr.put(type, r);
+                r = rr;
+            }
+        } else {
+            List<String> lst = Arrays.asList(ipath.split("[.]"));
+            if (lst.size() > 0 && lst.get(0).equals(type))
+                r = target.getInfo(lst.subList(1, lst.size()));
+        }
+        return r;
+    }
+
     public SinetStreamIO(SinetStreamParameters parameters, T target) {
         this.target = target;
         this.config = new PluginWrapperMap(parameters.getConfig());
         this.service = parameters.getService();
+        this.isUserDataOnly = parameters.isUserDataOnly();
         this.isDataEncryption = parameters.isDataEncryption();
         this.valueType = parameters.getValueType();
         this.ioMetrics = new IOMetrics();

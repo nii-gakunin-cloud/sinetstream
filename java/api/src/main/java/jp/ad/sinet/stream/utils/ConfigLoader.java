@@ -32,26 +32,15 @@ import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.ScalarNode;
 import org.yaml.snakeyaml.nodes.Tag;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.attribute.PosixFilePermissions;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.util.*;
 import java.util.function.Supplier;
 
 //import javax.xml.bind.DatatypeConverter;
@@ -134,7 +123,7 @@ class ConfigLoader {
                 String s = (String) constructScalar((ScalarNode) node);
                 s = s.replace("\n", "");
                 byte[] value = b64decoder.decode(s);
-                return new SecretValue(value, null);
+                return new SecretValue(value, null, null);
             }
         }
     }

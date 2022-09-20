@@ -21,6 +21,8 @@
 
 package jp.ad.sinet.stream.utils;
 
+import jp.ad.sinet.stream.crypto.SecretDecoder;
+
 import com.google.api.client.http.*;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.http.json.JsonHttpContent;
@@ -33,7 +35,6 @@ import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
 import jp.ad.sinet.stream.api.InvalidConfigurationException;
 import jp.ad.sinet.stream.api.NoServiceException;
-import jp.ad.sinet.stream.utils.MessageUtils;
 import lombok.extern.java.Log;
 
 import java.io.IOException;
@@ -281,13 +282,13 @@ public class ConfigClient {
         params.put(tpath[tpath.length - 1], value);
     }
     @SuppressWarnings("unchecked")
-    public static Map<String, Object> getConfig(String serviceName, String configName, Path authFile, Object debugHttpTransport) {
+    public static Map<String, Object> getConfig(String serviceName, String configName, Path authFile, Path privKeyFile, Object debugHttpTransport) {
         AuthInfo authInfo = readAuthFile(authFile);
         HttpTransport httpTransport = debugHttpTransport != null ? (HttpTransport) debugHttpTransport : new NetHttpTransport();
-        return getConfig(serviceName, configName, authInfo, httpTransport);
+        return getConfig(serviceName, configName, authInfo, privKeyFile, httpTransport);
     }
     @SuppressWarnings("unchecked")
-    public static Map<String, Object> getConfig(String serviceName, String configName, AuthInfo authInfo, HttpTransport httpTransport) {
+    public static Map<String, Object> getConfig(String serviceName, String configName, AuthInfo authInfo, Path privKeyFile, HttpTransport httpTransport) {
         try (ConfigServer configServer = new ConfigServer(authInfo.configServer.address, httpTransport)) {
             configServer.postAuthentication(authInfo.configServer.user, authInfo.configServer.secretKey);
             ConfigServer.ConfigsRes configs = configServer.getConfigs(configName);
@@ -334,6 +335,8 @@ public class ConfigClient {
             // expand secrets
             if (configs.secrets != null) {
                 Base64.Decoder b64decoder = Base64.getDecoder();
+                SecretDecoder secretDecoder = null;
+                String fp = null;
                 for (ConfigServer.ConfigsRes.Secret secret : configs.secrets) {
                     String[] tpath = secret.target.split("[.]");
                     if (tpath.length < 2) {
@@ -355,12 +358,22 @@ public class ConfigClient {
                         if (secId == null) {
                             throw new InvalidConfigurationException("no valid id exists for " + secret.target);
                         }
-                        String fp = configs.config.header.fingerprint;
+                        if (secretDecoder == null) {
+                            try {
+                                secretDecoder = new SecretDecoder(privKeyFile);
+                                secretDecoder.setupPrivKey();
+                                fp = secretDecoder.getFingerprint();
+                            }
+                            catch (Exception e) {
+                                log.warning("config failure: " + e);
+                                throw new RuntimeException(e);
+                            }
+                        }
                         ConfigServer.SecretsRes sec = configServer.getSecret(secId, fp);
-                        if (!sec.id.equals(secId) || (fp != null && !sec.fingerprint.equals(fp)) || !sec.target.equals(secret.target)) {
+                        if (!sec.id.equals(secId) || (fp != null && !sec.fingerprint.equals("SHA256:" + fp)) || !sec.target.equals(secret.target)) {
                             throw new InvalidConfigurationException("server returns malformed response: " + sec);
                         }
-                        update_value(params, tpath, new SecretValue(b64decoder.decode(sec.value), sec.fingerprint));
+                        update_value(params, tpath, new SecretValue(b64decoder.decode(sec.value), sec.fingerprint, secretDecoder));
                     }
                 }
             }

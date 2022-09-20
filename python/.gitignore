@@ -20,3 +20,5 @@ site
 /.idea
 output
 .sinetstream_config.yml
+/.vscode
+/tests/data/python

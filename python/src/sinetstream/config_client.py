@@ -32,6 +32,8 @@ from sinetstream.utils import (
     user_config_dir,
     SecretValue)
 
+import sinetstream.configs
+
 
 logger = logging.getLogger(__name__)
 
@@ -206,8 +208,10 @@ def get_config_info(session, base_uri, common_headers, config_name):
     return (content, attachments, secrets)
 
 
-def get_secret(session, base_uri, common_headers, sec_id, fingerprint_header):
-    resp = session.get(base_uri + "/secrets/" + sec_id, headers=common_headers)
+def get_secret(session, base_uri, common_headers, sec_id, fingerprint):
+    headers = common_headers.copy()
+    headers["SINETStream-config-publickey"] = fingerprint
+    resp = session.get(base_uri + "/secrets/" + sec_id, headers=headers)
     if resp.status_code == 200:
         pass
     else:
@@ -222,9 +226,9 @@ def get_secret(session, base_uri, common_headers, sec_id, fingerprint_header):
     if insecure_log:
         logger.error(f"{json.dumps(res, indent=2)}")
     rid = get_value(res, "id", str)
-    fingerprint = get_value(res, "fingerprint", str, optional=True)
-    if fingerprint is None:
-        fingerprint = fingerprint_header
+    res_fingerprint = get_value(res, "fingerprint", str, optional=True)
+    if res_fingerprint != fingerprint:
+        logger.warning(f"fingerprint mismatch: {res_fingerprint}(server sent) != {fingerprint}(my pubkey)")
     target = get_value(res, "target", str)
     value64 = get_value(res, "value", str)
     if rid != sec_id:
@@ -270,15 +274,15 @@ def get_config_params_server(service, config_name, mount_args=None, **kwargs):
     version = get_value(header, "version", int)
     if version != 2:
         raise InvalidConfigError(f"version {version} must be 2")
-    fingerprint_header = get_value(header, "fingerprint", str, optional=True)
+    # fingerprint_header = get_value(header, "fingerprint", str, optional=True)
 
     if service is None:
         if len(config) == 0:
-            raise NoConfigError(f"empty config")
+            raise NoConfigError("empty config")
         if len(config) > 1:
             logger.error(f"services in {config_name}: {[svc for svc in config.keys()]}")
-            raise NoConfigError(f"The parameter service must be specified "
-                                "since many services are defined in the config {config_name}")
+            raise NoConfigError("The parameter service must be specified "
+                                f"since many services are defined in the config {config_name}")
         service = list(config.keys()).pop()
 
     if service not in config:
@@ -318,7 +322,8 @@ def get_config_params_server(service, config_name, mount_args=None, **kwargs):
                     raise InvalidConfigError(f"no valid id exists for '{target}'")
             else:
                 sec_id = secret.get("id")
-            (evalue, sec_target) = get_secret(session, base_uri, common_headers, sec_id, fingerprint_header)
+            _, _, fingerprint = sinetstream.configs.get_private_key()
+            (evalue, sec_target) = get_secret(session, base_uri, common_headers, sec_id, fingerprint)
             if sec_target != target:
                 raise InvalidConfigError(f"target={sec_target} must be {target}")
             dict_update_value(params, path[1:], evalue)

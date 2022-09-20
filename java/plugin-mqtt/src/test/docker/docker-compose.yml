@@ -17,7 +17,7 @@ services:
       mqtt_net:
         ipv4_address: 192.168.65.10
   test:
-    image: openjdk:8-slim
+    image: openjdk:11-slim
     volumes:
     - ../../../..:/build
     environment:
@@ -39,8 +39,8 @@ services:
       MQTT_BROKER_HOSTNAME: broker
       CERT_URL: http://broker:8080
     working_dir: /build/plugin-mqtt
-    command: sh -c "sed -i.bak '/^jdk.tls.disabledAlgorithms=/,/^$$/{s/^/#/}' /usr/local/openjdk-8/jre/lib/security/java.security && ../gradlew check"
-#    command: sh -c "sed -i.bak '/^jdk.tls.disabledAlgorithms=/,/^$$/{s/^/#/}' /usr/local/openjdk-8/jre/lib/security/java.security && /bin/bash"
+    command: sh -c "sed -i.bak '/^jdk.tls.disabledAlgorithms=/,/^$$/{s/^/#/}' /usr/local/openjdk-11/conf/security/java.security && ../gradlew check"
+#    command: sh -c "sed -i.bak '/^jdk.tls.disabledAlgorithms=/,/^$$/{s/^/#/}' /usr/local/openjdk-11/conf/security/java.security && /bin/bash"
 #    tty: true
 #    stdin_open: true
     networks:

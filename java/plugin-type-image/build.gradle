@@ -20,15 +20,15 @@
  */
 
 plugins {
-    id "io.freefair.lombok" version "5.3.0"
+    id "io.freefair.lombok" version "5.3.3.3"
 }
 generateLombokConfig.enabled = false
 
 dependencies {
     implementation project(':SINETStream-api')
-    compileOnly "org.projectlombok:lombok:1.18.16"
-    annotationProcessor "org.projectlombok:lombok:1.18.16"
-    testCompileOnly "org.projectlombok:lombok:1.18.16"
-    testAnnotationProcessor "org.projectlombok:lombok:1.18.16"
-    testImplementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.11'
+    compileOnly "org.projectlombok:lombok:1.18.24"
+    annotationProcessor "org.projectlombok:lombok:1.18.24"
+    testCompileOnly "org.projectlombok:lombok:1.18.24"
+    testAnnotationProcessor "org.projectlombok:lombok:1.18.24"
+    testImplementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
 }

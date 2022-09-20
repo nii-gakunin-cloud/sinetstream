@@ -37,6 +37,8 @@ from sinetstream import (
     ConnectionError, SinetError, AuthorizationError,
 )
 
+from sinetstream.error import InvalidArgumentError
+
 logger = logging.getLogger(__name__)
 
 
@@ -92,6 +94,8 @@ SINETSTREAM_PARAM_LIST = [
     "tls",
     "crypto",
     "data_encryption",
+    "compression",
+    "data_compression",
 ]
 
 
@@ -107,7 +111,14 @@ class KafkaClient(object):
     def __init__(self, params):
         self._params = params
         self._client = None
+        if 'brokers' not in params:
+            raise InvalidArgumentError("You must specify several brokers.")
         self._brokers = params['brokers']
+        if (type(self._brokers) != str and
+            (type(self._brokers) != list or
+             len(self._brokers) == 0
+             )):
+            raise InvalidArgumentError("You must specify several brokers.")
         degrade_consistency(self._params)
         self._kafka_params = {
             "bootstrap_servers": self._brokers,
@@ -312,7 +323,7 @@ class BaseKafkaWriter(KafkaClient):
         return configs
 
     def publish(self, msg):
-        return self._client.send(self._params["topic"], msg)
+        return self._client.send(self._params["topic"], memoryview(msg))
 
 
 class KafkaWriter(BaseKafkaWriter):

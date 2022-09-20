@@ -63,6 +63,11 @@ public class MessageWriterFactory<T> {
     @Description("The type of message.")
     private ValueType valueType;
 
+    @Getter
+    @Parameter("user_data_only")
+    @Description("User data is send to the messaging layer without appending SINETStream header.")
+    private Boolean userDataOnly;
+
     @Singular
     @Getter
     @Description(value = "Overwrites the parameters described in the configuration file with the specified values.",
@@ -72,6 +77,11 @@ public class MessageWriterFactory<T> {
     @Getter
     @Description("If not specified, use default serializer according to valueType.")
     private Serializer<T> serializer;
+
+    @Getter
+    @Parameter("data_compression")
+    @Description("Message compression.")
+    private Boolean dataCompression;
 
     @Getter
     @Parameter("data_encryption")
@@ -109,6 +119,8 @@ public class MessageWriterFactory<T> {
         Map<String, Object> values = new HashMap<>();
         values.put("consistency", AT_MOST_ONCE);
         values.put("value_type", SimpleValueType.BYTE_ARRAY);
+        values.put("user_data_only", false);
+        values.put("data_compression", false);
         values.put("data_encryption", false);
         defaultValues = Collections.unmodifiableMap(values);
     }
@@ -174,6 +186,14 @@ public class MessageWriterFactory<T> {
         if (Objects.isNull(valueType)) {
             Optional.ofNullable(params.get("value_type")).map(MessageUtils::toMessageType)
                     .ifPresent(x -> valueType = x);
+        }
+        if (Objects.isNull(userDataOnly)) {
+            Optional.ofNullable(params.get("user_data_only")).map(MessageUtils::toBoolean)
+                    .ifPresent(x -> userDataOnly = x);
+        }
+        if (Objects.isNull(dataCompression)) {
+            Optional.ofNullable(params.get("data_compression")).map(MessageUtils::toBoolean)
+                    .ifPresent(x -> dataCompression = x);
         }
         if (Objects.isNull(dataEncryption)) {
             Optional.ofNullable(params.get("data_encryption")).map(MessageUtils::toBoolean)

@@ -21,17 +21,15 @@
 
 package jp.ad.sinet.stream.example.perf;
 
-import org.apache.commons.cli.*;
 import org.eclipse.paho.client.mqttv3.*;
 
-import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings({"WeakerAccess"})
 public class MqttBinaryConsumer implements MqttCallback {

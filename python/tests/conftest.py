@@ -57,7 +57,7 @@ def qwrite(topic, value):
         if len(test_qwrite_failure) == 0:
             raise Exception("TEST QRITE FAILURE")
     global que
-    assert type(value) is bytes
+    assert isinstance(value, bytes)
     que[topic].put(value)
 
 
@@ -389,4 +389,4 @@ OUNsHU3nPJnEbmuaHmwFkU3o9aatg/L+L5W8oTT6u+521JFOP9ZUAFeDLkt9sZAC
 IQjEgbj4xiPDZ1FLtP90Am0z+/mn2IzeABKCqmx3uMGxBfL2Co6grtiqI+BlA/oY
 dJ1XsxAoyRKpid1F0ONDLJ4YN31V3cuGi8xgVpAHJcBltXNg4RED
 -----END RSA PRIVATE KEY-----""")
-    sinetstream.configs.load_private_key(tmp_privkey_path)
+    sinetstream.configs.set_key_cache(sinetstream.configs.load_private_key(tmp_privkey_path))

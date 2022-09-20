@@ -52,6 +52,20 @@ public class Metrics {
 
     @Getter
     @Setter
+    private long msgUncompressedBytesTotal;
+
+    @Getter
+    @Setter
+    private long msgCompressedBytesTotal;
+
+    public double getMsgCompressionRatio() {
+        long u = msgUncompressedBytesTotal;
+        long c = msgCompressedBytesTotal;
+        return u > 0 ? (double)c / (double)u : 1.0;
+    }
+
+    @Getter
+    @Setter
     private long msgBytesTotal;
 
     public double getMsgBytesRate() {
@@ -97,6 +111,8 @@ public class Metrics {
             + ",time=" + getTime()
             + ",msgCountTotal=" +  getMsgCountTotal()
             + ",msgCountRate=" +  getMsgCountRate()
+            + ",msgCompressedBytesTotal=" + getMsgCompressedBytesTotal()
+            + ",msgUncompressedBytesTotal=" + getMsgUncompressedBytesTotal()
             + ",msgBytesTotal=" + getMsgBytesTotal()
             + ",msgBytesRate=" + getMsgBytesRate()
             + ",msgSizeMin=" + getMsgSizeMin()

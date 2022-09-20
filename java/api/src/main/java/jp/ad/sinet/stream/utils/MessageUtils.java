@@ -35,9 +35,11 @@ import java.util.stream.Collectors;
 public class MessageUtils {
     @SuppressWarnings("unchecked")
     Map<String,Object> loadServiceParameters(String service, Path configFile, String configName, Path authFile, Path privKeyFile, Object debugHttpTransport) {
+        if (privKeyFile == null)
+            privKeyFile= Paths.get(System.getProperty("user.home"), ".config", "sinetstream", "private_key.pem");
         Map<String,Object> params;
         if (configName != null) {
-            params = ConfigClient.getConfig(service, configName, authFile, debugHttpTransport);
+            params = ConfigClient.getConfig(service, configName, authFile, privKeyFile, debugHttpTransport);
         } else {
             Map<String,Map<String,Object>> configs = new ConfigLoader(configFile).loadConfigFile();
             Map<String,Object> header = configs.get("header");
@@ -61,8 +63,6 @@ public class MessageUtils {
         if (params == null)
             throw new NoServiceException();
         try {
-            if (privKeyFile == null)
-                privKeyFile= Paths.get(System.getProperty("user.home"), ".config", "sinetstream", "private_key.pem");
             return decryptoParameters(params, privKeyFile);
         }
         catch (Exception e) {
@@ -107,7 +107,7 @@ public class MessageUtils {
             return lst2;
         } else if (x instanceof SecretValue) {
             SecretValue sv = (SecretValue) x;
-            byte[] v2 = decoder.decode(sv.getValue(), sv.getFingerprint());
+            byte[] v2 = (sv.getDecoder() != null ? sv.getDecoder() : decoder).decode(sv.getValue(), sv.getFingerprint());
             return v2;
         } else {
             return x;

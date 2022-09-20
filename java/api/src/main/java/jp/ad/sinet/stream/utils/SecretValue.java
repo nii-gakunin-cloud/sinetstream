@@ -21,10 +21,13 @@
 
 package jp.ad.sinet.stream.utils;
 
+import jp.ad.sinet.stream.crypto.SecretDecoder;
+
 import lombok.Value;
 
 @Value
 public class SecretValue {
     private byte[] value;
     private String fingerprint;
+    private SecretDecoder decoder;
 }

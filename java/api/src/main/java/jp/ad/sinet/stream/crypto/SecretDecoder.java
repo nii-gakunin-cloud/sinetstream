@@ -43,8 +43,15 @@ import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.Security;
 import java.security.interfaces.RSAPrivateKey;
+import java.security.PublicKey;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.RSAPrivateCrtKeySpec;
+import java.security.spec.RSAPublicKeySpec;
+
+import java.nio.ByteBuffer;
+import java.util.Base64;
+import java.security.MessageDigest;
 
 @Log
 public class SecretDecoder {
@@ -53,7 +60,17 @@ public class SecretDecoder {
     }
 
     private final Path privKeyFile;
-    private RSAPrivateKey privKey;
+
+    class RSAKeyPair {
+        public RSAPrivateKey priv;
+        public RSAPublicKey pub;
+        RSAKeyPair(RSAPrivateKey priv, RSAPublicKey pub) {
+            this.priv = priv;
+            this.pub = pub;
+        }
+    }
+
+    private RSAKeyPair rsaKeyPair;
 
     public SecretDecoder(Path privKeyFile) {
         this.privKeyFile = privKeyFile;
@@ -61,19 +78,19 @@ public class SecretDecoder {
 
     public byte[] decode(byte[] cipherText, String fingerprint) throws Exception {
         setupPrivKey();
-        return parseSecret(privKey, cipherText);
+        return parseSecret(rsaKeyPair.priv, cipherText);
     }
 
     public void setupPrivKey() throws Exception {
-        if (privKey == null)
-            privKey = getPrivateKey(this.privKeyFile);
+        if (rsaKeyPair == null)
+            rsaKeyPair = getPrivateKey(this.privKeyFile);
     }
 
-    private RSAPrivateKey getPrivateKey(Path privKeyFile) throws Exception {
-        RSAPrivateKey privKey = readPrivateKey(privKeyFile.toFile());
-        log.fine("privkey=" + privKey);
-        log.fine("privkey.bitLength=" + privKey.getPrivateExponent().bitLength());
-        return privKey;
+    private RSAKeyPair getPrivateKey(Path privKeyFile) throws Exception {
+        RSAKeyPair rsaKeyPair = readPrivateKey(privKeyFile.toFile());
+        log.fine("privkey=" + rsaKeyPair.priv);
+        log.fine("privkey.bitLength=" + rsaKeyPair.priv.getPrivateExponent().bitLength());
+        return rsaKeyPair;
     }
 
     static public String SINETSTREAM_PRIVATE_KEY_PASSPHRASE;
@@ -92,7 +109,7 @@ public class SecretDecoder {
         return new String(passphrase);
     }
 
-    private RSAPrivateKey readPrivateKey(File file) throws Exception {
+    private RSAKeyPair readPrivateKey(File file) throws Exception {
         PEMParser pemParser = new PEMParser(new FileReader(file));
         Object object = pemParser.readObject();
         JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider("BC");
@@ -108,7 +125,9 @@ public class SecretDecoder {
         }
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         RSAPrivateCrtKeySpec privKeySpec = keyFactory.getKeySpec(kp.getPrivate(), RSAPrivateCrtKeySpec.class);
-        return (RSAPrivateKey) keyFactory.generatePrivate(privKeySpec);
+        RSAPublicKeySpec pubKeySpec = keyFactory.getKeySpec(kp.getPublic(), RSAPublicKeySpec.class);
+        return new RSAKeyPair((RSAPrivateKey) keyFactory.generatePrivate(privKeySpec),
+                          (RSAPublicKey)  keyFactory.generatePublic(pubKeySpec));
     }
 
     private byte[] decryptKey(byte[] encryptedKey, RSAPrivateKey privKey) throws Exception {
@@ -170,5 +189,70 @@ public class SecretDecoder {
         catch (IOException e) {
             throw new InvalidMessageException("malformed secret message", e);
         }
+    }
+
+    /*
+    // https://qiita.com/yoshi389111/items/ee3c7d0ba7d4610a9d21
+    // [memo] SSH用RSA鍵ペアをJavaで生成する
+    private String encodeRsaPublicKey(final RSAPublicKey publicKey) {
+        final String sig = "ssh-rsa";
+        final byte[] sigBytes = sig.getBytes();
+        final byte[] eBytes = publicKey.getPublicExponent().toByteArray();
+        final byte[] nBytes = publicKey.getModulus().toByteArray();
+
+        final int size = 4 + sigBytes.length
+                + 4 + eBytes.length
+                + 4 + nBytes.length;
+
+        final byte[] publicKeyBytes = ByteBuffer.allocate(size)
+                .putInt(sigBytes.length).put(sigBytes)
+                .putInt(eBytes.length).put(eBytes)
+                .putInt(nBytes.length).put(nBytes)
+                .array();
+
+        final String publicKeyBase64 = Base64.getEncoder()
+                .encodeToString(publicKeyBytes);
+
+        final String publicKeyEncoded = sig + " " + publicKeyBase64;
+        return publicKeyEncoded;
+    }
+    */
+
+    public String getFingerprint() {
+        final String sig = "ssh-rsa";
+        final byte[] sigBytes = sig.getBytes();
+        final byte[] eBytes = rsaKeyPair.pub.getPublicExponent().toByteArray();
+        final byte[] nBytes = rsaKeyPair.pub.getModulus().toByteArray();
+
+        final int size = 4 + sigBytes.length
+                + 4 + eBytes.length
+                + 4 + nBytes.length;
+
+        final byte[] publicKeyBytes = ByteBuffer.allocate(size)
+                .putInt(sigBytes.length).put(sigBytes)
+                .putInt(eBytes.length).put(eBytes)
+                .putInt(nBytes.length).put(nBytes)
+                .array();
+
+
+	try {
+	    MessageDigest md = MessageDigest.getInstance("SHA-256");
+	    md.update(publicKeyBytes);
+	    final byte[] fpPlain = md.digest();
+	    final String fp = Base64.getEncoder().encodeToString(fpPlain).replaceAll("=", "");
+	    return fp;
+	}
+	catch (Exception e) {
+	    throw new RuntimeException("Cannot calculate fingerprint", e);
+	}
+        /*
+        priv_key = RSA.importKey(open('private_key.pem').read())
+        pub_key = priv_key.public_key().export_key('OpenSSH').split(None, 2)[1]
+        key = base64.b64decode(pub_key)
+        fp_plain = hashlib.sha256(key).digest()
+        fp = base64.b64encode(fp_plain).decode('utf-8').replace('=', '')
+        print(f'SHA256:{fp}')
+        */
+
     }
 }

@@ -99,7 +99,7 @@ setuptoolsはPythonの配布パッケージのビルドなどを行うための�
 `value_type`プラグインでは`sinetstream.value_type`をグループに指定します。
 また名前には `value_type`として追加するタイプ名を指定します。
 
-例えば`value_type`に`image`を追加プラグインの場合`setup.cfg` に以下の記述を行います。
+例えば`value_type`に`image`を追加するプラグインの場合`setup.cfg` に以下の記述を行います。
 
 ```
 [options.entry_points]

@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sinetstream-cmd"
+description = "A simple producer using SINETStream"
+requires-python = ">=3.7"
+license = {text = "Apache License, Version 2.0"}
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3 :: Only",
+    "Environment :: Console",
+]
+dependencies = [
+    "sinetstream>=1.1.0",
+]
+dynamic = ["version"]
+
+[project.urls]
+homepage = "https://github.com/nii-gakunin-cloud/sinetstream-demo/tree/main/NumericalSensorData/Sensor"
+repository = "https://github.com/nii-gakunin-cloud/sinetstream"
+
+[tool.setuptools]
+zip-safe = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools_scm]

@@ -1,8 +1,14 @@
 all:
+	$(MAKE) build
+	$(MAKE) all-sample
+
+build:
 	./gradlew assemble
 	ls -l */build/libs/*jar
-	cd sample/text && $(MAKE) $@
-	cd sample/perf && $(MAKE) $@
+
+all-sample:
+	cd sample/text && $(MAKE) all
+	cd sample/perf && $(MAKE) all
 
 clean::
 	find * -name build -print | grep -v docker/build | xargs rm -rf

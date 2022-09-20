@@ -10,6 +10,37 @@ https://keepachangelog.com/
 ### Security
 --->
 
+## [v1.7.2] - 2022-09-XX
+
+### Security
+
+- Update versions of dependent packages
+
+## [v1.7.1] - 2022-09-XX
+
+- Update versions of dependent packages
+
+## [v1.7.0] - 2022-09-XX
+
+### Added
+
+- Data Compression (Python, Java)
+- S3 plugin (Python, Java)
+- java/sample/perftool
+    - send/receive data and output the obtained metrics information
+    - like python/sample/perftool
+- python/sample/libs/sinetstream-cmd
+    - A simple producer using SINETStream
+    - SimpleProducer periodically publishes data on a Raspberry Pi
+
+### Changed
+
+- Support Java 11 (Java 8 is no longer supported)
+
+### Fixed
+
+- Calculate fingerprints correctly in config-server protocol (Python, Java)
+
 ## [v1.6.2] - 2022-01-19
 
 ### Fixed

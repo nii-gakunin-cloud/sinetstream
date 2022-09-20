@@ -108,4 +108,9 @@ public class SinetStreamAsyncWrapperMessageWriter<T> implements AsyncMessageWrit
     public void resetMetrics(boolean reset_raw) {
         syncWriter.resetMetrics(reset_raw);
     }
+
+    @Override
+    public Object getInfo(String ipath) {
+        return syncWriter.getInfo(ipath);
+    }
 }

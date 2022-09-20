@@ -36,7 +36,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-import java.util.logging.Level;
 
 @Log
 public class KafkaBaseWriter extends KafkaBaseIO {

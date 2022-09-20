@@ -1,7 +1,9 @@
 rootProject.name = 'SINETStream'
-include 'api', 'plugin-kafka', 'plugin-mqtt', 'plugin-type-image'
+include 'api', 'plugin-kafka', 'plugin-mqtt', 'plugin-s3', 'plugin-type-image', 'plugin-comp-lz4'
 
 project(":api").name = "${rootProject.name}-api"
 project(":plugin-kafka").name = "${rootProject.name}-kafka"
 project(":plugin-mqtt").name = "${rootProject.name}-mqtt"
+project(":plugin-s3").name = "${rootProject.name}-s3"
 project(":plugin-type-image").name = "${rootProject.name}-type-image"
+project(":plugin-comp-lz4").name = "${rootProject.name}-comp-lz4"

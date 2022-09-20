@@ -28,6 +28,7 @@ import jp.ad.sinet.stream.api.MessageWriter;
 import jp.ad.sinet.stream.plugins.dummy.DummyMessageProvider;
 import jp.ad.sinet.stream.utils.MessageReaderFactory;
 import jp.ad.sinet.stream.utils.MessageWriterFactory;
+import jp.ad.sinet.stream.utils.Timestamped;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -71,10 +72,11 @@ class UnmarshalTest implements ConfigFileAware {
         boolean debug = false;
 
         // get the original bytes
-        BlockingQueue<byte[]> queue = DummyMessageProvider.getQueue(TOPIC);
-        byte[] original = queue.peek();
+        BlockingQueue<Timestamped<byte[]>> queue = DummyMessageProvider.getQueue(TOPIC);
+        Timestamped<byte[]> original = queue.peek();
+        byte[] original_bytes = original.getValue();
         if (debug)
-            System.err.println("ORIGINAL: " + Arrays.toString(original));
+            System.err.println("ORIGINAL: " + Arrays.toString(original_bytes));
 
         // break and try
         int[] pos_list = {
@@ -86,23 +88,23 @@ class UnmarshalTest implements ConfigFileAware {
             if (debug)
                 System.err.println("POS: " + pos);
             queue.clear();
-            ByteBuffer bb = ByteBuffer.allocate(original.length);
+            ByteBuffer bb = ByteBuffer.allocate(original_bytes.length);
             int i = 0;
-            for (byte b : original) {
+            for (byte b : original_bytes) {
                 if (i == pos)
                     b = (byte)~b;
                 bb.put(b);
                 i++;
             }
             try {
-                queue.put(bb.array());
+                queue.put(new Timestamped<byte[]>(bb.array()));
             }
             catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
             if (debug)
-                for (byte[] e : queue) {
-                    System.err.println("MODIFIED: " + Arrays.toString(e));
+                for (Timestamped<byte[]> e : queue) {
+                    System.err.println("MODIFIED: " + Arrays.toString(e.getValue()));
                 }
 
             MessageReaderFactory<String> readerBuilder =
@@ -133,10 +135,11 @@ class UnmarshalTest implements ConfigFileAware {
         boolean debug = false;
 
         // get the original bytes
-        BlockingQueue<byte[]> queue = DummyMessageProvider.getQueue(TOPIC);
-        byte[] original = queue.peek();
+        BlockingQueue<Timestamped<byte[]>> queue = DummyMessageProvider.getQueue(TOPIC);
+        Timestamped<byte[]> original = queue.peek();
+        byte[] original_bytes = original.getValue();
         if (debug)
-            System.err.println("ORIGINAL: " + Arrays.toString(original));
+            System.err.println("ORIGINAL: " + Arrays.toString(original_bytes));
 
         // shorten
         for (int len = 0; len < (2+8+8+3); len++) {
@@ -144,14 +147,14 @@ class UnmarshalTest implements ConfigFileAware {
                 System.err.println("LEN: " + len);
             queue.clear();
             try {
-                queue.put(Arrays.copyOf(original, len));
+                queue.put(new Timestamped<byte[]>(Arrays.copyOf(original_bytes, len)));
             }
             catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
             if (debug)
-                for (byte[] e : queue) {
-                    System.err.println("MODIFIED: " + Arrays.toString(e));
+                for (Timestamped<byte[]> e : queue) {
+                    System.err.println("MODIFIED: " + Arrays.toString(e.getValue()));
                 }
 
             MessageReaderFactory<String> readerBuilder =
@@ -181,23 +184,24 @@ class UnmarshalTest implements ConfigFileAware {
         boolean debug = false;
 
         // get the original bytes
-        BlockingQueue<byte[]> queue = DummyMessageProvider.getQueue(TOPIC);
-        byte[] original = queue.peek();
+        BlockingQueue<Timestamped<byte[]>> queue = DummyMessageProvider.getQueue(TOPIC);
+        Timestamped<byte[]> original = queue.peek();
+        byte[] original_bytes = original.getValue();
         if (debug)
-            System.err.println("ORIGINAL: " + Arrays.toString(original));
+            System.err.println("ORIGINAL: " + Arrays.toString(original_bytes));
 
         // too long
         queue.clear();
-        int len = original.length + 1;
+        int len = original_bytes.length + 1;
         try {
-            queue.put(Arrays.copyOf(original, len));
+            queue.put(new Timestamped<byte[]>(Arrays.copyOf(original_bytes, len)));
         }
         catch (Exception ex) {
             throw new RuntimeException(ex);
         }
         if (debug)
-            for (byte[] e : queue) {
-                System.err.println("MODIFIED: " + Arrays.toString(e));
+            for (Timestamped<byte[]> e : queue) {
+                System.err.println("MODIFIED: " + Arrays.toString(e.getValue()));
             }
         MessageReaderFactory<String> readerBuilder =
                 MessageReaderFactory.<String>builder().service(SERVICE)

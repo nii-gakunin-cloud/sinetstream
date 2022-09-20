@@ -32,7 +32,9 @@ SINETStream is a wrapper library that provides functions to unify the following 
 1. Send messages to a broker
 1. Receive messages from a broker
 
-Currently, SINETStream supports Apache Kafka and MQTT Broker as backend messaging systems.
+<!---
+Currently, SINETStream supports Apache Kafka and MQTT Broker, among others, as backend messaging systems.
+--->
 The backend is extensible as plugins to support other messaging systems.
 
 SINETStream provides three API versions, i.e., Python API, Java API and Android API (MQTT only).

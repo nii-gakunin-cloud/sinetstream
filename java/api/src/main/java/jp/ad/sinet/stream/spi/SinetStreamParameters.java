@@ -32,6 +32,7 @@ public interface SinetStreamParameters {
     String getService();
     Consistency getConsistency();
     ValueType getValueType();
+    boolean isUserDataOnly();
     boolean isDataEncryption();
     Map<String, Object> getConfig();
     List<File> getTmpLst();

@@ -45,5 +45,11 @@ public interface MessageIO extends AutoCloseable {
 
     default void resetMetrics() { resetMetrics(false); }
 
+    Object getInfo(String ipath);
+
+    default Object getInfo() {
+        return getInfo(null);
+    }
+
     void close();
 }

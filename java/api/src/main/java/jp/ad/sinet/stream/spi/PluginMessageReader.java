@@ -21,6 +21,8 @@
 
 package jp.ad.sinet.stream.spi;
 
+import jp.ad.sinet.stream.utils.Timestamped;
+
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Stream;

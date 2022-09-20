@@ -25,6 +25,7 @@ import jp.ad.sinet.stream.api.Consistency;
 import jp.ad.sinet.stream.spi.PluginAsyncMessageWriter;
 import jp.ad.sinet.stream.spi.WriterParameters;
 import jp.ad.sinet.stream.utils.MessageUtils;
+import jp.ad.sinet.stream.utils.Timestamped;
 import lombok.extern.java.Log;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
@@ -66,8 +67,8 @@ public class KafkaAsyncMessageWriter extends KafkaBaseWriter implements PluginAs
     }
 
     @Override
-    public Promise<?, Throwable, Void> write(byte[] message) {
-        return sender.apply(new ProducerRecord<>(topic, message));
+    public Promise<?, Throwable, Void> write(Timestamped<byte[]> message) {
+        return sender.apply(new ProducerRecord<>(topic, message.getValue()));
     }
 
     private Promise<?, Throwable, Void> sendRecord(ProducerRecord<String, byte[]> record) {

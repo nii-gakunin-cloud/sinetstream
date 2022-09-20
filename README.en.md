@@ -117,8 +117,8 @@ The Python/Java SINETStream runs on following operating systems.
 The Android SINETStream API is implemented with following programing
 languages.
 
-* Java 8
-* Kotlin 1.4.x
+* Java 11
+* Kotlin 1.6.x
 
 The Android SINETStream API supports the following messaging systems.
 
@@ -127,7 +127,7 @@ The Android SINETStream API supports the following messaging systems.
 
 The Android SINETStream runs on following operating system.
 
-* Android 8.0 or higher
+* Android 8.0 (API level 26) or higher
 
 ## Preparation
 ### Python/Java version

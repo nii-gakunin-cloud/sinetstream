@@ -247,7 +247,7 @@ class CipherAES(object):
         return self.enc_salt + ivnonce + cdata + tag
 
     def decrypt(self, cmsg):
-        assert type(cmsg) is bytes
+        assert isinstance(cmsg, bytes)
         salt_bytes = self.crypto_params["key_derivation"]["salt_bytes"]
         dummy_key = b"0123456789abcdef"         # XXX Cryptodome/Cipher/AES.py: key_size = (16, 24, 32)
 

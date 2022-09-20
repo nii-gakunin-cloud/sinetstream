@@ -286,6 +286,24 @@ API にパラメータを指定しなかった場合は、設定ファイルに�
     * メッセージのデシリアライズを行うクラス名
     * 指定したクラスにはパブリックなデフォルトコンストラクタが必要
     * `MessageReader` のみで意味をもつ (`MessageWriter` で設定されても無視される)
+* data_compression
+    * メッセージの圧縮/展開の有効/無効を指定する
+* compression
+    * 圧縮/展開のパラメータを指定する
+    * algorithm
+        * 圧縮/展開アルゴリズム
+        * 指定できる値
+            * gzip
+                * [zlib](https://zlib.net/)をつかう
+            * zstd
+                * [zstandard](https://facebook.github.io/zstd/)をつかう
+    * level
+        * 圧縮レベル(整数)
+        * 展開(Reader)時には無視される
+        * 省略時はアルゴリズムごとに決まっているデフォルト圧縮レベルになる。
+        * 指定できる値
+            * gzip: 1(高速・低圧縮率)から9(低速・高圧縮率)まで。デフォルトは6。
+            * zstd: 1(高速・低圧縮率)から22(低速・高圧縮率)まで。デフォルトは3。
 * data_encryption
     * メッセージの暗号化/復号化の有効/無効を指定する
 * receive_timeout_ms
@@ -479,6 +497,7 @@ service-aes-1:
 
 * [Kafka固有のパラメータ](config-kafka.md)
 * [MQTT固有のパラメータ](config-mqtt.md)
+* [S3固有のパラメータ](config-s3.md)
 
 
 ## 注意事項

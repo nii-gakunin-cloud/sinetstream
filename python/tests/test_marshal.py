@@ -152,7 +152,7 @@ def edit_queue(topic):
 def break_message_one_byte(pos, topic):
     with edit_queue(topic) as q:
         m = q[0]
-        assert type(m) == bytes
+        assert isinstance(m, bytes)
         x = bytearray(m)
         x[pos] = x[pos] ^ 0xff  # BREAK
         q[0] = bytes(x)

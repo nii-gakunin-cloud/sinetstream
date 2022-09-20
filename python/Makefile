@@ -11,7 +11,8 @@ recurse-plugins:
 
 lint: lint-local #lint-plugins
 lint-local:
-	$(SETUP) $(LINT) || true
+	#$(SETUP) $(LINT) || true
+	$(LINT) --max-line-length=110 src tests sample || true
 lint-plugins:
 	$(MAKE) recurse-plugins TARGET="lint"
 
@@ -66,4 +67,5 @@ README.html: README.md
 	markdown README.md > README.html
 
 testenv:
-	IMAGE=`$(PYTHON3) -c 'with open(".gitlab-ci.yml") as f: import yaml; print(yaml.safe_load(f)["test-api"]["image"]);'`; docker run --interactive --tty --rm --volume $(PWD):$(PWD) --env $(HOME)=$(HOME) --workdir $(PWD) $$IMAGE bash
+	#IMAGE=`$(PYTHON3) -c 'with open(".gitlab-ci.yml") as f: import yaml; print(yaml.safe_load(f)["test-api"]["image"]);'`; docker run --interactive --tty --rm --volume $(PWD):$(PWD) --env $(HOME)=$(HOME) --workdir $(PWD) $$IMAGE bash
+	IMAGE=`$(PYTHON3) -c 'with open(".gitlab-ci.yml") as f: import yaml; print(yaml.safe_load(f)["default"]["image"]);'`; IMAGE=`basename $$IMAGE`; docker run --interactive --tty --rm --volume $(PWD):$(PWD) --env $(HOME)=$(HOME) --workdir $(PWD) $$IMAGE bash

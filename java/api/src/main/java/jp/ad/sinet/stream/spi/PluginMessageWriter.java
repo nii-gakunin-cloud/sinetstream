@@ -21,9 +21,11 @@
 
 package jp.ad.sinet.stream.spi;
 
+import jp.ad.sinet.stream.utils.Timestamped;
+
 public interface PluginMessageWriter extends PluginMessageIO {
 
-    void write(byte[] message);
+    void write(Timestamped<byte[]> message);
 
     String getTopic();
 

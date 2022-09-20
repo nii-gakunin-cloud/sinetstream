@@ -21,24 +21,16 @@
 
 package jp.ad.sinet.stream.example.perf;
 
+import lombok.Value;
+import org.apache.commons.cli.*;
+import org.apache.kafka.common.Metric;
+import org.apache.kafka.common.MetricName;
+
 import java.net.InetAddress;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Random;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-
-import org.apache.kafka.common.MetricName;
-import org.apache.kafka.common.Metric;
 import java.util.Map;
-
-import lombok.Value;
+import java.util.Random;
 
 public class Util {
     public static String getHostName() {

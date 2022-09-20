@@ -343,7 +343,7 @@ class BaseMqttWriter(MqttClient):
         self.retain = self._params.get('retain', False)
 
     def publish(self, msg):
-        if type(msg) != bytes:
+        if not isinstance(msg, bytes):
             logger.error("MqttWriter: msg must be bytes")
             raise InvalidArgumentError("MqttWriter: msg must be bytes")
         return self._mqttc.publish(

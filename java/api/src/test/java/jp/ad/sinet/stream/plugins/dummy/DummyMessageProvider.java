@@ -23,6 +23,7 @@ package jp.ad.sinet.stream.plugins.dummy;
 
 import jp.ad.sinet.stream.api.Consistency;
 import jp.ad.sinet.stream.spi.*;
+import jp.ad.sinet.stream.utils.Timestamped;
 import lombok.Data;
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -34,8 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.*;
-
-import java.lang.Exception;
 
 public class DummyMessageProvider implements MessageWriterProvider, MessageReaderProvider {
     @Override
@@ -53,12 +52,12 @@ public class DummyMessageProvider implements MessageWriterProvider, MessageReade
         return "dummy";
     }
 
-    private static final ConcurrentMap<String, BlockingQueue<byte[]>> topicQueue = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, BlockingQueue<Timestamped<byte[]>>> topicQueue = new ConcurrentHashMap<>();
 
-    public static BlockingQueue<byte[]> getQueue(String topic) {
+    public static BlockingQueue<Timestamped<byte[]>> getQueue(String topic) {
         return topicQueue.get(topic);
     }
-    public static void setQueue(String topic, BlockingQueue<byte[]> queue) {
+    public static void setQueue(String topic, BlockingQueue<Timestamped<byte[]>> queue) {
         topicQueue.put(topic, queue);
     }
 
@@ -94,7 +93,7 @@ public class DummyMessageProvider implements MessageWriterProvider, MessageReade
 
     public class DummyWriter extends DummyIO implements PluginMessageWriter {
 
-        private final BlockingQueue<byte[]> queue;
+        private final BlockingQueue<Timestamped<byte[]>> queue;
 
         public DummyWriter(WriterParameters params) {
             super(params);
@@ -104,7 +103,7 @@ public class DummyMessageProvider implements MessageWriterProvider, MessageReade
 
         @SneakyThrows
         @Override
-        public void write(byte[] message) {
+        public void write(Timestamped<byte[]> message) {
             if (config.get("test_dummy_writer_write_fail") != null)
                 throw new Exception("test_dummy_writer_write_fail");
             queue.put(message);
@@ -115,7 +114,7 @@ public class DummyMessageProvider implements MessageWriterProvider, MessageReade
 
         @Getter
         private final List<String> topics;
-        private final BlockingQueue<byte[]> queue;
+        private final BlockingQueue<Timestamped<byte[]>> queue;
         @Getter
         private Duration receiveTimeout;
 
@@ -132,7 +131,7 @@ public class DummyMessageProvider implements MessageWriterProvider, MessageReade
         public PluginMessageWrapper read() {
             if (config.get("test_dummy_reader_read_fail") != null)
                 throw new Exception("test_dummy_reader_read_fail");
-            byte[] bytes = queue.poll(receiveTimeout.toNanos(), TimeUnit.NANOSECONDS);
+            Timestamped<byte[]> bytes = queue.poll(receiveTimeout.toNanos(), TimeUnit.NANOSECONDS);
             if (Objects.isNull(bytes)) {
                 return null;
             }
@@ -141,7 +140,7 @@ public class DummyMessageProvider implements MessageWriterProvider, MessageReade
 
         @Value
         private class DummyMessage implements PluginMessageWrapper {
-            byte[] value;
+            Timestamped<byte[]> value;
             String topic;
             Object raw;
         }

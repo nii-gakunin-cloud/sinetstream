@@ -21,13 +21,18 @@
 
 package jp.ad.sinet.stream.utils;
 
-import jp.ad.sinet.stream.api.*;
-import jp.ad.sinet.stream.utils.MessageUtils;
-import jp.ad.sinet.stream.utils.ConfigClient;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.http.LowLevelHttpRequest;
+import com.google.api.client.http.LowLevelHttpResponse;
+import com.google.api.client.json.Json;
+import com.google.api.client.testing.http.HttpTesting;
+import com.google.api.client.testing.http.MockHttpTransport;
+import com.google.api.client.testing.http.MockLowLevelHttpRequest;
+import com.google.api.client.testing.http.MockLowLevelHttpResponse;
+import jp.ad.sinet.stream.api.MessageReader;
+import jp.ad.sinet.stream.api.MessageWriter;
+import jp.ad.sinet.stream.api.NoServiceException;
 import jp.ad.sinet.stream.crypto.SecretDecoder;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -35,29 +40,26 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
-
-import com.google.api.client.http.*;
-import com.google.api.client.testing.http.HttpTesting;
-import com.google.api.client.testing.http.MockHttpTransport;
-import com.google.api.client.testing.http.MockLowLevelHttpRequest;
-import com.google.api.client.testing.http.MockLowLevelHttpResponse;
-import com.google.api.client.json.Json;
-
-//import java.lang.Exception;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 class ConfigClientTest {
     // http://googleapis.github.io/google-http-java-client/unit-testing.html
     static String serviceName = "service-kafka-001";
     static String configName = "stream009";
+
+    static Path copyInPrivKey() {
+        Path privKeyFile = Paths.get("private_key.pem");
+        try (InputStream in = ConfigClientTest.class.getResourceAsStream("/private_key.pem")) {
+            Files.deleteIfExists(privKeyFile);
+            Files.copy(in, privKeyFile);
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return privKeyFile;
+    }
 
     private ConfigClient.AuthInfo makeAuthInfo() {
         ConfigClient.AuthInfo authInfo = new ConfigClient.AuthInfo();
@@ -107,7 +109,7 @@ class ConfigClientTest {
                 return null; // Oops
             }
         };
-        Map<String, Object> params = ConfigClient.getConfig(serviceName, configName, authInfo, transport);
+        Map<String, Object> params = ConfigClient.getConfig(serviceName, configName, authInfo, null, transport);
         assertNull(params);
     }
 
@@ -150,7 +152,7 @@ class ConfigClientTest {
                 return null; // Oops
             }
         };
-        Map<String, Object> params = ConfigClient.getConfig(serviceName, configName, authInfo, transport);
+        Map<String, Object> params = ConfigClient.getConfig(serviceName, configName, authInfo, null, transport);
         assertNull(params);
     }
 
@@ -196,12 +198,12 @@ class ConfigClientTest {
                 return null; // Oops
             }
         };
-        Map<String, Object> params = ConfigClient.getConfig(serviceName, configName, authInfo, transport);
+        Map<String, Object> params = ConfigClient.getConfig(serviceName, configName, authInfo, null, transport);
         assertNotNull(params);
         assertEquals(params.get("uso"), new java.math.BigDecimal(800));
 
         // if a service name is not specified...
-        params = ConfigClient.getConfig(null, configName, authInfo, transport);
+        params = ConfigClient.getConfig(null, configName, authInfo, null, transport);
         assertNotNull(params);
         assertEquals(params.get("uso"), new java.math.BigDecimal(800));
     }
@@ -254,7 +256,8 @@ class ConfigClientTest {
                 return null; // Oops
             }
         };
-        Map<String, Object> params = ConfigClient.getConfig(serviceName, configName, authInfo, transport);
+        Path privKeyFile = copyInPrivKey();
+        Map<String, Object> params = ConfigClient.getConfig(serviceName, configName, authInfo, privKeyFile, transport);
         assertNotNull(params);
         assertArrayEquals((byte[])params.get("aaa"), "AAA-overwrite".getBytes());
         assertArrayEquals((byte[])params.get("bbb"), "BBB-overwrite".getBytes());
@@ -262,7 +265,7 @@ class ConfigClientTest {
         assertArrayEquals((byte[])params.get("ddd"), "DDD-insert".getBytes());
 
         // if a service name is not specified...
-        params = ConfigClient.getConfig(serviceName, configName, authInfo, transport);
+        params = ConfigClient.getConfig(serviceName, configName, authInfo, privKeyFile, transport);
         assertNotNull(params);
         assertArrayEquals((byte[])params.get("aaa"), "AAA-overwrite".getBytes());
         assertArrayEquals((byte[])params.get("bbb"), "BBB-overwrite".getBytes());
@@ -330,7 +333,7 @@ class ConfigClientTest {
                 return null; // Oops
             }
         };
-        Map<String, Object> params = ConfigClient.getConfig(serviceName, configName, authInfo, transport);
+        Map<String, Object> params = ConfigClient.getConfig(serviceName, configName, authInfo, null, transport);
         assertNull(params);
     }
 
@@ -390,8 +393,7 @@ class ConfigClientTest {
                             // "abcdefghijklmn"
                             response.setContent(
                                     "{\"id\": \"secret_id_1\"," +
-                                    //" \"fingerprint\": \"1234\"," +
-                                    " \"fingerprint\": \"uso800\"," +
+                                    " \"fingerprint\": \"SHA256:ZwpyervXIsTQXB1q7vJsSQA40m0Re3/Y4CSqZbGcdM4\"," +
                                     " \"target\": \"*.himitsu.value\"," +
                                     " \"value\": \"AAEBAWduqK8fiFsWoGDBenYQ3/rOtz5H+yK4Bk0bxEniT7Oz9Vu9pUc8sRVGPv7gaupsxpHK1YnH2N1vc3TWfLL07YlQ0cwdMuBsjwNe+nD/8sYdBxGu5KqtjH2v11OW8gdM6wN3Na1b+c4I1jf1axpTiinKD9nVD2oaubNYPrlAxwyNWUH8kWYx4GNFxmqEegDLmNEBrKvJLUKH8JAbnjF4zjqL3rgC/T3uKoFiCHH7wJbpM7mgiNZQj5Ti2pkBA0vctyAjkb2ByO45Qyd7mnpTfuvuLyBRh46bve4DJM4spnYnMpKWddKVVaYBuciASyxN/O+0egktO5A5LuejDqXcuyhZqiyeI9dHR1TKHQA5wqV3ALfM7/hQ3RD5UndJrTGo6JdjBSjMHUp9FlhPWLrIOyk4uaQ53sJ154tVGB1SCgH/MFX/KV6cq4XOsJPgYSwewOP1k5E5SGLtmGrnXZ2KJFpXh7CLtZHLcQxyKukxBzQPqyCtDLHD3hFtza3OqYziDQAAAAAAAAAAAAAByDGbqD7H9pWsFkkDCoon3MFAWVUTQ9Ri2p0BHfrHww==\"" +
                                     "}");
@@ -411,8 +413,7 @@ class ConfigClientTest {
                             // "opqrstuvwxyz"
                             response.setContent(
                                     "{\"id\": \"secret_id_2\"," +
-                                    //" \"fingerprint\": \"1234\"," +
-                                    " \"fingerprint\": \"uso800\"," +
+                                    " \"fingerprint\": \"SHA256:ZwpyervXIsTQXB1q7vJsSQA40m0Re3/Y4CSqZbGcdM4\"," +
                                     " \"target\": \"*.himitsu2.value\"," +
                                     " \"value\": \"AAEBARWzeaWBP0iivNiJ6hAedKJkALLhpN4tjuIVZOhbj9DC1pfxMOJByUkVWxWR+AywJdDsAGuM9Rwv/9VUAcvhkwtv38SINDpbwACtjgNnnIJxMLRnvN8a7epL28kM0xuff27NN8QlARaYWqCcZME569tzgByp/vjfK4k1jAymQMUgsKDitMzkZAwR9tgx2t06jA4Cx7xWnKfoYGf0sWNZ0dvMedJ9zZOqLId3M9Ist1Wf43c8ERrusXhaXpufwhyPUo1DYYHFRrME6Fi9+xS5Zn+r5rZJfQqCvgbIddqeKjNTfXAt5SkrBMuNH8vpp87QZdHPROMDF8iEYuEqoUPt4Qn31LOsA3zkuYyAHhQyykA5wps4KkK3OKgOZaN/jDYm9wq8PuPU+7hZxA6Zx1ys8XWaOU01eAGf89psmguU0/ZYlUm67x9kbNpu6rU8PqezAADy/yGCiR3veQBaicFSVwhDaMm9LZqG2BtGAHhSoV2L/fVCvPUdDTaro8Z3pnccswAAAAAAAAAAAAAByD+JuijR5IeyCFsRHNnuy8BNdZ/aHBu4XWAxQLM=\"" +
                                     "}");
@@ -425,11 +426,12 @@ class ConfigClientTest {
             }
         };
 
-        Map<String, Object> params = ConfigClient.getConfig(serviceName, configName, authInfo, transport);
+        Path privKeyFile = copyInPrivKey();
+        Map<String, Object> params = ConfigClient.getConfig(serviceName, configName, authInfo, privKeyFile, transport);
         assertNotNull(params);
 
-        Path privKeyFile = Paths.get("private_key.pem");
         try (InputStream in = ConfigClientTest.class.getResourceAsStream("/private_key.pem")) {
+            Files.deleteIfExists(privKeyFile);
             Files.copy(in, privKeyFile);
 
             SecretDecoder decoder = new SecretDecoder(privKeyFile);

@@ -102,8 +102,8 @@ def get_config_params_local(service, config_file, **kwargs):
     if service is None:
         if len(config) > 1:
             logger.error(f"services in {config_file}: {[svc for svc in config.keys()]}")
-            raise NoConfigError(f"The parameter service must be specified "
-                                "since many services are defined in {config_file}")
+            raise NoConfigError("The parameter service must be specified "
+                                f"since many services are defined in {config_file}")
         service = config.keys().__iter__().__next__()
         # service = [k for k in config.keys()][0]
 
@@ -158,52 +158,51 @@ def load_config_from_file(file):
 
 
 private_key_cache_lock = Lock()
-private_key_cache = None
+private_key_cache = None  # (path, privkey, fp)
 
 
 def get_private_key():
     global private_key_cache_lock
     global private_key_cache
     with private_key_cache_lock:
-        if private_key_cache is None:
-            private_key_cache = load_private_key()
-        return private_key_cache
-
-
-private_key_cache = None
+        if private_key_cache is not None:
+            return private_key_cache
+    set_key_cache(load_private_key())
+    return get_private_key()
 
 
 def set_key_cache(x):
+    global private_key_cache_lock
     global private_key_cache
-    private_key_cache = x
+    with private_key_cache_lock:
+        private_key_cache = x
 
 
 def clear_key_cache():
+    global private_key_cache_lock
     global private_key_cache
-    private_key_cache = None
+    with private_key_cache_lock:
+        private_key_cache = None
 
 
 def load_private_key(private_key_path=None):
-    global private_key_cache
-    if private_key_cache is not None:
-        private_key_path, private_key = private_key_cache
-        return private_key
+    def make_fingerprint(publickey):
+        pubkey = b64decode(publickey.export_key(format="OpenSSH").split()[1])
+        fp = b64encode(sha256(pubkey).digest()).decode("utf-8").rstrip("=")
+        logger.debug(f"fingerprint={fp}")
+        return fp
 
     if private_key_path is None:
         private_key_path = Path(user_config_dir + "/private_key.pem").expanduser()
-    pw = None
+    pw = os.environ.get("SINETSTREAM_PRIVATE_KEY_PASSPHRASE", None)
     last_ex = None
-    for i in range(3):
+    n_try = 3
+    for i in range(n_try):
         with private_key_path.open() as f:
             try:
                 private_key = RSA.importKey(f.read(), passphrase=pw)
-                public_key = private_key.publickey()
-                for f in ["PEM", "DER", "OpenSSH"]:
-                    exported_key = public_key.export_key(format=f)
-                    digest = sha256(exported_key).digest()
-                    logger.info(f"XXX:FP=({f})SHA256:{b64encode(digest).rstrip(b'=').decode('utf-8')}")
-                set_key_cache((private_key_path, private_key))
-                return private_key
+                fingerprint = make_fingerprint(private_key.publickey())
+                return (private_key_path, private_key, fingerprint)
             except Exception as ex:
                 logger.error(f"{ex}")
                 last_ex = ex
@@ -212,9 +211,9 @@ def load_private_key(private_key_path=None):
 
 
 def get_rsa_cipher():
-    priv_key = load_private_key()
+    _, priv_key, fingerprint = get_private_key()
     cipher = PKCS1_OAEP.new(priv_key, hashAlgo=SHA256)
-    return priv_key, cipher
+    return priv_key, cipher, fingerprint
 
 
 def check_sec_header(header):
@@ -238,7 +237,9 @@ def parse_sec_data(sec_data, key_size):
 
 
 def decrypt_sec_data(sec_data, fingerprint):
-    priv_key, rsa_cipher = get_rsa_cipher()
+    priv_key, rsa_cipher, fp = get_rsa_cipher()
+    if fingerprint is not None and fingerprint != fp:
+        raise InvalidConfigError(f"pubkey mismatch: encrypted with {fingerprint}, but my pubkey is {fp}")
     header, encrypted_key, iv, data, tag = parse_sec_data(sec_data, priv_key.size_in_bytes())
     key = rsa_cipher.decrypt(encrypted_key)
     cipher = AES.new(key, AES.MODE_GCM, nonce=iv)

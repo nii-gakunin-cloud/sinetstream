@@ -24,14 +24,15 @@ package jp.ad.sinet.stream.api;
 import jp.ad.sinet.stream.spi.PluginMessageReader;
 import jp.ad.sinet.stream.spi.PluginMessageWrapper;
 import jp.ad.sinet.stream.spi.ReaderParameters;
+import jp.ad.sinet.stream.utils.Timestamped;
+
+import lombok.Getter;
 
 import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import lombok.Getter;
 
 public class SinetStreamMessageReader<T> extends SinetStreamBaseReader<T, PluginMessageReader> implements MessageReader<T> {
 
@@ -41,13 +42,13 @@ public class SinetStreamMessageReader<T> extends SinetStreamBaseReader<T, Plugin
 
     private class InjectedMessage implements PluginMessageWrapper {
         @Getter
-        private final byte[] value;
+        private final Timestamped<byte[]> value;
         @Getter
         private final String topic;
         @Getter
         private final Object raw;
 
-        public InjectedMessage(byte[] value, String topic, Object raw) {
+        public InjectedMessage(Timestamped<byte[]> value, String topic, Object raw) {
             this.value = value;
             this.topic = topic;
             this.raw = raw;
@@ -55,7 +56,7 @@ public class SinetStreamMessageReader<T> extends SinetStreamBaseReader<T, Plugin
     }
     private InjectedMessage injectMsg;
     public void debugInjectMsgBytes(byte[] value, String topic, Object raw) {
-        injectMsg = new InjectedMessage(value, topic, raw);
+        injectMsg = new InjectedMessage(new Timestamped<byte[]>(value), topic, raw);
     }
 
     @Override

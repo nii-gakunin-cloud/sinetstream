@@ -58,7 +58,17 @@ class Registry(object):
             logger.debug(f"entry_point.name={ep.name}")
             self.register(ep.name, ep)
 
-    def get(self, name):
+    def _get_name(self, params):
+        if isinstance(params, str):
+            return params
+        if isinstance(params, dict):
+            return params["name"]
+        if hasattr(params, "name"):
+            return getattr(params, "name")
+        return None
+
+    def get(self, params):
+        name = self._get_name(params)
         if name in self._plugins:
             cls = self._plugins[name].load()
             if not (self._cls is None or issubclass(cls, self._cls)):

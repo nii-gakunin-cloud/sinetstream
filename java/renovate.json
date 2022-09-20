@@ -1,0 +1,39 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base",
+    "group:allNonMajor"
+  ],
+  "gradle-wrapper": {
+    "enabled": false
+  },
+  "prHourlyLimit": 0,
+  "prConcurrentLimit": 0,
+  "packageRules": [
+    {
+      "matchPackageNames": ["openjdk"],
+      "allowedVersions": "<9"
+    },
+    {
+      "matchPackagePrefixes": ["org.mockito:mockito-"],
+      "allowedVersions": "<2.27.0"
+    },
+    {
+      "matchPackagePrefixes": ["org.powermock:powermock"],
+      "allowedVersions": "<=2.0.2"
+    },
+    {
+      "matchPackagePrefixes": ["org.junit.vintage:junit-", "org.junit.jupiter:junit-jupiter-"],
+      "allowedVersions": "<5.8.0"
+    },
+    {
+      "matchPackagePrefixes": ["com.sun.xml.bind:jaxb"],
+      "groupName": "old jaxb modules"
+    }
+  ],
+  "timezone": "Asia/Tokyo",
+  "schedule": [
+    "after 8am and before 1pm on friday"
+  ],
+  "assignees": ["koie"]
+}

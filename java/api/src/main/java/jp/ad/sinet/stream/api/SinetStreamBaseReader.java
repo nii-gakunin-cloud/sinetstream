@@ -21,6 +21,7 @@
 
 package jp.ad.sinet.stream.api;
 
+import jp.ad.sinet.stream.api.compression.CompressionFactory;
 import jp.ad.sinet.stream.crypto.CryptoDeserializerWrapper;
 import jp.ad.sinet.stream.marshal.Unmarshaller;
 import jp.ad.sinet.stream.spi.PluginMessageIO;
@@ -32,6 +33,7 @@ import lombok.Getter;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class SinetStreamBaseReader<T, U extends PluginMessageIO> extends SinetStreamIO<U> {
@@ -45,13 +47,33 @@ public class SinetStreamBaseReader<T, U extends PluginMessageIO> extends SinetSt
     @Getter
     private final Deserializer<T> deserializer;
 
+    @Getter
+    private final Decompressor decompressor;
+
     private final Deserializer<Timestamped<T>> compositeDeserializer;
+
+    static private class CompressionMetrics {
+        public int compLen;
+        public int uncompLen;
+        void set(int compLen, int uncompLen) {
+            this.compLen = compLen;
+            this.uncompLen = uncompLen;
+        }
+    }
+    private static ThreadLocal<CompressionMetrics> compressionMetrics = new ThreadLocal<CompressionMetrics>() {
+        @Override
+        protected CompressionMetrics initialValue() {
+            return new CompressionMetrics();
+        }
+    };
+    // XXX we assume no nested SINETStream (aka broker is sinetstream)
 
     public SinetStreamBaseReader(U pluginReader, ReaderParameters parameters, Deserializer<T> deserializer) {
         super(parameters, pluginReader);
         this.topics = Collections.unmodifiableList(parameters.getTopics());
         this.receiveTimeout = parameters.getReceiveTimeout();
         this.deserializer = setupDeserializer(parameters, deserializer);
+        this.decompressor = setupDecompressor(parameters);
         this.compositeDeserializer = generateDeserializer(parameters);
     }
 
@@ -63,11 +85,40 @@ public class SinetStreamBaseReader<T, U extends PluginMessageIO> extends SinetSt
         return deserializer;
     }
 
+    class UserDataOnlyDeserializer<T> implements Deserializer<Timestamped<T>> {
+        private Deserializer<T> deserializer;
+        public UserDataOnlyDeserializer(Deserializer<T> deserializer) {
+            this.deserializer = deserializer;
+        }
+        public Timestamped<T> deserialize(byte[] bytes) {
+            return new Timestamped<T>(this.deserializer.deserialize(bytes), 0);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private Decompressor setupDecompressor(ReaderParameters parameters) {
+        if (parameters.isDataCompression()) {
+            Object compression = parameters.getConfig().get("compression");
+            try {
+                return CompressionFactory.createDecompressor((Map<String, Object>) compression);
+            }
+            catch (ClassCastException e) {
+                throw new InvalidConfigurationException("the parameter compression must be map", e);
+            }
+        } else
+            return (bytes) -> bytes;
+    }
+
     private Deserializer<Timestamped<T>> generateDeserializer(ReaderParameters parameters) {
+        if (this.isUserDataOnly())
+            return new UserDataOnlyDeserializer<T>(this.deserializer);
+
         final Unmarshaller unmashaller = new Unmarshaller();
         Deserializer<Timestamped<T>> tsdes = (bytes) -> {
             Timestamped<byte[]> data = unmashaller.decode(bytes);
-            T value = this.deserializer.deserialize(data.getValue());
+            byte[] decomped = decompressor.decompress(data.getValue());
+            compressionMetrics.get().set(data.getValue().length, decomped.length);
+            T value = this.deserializer.deserialize(decomped);
             return new Timestamped<>(value, data.getTstamp());
         };
         return CryptoDeserializerWrapper.getDeserializer(parameters.getConfig(), tsdes);
@@ -77,10 +128,15 @@ public class SinetStreamBaseReader<T, U extends PluginMessageIO> extends SinetSt
         if (Objects.isNull(pluginMessage)) {
             return null;
         }
-        byte[] payload = pluginMessage.getValue();
-        updateMetrics(payload.length);
+        Timestamped<byte[]> tvalue = pluginMessage.getValue();
+        byte[] payload = tvalue.getValue();
         Timestamped<T> tsRecord = compositeDeserializer.deserialize(payload);
-        return new Message<>(tsRecord.getValue(), pluginMessage.getTopic(), tsRecord.getTstamp(), pluginMessage.getRaw());
+        CompressionMetrics cm = compressionMetrics.get();
+        updateMetrics(payload.length, cm.compLen, cm.uncompLen);
+        long tstamp = tsRecord.getTstamp();
+        if (tstamp == 0)
+            tstamp = tvalue.getTstamp();
+        return new Message<>(tsRecord.getValue(), pluginMessage.getTopic(), tstamp, pluginMessage.getRaw());
     }
 
     public String getTopic() {

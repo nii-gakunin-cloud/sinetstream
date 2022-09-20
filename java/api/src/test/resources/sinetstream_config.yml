@@ -139,3 +139,41 @@ config:
       5ikYFt+uCRv+GQxDyhrgaGUewsU74bBz3ZQQnhf4p//6TFgArQ1PpDtVWZDM1zPCeqfkaYndUP
       WccCUBSXdxJxs7NIOlWiMjTMbkxEGPeMEXCrSruuRpRpARIJJKtLlT25+wJ4RycpnHt7TIcaMz
       oO0S+IRMhkC8nsPNrwFyMAObIm70Df6kZCkFtWB7X1ayHRq3pKIKlJMbZ0aA==
+  service-with-compression-on:
+    type: dummy
+    value_type: text
+    topic: test-topic-java-001
+    data_compression: true
+  service-with-compression-off:
+    type: dummy
+    value_type: text
+    topic: test-topic-java-001
+    data_compression: false
+  service-with-compression-gzip-on:
+    type: dummy
+    value_type: text
+    topic: test-topic-java-001
+    data_compression: true
+    compression:
+      algorithm: gzip
+  service-with-compression-gzip-off:
+    type: dummy
+    value_type: text
+    topic: test-topic-java-001
+    data_compression: false
+    compression:
+      algorithm: gzip
+  service-with-compression-zstd-on:
+    type: dummy
+    value_type: text
+    topic: test-topic-java-001
+    data_compression: true
+    compression:
+      algorithm: zstd
+  service-with-compression-zstd-off:
+    type: dummy
+    value_type: text
+    topic: test-topic-java-001
+    data_compression: false
+    compression:
+      algorithm: zstd
