@@ -28,7 +28,7 @@ under the License.
     * [Quick Start Guide (Android)](docs/tutorial-android/index.en.md)
 * [User Guide](docs/userguide/index.en.md)
 * [Performance measurement of SINETStream](docs/performance/index.en.md)
-* [Developer guide](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/developer_guide/index.html)
+* [Developer guide](docs/developer_guide/index.en.md)
 * [Build SINETStream server](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/server/brokers/index.html)
 * Config Server
     * [github](https://github.com/nii-gakunin-cloud/sinetstream-config-server)
@@ -90,7 +90,7 @@ Writers and Readers send/receive a message specifying a topic, allowing differen
         * [Quick Start Guide (Python/Java)](docs/tutorial/index.en.md)
         * [Quick Start Guide (Android)](docs/tutorial-android/index.en.md)
     * developer_guide/
-        * [Developer guide](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/developer_guide/index.html)
+        * [Developer guide](docs/developer_guide/index.en.md)
 
 ## Operating environment
 ### Python/Java version
