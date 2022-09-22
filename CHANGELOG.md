@@ -18,6 +18,8 @@ https://keepachangelog.com/
 
 ## [v1.7.1] - 2022-09-22
 
+### Security
+
 - Update versions of dependent packages
 
 ## [v1.7.0] - 2022-09-22
