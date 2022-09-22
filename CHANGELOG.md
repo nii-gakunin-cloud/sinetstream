@@ -10,17 +10,17 @@ https://keepachangelog.com/
 ### Security
 --->
 
-## [v1.7.2] - 2022-09-XX
+## [v1.7.2] - 2022-09-22
 
 ### Security
 
 - Update versions of dependent packages
 
-## [v1.7.1] - 2022-09-XX
+## [v1.7.1] - 2022-09-22
 
 - Update versions of dependent packages
 
-## [v1.7.0] - 2022-09-XX
+## [v1.7.0] - 2022-09-22
 
 ### Added
 
