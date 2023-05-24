@@ -91,7 +91,7 @@ Execute the following command in the `Broker`'s host environment.
 
 ```console
 [user00@host-broker]$ docker run -d --name broker --hostname broker \
-                      -p 1883:1883 -p 9092:9092 sinetstream/tutorial:1.0.0
+                      -p 1883:1883 -p 9092:9092 harbor.vcloud.nii.ac.jp/sinetstream/tutorial:1.8
 ```
 
 Show the status to confirm that the container has started successfully.
@@ -99,7 +99,7 @@ Show the status to confirm that the container has started successfully.
 ```console
 [user00@host-broker]$ docker ps -l
 CONTAINER ID        IMAGE                        COMMAND                  CREATED              STATUS              PORTS                                            NAMES
-xxxxxxxxxxxx        sinetstream/tutorial:1.0.0   "/usr/local/bin/supe…"   About a minute ago   Up About a minute   0.0.0.0:1883->1883/tcp, 0.0.0.0:9092->9092/tcp   broker
+xxxxxxxxxxxx        sinetstream/tutorial:1.8   "/usr/local/bin/supe…"   About a minute ago   Up About a minute   0.0.0.0:1883->1883/tcp, 0.0.0.0:9092->9092/tcp   broker
 ```
 
 If `STATUS` is shown as `Up`, the container has started successfully.
@@ -142,7 +142,7 @@ Execute the following command in the `Reader`'s host environment.
 
 ```console
 [user00@host-reader]$ docker run -d --name reader --hostname reader -e ENABLE_BROKER=false \
-                      --add-host=broker:192.168.1.xxx sinetstream/tutorial:1.0.0
+                      --add-host=broker:192.168.1.xxx harbor.vcloud.nii.ac.jp/sinetstream/tutorial:1.8
 ```
 
 > Specify the IP address of the `Broker` in your environment in place of `192.168.1.XXX`.
@@ -152,7 +152,7 @@ Show the status to confirm that the container has started successfully.
 ```console
 [user00@host-reader]$ docker ps -l
 CONTAINER ID        IMAGE                        COMMAND                  CREATED             STATUS              PORTS                NAMES
-xxxxxxxxxxxx        sinetstream/tutorial:1.0.0   "/usr/local/bin/supe…"   About a minute ago  Up About a minute   1883/tcp, 9092/tcp   reader
+xxxxxxxxxxxx        sinetstream/tutorial:1.8   "/usr/local/bin/supe…"   About a minute ago  Up About a minute   1883/tcp, 9092/tcp   reader
 ```
 
 If `STATUS` is shown as `Up`, the container has started successfully.
@@ -204,7 +204,7 @@ Please execute the following command.
 [user01@reader]$ pip3 install --user sinetstream-kafka sinetstream-mqtt
 Collecting sinetstream-kafka
 (omit)
-Successfully installed avro-python3-1.10.0 kafka-python-2.0.2 paho-mqtt-1.5.1 promise-2.3 pycryptodome-3.9.9 pyyaml-3.13 sinetstream-1.4.0 sinetstream-kafka-1.4.0 sinetstream-mqtt-1.4.0 six-1.15.0 
+Successfully installed avro-python3-1.10.0 kafka-python-2.0.2 paho-mqtt-1.5.1 promise-2.3 pycryptodome-3.9.9 pyyaml-3.13 sinetstream-1.4.0 sinetstream-kafka-1.4.0 sinetstream-mqtt-1.4.0 six-1.15.0
 ```
 
 Finally, if the message `Successfully installed ...` is shown, the library has been successfully installed.
@@ -283,7 +283,7 @@ Execute the following command in the `Writer`'s host environment.
 
 ```console
 [user00@host-writer]$ docker run -d --name writer --hostname writer -e ENABLE_BROKER=false \
-                      --add-host=broker:192.168.1.xxx sinetstream/tutorial:1.0.0
+                      --add-host=broker:192.168.1.xxx harbor.vcloud.nii.ac.jp/sinetstream/tutorial:1.8
 ```
 
 > Specify the `Broker`'s IP address in place of `192.168.1.XXX`.
@@ -293,7 +293,7 @@ Show the status to confirm that the container has started successfully.
 ```console
 [user00@host-writer]$ docker ps -l
 CONTAINER ID        IMAGE                        COMMAND                  CREATED             STATUS              PORTS                NAMES
-xxxxxxxxxxxx        sinetstream/tutorial:1.0.0   "/usr/local/bin/supe…"   About a minute ago  Up About a minute   1883/tcp, 9092/tcp   writer
+xxxxxxxxxxxx        sinetstream/tutorial:1.8   "/usr/local/bin/supe…"   About a minute ago  Up About a minute   1883/tcp, 9092/tcp   writer
 ```
 
 If `STATUS` is shown as `Up`, the container has started successfully.
@@ -342,7 +342,7 @@ Please execute the following command.
 [user01@writer]$ pip3 install --user sinetstream-kafka sinetstream-mqtt
 Collecting sinetstream-kafka
 (omit)
-Successfully installed avro-python3-1.10.0 kafka-python-2.0.2 paho-mqtt-1.5.1 promise-2.3 pycryptodome-3.9.9 pyyaml-3.13 sinetstream-1.4.0 sinetstream-kafka-1.4.0 sinetstream-mqtt-1.4.0 six-1.15.0 
+Successfully installed avro-python3-1.10.0 kafka-python-2.0.2 paho-mqtt-1.5.1 promise-2.3 pycryptodome-3.9.9 pyyaml-3.13 sinetstream-1.4.0 sinetstream-kafka-1.4.0 sinetstream-mqtt-1.4.0 six-1.15.0
 ```
 
 Finally, if the message `Successfully installed ...` is shown, the library has been successfully installed.

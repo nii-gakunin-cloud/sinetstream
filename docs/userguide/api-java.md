@@ -25,22 +25,23 @@ SINETStream ユーザガイド
 
 # Java API
 
-* 使用例
-* Java API クラス一覧
-    * MessageWriterFactory クラス
-    * MessageWriter クラス
-    * AsyncMessageWriter クラス
-    * MessageReaderFactory クラス
-    * MessageReader クラス
-    * AsyncMessageReader クラス
-    * Message クラス
-    * Metrics クラス
-    * 例外一覧
-* メッセージングシステム固有のパラメータ
-* チートシートの表示方法
+<pre>
+1. 使用例
+2. Java API クラス一覧
+ 2.1 MessageWriterFactory クラス
+ 2.2 MessageWriter クラス
+ 2.3 AsyncMessageWriter クラス
+ 2.4 MessageReaderFactory クラス
+ 2.5 MessageReader クラス
+ 2.6 AsyncMessageReader クラス
+ 2.7 Message クラス
+ 2.8 Metrics クラス
+ 2.9 例外一覧
+3. メッセージングシステム固有のパラメータ
+4. チートシートの表示方法
+</pre>
 
-
-## 使用例
+## 1. 使用例
 
 はじめに簡単な使用例を示す。
 
@@ -119,7 +120,7 @@ try (MessageReader<String> reader = factory.getReader()) {
 その後、リーダーの `read()` を呼び出してブローカーからメッセージを受信する。
 リーダーの `read()` を呼び出したあと、`receiveTimeout` に指定した時間メッセージが取得できなかった場合、`read()` が `null` を返しループが終了する。
 
-## Java API クラス一覧
+## 2. Java API クラス一覧
 
 ### 主要クラス
 
@@ -136,7 +137,7 @@ try (MessageReader<String> reader = factory.getReader()) {
 * jp.ad.sinet.stream.utils.MessageReaderFactory
     * `MessageReader` オブジェクトを作成するためのファクトリクラス
 
-### MessageWriterFactory
+### 2.1 MessageWriterFactory クラス
 
 `MessageWriter` を取得するためのファクトリクラス。
 
@@ -193,7 +194,7 @@ MessageWriterFactory<String> factory =
         .build();
 ```
 
-### MessageWriter
+### 2.2 MessageWriter クラス
 
 ブローカーにメッセージを送信するクラス。
 
@@ -212,7 +213,7 @@ try (MessageWriter<String> writer = factory.getWriter()) {
 }
 ```
 
-### AsyncMessageWriter
+### 2.3 AsyncMessageWriter クラス
 
 ブローカーにメッセージを送信するクラス。
 
@@ -243,7 +244,7 @@ try (AsyncMessageWriter<String> writer = factory.getAsyncWriter()) {
 * `always()`
     –  遅延オブジェクトの処理結果によらず全ての場合にトリガーされる
 
-### MessageReaderFactory
+### 2.4 MessageReaderFactory クラス
 
 `MessageReader` を取得するためのファクトリクラス。
 
@@ -307,7 +308,7 @@ MessageReaderFactory<String> factory =
         .build();
 ```
 
-### MessageReader
+### 2.5 MessageReader クラス
 
 ブローカーからメッセージを受信するクラス。
 
@@ -331,7 +332,7 @@ try (MessageReader<String> reader = factory.getReader()) {
 
 `read()` メソッドの返り値は `Message<T>` クラスのインスタンスになる。
 
-### AsyncMessageReader
+### 2.6 AsyncMessageReader クラス
 
 ブローカーからメッセージを受信するクラス。
 
@@ -356,7 +357,7 @@ reader.addOnMessageCallback((msg) -> {
 reader.close();
 ```
 
-### Message
+### 2.7 Message クラス
 
 ブローカーから受信したメッセージのクラス。
 
@@ -371,7 +372,7 @@ reader.close();
     * メッセージ送信時刻(Unix時間;単位はマイクロ秒単位)を取得する。
     * 値 `0` は時刻が設定されてないことを示す。
 
-### Metrics
+### 2.8 Metrics クラス
 
 メトリクス情報のクラス。
 Reader/Writerオブジェクトに対してgetMetrics()メソッドを呼び出すと得られる。
@@ -510,7 +511,7 @@ try (MessageReader<String> reader = factory.getReader()) {
 }
 ```
 
-### 例外一覧
+### 2.9 例外一覧
 
 | 例外名 | メソッド名 | |
 | ---  | --- | --- |
@@ -529,13 +530,13 @@ try (MessageReader<String> reader = factory.getReader()) {
 1. MQTT(Mosquitto)では認可されない操作を行ってもブローカーがエラーを返さないため例外が発生しない
 2. Kafkaのブローカーに対して`Consistency`に`AT_MOST_ONCE`を指定してメッセージの送信を行った場合、ブローカーからの応答を待たずに送信処理が完了するため、認可されない操作を行った場合も例外が発生しない
 
-## メッセージングシステム固有のパラメータ
+## 3. メッセージングシステム固有のパラメータ
 
 * [Kafka固有のパラメータ](config-kafka.md)
 * [MQTT固有のパラメータ](config-mqtt.md)
 * [S3固有のパラメータ](config-s3.md)
 
-## チートシートの表示方法
+## 4. チートシートの表示方法
 
 APIのjarファイルを `java -jar` の後に指定して実行すると、チートシートが表示される。
 

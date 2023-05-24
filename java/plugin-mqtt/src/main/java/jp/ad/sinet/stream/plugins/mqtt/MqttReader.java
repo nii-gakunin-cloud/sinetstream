@@ -33,11 +33,9 @@ public interface MqttReader {
 
     void connect();
 
+    void onConnectionComplete(boolean reconnect, String serverURI);
+
     default void onConnectionLost(Throwable cause) {}
 
     MqttConnectOptions getConnectOptions();
-
-    int getReconnectDelay();
-
-    void setReconnectDelay(int delay);
 }

@@ -32,6 +32,8 @@ from paho.mqtt.client import (
     Client, MQTT_ERR_QUEUE_SIZE, MQTT_ERR_NO_CONN,
     connack_string, MQTTv31, MQTTv311, MQTTv5, WebsocketConnectionError,
     MQTT_ERR_SUCCESS)
+from paho.mqtt.properties import (Properties, MQTTException)
+from paho.mqtt.packettypes import PacketTypes
 from promise import Promise
 
 from sinetstream import (
@@ -144,9 +146,10 @@ def _get_transport(params):
 def _create_mqtt_client(params):
     mqttc = Client(
         client_id=params.get("client_id", ''),
-        clean_session=params.get('clean_session'),
+        clean_session=params.get('clean_session'),  # NOTE: MUST be None in MQTTv5, USE clean_start
         protocol=_to_protocol(params.get('protocol')),
         transport=_get_transport(params),
+        # reconnect_on_failure=params.get("reconnect_on_failure", True),
     )
 
     for name in _MQTT_NESTED_PARAMETER:
@@ -197,11 +200,22 @@ def _replace_ssl_params(params):
     ])
 
 
+def _replace_will_params(params):
+    if 'will_set' not in params:
+        return
+    will_params = params['will_set']
+    if 'delay_interval' in will_params:
+        props = Properties(PacketTypes.WILLMESSAGE)
+        props.WillDelayInterval = will_params.pop('delay_interval')
+        will_params['properties'] = props
+
+
 class MqttClient(object):
     def __init__(self, params):
         self._params = _translate_tls_params(params)
         self._params.update(params)
         _replace_ssl_params(self._params)
+        _replace_will_params(self._params)
         logger.debug(self._params)
 
         try:
@@ -215,15 +229,53 @@ class MqttClient(object):
         self.keepalive = self._params.get('keepalive', 60)
         self.host, self.port = _get_broker(self._params)
         logger.debug(f'broker={self.host} port={self.port}')
-        self.protocol = _to_protocol(self._params.get('protocol')),
+        self.protocol = _to_protocol(self._params.get('protocol'))
         self._connection_result = None
         self._conn_cond = Condition()
+
+    def _make_properties(self):
+        def name2(s):
+            name = s.replace(" ", "")
+            name_ = (s.replace("Information", "Info")
+                      .replace("Authentication", "Auth")
+                      .replace(" ", "_")
+                      .lower())
+            return (name, name_)
+        properties = Properties(PacketTypes.CONNECT)
+        n = 0
+        for (name, name_) in [name2(k) for k in properties.names.keys()]:
+            # print(f"name={name} name_={name_}")
+            # ptype = PacketTypes.CONNECT
+            # if ptype not in properties.properties[properties.getIdentFromName(name)][1]:
+            #     continue
+            if name_ in self._params:
+                n += 1
+                val = self._params[name_]
+                if name_ == "user_property":
+                    val = [(k, v) for k, v in val.items()]
+                try:
+                    properties.__setattr__(name, val)
+                except MQTTException as ex:
+                    # ok, maybe packet type mismatch.
+                    logger.warning(f"{name_}: {ex}")
+        logger.debug(f"properties={properties}")
+        return properties if n > 0 else None
 
     def open(self, timeout=None):
         logger.debug("open")
         try:
-            self._mqttc.connect(self.host, self.port, self.keepalive)
-        except (socket.error, OSError, WebsocketConnectionError):
+            kwargs = {
+                "host": self.host,
+                "port": self.port,
+                "keepalive": self.keepalive,
+            }
+            if "clean_start" in self._params:
+                kwargs["clean_start"] = self._params["clean_start"]
+            properties = self._make_properties()
+            if properties is not None:
+                kwargs["properties"] = properties
+            self._mqttc.connect(**kwargs)
+        except (socket.error, OSError, WebsocketConnectionError, ValueError):
             logger.error(f"cannot connect broker: {self.host}:{self.port}")
             self.close()
             raise ConnectionError(

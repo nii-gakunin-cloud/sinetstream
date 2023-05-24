@@ -76,9 +76,9 @@ public class KafkaBinaryProducer {
         CountDownLatch done = new CountDownLatch(opts.nmsg);
         long tstart = System.currentTimeMillis();
         long[] ts = new long[opts.nmsg];
-	/*
+        /*
         Future<RecordMetadata>[] fus = new Future[opts.nmsg];
-	*/
+        */
         Util.DataList dataList = new Util.DataList(opts.nmsg, opts.bytes);
         long next = System.nanoTime() + interval;
         int n = 0;

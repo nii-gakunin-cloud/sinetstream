@@ -23,6 +23,8 @@ under the License.
 [English](sinetstream_reader.en.md)
 -->
 
+[English](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/userguide/sinetstream_android_api/sinetstream_reader.html "google translate")
+
 SINETStream ユーザガイド: SinetStreamReader\<T\>
 
 # Android版のAPI

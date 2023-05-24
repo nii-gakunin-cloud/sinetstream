@@ -25,22 +25,24 @@ SINETStream User Guide
 
 # Python API
 
-* Example
-* Summary of Python API classes
-    * MessageReader Class
-    * MessageWriter Class
-    * AsyncMessageReader Class
-    * AsyncMessageWriter Class
-    * Message Class
-    * Metrics Class
-    * Summary of exception
-* Messaging system-specific parameters
-    * Apache Kafka
-    * MQTT (Eclipse Paho)
-* How to show a cheat sheet
+<pre>
+1. Example
+2. Summary of Python API classes
+ 2.1 MessageReader Class
+ 2.2 AsyncMessageReader Class
+ 2.3 MessageWriter Class
+ 2.4 AsyncMessageWriter Class
+ 2.5 Message Class
+ 2.6 Metrics Class
+ 2.7 Summary of exception
+3. Messaging system-specific parameters
+ 3.1 Apache Kafka
+ 3.2 MQTT (Eclipse Paho)
+ 3.3 S3
+4. How to show a cheat sheet
+</pre>
 
-
-## Example
+## 1. Example
 
 First, a simple example is shown.
 
@@ -115,7 +117,7 @@ Open this instance with a `with` statement, loop the iterator for `f` in the blo
 By default, the message reader process does not time out and the `for` statement becomes an infinite loop.
 To exit the `for` loop, specify the `receive_timeout_ms` parameter in the constructor of the [MessageReader class](#messagereader-class) or perform a signal handling.
 
-## Summary of Python API classes
+## 2. Summary of Python API classes
 
 * sinetstream.MessageReader
     * The class to receive messages from the messaging system.
@@ -130,7 +132,7 @@ To exit the `for` loop, specify the `receive_timeout_ms` parameter in the constr
 * sinetstream.SinetError
     * The parent class of all the exception classes in SINETStream
 
-### MessageReader Class
+### 2.1 MessageReader Class
 
 #### `MessageReader()`
 
@@ -257,7 +259,7 @@ AuthorizationError does not occur in the following cases:
 1. When using MQTT (Mosquitto)
     * Because the MQTT broker raises no error for unauthorized operation.
 
-### AsyncMessageReader Class
+### 2.2 AsyncMessageReader Class
 #### `AsyncMessageReader()`
 
 The constructor of the AsyncMessageReader class
@@ -365,7 +367,7 @@ Implicitly invoked when using AsyncMessageReader in a 'with' statement; not inte
 #### Property: 'AsyncMessageReader.on_message'
 Set the callback function to be invoked when the message is received.
 
-### MessageWriter Class
+### 2.3 MessageWriter Class
 
 #### `MessageWriter()`
 
@@ -488,7 +490,7 @@ AuthorizationError does not occur in the following cases:
     * Because the client does not wait for a response from the broker after sending a message.
       Therefore, the client cannot detect an error on the broker side.
 
-### AsyncMessageWriter Class
+### 2.4 AsyncMessageWriter Class
 
 #### `AsyncMessageWriter()`
 
@@ -622,7 +624,7 @@ Depending on the messaging system, even if an unauthorized operation is performe
     * Because the client does not wait for a response from the broker after sending a message.
       Therefore, the client cannot detect an error on the broker side.
 
-### Message class
+### 2.5 Message class
 
 The wrapper class for the message object provided by the messaging system.
 
@@ -652,7 +654,7 @@ All the properties are read only.
 * raw
     * The message object provided by the messaging system.
 
-### Metrics Class
+### 2.6 Metrics Class
 
 Metrics class
 You can get metrics information by referencing the metrics property for Reader/Writer objects.
@@ -770,7 +772,7 @@ with reader as f:
             print(f'BYTES/s: {m.msg_bytes_rate}')
 ```
 
-### Summary of exception
+### 2.7 Summary of exception
 
 | exception | origin method | reason |
 |---|---|---|
@@ -784,13 +786,13 @@ with reader as f:
 |`AuthorizationError`|`MessageWriter.publish()`, `MessageReader.__iter__().__next__()`| An unauthorized operation was conducted|
 
 
-## Messaging system-specific parameters
+## 3. Messaging system-specific parameters
 
 `kwargs` can be used to transparently pass parameters to the backend messaging system.
 The actual parameters that can be passed depend on the backend.
 No validation is performed.
 
-### Apache Kafka
+### 3.1 Apache Kafka
 
 Basically, the constructor arguments to
 [KafkaConsumer](https://kafka-python.readthedocs.io/en/master/apidoc/KafkaConsumer.html) and
@@ -800,7 +802,7 @@ If the parameter is valid only in `KafkaConsumer` or `KafkaProducer`, it affects
 
 [Kafka-specific parameters](config-kafka.en.md)
 
-### MQTT (Eclipse Paho)
+### 3.2 MQTT (Eclipse Paho)
 
 Basically, the constructor arguments and the setter function (`XXX_set`) arguments of
 [paho.mqtt.client.Client](https://www.eclipse.org/paho/clients/python/docs/#client)
@@ -808,11 +810,11 @@ can be specified as parameters.
 
 [MQTT-specific parameters](config-mqtt.en.md)
 
-### S3
+### 3.3 S3
 
 * [S3-specific parameters](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/userguide/config-s3.html)
 
-## How to show a cheat sheet
+## 4. How to show a cheat sheet
 
 After installing SINETStream, run `python3 -m sinetstream` to show a cheat sheet.
 

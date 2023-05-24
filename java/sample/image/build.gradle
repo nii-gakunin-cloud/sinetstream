@@ -26,7 +26,7 @@ plugins {
 
 sourceCompatibility = 1.11
 
-version = '1.7.2'
+version = '1.8.0'
 
 repositories {
     mavenCentral()
@@ -38,13 +38,19 @@ dependencies {
     implementation 'net.sinetstream:SINETStream-kafka:1.+'
     implementation 'net.sinetstream:SINETStream-mqtt:1.+'
     implementation 'net.sinetstream:SINETStream-type-image:1.+'
-    implementation group: 'org.bytedeco', name: 'javacv-platform', version: '1.5.7'
-    runtimeOnly 'org.slf4j:slf4j-nop:1.7.36'
+    implementation group: 'org.bytedeco', name: 'javacv-platform', version: '1.5.8'
+    runtimeOnly 'org.slf4j:slf4j-nop:2.0.7'
 }
 
 application {
     mainClassName = 'jp.ad.sinet.stream.example.image.ImageProducer'
     applicationName = 'image-producer'
+
+    // WORKAROUND for:
+    //     WARNING: An illegal reflective access operation has occurred
+    //     WARNING: Illegal reflective access by org.eclipse.paho.client.mqttv3.internal.FileLock
+    // see https://github.com/eclipse/paho.mqtt.java/issues/507#issuecomment-814681499
+    applicationDefaultJvmArgs = ['--add-opens=java.base/sun.nio.ch=ALL-UNNAMED']
 }
 
 task createExtraRunApp(type: CreateStartScripts) {
@@ -52,6 +58,12 @@ task createExtraRunApp(type: CreateStartScripts) {
     classpath = startScripts.classpath
     outputDir = startScripts.outputDir
     applicationName = 'image-consumer'
+
+    // WORKAROUND for:
+    //     WARNING: An illegal reflective access operation has occurred
+    //     WARNING: Illegal reflective access by org.eclipse.paho.client.mqttv3.internal.FileLock
+    // see https://github.com/eclipse/paho.mqtt.java/issues/507#issuecomment-814681499
+    defaultJvmOpts = ['--add-opens=java.base/sun.nio.ch=ALL-UNNAMED']
 }
 
 applicationDistribution.into("bin") {

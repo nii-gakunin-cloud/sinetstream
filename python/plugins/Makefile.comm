@@ -43,7 +43,7 @@ test-shell:
 	cd tests/docker_* && docker compose build && docker compose down && docker compose -f docker-compose-shell.yml up -d
 	rm tests/docker_*/docker-compose-shell.yml
 	sleep 3  # XXX wait for docker_*_test_1
-	docker exec -it docker_$$(basename $$(pwd))_test_1 bash || true
+	docker exec -it docker_$$(basename $$(pwd))-test-1 bash || true
 	cd tests/docker_* && docker compose down
 
 tags::

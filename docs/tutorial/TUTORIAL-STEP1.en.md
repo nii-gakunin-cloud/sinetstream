@@ -70,7 +70,7 @@ Run the backend messaging system (Kafka and MQTT) used by SINETStream in a Docke
 Execute the following command in the host environment.
 
 ```console
-$ docker run -d --name tutorial --hostname broker sinetstream/tutorial:1.0.0
+$ docker run -d --name tutorial --hostname broker harbor.vcloud.nii.ac.jp/sinetstream/tutorial:1.8
 ```
 
 Show the status to confirm that the container has started successfully.
@@ -78,7 +78,7 @@ Show the status to confirm that the container has started successfully.
 ```console
 $ docker ps -l
 CONTAINER ID        IMAGE                        COMMAND                  CREATED              STATUS              PORTS                NAMES
-xxxxxxxxxxxx        sinetstream/tutorial:1.0.0   "/usr/local/bin/supe…"   About a minute ago   Up About a minute   1883/tcp, 9092/tcp   tutorial
+xxxxxxxxxxxx        sinetstream/tutorial:1.8   "/usr/local/bin/supe…"   About a minute ago   Up About a minute   1883/tcp, 9092/tcp   tutorial
 ```
 
 If the `STATUS` is shown as `Up`, the container has started successfully.
@@ -101,7 +101,7 @@ Next, install the library of SINETStream on the container environment. Please ex
 [user01@broker]$ pip3 install --user sinetstream-kafka sinetstream-mqtt
 Collecting sinetstream-kafka
 (omit)
-Successfully installed avro-python3-1.10.0 kafka-python-2.0.2 paho-mqtt-1.5.1 promise-2.3 pycryptodome-3.9.9 pyyaml-3.13 sinetstream-1.4.0 sinetstream-kafka-1.4.0 sinetstream-mqtt-1.4.0 six-1.15.0 
+Successfully installed avro-python3-1.10.0 kafka-python-2.0.2 paho-mqtt-1.5.1 promise-2.3 pycryptodome-3.9.9 pyyaml-3.13 sinetstream-1.4.0 sinetstream-kafka-1.4.0 sinetstream-mqtt-1.4.0 six-1.15.0
 ```
 
 Finally, if the message `Successfully installed ...` is shown, the library has been successfully installed.
@@ -191,6 +191,7 @@ Create a directory and change to that directory.
 Download the configuration file from GitHub.
 
 ```console
+[user01@broker]$ ss_url=https://raw.githubusercontent.com/nii-gakunin-cloud/sinetstream/main
 [user01@broker]$ curl -O ${ss_url}/docs/tutorial/.sinetstream_config.yml
 ```
 

@@ -46,7 +46,7 @@ Target readers of this document are as follows:
 
 This document assumes that readers have the following knowledge:
 
-* Java 8 
+* Java 8
 * How to use [ServiceLoader](https://docs.oracle.com/javase/jp/8/docs/api/java/util/ServiceLoader.html)
 * How to use Java API and a configuration file of SINETStream.
 
@@ -84,7 +84,7 @@ Below is a brief description of each module.
     * Encryptor
         * Encrypts a message.
     * Decryptor
-        * Decrypts an encrypted message. 
+        * Decrypts an encrypted message.
     * Configuration File Reader
         * Reads parameters written in a SINETStream configuration file.
     * Plugin Manager
@@ -265,8 +265,8 @@ Details of each step are described below.
 
 Registering service providers in the provider configuration file allows ServiceLoader to find the plug-in.
 
-Place the provider configuration file in `META-INF/services/` in the resource directory. 
-The file name must be the service provider's fully qualified class name. 
+Place the provider configuration file in `META-INF/services/` in the resource directory.
+The file name must be the service provider's fully qualified class name.
 In the case of service providers that support SINETStream message reception and transmission, the file names are as follows:
 
 * A service provider to receive messages (sync API)

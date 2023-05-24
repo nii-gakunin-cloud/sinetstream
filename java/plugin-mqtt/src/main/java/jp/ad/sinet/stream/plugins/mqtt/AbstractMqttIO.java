@@ -28,7 +28,12 @@ import jp.ad.sinet.stream.utils.MessageUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.java.Log;
-import org.eclipse.paho.client.mqttv3.*;
+import org.eclipse.paho.client.mqttv3.IMqttToken;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 
 import java.nio.file.Path;
@@ -64,12 +69,6 @@ public abstract class AbstractMqttIO<T> {
     final MqttConnectOptions connectOptions;
 
     private final String websocketPath;
-
-    int reconnectMinDelay = 1;
-
-    @Getter
-    @Setter
-    int reconnectDelay = 1;
 
     protected final AtomicBoolean closed = new AtomicBoolean(false);
 
@@ -108,14 +107,14 @@ public abstract class AbstractMqttIO<T> {
             IMqttToken ret = mqttConnect(connectOptions);
             log.fine(() -> "connect complete: " + ret.getResponse().toString());
         } catch (MqttSecurityException e) {
-			Throwable cause = e.getCause();
-			if (cause instanceof NoSuchAlgorithmException) {
-				// TLS の設定がエラーの時は接続エラーとする
-				throw new ConnectionException(e);
-			} else {
-				// その他は認証エラーとする
-				throw new AuthenticationException(e);
-			}
+            Throwable cause = e.getCause();
+            if (cause instanceof NoSuchAlgorithmException) {
+                // TLS の設定がエラーの時は接続エラーとする
+                throw new ConnectionException(e);
+            } else {
+                // その他は認証エラーとする
+                throw new AuthenticationException(e);
+            }
         } catch (MqttException e) {
             throw new ConnectionException(e);
         }
@@ -166,10 +165,10 @@ public abstract class AbstractMqttIO<T> {
                 .ifPresent(delayOpt -> {
                     Optional.ofNullable(delayOpt.get("max_delay"))
                             .map(loggingException(MessageUtils::toInteger))
-                            .ifPresent(opts::setMaxReconnectDelay);
+                            .ifPresent(v -> opts.setMaxReconnectDelay(v * 1000));
                     Optional.ofNullable(delayOpt.get("min_delay"))
                             .map(loggingException(MessageUtils::toInteger))
-                            .ifPresent(v -> reconnectMinDelay = reconnectDelay = v);
+                            .ifPresent(v -> { log.warning("min_delay is not implemented (always 1s set by paho)"); });
                 });
 
         Optional.ofNullable(config.get("connect"))
@@ -259,16 +258,16 @@ public abstract class AbstractMqttIO<T> {
                 .ifPresent(checkHostname::set);
         Optional.ofNullable(config.get("tls_insecure_set"))
                 .filter(Map.class::isInstance)
-				.map(Map.class::cast)
-				.ifPresent(insecure -> {
-					try {
-						Optional.of(insecure.get("value"))
-							.map(opt -> ! MessageUtils.toBoolean(opt.toString()))
-							.ifPresent(checkHostname::set);
-					} catch (Throwable e) {
-						throw new InvalidConfigurationException("tls_insecure_set: value cannot cast to boolean.", e);
-					}
-				});
+                .map(Map.class::cast)
+                .ifPresent(insecure -> {
+                    try {
+                        Optional.of(insecure.get("value"))
+                            .map(opt -> ! MessageUtils.toBoolean(opt.toString()))
+                            .ifPresent(checkHostname::set);
+                    } catch (Throwable e) {
+                        throw new InvalidConfigurationException("tls_insecure_set: value cannot cast to boolean.", e);
+                    }
+                });
         if (Objects.nonNull(checkHostname.get())) {
             opts.setHttpsHostnameVerificationEnabled(checkHostname.get());
         }

@@ -68,7 +68,7 @@ From the release of [SINETStream v1.6](https://www.sinetstream.net/docs/news/202
 In the previous SINETStream versions, we took an operation model that a SINETStream configuration file is being placed somewhere on the Android device.
 Adding to that, we take the new model that a system manager sets up SINETStream configurations on the `configuration server`, while each Android devices dynamically download it via REST-API.
 
-In the former operation model, the Android SINETStream library simply reads the local file in YAML format. In the latter operation model, the Android SINETStream library accesses to the `configuration server` to download a JSON data and handle it only on memory.  
+In the former operation model, the Android SINETStream library simply reads the local file in YAML format. In the latter operation model, the Android SINETStream library accesses to the `configuration server` to download a JSON data and handle it only on memory.
 
 The JSON data structure received from the `configuration server` roughly looks like the figure shown below.
 The right part of the figure corresponds to the conventional SINETStream configuration file contents (expressed in JSON format).

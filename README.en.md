@@ -40,14 +40,14 @@ under the License.
 The SINETStream is a messaging system that adopts a [topic-based publish/subscribe model](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern).
 It provides an abstraction layer of Broker, which in turn employs Kafka or MQTT as its backend.
 
-The SINETStream calls the publisher as "Writer", and the subscriber as "Reader", respectively.
+The SINETStream calls the publisher as `Writer`, and the subscriber as `Reader`, respectively.
 
 ![Conceptual diagram of the messaging system](docs/images/overview.png)
 
-Broker's configuration and communication parameters are abstracted as "service" in the SINETStream.
-Writers and Readers can communicate with any Broker just by specifying a "service".
+Broker's configuration and communication parameters are abstracted as `service` in the SINETStream.
+Writers and Readers can communicate with any Broker just by specifying a `service`.
 
-A logical channel in Broker is called as "topic".
+A logical channel in Broker is called as `topic`.
 Writers and Readers send/receive a message specifying a topic, allowing different types of messages to be transferred through a Broker.
 
 ## Directory structure
@@ -65,9 +65,14 @@ Writers and Readers send/receive a message specifying a topic, allowing differen
                 * Kafka-specific files of the Python version of SINETStream
             * mqtt/
                 * MQTT-specific files of the Python version of SINETStream
+            * s3/
+                * S3-specific files of the Python version of SINETStream
         * value_type/
             * image/
                 * Support for messages with image payload
+        * compression/
+            * lz4/
+                * Sample implementation of LZ4 compression
     * sample/
         * Sample programs
 * java/
@@ -79,8 +84,12 @@ Writers and Readers send/receive a message specifying a topic, allowing differen
         * Kafka-specific files of the Java version of SINETStream
     * plugin-mqtt/
         * MQTT-specific files of the Java version of SINETStream
+    * plugin-s3/
+        * s3-specific files of the Java version of SINETStream
     * plugin-type-image/
         * Support for messages with image payload
+    * plugin-comp-lz4/
+	* Sample implementation of LZ4 compression
     * sample/
         * Sample programs
 * docs/
@@ -95,44 +104,59 @@ Writers and Readers send/receive a message specifying a topic, allowing differen
 ## Operating environment
 ### Python/Java version
 
-The Python/Java SINETStream API is implemented with following programing
+The Python/Java `SINETStream API` is implemented with following programing
 languages.
 
-* Python 3.7
-* Java 8
+* Python 3.7 - 3.9
+* Java 11
 
-The Python/Java SINETStream API supports the following messaging systems.
+The Python/Java `SINETStream API` supports the following messaging systems.
 
 * [Apache Kafka](https://kafka.apache.org/) 2.2.1
-* MQTT v3.1, v3.1.1
+* MQTT v3.1, v3.1.1, v5.0
     * [Eclipse Mosquitto](https://mosquitto.org/) v1.6.2
+* S3
+    * AWS S3
+    * [MinIO](https://min.io/)
 
-The Python/Java SINETStream runs on following operating systems.
+The Python/Java `SINETStream API` runs on following operating systems.
 
 * CentOS 7
+* Ubuntu 20.04 LTS
 * Windows 10
 
 ### Android version
 
-The Android SINETStream API is implemented with following programing
+The Android `SINETStream API` is implemented with following programing
 languages.
 
 * Java 11
-* Kotlin 1.6.x
+* Kotlin 1.7.10
 
-The Android SINETStream API supports the following messaging systems.
+The Android `SINETStream API` supports the following messaging systems.
 
 * MQTT v3.1, v3.1.1
     * [Eclipse Paho Android Client](https://www.eclipse.org/paho/index.php?page=clients/android/index.php)
 
-The Android SINETStream runs on following operating system.
+> <em>Note</em><br>
+> The GitHub repository [eclipse/paho.mqtt.android](https://github.com/eclipse/paho.mqtt.android) of the `Eclipse Paho Android Client` project
+> seems to have unmaintained for years.
+> Due to the [system behavior changes](https://developer.android.com/about/versions/12/behavior-changes-12?hl=en#pending-intent-mutability) that have introduced in Android 12,
+> using the `Paho` library on Android 12+ environment causes runtime error.
+> Some volunteers have posted bugfix patches to the GitHub repository but noghing have happened so far.
+> Therefore, we `SINETStream` project team have decided to use our own `PahoMqttAndroid-bugfix` library as a temporary fix.
+
+The Android `SINETStream API` runs on following operating system.
 
 * Android 8.0 (API level 26) or higher
+
+> This restriction (Android 8.0+) comes from [implementation issues](https://www.mail-archive.com/dev@avro.apache.org/msg24138.html) of the `Apache Avro` library,
+> which is used as `serializer/deserializer` for the `SINETStream messages`.
 
 ## Preparation
 ### Python/Java version
 
-The Python/Java SINETStream uses Kafka or MQTT as a backend messaging
+The Python/Java `SINETStream API` uses Kafka or MQTT as a backend messaging
 system of Broker.
 Therefore, you need to install one of these messaging systems along with SINETStream.
 The tutorial package utilizes some Docker containers to install the
@@ -154,7 +178,7 @@ using Docker containers.
 
 ### Android version
 
-The Android SINETStream API provides client functionality
+The Android `SINETStream API` provides client functionality
 (Writer, Reader), with the support of MQTT messaging system.
 Therefore, the peer Broker with an Android SINETStream client must
 use MQTT only.

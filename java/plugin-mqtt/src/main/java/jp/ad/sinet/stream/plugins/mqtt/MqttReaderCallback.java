@@ -23,7 +23,7 @@ package jp.ad.sinet.stream.plugins.mqtt;
 
 import lombok.extern.java.Log;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.MqttCallback;
+import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
@@ -32,12 +32,18 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 @Log
-public class MqttReaderCallback implements MqttCallback {
+public class MqttReaderCallback implements MqttCallbackExtended {
 
     private final MqttReader reader;
 
     public MqttReaderCallback(MqttReader reader) {
         this.reader = reader;
+    }
+
+    @Override
+    public void connectComplete(boolean reconnect, String serverURI) {
+        log.fine(() -> "MQTT connection complete: reconnect=" + reconnect);
+        reader.onConnectionComplete(reconnect, serverURI);
     }
 
     @Override
@@ -47,11 +53,6 @@ public class MqttReaderCallback implements MqttCallback {
             reader.onConnectionLost(cause);
             return;
         }
-        Executors.newSingleThreadScheduledExecutor().schedule(() -> {
-            updateReconnectDelay();
-            disconnectClient();
-            reader.connect();
-        }, reader.getReconnectDelay(), TimeUnit.SECONDS);
     }
 
     private void disconnectClient() {
@@ -60,15 +61,6 @@ public class MqttReaderCallback implements MqttCallback {
             reader.disconnect();
         } catch (MqttException e) {
             log.log(Level.FINER, e, () -> "MQTT disconnect ERROR: " + reader.getClientId());
-        }
-    }
-
-    private void updateReconnectDelay() {
-        if (reader.getReconnectDelay() < reader.getConnectOptions().getMaxReconnectDelay()) {
-            reader.setReconnectDelay(reader.getReconnectDelay() * 2);
-        }
-        if (reader.getReconnectDelay() > reader.getConnectOptions().getMaxReconnectDelay()) {
-            reader.setReconnectDelay(reader.getConnectOptions().getMaxReconnectDelay());
         }
     }
 

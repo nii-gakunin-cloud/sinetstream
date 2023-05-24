@@ -21,7 +21,7 @@ under the License.
 
 [日本語](TUTORIAL-android-step2-overview.md)
 
-# TUTORIAL - STEP2: Publish Sensor readout values 
+# TUTORIAL - STEP2: Publish Sensor readout values
 
 <em>Table of contents</em>
 <pre>
@@ -234,7 +234,7 @@ Android versions) and `Cache`.
 
 * An error dialog something like "Cannot connect to the Broker" is shown.
     * Make sure the Android device is connected to the external network
-via cellular or Wi-Fi (= not in airplane mode). 
+      via cellular or Wi-Fi (= not in airplane mode).
     * Make sure the `Broker` is up and running on the back-end side.
 
 * Connection attempt to the `Broker` timeouts.

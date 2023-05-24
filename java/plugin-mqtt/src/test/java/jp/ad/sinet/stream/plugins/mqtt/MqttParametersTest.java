@@ -23,6 +23,7 @@ package jp.ad.sinet.stream.plugins.mqtt;
 
 import jp.ad.sinet.stream.api.Consistency;
 import jp.ad.sinet.stream.api.MessageWriter;
+import jp.ad.sinet.stream.api.UnsupportedServiceTypeException;
 import jp.ad.sinet.stream.utils.MessageWriterFactory;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -205,9 +206,12 @@ class MqttParametersTest implements ConfigFileAware {
                             .build();
             try (MessageWriter<String> writer = builder.getWriter()) {
                 writer.write("message-1");
+                // ok before supporting mqttv5
+            }
+            catch (UnsupportedServiceTypeException e) {
+                // ok after supporting mqttv5
             }
         }
-
     }
 
     @Nested

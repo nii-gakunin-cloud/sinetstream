@@ -11,5 +11,5 @@ test-shell::
 	rm docker-compose-shell.yml
 	sleep 3  # XXX
 	docker compose ps
-	docker exec -it docker_test_1 bash || true
+	docker exec -it docker-test-1 bash || true
 	docker compose down

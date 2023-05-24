@@ -1,5 +1,5 @@
 <!--
-Copyright (C) 2019 National Institute of Informatics
+Copyright (C) 2019-2023 National Institute of Informatics
 
 Licensed to the Apache Software Foundation (ASF) under one
 or more contributor license agreements.  See the NOTICE file
@@ -96,6 +96,7 @@ SINETStream ユーザガイド
         * payload
         * qos
         * retain
+	* delay_interval (MQTTv5のみ)
 * reconnect_delay_set
     * 再接続するまでの待機時間に関するパラメータをマッピングで指定する
     * 以下のパラメータを指定できる
@@ -114,6 +115,53 @@ SINETStream ユーザガイド
             * 接続タイムアウト値 (秒) を指定する
 > (*) `automatic_reconnect`, `connection_timeout` は
 > Java APIのみで指定できるパラメータである。Python API では指定できない。
+
+* receive_maximum (MQTTv5のみ)
+    * デフォルト: 65Ki
+    * QoS > 0 のときの同時処理数を制限する。
+* maximum_packet_size (MQTTv5のみ)
+    * デフォルト: no limit
+    * readerの最大パケットサイズを制限する。
+* topic_alias_maximum (MQTTv5のみ)
+    * デフォルト: 0
+    * readerのトピック・エイリイアスの数を制限する。
+* request_response_info (MQTTv5のみ)
+    * デフォルト: false
+    * writerがreaderにリクエスト・レスポンス情報
+* request_problem_info (MQTTv5のみ)
+    * デフォルト: true
+    * エラー時にReason Stringを返すがfalseに設定するとPUBLISH/CONNACK/DISCONNECでしか返さなくなる。
+* user_property
+    * ユーザープロパティを設定する。
+* auth_method
+    * デフォルト: null
+* auth_data
+    * デフォルト: null
+    * 拡張認証データを設定する。
+* clean_session (MQTTV3)
+    * 再起動、再接続で状態を記憶するかどうか
+* clean_start (MQTTv5のみ)
+    * デフォルト: true
+    * 再起動・再接続に備えてセッションを維持しないかどうか。
+* session_expiry_interval (MQTTv5のみ)
+    * デフォルト: null(無制限)
+    * セッションを維持する時間(単位は秒)を指定する。
+    * 0を指定するとコネクションが切れたらすぐにセッションが終了する。
+* connect
+    * max_reconnect_delay (Java&MQTTv5のみ)
+        * デフォルト: 128000
+        * 再接続の間隔の最大時間(単位はミリ秒)
+    * use_subscription_identifiers (Java&MQTTv5のみ)
+        * デフォルト: true
+        * サブスクリプション識別子をつかうかどうか設定する。
+    * send_reason_messages (Java&MQTTv5のみ)
+        * デフォルト: false
+        * エラー時にReason Stringプロパティを付けるかどうか。
+* max_queued_messages_set (Pythonのみ)
+    * queue_size
+        * デフォルト: 0
+        * 出力メッセージキューの最大長を設定する。
+        * 0を設定すると無制限になる。
 
 ## MQTTの設定例
 

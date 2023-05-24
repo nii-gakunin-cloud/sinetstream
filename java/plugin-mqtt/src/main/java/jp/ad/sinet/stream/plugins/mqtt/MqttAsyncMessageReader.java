@@ -37,10 +37,16 @@ import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
 @Log
 public class MqttAsyncMessageReader extends MqttAsyncBaseIO implements PluginAsyncMessageReader, MqttReader {
+    private final Lock lock = new ReentrantLock();
+    private final Condition connectionChanged = lock.newCondition();
+    private boolean connected = false;
 
     @Getter
     private final List<String> topics;
@@ -84,6 +90,31 @@ public class MqttAsyncMessageReader extends MqttAsyncBaseIO implements PluginAsy
     @Override
     public void connect() {
         super.connect();
+
+        lock.lock();
+        try {
+            while (connected != true)
+                connectionChanged.awaitUninterruptibly();
+                //connectionChanged.await();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    @Override
+    public void onConnectionComplete(boolean reconnect, String serverURI) {
+        subscribe();
+
+        lock.lock();
+        try {
+            connected = true;
+            connectionChanged.signalAll();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private void subscribe() {
         try {
             int[] qos = new int[this.topics.size()];
             Arrays.fill(qos, this.getConsistency().getQos());
@@ -92,12 +123,19 @@ public class MqttAsyncMessageReader extends MqttAsyncBaseIO implements PluginAsy
         } catch (MqttException e) {
             throw new SinetStreamIOException(e);
         }
-        reconnectDelay = reconnectMinDelay;
     }
 
     @Override
     public void disconnect() throws MqttException {
         client.disconnect().waitForCompletion();
+
+        lock.lock();
+        try {
+            connected = false;
+            connectionChanged.signalAll();
+        } finally {
+            lock.unlock();
+        }
     }
 
     public String getTopic() {

@@ -1,5 +1,5 @@
 <!--
-Copyright (C) 2020 National Institute of Informatics
+Copyright (C) 2020-2023 National Institute of Informatics
 
 Licensed to the Apache Software Foundation (ASF) under one
 or more contributor license agreements.  See the NOTICE file
@@ -25,7 +25,7 @@ SINETStream User Guide
 
 # MQTT-specific parameters
 
-* clean_session
+* clean_session (MQTTv3 only)
     * Whether to remember the state on reboot and reconnect.
 * protocol
     * MQTT Version.
@@ -94,6 +94,7 @@ SINETStream User Guide
         * payload (required)
         * qos
         * retain
+	* delay_interval (MQTTv5 only)
 * reconnect_delay_set
     * Parameters related to the waiting time before reconnecting. Specify by a mapping.
     * The following parameters can be specified.
@@ -112,6 +113,51 @@ SINETStream User Guide
             * The timeout value of connection (in seconds).
 > (*) `automatic_reconnect` and `connection_timeout`
 > are valid only in the Java API.
+
+* receive_maximum (MQTTv5 only)
+    * default: 65Ki
+    * the limit of QoS 1 and QoS 2 publications that the client is willing to process concurrently.
+* maximum_packet_size (MQTTv5 only)
+    * default: no limit
+    * the Maximum Packet Size the client is willing to accept.
+* topic_alias_maximum (MQTTv5 only)
+    * default: 0
+    * the highest value that the Client will accept as a Topic Alias sent by the Server.
+* request_response_info (MQTTv5 only)
+    * default: false
+    * the server MAY return response information in the CONNACK.
+* request_problem_info (MQTTv5 only)
+    * default: true
+    * If set to false, the server MAY return a Reason String or User Properties  on a CONNACK or DISCONNECT, but must not send a Reason String or User Properties on any packet other than PUBLISH, CONNACK or DISCONNECT.
+    * If set to true, the server MAY return a Reason String or User Properties on any packet where it is allowed.
+* user_property
+* auth_method
+    * default: null
+    * If set, this value contains the name of the authentication method to be used for extended authentication.
+* auth_data
+    * default: null
+    * If set, this byte array contains the extended authentication data, defined by the Authenticated Method. It is a protocol error to include Authentication Data if there is no Authentication Method.
+* clean_start (MQTTv5 only)
+    * default: true
+    * Sets whether the client and server should remember state across restarts and reconnects.
+* session_expiry_interval (MQTTv5 only)
+    * default: null(unlimited)
+    * This value, measured in seconds, defines the maximum time that the broker will maintain the session for once the client disconnects. Clients should only connect with a long Session Expiry interval if they intend to connect to the server at some later point in time.
+* connect
+    * max_reconnect_delay (Java&MQTTv5 only)
+        * default: 128000
+        * Set the maximum time to wait between reconnects
+    * use_subscription_identifiers (Java&MQTTv5 only)
+        * default: true
+        * Sets whether to automatically assign subscription identifiers when subscribing to a topic.
+    * send_reason_messages (Java&MQTTv5 only)
+        * default: false
+	* Append  Reason String property on error.
+* max_queued_messages_set (Python only)
+    * queue_size
+        * default: 0
+        * Set the maximum number of messages in the outgoing message queue.
+        * 0 means unlimited.
 
 ## The configuration example of MQTT
 

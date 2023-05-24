@@ -39,19 +39,17 @@ class ProviderUtils<T extends SinetMessageProvider> {
         this.providerClass = providerClass;
     }
 
-    @SuppressWarnings("WeakerAccess")
-    T getProvider(String type) {
+    //@SuppressWarnings("WeakerAccess")
+    T getProvider(Map<String, ?> parameters) {
+        String type = getProviderType(parameters);
         ServiceLoader<T> loader = ServiceLoader.load(providerClass);
         for (T provider : loader) {
-            if (provider.getType().equals(type)) {
+            //System.err.println("proviertype=" + provider.getType());
+            if (provider.getType().equals(type) && provider.isProvider(parameters)) {
                 return provider;
             }
         }
         throw new UnsupportedServiceTypeException();
-    }
-
-    T getProvider(Map<String, ?> parameters) {
-        return getProvider(getProviderType(parameters));
     }
 
     private String getProviderType(Map<String, ?> parameters) {

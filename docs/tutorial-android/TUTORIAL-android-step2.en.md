@@ -38,6 +38,9 @@ under the License.
 3.4 Main screen
 3.4.1 Layout of the main screen
 3.4.2 Publishing sensor data
+4. Set location information of the Android device
+5. Operational hints
+5.1 Keep broker connection even under poor radio conditions
 
 Appendix
 A.1 Source code
@@ -89,7 +92,7 @@ will be automatically generated.
 [SINETStream library](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/tutorial-android/../userguide/android.html)
 uses the
 [MQTT(Eclipse Mosquitto)](https://mosquitto.org/)
-as a messaging system.
+as a underlying messaging system.
     * The implementation of the
 [Paho MQTT Android Client](https://www.eclipse.org/paho/index.php?page=clients/java/index.php)
 requires `Android 8.0+` as its running condition.
@@ -196,7 +199,7 @@ If so, it is convenient to have sender identification information.
   * The sub-item `Publisher` describes the sender information,
 and `Notes` describes supplementary information.
 * Location
-  * This item represents the geographical location (latitude, longitude)
+  * This item represents the geographic location (latitude, longitude)
 of the Android device running this "Sensor" application.
   * As of version 1.5, this item is provided for setting the initial
 value manually. Automatic setting and updating is not supported.
@@ -384,6 +387,59 @@ Those values remain after pressing the `STOP` button.
 3. If not in `RUN` state (c), statistics can be cleared by pressing
 the reset button.
 4. You can restart while holding the previous statistics information.
+
+
+## 4. Set location information of the Android device
+
+User may want to embed the Android device location as a part of JSON data being sent from the "Sensor" application.
+If the Android device is installed somewhere on a fixed place, user can set the known geographic location (latitude, longitude) of the place manually. And if the device is expected to move around, it is convenient to enable the `automatic location update` mode.
+
+Please see the companion document
+[TUTORIAL - Automatic update of the device location data](TUTORIAL-android-step2-location.en.md)
+for details.
+
+
+## 5. Operational hints
+### 5.1 Keep broker connection even under poor radio conditions
+
+As the nature of mobile communication, radio signal conditions change all the time.
+That is, even after the broker connection has established, message transmission might stalled at some time. Even worse, the broker connection might be closed due to no responses from peer.
+
+As mentioned earlier, the Android
+[SINETStream library](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/tutorial-android/../userguide/android.html)
+uses the
+[MQTT(Eclipse Mosquitto)](https://mosquitto.org/)
+as a underlying messaging system.
+Namely,
+[Paho Android Service](https://www.eclipse.org/paho/index.php?page=clients/android/index.php)
+, which is a `MQTT client library` for Android.
+The library features the monitoring of the broker connection status.
+
+When the `MQTT client library` detects a connection failure, the "Sensor" application immediately aborts the program as the default behavior.
+However, user can adjust parameters of the
+[MqttConnectOptions](https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttConnectOptions.html)
+so that the `MQTT client library` try to keep the connection up and running.
+Please try following measures.
+
+  |No.|Method|Expected effects|Setting route|
+  |:-|:-|:-|:-|
+  |1|Enable automatic reconnect|If the broker connection has lost, restart connect attempts repeatedly|Settings -> MQTT -> MQTT Connect -> Enable Automatic Reconnect|
+  |2|Extend the keep alive interval timer|Adjust sensitivity against temporary communication link failure|Settings -> MQTT -> MQTT Connect -> Keep Alive Interval|
+  |3|Extend the connection establishing wait timer|Same as above|Settings -> MQTT -> MQTT Connect -> Connection Timeout|
+  |4|Enable the MQTT message sending queue|Allow user to call next send request without waiting for the completion|Settings -> MQTT -> MQTT Protocol -> MQTT InFlight -> Enable Max InFlight Messages|
+  |5|Expand the slot of the MQTT message sending queue|Absorb temporally MQTT message congestions|Settings -> MQTT -> MQTT Protocol -> MQTT InFlight -> InFlight|
+
+Note that there are some cases that above `MqttConnectOptions` adjustment does not work.
+* Broker connection parameter is wrong at the first place.
+> If automatic reconnect is enabled, false reconnect attempt continues indefinitely.
+> Please abort the "Sensor" application by "Swipe upwards" operation.
+See [\"Close apps\"](https://support.google.com/android/answer/9079646?hl=en#zippy=%2Cclose-apps) for details.
+* Broker application has abnormally terminated.
+* Running environ which hosts the broker application has restarted or stopped.
+> If the "Sensor" application tries next reconnect without success, the program will terminates as an irrecoverable error.
+
+Note also that once the MQTT message sending queue slot (which has set by No. 4 and 5) has exhausted, following send requests will be ignored.
+If some slot has reopened afterward, application can issue send requests again.
 
 
 ## Appendix

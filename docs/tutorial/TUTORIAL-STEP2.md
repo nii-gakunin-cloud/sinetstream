@@ -93,7 +93,7 @@ SINETStreamが利用するバックエンドのメッセージングシステム
 
 ```console
 [user00@host-broker]$ docker run -d --name broker --hostname broker \
-                      -p 1883:1883 -p 9092:9092 sinetstream/tutorial:1.0.0
+                      -p 1883:1883 -p 9092:9092 harbor.vcloud.nii.ac.jp/sinetstream/tutorial:1.8
 ```
 
 コンテナが正常に起動したことを確認するために、状態を表示させます。
@@ -101,7 +101,7 @@ SINETStreamが利用するバックエンドのメッセージングシステム
 ```console
 [user00@host-broker]$ docker ps -l
 CONTAINER ID        IMAGE                        COMMAND                  CREATED              STATUS              PORTS                                            NAMES
-xxxxxxxxxxxx        sinetstream/tutorial:1.0.0   "/usr/local/bin/supe…"   About a minute ago   Up About a minute   0.0.0.0:1883->1883/tcp, 0.0.0.0:9092->9092/tcp   broker
+xxxxxxxxxxxx        sinetstream/tutorial:1.8   "/usr/local/bin/supe…"   About a minute ago   Up About a minute   0.0.0.0:1883->1883/tcp, 0.0.0.0:9092->9092/tcp   broker
 
 ```
 
@@ -145,7 +145,7 @@ xxxxxxxxxxxx        sinetstream/tutorial:1.0.0   "/usr/local/bin/supe…"   Abou
 
 ```console
 [user00@host-reader]$ docker run -d --name reader --hostname reader -e ENABLE_BROKER=false \
-                      --add-host=broker:192.168.1.xxx sinetstream/tutorial:1.0.0
+                      --add-host=broker:192.168.1.xxx harbor.vcloud.nii.ac.jp/sinetstream/tutorial:1.8
 ```
 
 > `192.168.1.XXX`には実際に使用する環境の`Broker`のIPアドレスを指定してください。
@@ -155,7 +155,7 @@ xxxxxxxxxxxx        sinetstream/tutorial:1.0.0   "/usr/local/bin/supe…"   Abou
 ```console
 [user00@host-reader]$ docker ps -l
 CONTAINER ID        IMAGE                        COMMAND                  CREATED             STATUS              PORTS                NAMES
-xxxxxxxxxxxx        sinetstream/tutorial:1.0.0   "/usr/local/bin/supe…"   About a minute ago  Up About a minute   1883/tcp, 9092/tcp   reader
+xxxxxxxxxxxx        sinetstream/tutorial:1.8   "/usr/local/bin/supe…"   About a minute ago  Up About a minute   1883/tcp, 9092/tcp   reader
 ```
 
 `STATUS` が `Up` と表示されていれば、コンテナが正常に起動しています。
@@ -206,7 +206,7 @@ SINETStreamのPython3ライブラリをコンテナ環境にインストール�
 [user01@reader]$ pip3 install --user sinetstream-kafka sinetstream-mqtt
 Collecting sinetstream-kafka
 (中略)
-Successfully installed avro-python3-1.10.0 kafka-python-2.0.2 paho-mqtt-1.5.1 promise-2.3 pycryptodome-3.9.9 pyyaml-3.13 sinetstream-1.4.0 sinetstream-kafka-1.4.0 sinetstream-mqtt-1.4.0 six-1.15.0 
+Successfully installed avro-python3-1.10.0 kafka-python-2.0.2 paho-mqtt-1.5.1 promise-2.3 pycryptodome-3.9.9 pyyaml-3.13 sinetstream-1.4.0 sinetstream-kafka-1.4.0 sinetstream-mqtt-1.4.0 six-1.15.0
 ```
 
 最後に `Successfully installed ...`と表示されていれば、ライブラリのインストールに成功しています。
@@ -286,7 +286,7 @@ SINETStreamのPython3 APIを用いて作成された`Reader`のサンプルプ�
 
 ```console
 [user00@host-writer]$ docker run -d --name writer --hostname writer -e ENABLE_BROKER=false \
-                      --add-host=broker:192.168.1.xxx sinetstream/tutorial:1.0.0
+                      --add-host=broker:192.168.1.xxx harbor.vcloud.nii.ac.jp/sinetstream/tutorial:1.8
 ```
 
 > `192.168.1.XXX`には実際に使用する環境の`Broker`のIPアドレスを指定してください。
@@ -296,7 +296,7 @@ SINETStreamのPython3 APIを用いて作成された`Reader`のサンプルプ�
 ```console
 [user00@host-writer]$ docker ps -l
 CONTAINER ID        IMAGE                        COMMAND                  CREATED             STATUS              PORTS                NAMES
-xxxxxxxxxxxx        sinetstream/tutorial:1.0.0   "/usr/local/bin/supe…"   About a minute ago  Up About a minute   1883/tcp, 9092/tcp   writer
+xxxxxxxxxxxx        sinetstream/tutorial:1.8   "/usr/local/bin/supe…"   About a minute ago  Up About a minute   1883/tcp, 9092/tcp   writer
 ```
 
 `STATUS` が `Up` と表示されていれば、コンテナが正常に起動しています。
@@ -343,7 +343,7 @@ SINETStreamのPython3ライブラリをコンテナ環境にインストール�
 [user01@writer]$ pip3 install --user sinetstream-kafka sinetstream-mqtt
 Collecting sinetstream-kafka
 (中略)
-Successfully installed avro-python3-1.10.0 kafka-python-2.0.2 paho-mqtt-1.5.1 promise-2.3 pycryptodome-3.9.9 pyyaml-3.13 sinetstream-1.4.0 sinetstream-kafka-1.4.0 sinetstream-mqtt-1.4.0 six-1.15.0 
+Successfully installed avro-python3-1.10.0 kafka-python-2.0.2 paho-mqtt-1.5.1 promise-2.3 pycryptodome-3.9.9 pyyaml-3.13 sinetstream-1.4.0 sinetstream-kafka-1.4.0 sinetstream-mqtt-1.4.0 six-1.15.0
 ```
 
 最後に `Successfully installed ...`と表示されていれば、ライブラリのインストールに成功しています。

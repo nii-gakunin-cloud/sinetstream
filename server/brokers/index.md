@@ -27,6 +27,6 @@ under the License.
 
 * [サーバ構築手順](サーバ構築手順.md)
     * [プライベート認証局で証明書を作成する](プライベート認証局で証明書を作成.md)
-    * [Kafka brokerの構築手順](Kafka%20brokerの構築手順.md)
+    * [Kafka brokerの構築手順](Kafkabrokerの構築手順.md)
     * [mosquitto(MQTT broker)の構築手順](mosquitto構築手順.md)
 

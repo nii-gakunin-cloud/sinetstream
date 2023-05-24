@@ -36,10 +36,17 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.TimeUnit;
 
 @Log
 public class MqttMessageReader extends MqttSyncBaseIO implements PluginMessageReader, MqttReader {
+
+    private final Lock lock = new ReentrantLock();
+    private final Condition connectionChanged = lock.newCondition();
+    private boolean connected = false;
 
     @Getter
     private final List<String> topics;
@@ -61,6 +68,31 @@ public class MqttMessageReader extends MqttSyncBaseIO implements PluginMessageRe
     @Override
     public void connect() {
         super.connect();
+
+        lock.lock();
+        try {
+            while (connected != true)
+                connectionChanged.awaitUninterruptibly();
+                //connectionChanged.await();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    @Override
+    public void onConnectionComplete(boolean reconnect, String serverURI) {
+        subscribe();
+
+        lock.lock();
+        try {
+            connected = true;
+            connectionChanged.signalAll();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private void subscribe() {
         try {
             int[] qos = new int[this.topics.size()];
             Arrays.fill(qos, this.getConsistency().getQos());
@@ -69,12 +101,19 @@ public class MqttMessageReader extends MqttSyncBaseIO implements PluginMessageRe
         } catch (MqttException e) {
             throw new SinetStreamIOException(e);
         }
-        reconnectDelay = reconnectMinDelay;
     }
 
     @Override
     public void disconnect() throws MqttException {
         client.disconnect();
+
+        lock.lock();
+        try {
+            connected = false;
+            connectionChanged.signalAll();
+        } finally {
+            lock.unlock();
+        }
     }
 
     @SneakyThrows(InterruptedException.class)

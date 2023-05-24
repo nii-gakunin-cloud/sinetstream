@@ -1,0 +1,14 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base",
+    "group:allNonMajor"
+  ],
+  "prHourlyLimit": 0,
+  "prConcurrentLimit": 0,
+  "timezone": "Asia/Tokyo",
+  "schedule": [
+    "after 8am and before 1pm on friday"
+  ],
+  "assignees": ["koie"]
+}

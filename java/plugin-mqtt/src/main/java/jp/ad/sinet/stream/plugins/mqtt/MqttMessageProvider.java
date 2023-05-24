@@ -24,8 +24,14 @@ package jp.ad.sinet.stream.plugins.mqtt;
 import jp.ad.sinet.stream.spi.*;
 import lombok.extern.java.Log;
 
+import java.util.Map;
+
 @Log
 public class MqttMessageProvider implements MessageWriterProvider, MessageReaderProvider, AsyncMessageWriterProvider, AsyncMessageReaderProvider {
+
+    private static <T> T safeCast(Object o, Class<T> cls) {
+        return o != null && cls.isInstance(o) ? cls.cast(o) : null;
+    }
 
     @Override
     public PluginMessageWriter getWriter(WriterParameters params) {
@@ -54,5 +60,17 @@ public class MqttMessageProvider implements MessageWriterProvider, MessageReader
     @Override
     public String getType() {
         return "mqtt";
+    }
+
+    @Override
+    public boolean isProvider(Map<String, ?> params) {
+        String protocol = safeCast(params.get("protocol"), String.class);
+        try {
+            log.fine(() -> "MqttMessageReader.isProvider -> " + (protocol == null || MqttVersion.valueOf(protocol) != null));
+            return protocol == null || MqttVersion.valueOf(protocol) != null;
+        }
+        catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 }

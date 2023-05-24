@@ -176,7 +176,7 @@ CONTAINER ID        IMAGE               COMMAND             CREATED             
     - [Get Docker Engine - Community for CentOS](https://docs.docker.com/install/linux/docker-ce/centos/)
 
 その他のOSについてはDocker公式サイトの
-[Supported platforms](https://docs.docker.com/install/#supported-platforms) 
+[Supported platforms](https://docs.docker.com/install/#supported-platforms)
 に記載されているリンク先などを参照してください。
 
 

@@ -86,11 +86,12 @@ class S3Cli {
                 if (s3parameters.getEndpointURI() != null) {
                     builder.endpointOverride(s3parameters.getEndpointURI());
                 }
+                builder.forcePathStyle(true);  // XXX Hack
                 s3 = builder.build();
                 return;
             }
             catch (RuntimeException e) {
-                log.info("S3:" + e);
+                // log.info("S3:" + e);
                 lastex = e;
             }
         }

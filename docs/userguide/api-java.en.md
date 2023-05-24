@@ -25,24 +25,24 @@ SINETStream User Guide
 
 # Java API
 
-* Example
-* The summary of Java API Class
-    * MessageWriterFactory Class
-    * MessageWriter Class
-    * AsyncMessageWriter Class
-    * MessageReaderFactory Class
-    * MessageReader Class
-    * AsyncMessageReader Class
-    * Message Class
-    * Metrics Class
-    * The summary of exception
-* Messaging system-specific parameters
-    * Apache Kafka
-    * MQTT (Eclipse Paho)
-* How to show a cheat sheet
+<pre>
+1. Example
+2. Summary of Java API Class
+ 2.1 MessageWriterFactory Class
+ 2.2 MessageWriter Class
+ 2.3 AsyncMessageWriter Class
+ 2.4 MessageReaderFactory Class
+ 2.5 MessageReader Class
+ 2.6 AsyncMessageReader Class
+ 2.7 Message Class
+ 2.8 Metrics Class
+ 2.9 The summary of exception
+3. Messaging system-specific parameters
+4. How to show a cheat sheet
+</pre>
 
 
-## Example
+## 1. Example
 
 First, a simple example is shown.
 
@@ -120,7 +120,7 @@ Invoke the `getReader()` method on this `factory` to get a reader object to rece
 Then, invoke the `read()` method of the reader object to receive a message from the broker.
 If it receives no message for the time specified by the `receiveTimeout` parameter after being invoked, it will return `null` and exit the loop.
 
-## Summary of Java API Class
+## 2. Summary of Java API Class
 
 ### Main Class
 
@@ -137,7 +137,7 @@ If it receives no message for the time specified by the `receiveTimeout` paramet
 * jp.ad.sinet.stream.utils.MessageReaderFactory
     * The factory class to create the MessageReader objects.
 
-### MessageWriterFactory
+### 2.1 MessageWriterFactory Class
 
 The Factory class for acquiring `MessageWriter`.
 
@@ -189,7 +189,7 @@ MessageWriterFactory<String> factory =
         .build();
 ```
 
-### MessageWriter
+### 2.2 MessageWriter Class
 
 The class to send messages to the broker.
 
@@ -207,7 +207,7 @@ try (MessageWriter<String> writer = factory.getWriter()) {
 }
 ```
 
-### AsyncMessageWriter
+### 2.3 AsyncMessageWriter Class
 
 The class to send messages to the broker.
 
@@ -240,7 +240,7 @@ The main methods of Promise are shown below.
    – Triggered in all cases even if regardless of the processing result of the deferred object
 
 
-### MessageReaderFactory
+### 2.4 MessageReaderFactory Class
 
 The Factory class to acquire an `MessageReader` instance.
 
@@ -297,7 +297,7 @@ MessageReaderFactory<String> factory =
         .build();
 ```
 
-### MessageReader
+### 2.5 MessageReader Class
 
 The class to receive messages from the brokers.
 
@@ -322,7 +322,7 @@ try (MessageReader<String> reader = factory.getReader()) {
 The return value of the `read()` method is an instance of the `Message<T>` class.
 The topic name can be obtained by the `getTopic()` method and the message value can be obtained by the `getValue()` method.
 
-### AsyncMessageReader
+### 2.6 AsyncMessageReader Class
 
 The class to receive messages from the brokers.
 
@@ -347,7 +347,7 @@ reader.close();
 ```
 
 
-### Message
+### 2.7 Message Class
 
 The class to represent a message received from the brokers.
 
@@ -362,7 +362,7 @@ The class to represent a message received from the brokers.
     * The time the message was sent (UNIX time) in microsecond.
     * `0` indicates no timestamp is set
 
-### Metrics
+### 2.8 Metrics Class
 
 Metrics class
 You can get metrics information by invoking the getMetrics() method for Reader/Writer objects.
@@ -474,7 +474,7 @@ try (MessageReader<String> reader = factory.getReader()) {
 }
 ```
 
-### The summary of exception
+### 2.9 The summary of exception
 
 | Exception name | Method name | |
 | ---  | --- | --- |
@@ -496,13 +496,13 @@ Note: AuthorizationException may not raise in the following cases:
 1. When using Kafka with `Consistency` set to `AT_MOST_ONCE`
     * The client does not wait for a response from the broker after sending a message. Therefore, the client cannot detect an error on the broker side.
 
-## Messaging system-specific parameters
+## 3. Messaging system-specific parameters
 
 * [Kafka-specific parameters](config-kafka.en.md)
 * [MQTT-specific parameters](config-mqtt.en.md)
 * [S3-specific parameters](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/userguide/config-s3.html)
 
-## How to show a cheat sheet
+## 4. How to show a cheat sheet
 
 Run `java -jar` followed by the API's jar filename to show a cheat sheet.
 

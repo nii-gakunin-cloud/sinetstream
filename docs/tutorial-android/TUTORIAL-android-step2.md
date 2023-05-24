@@ -39,6 +39,8 @@ under the License.
 3.4.1 主画面の画面構成
 3.4.2 センサー情報の配信処理
 4. Android端末位置情報の設定
+5. 運用ヒント
+5.1 不安定な電波状況下でもブローカとの接続状態をなるべく維持する
 
 付録
 A.1 ソースコード
@@ -90,7 +92,7 @@ Webインタフェースでグラフ化するという動作の流れになり�
 [MQTT(Eclipse Mosquitto)](https://mosquitto.org/)
 に対応しています。
     * MQTTのAndroid版の実装である
-[Paho MQTT Android Client](https://www.eclipse.org/paho/index.php?page=clients/java/index.php)
+[Paho Android Service](https://www.eclipse.org/paho/index.php?page=clients/java/index.php)
 ライブラリを利用しており、この動作条件（Android8.0以上）の影響です。
 
 * バックエンドシステムの事前準備
@@ -99,7 +101,7 @@ Webインタフェースでグラフ化するという動作の流れになり�
   * バックエンド側のホストサーバにて、`docker run`コマンドにより本チュートリアル用のコンテナイメージの導入とサーバプログラム群の起動を実施します。
 Android側の作業着手前にこちらを済ませてください。
   * 手順詳細は、前項に戻り
-[4. バックエンド側の作業](TUTORIAL-android-step2-overview.md#4-バックエンド側の作業)
+[3.1 バックエンド側の作業 (その1)](TUTORIAL-android-step2-overview.md#31-バックエンド側の作業-その1)
 を参照ください。
 
 * ネットワーク環境
@@ -334,14 +336,53 @@ Android版の
 
 ## 4. Android端末位置情報の設定
 
-利用者の使い方によっては、本アプリで配信するJSONデータにAndroid端末の位置情報を埋め込む必要があると思います。
-同端末を固定の場所に設置する場合は位置情報を静的に設定することで良いのですが、
-これを移動体に載せる場合は位置情報を自動的に更新できると便利です。
+利用者によっては、本アプリで配信するJSONデータにAndroid端末の位置情報を埋め込みたい用途があると思います。
+当該Android端末を固定的な場所に設置して運用する場合、既知の位置情報（緯度、経度）を手動で設定できます。
+あるいはそのAndroid端末を移動しながら運用する場合、`位置情報の自動更新`モードを有効にすると便利です。
 
 本件の詳細に関しては別紙
 [端末位置情報の自動更新](TUTORIAL-android-step2-location.md)
 を参照してください。
 
+
+## 5. 運用ヒント
+### 5.1 不安定な電波状況下でもブローカとの接続状態をなるべく維持する
+
+移動体通信の宿命として、電波受信状況は時々刻々と変動します。
+すなわち、対向ブローカとの接続を確立しても、状況次第でメッセージやりとりが滞ることは有り得ます。さらには相手側無応答により接続が切られるかもしれません。
+
+前述の通り、Android版の
+[SINETStreamライブラリ](../userguide/android.md)
+は、足回りのメッセージングシステムとして
+[MQTT(Eclipse Mosquitto)](https://mosquitto.org/)
+のAndroid版クライアントライブラリ
+[Paho Android Service](https://www.eclipse.org/paho/index.php?page=clients/android/index.php)
+を用いています。この`MQTTクライアントライブラリ`の機能の一つとして、対向ブローカとの通信状態の監視があります。
+
+`MQTTクライアントライブラリ`が対向ブローカとの何らかの通信異常を検出した場合、直ちにプログラムを異常終了させることが本アプリの既定動作です。
+しかしながら、`MQTTクライアントライブラリ`使用上の工夫（具体的には`MQTT接続オプション`
+[MqttConnectOptions](https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttConnectOptions.html)
+の調整）により、通信路障害に対してある程度の抗堪性を確保することが可能です。
+以下の各項目を試してみてください。
+
+  |項番|手法|期待される効果|設定方法|
+  |:-|:-|:-|:-|
+  |1|MQTTの自動再接続を有効にする|ブローカとの接続断を検出したら、再接続試行を繰り返す|Settings -> MQTT -> MQTT Connect -> Enable Automatic Reconnect|
+  |2|ブローカ死活監視のタイムアウト値を延長する|一時的な通信路障害に対して鈍感にする|Settings -> MQTT -> MQTT Connect -> Keep Alive Interval|
+  |3|ブローカ接続完了待ちのタイムアウト値を延長する|同上|Settings -> MQTT -> MQTT Connect -> Connection Timeout|
+  |4|MQTTのメッセージ送信待ち行列を有効にする|送信要求に対する応答を待たずに次を送信可能とする|Settings -> MQTT -> MQTT Protocol -> MQTT InFlight -> Enable Max InFlight Messages|
+  |5|MQTTのメッセージ送信待ち行列の枠を拡張する|一時的な帯域不足による滞留を吸収する|Settings -> MQTT -> MQTT Protocol -> MQTT InFlight -> InFlight|
+
+なお、上記`MQTT接続オプション`の工夫によっても救済できない場合は存在します。
+* そもそもブローカの接続先指定が間違っている
+> 本アプリを「上方スワイプ」操作にて強制終了してください。操作方法の詳細は
+[\"アプリを終了する\"](https://support.google.com/android/answer/9079646?hl=ja#zippy=%2Cclose-apps%2C%E3%82%A2%E3%83%97%E3%83%AA%E3%82%92%E7%B5%82%E4%BA%86%E3%81%99%E3%82%8B)
+を参照ください。
+* ブローカ機能を提供するアプリケーションが異常終了した
+* ブローカをホストしている動作環境が再起動または停止した
+> 本アプリが次に再接続を試みた契機で接続拒否されるとプログラムを異常終了します。
+
+また、項番`4`および`5`で設定した送信待ち行列の枠を使い切った場合、以降の送信要求は無視されます。この枠に空きが出れば、本アプリはまた送信要求を発行できるようになります。
 
 ## 付録
 ### A.1 ソースコード

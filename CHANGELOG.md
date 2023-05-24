@@ -10,6 +10,46 @@ https://keepachangelog.com/
 ### Security
 --->
 
+## [v1.8.0] - 2023-05-XX
+
+### Added
+
+- Support MQTTv5 (Python, Java)
+- python/sample/cli, java/sample/cli
+    - CLI tool (Python, Java)
+    - `sinetstream_cli` is a reader/writer without preparing `.sinetstream_config.yml`
+    - All parameters can be specified on command line.
+- Android
+    - sinetstream-android (lib)
+        - Add support for interactions with config-server.
+    - sinetstream-android-helper (lib)
+        - Add support for some new sensor types.
+        - Add support for runtime permission checks in collective way.
+    - sinetstream-andorid-echo (app)
+        - Add SINETStream settings screen for remote configuration.
+    - sinetstream-andorid-sensor-publisher (app)
+        - Add SINETStream settings screen for remote configuration.
+
+### Changed
+
+- Reimplemented auto-reconnect (Java)
+- Android
+    - sinetstream-android (lib)
+        - Hide debug logging unless otherwise explicitly specified.
+    - sinetstream-android-helper (lib)
+        - Integrate untime permission handling tasks as `PermissionHandler`.
+        - Expand sensor interval timer resolution: 1 sec -> 100 ms
+    - sinetstream-andorid-echo (app)
+        - If predefined parameters exist, read them without user interventions.
+    - sinetstream-andorid-sensor-publisher (app)
+        - Check runtime permissions in collective way by using `PermissionHandler` in libhelper.
+        - If predefined parameters exist, read them without user interventions.
+
+### Security
+
+- Update versions of dependent packages
+- Use safe YAML loader to load `.sinetstream_config.yml` (Java)
+
 ## [v1.7.2] - 2022-09-22
 
 ### Security

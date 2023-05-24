@@ -142,14 +142,14 @@ public class MessageUtils {
         if (value instanceof Boolean) {
             return (Boolean) value;
         } else if (value instanceof String) {
-			String txtValue = (String) value;
-			if (txtValue.equalsIgnoreCase("true")) {
-				return true;
-			} else if (txtValue.equalsIgnoreCase("false")) {
-				return false;
-			} else {
-				throw new SinetStreamException("value (" + txtValue + ") cannot convert to Boolean");
-			}
+            String txtValue = (String) value;
+            if (txtValue.equalsIgnoreCase("true")) {
+                return true;
+            } else if (txtValue.equalsIgnoreCase("false")) {
+                return false;
+            } else {
+                throw new SinetStreamException("value (" + txtValue + ") cannot convert to Boolean");
+            }
         } else {
             return null;
         }
@@ -254,5 +254,9 @@ public class MessageUtils {
                     .collect(Collectors.toList());
         }
         return Collections.emptyList();
+    }
+
+    public static <T> T or(T a, T b) {
+        return a != null ? a : b;
     }
 }

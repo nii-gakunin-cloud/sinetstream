@@ -19,22 +19,20 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-<!-- NOTYET
 [English](TUTORIAL-android-step2-location.en.md)
--->
 
 # チュートリアル - 端末位置情報の自動更新
 
 <em>目次</em>
 <pre>
 1. 概要
-2. Android端末位置情報の自動更新方法
+2. Android端末位置情報の追跡手法
 3. 本アプリ主画面の構成変更
 4. Android端末の位置情報を扱うための設定
 4.1 Androidシステム側の設定
 4.1.1 システム設定における位置情報設定画面への移動
-4.1.2 高精度の位置情報取得を可能とする設定（Android8）
-4.1.3 高精度の位置情報取得を可能とする設定（Android9以上）
+4.1.2 高精度の位置情報取得を可能とする設定（Android 8）
+4.1.3 高精度の位置情報取得を可能とする設定（Android 9以上）
 4.2 アプリケーション側の設定
 4.2.1 本アプリにおける位置情報設定画面への移動
 4.2.2 動作モードごとの設定方法
@@ -52,10 +50,10 @@ under the License.
         "sysinfo": {},
         "userinfo": {},
         "location": {
-            "latitude": "139.767120", 
+            "latitude": "139.767120",
             "longitude": "35.681236"
         }
-    }, 
+    },
     "sensors": []
 }
 ```
@@ -68,25 +66,28 @@ OSのバージョン違いにより画面構成やシステムメッセージの
 お手元のAndroid端末の動作環境に合わせて適宜読み替えてください。
 
 
-## 2. Android端末位置情報の自動更新方法
+## 2. Android端末位置情報の追跡手法
 
-Androidシステムでは「端末の位置情報を継続的に取得し、適当な契機でユーザアプリケーションに通知する」機構がいくつか用意されています。
-本アプリの実装では下記「GPS、FLP」の何れかの方式をユーザが指定し、位置情報を自動更新できるようにしています。
+Androidシステムでは端末の位置情報を追跡する機構がいくつか用意されており、適当な契機でユーザアプリケーションに通知可能となっています。
+本アプリの実装では下記「`GPS`、`FLP`」の何れかの方式をユーザが指定し、位置情報を自動更新できるようにしています。
 
-* GPS（Global Positioning Satellite）経由
+* GPS（Global Positioning Satellite）による測位
   * GPS受信信号から算出した位置情報\[1\]を取得します。
   * 上空にGPS衛星を見通せない場合は位置情報更新が止まります。
   * アプリケーション起動時にGPS機能が無効化されていた場合や屋内にしばらくいた場合など、動作状況によっては最初の位置情報を得るまで時間がかかることがあります。
 
-* FLP（Fused Location Provider）経由
-  * Google Play 開発者サービスが提供する「融合された位置予測プロバイダ（FLP）」から位置情報\[1\]を取得します。
-  * 複数の情報源（GPS,NET,Bluetooth,...）から最善と推定される位置情報となりますが、測位制度は情報源により異なります。
-  * いくつかの都市部では、Google Play 開発者サービスによる位置補正を利用したGPS測位精度向上を見込めます\[2\]。
+* FLP（Fused Location Provider）による測位
+  * [Google Play 開発者サービス](https://support.google.com/android/answer/10546414?hl=ja)
+が提供する「[融合された位置予測プロバイダ](
+https://developers.google.com/android/reference/com/google/android/gms/location/FusedLocationProviderClient
+)」\[2\]から位置情報を取得します。
+  * 複数の情報源（`GPS`,`NET`,`Bluetooth`,...）から最善と推定される位置情報となりますが、測位制度は情報源により異なります。
+  * いくつかの都市部では、`Google Play 開発者サービス`による位置補正を利用したGPS測位精度向上を見込めます\[3\]。
 
 <em>〈参考〉</em><br>
 * \[1\] [Location](https://developer.android.com/reference/android/location/Location)
-* \[2\] [Improving urban GPS accuracy for your app](https://android-developers.googleblog.com/2020/12/improving-urban-gps-accuracy-for-your.html)
-* \[2\] [都市部でアプリのGPS精度を向上する方法](https://android-developers-jp.googleblog.com/2020/12/improving-urban-gps-accuracy-for-your-app.html)
+* \[2\] [Android 向けのシンプルでバッテリー効率の高い位置情報 API](https://developers.google.com/location-context/fused-location-provider?hl=ja)
+* \[3\] [都市部でアプリのGPS精度を向上する方法](https://android-developers-jp.googleblog.com/2020/12/improving-urban-gps-accuracy-for-your-app.html)
 
 
 ## 3. 本アプリ主画面の構成変更
@@ -94,8 +95,8 @@ Androidシステムでは「端末の位置情報を継続的に取得し、適�
 ![位置情報有効時の動作画面例](images/step2/location_info.png)
 
 本アプリの設定画面「センサー情報」にて端末位置設定を有効に設定すると、
-動作モード（固定値、あるいはGPSやFLPによる自動取得）ごとの情報表示欄が主画面下部に追加されます（図中ラベル`2`）。
-端末位置を自動取得する動作モードの場合、位置情報取得サービス稼動中であることを示す「羅針盤」アイコンが表示されます（図中ラベル`1`）。
+動作モード（`固定値`、あるいは`GPS`や`FLP`による自動取得）ごとの情報表示欄が主画面下部に追加されます（図中`ラベル2`）。
+端末位置を自動取得する動作モードの場合、位置情報取得サービス稼動中であることを示す「羅針盤」アイコンが表示されます（図中`ラベル1`）。
 
 * 画面(a)は端末位置として固定値を設定する場合の表示例です。
   * 本アプリの設定画面でユーザが指定した緯度経度がそのままJSONに出力されます。
@@ -133,9 +134,9 @@ Androidシステムにおいて端末の位置情報はプライバシー保護�
 Androidシステムバージョンにより画面構成やメニュー構成が異なる可能性はありますが、最終的には位置情報設定用の画面に到達してください。
 
 
-#### 4.1.2 高精度の位置情報取得を可能とする設定（Android8）
+#### 4.1.2 高精度の位置情報取得を可能とする設定（Android 8）
 
-![必要事項の設定（Android8）](images/step2/location_sys_settings_2a.png)
+![必要事項の設定（Android 8）](images/step2/location_sys_settings_2a.png)
 
 本アプリで位置情報の自動更新を有効とするには、以下の3項目を指定どおりに設定する必要があります。
 ここではAndroid8での動作イメージを示します。
@@ -152,13 +153,22 @@ Androidシステムバージョンにより画面構成やメニュー構成が�
 お手数ですが改めて上記の設定状態を満足するようにしてください。
 
 
-#### 4.1.3 高精度の位置情報取得を可能とする設定（Android9以上）
+#### 4.1.3 高精度の位置情報取得を可能とする設定（Android 9以上）
 
-![必要事項の設定（Android9以上）](images/step2/location_sys_settings_2b.png)
+![必要事項の設定（Android 9以上）](images/step2/location_sys_settings_2b.png)
 
-Android9以降は、従来の位置情報モード選択が廃止され、代わりにGoogle Play 開発者サービスと連携する`Locationサービス`に`Google Location Accuracy`項目が追加されました。
+Android9以降は、従来の位置情報モード選択が廃止され、代わりに
+新しいメニュー項目[Google Play 開発者サービス](
+https://support.google.com/android/answer/10546414?hl=ja
+)
+にていくつかの位置情報サービスをまとめて扱うようになりました。
+ここでは[Google 位置情報の制度](
+https://support.google.com/android/answer/3467281?hl=ja#location_accuracy
+)
+に着目してください。
+
 本アプリで位置情報の自動更新を有効とするには、以下の3項目を指定どおりに設定する必要があります。
-ここではAndroid9での動作イメージを示します。
+ここでは`Android 9`での動作イメージを示します。
 
 |項番|設定項目|値|備考|
 |---|---|---|---|
@@ -172,9 +182,9 @@ Android9以降は、従来の位置情報モード選択が廃止され、代わ
 お手数ですが改めて上記の設定状態を満足するようにしてください。
 
 <em>〈参考〉</em><br>
-Android8と9以降の位置情報設定内容の対応関係は以下の通りです。
+Android 8、および9以降の位置情報設定内容の対応関係は以下の通りです。
 
-|Android8|Android9+|
+|Android 8|Android 9+|
 |---|---|
 |Location: On/Off|Location: On/Off|
 |Mode: Battery Saver|N/A|
@@ -197,17 +207,20 @@ Android8と9以降の位置情報設定内容の対応関係は以下の通り�
 ![動作モードごとの設定方法](images/step2/location_app_settings_2.png)
 
 位置情報を利用する場合、まずはグローバルスイッチ（1）を有効に設定してください。
+
 Android端末の位置を固定して使うのか、あるいは移動しながら使うのかにより以降の設定方法が分かれます。
 
 * 位置情報の静的設定（画面d）
   * Android端末の設置場所を固定しつつ位置情報を付加する運用時の設定です。
   * 緯度経度の入力欄（2a）の各項目を選択し、適切な値を設定してください。
   * 緯度と経度は両方同時に設定してください。
-  * 自動更新スイッチ（2b）は無効としてください。
+  * 本モードでは自動更新スイッチ（2b）は無効としてください。
 
 * 位置情報の自動更新（画面e）
   * Android端末を移動しながら位置情報を自動的に更新する運用時の設定です。
   * 自動更新スイッチ（2b）を有効としてください。
-  * 緯度経度の入力欄（2a）に設定された値は無視されます。
-  * 位置情報の自動更新方法を選択できます。ロケーションプロバイダ項目(3)を選択し、ダイアログ（画面f）にて希望のものを指定してください。
+  * 本モードでは緯度経度の入力欄（2a）に設定された値は無視されます。
+  * 動作環境によっては位置情報の情報源（`GPS`、`FLP`）を選択できます。
+  > ご利用のAndroid端末で`FLP`を利用できない場合もあります
+  * ロケーションプロバイダ項目(3)を選択し、ダイアログ（画面f）にて希望のものを指定してください。
 

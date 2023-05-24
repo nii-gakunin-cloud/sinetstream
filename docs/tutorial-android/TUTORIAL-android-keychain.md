@@ -106,10 +106,10 @@ Android端末側でどんな証明書を用意しなければいけないかは�
 * 本書では例として「vm00_cacert.crt」という証明書ファイルを扱います。
 
 ```console
-PC% file ./vm00_cacert.crt 
+PC% file ./vm00_cacert.crt
 ./vm00_cacert.crt: PEM certificate
 
-PC% openssl verify vm00_cacert.crt 
+PC% openssl verify vm00_cacert.crt
 vm00_cacert.crt: C = JP, ST = Example_State, O = Example_Organization, CN = private-ca
 error 18 at 0 depth lookup:self signed certificate
 OK

@@ -71,7 +71,7 @@ SINETStreamが利用するバックエンドのメッセージングシステム
 ホスト環境で以下のコマンドを実行してください。
 
 ```console
-$ docker run -d --name tutorial --hostname broker sinetstream/tutorial:1.0.0
+$ docker run -d --name tutorial --hostname broker harbor.vcloud.nii.ac.jp/sinetstream/tutorial:1.8
 ```
 
 コンテナが正常に起動したことを確認するために、状態を表示させます。
@@ -80,7 +80,7 @@ $ docker run -d --name tutorial --hostname broker sinetstream/tutorial:1.0.0
 ```console
 $ docker ps -l
 CONTAINER ID        IMAGE                        COMMAND                  CREATED              STATUS              PORTS                NAMES
-xxxxxxxxxxxx        sinetstream/tutorial:1.0.0   "/usr/local/bin/supe…"   About a minute ago   Up About a minute   1883/tcp, 9092/tcp   tutorial
+xxxxxxxxxxxx        sinetstream/tutorial:1.8   "/usr/local/bin/supe…"   About a minute ago   Up About a minute   1883/tcp, 9092/tcp   tutorial
 ```
 
 `STATUS` が `Up` と表示されていれば、コンテナが正常に起動しています。
@@ -105,7 +105,7 @@ $ docker exec -it -u user01 tutorial bash
 [user01@broker]$ pip3 install --user sinetstream-kafka sinetstream-mqtt
 Collecting sinetstream-kafka
 (中略)
-Successfully installed avro-python3-1.10.0 kafka-python-2.0.2 paho-mqtt-1.5.1 promise-2.3 pycryptodome-3.9.9 pyyaml-3.13 sinetstream-1.4.0 sinetstream-kafka-1.4.0 sinetstream-mqtt-1.4.0 six-1.15.0 
+Successfully installed avro-python3-1.10.0 kafka-python-2.0.2 paho-mqtt-1.5.1 promise-2.3 pycryptodome-3.9.9 pyyaml-3.13 sinetstream-1.4.0 sinetstream-kafka-1.4.0 sinetstream-mqtt-1.4.0 six-1.15.0
 ```
 
 最後に `Successfully installed ...`と表示されていれば、ライブラリのインストールに成功しています。
@@ -195,6 +195,7 @@ SINETStreamのPython3 APIを用いて作成された`Reader`のサンプルプ�
 GitHubからSINETStreamの設定ファイルを取得します。
 
 ```console
+[user01@broker]$ ss_url=https://raw.githubusercontent.com/nii-gakunin-cloud/sinetstream/main
 [user01@broker]$ curl -O ${ss_url}/docs/tutorial/.sinetstream_config.yml
 ```
 

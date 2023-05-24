@@ -27,7 +27,7 @@ import jp.ad.sinet.stream.api.SinetStreamException;
 import lombok.extern.java.Log;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.AbstractConstruct;
-import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.ScalarNode;
 import org.yaml.snakeyaml.nodes.Tag;
@@ -112,7 +112,7 @@ class ConfigLoader {
         }
     }
 
-    class SINETStreamConstructor extends Constructor {
+    class SINETStreamConstructor extends SafeConstructor {
         private Base64.Decoder b64decoder;
         SINETStreamConstructor() {
             this.yamlConstructors.put(new Tag("!sinetstream/encrypted"), new ConstructEncrypted());

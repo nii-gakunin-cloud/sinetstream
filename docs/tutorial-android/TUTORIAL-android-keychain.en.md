@@ -125,10 +125,10 @@ or `.cer`) [3].
 * We use a certificate file `vm00_cacert.crt` as an example.
 
 ```console
-PC% file ./vm00_cacert.crt 
+PC% file ./vm00_cacert.crt
 ./vm00_cacert.crt: PEM certificate
 
-PC% openssl verify vm00_cacert.crt 
+PC% openssl verify vm00_cacert.crt
 vm00_cacert.crt: C = JP, ST = Example_State, O = Example_Organization, CN = private-ca
 error 18 at 0 depth lookup:self signed certificate
 OK
@@ -282,19 +282,19 @@ to the certificate installation screen, to be noted afterword.
 ![Install a self-signed server certificate](images/common/keychain_setup2.png)
 
 * If you select the item `CA certificate` on the screen (d), a warning
-dialog about your data privacy (e) will be shown.
+  dialog about your data privacy (e) will be shown.
 * If you press the button `Install anyway`, you will be challenged to
-clear the device authentication like screen unlock.
+  clear the device authentication like screen unlock.
 * Once the device authentication has passed, you will be redirected
-to the file selection screen (f).
+  to the file selection screen (f).
 * Select the target certificate file (with a fingerprint icon).
   * In this example, select the file `vm00_cacert.crt` located immediate
-under the root file system.
+    under the root file system.
   * If you put the target certificate file on a different file system
-such like SD card or Google Drive, press the burger-icon on the top left
-corner of the screen (f).
+    such like SD card or Google Drive, press the burger-icon on the top left
+    corner of the screen (f).
 * If the installation finished successfully, a toast message will be
-briefly shown, and you will be redirected to the initial screen (d). 
+  briefly shown, and you will be redirected to the initial screen (d).
 
 
 ### 5.3 Install a client certificate
@@ -302,14 +302,14 @@ briefly shown, and you will be redirected to the initial screen (d).
 ![Install a client certificate(1)](images/common/keychain_setup3.png)
 
 * If you select the item `VPN & app user certificate` on the screen (g),
-you will be redirected to the file selection screen(h), without device
-authentication.
+  you will be redirected to the file selection screen(h), without device
+  authentication.
 * Select the target certificate file (with a fingerprint icon).
   * In this example, select the file `client03.pfx` located immediate
-under the root file system.
+    under the root file system.
   * If you put the target certificate file on a different file system
-such like SD card or Google Drive, press the burger-icon on the top left
-corner of the screen (h).
+    such like SD card or Google Drive, press the burger-icon on the top left
+    corner of the screen (h).
 * You will be prompted to enter password to extract the certificate (i).
 * Press `OK` button to finish.
 
@@ -319,15 +319,15 @@ corner of the screen (h).
   * It may take time, around more than several minutes. Beware for a
     long wait.
 * Once the extraction finishes, an dialog (k) which presents an alias
-name to distinguish the certificate installed in the system credential
-storage.
+  name to distinguish the certificate installed in the system credential
+  storage.
   * The initial value of the alias name has automatically assigned by
-system as a random hexadecimal string.
+    system as a random hexadecimal string.
   * On the dialog (i), rewrite the alias name to a human friendly one
-(such like `client03` which is the same as the certificate file name).
+    (such like `client03` which is the same as the certificate file name).
   * Press `OK` button to finish.
 * If the installation finished successfully, a toast message will be
-briefly shown, and you will be redirected to the initial screen (l). 
+  briefly shown, and you will be redirected to the initial screen (l).
 
 
 ### 5.4 Check the installed self-signed server certificate
@@ -339,17 +339,17 @@ certificate has properly installed in the system credential storage
 (`KeyChain`).
 
 * Go back to the certification settings screen (p), and select the
-item `Trusted credentials`.
+  item `Trusted credentials`.
 * In the trusted credential listing screen (q), there are two kinds of
-tabs; `SYSTEM` and `USER`.
+  tabs; `SYSTEM` and `USER`.
   * The `SYSTEM` tab contains public root certificates, and entries
 are maintained by the Android system.
   * The `USER` tab contains user-managed root certificates, such like
-a self-signed server certificate described in this document.
+    a self-signed server certificate described in this document.
 * In the screen (q), the `USER` tab is empty at initial state, but now
-you can see a summary of the installed self-signed server certificate.
+  you can see a summary of the installed self-signed server certificate.
 * If you select the item `private-ca` shown in the screen (q), its
-certificate details can be seen in a dialog (r).
+  certificate details can be seen in a dialog (r).
 
 
 ### 5.5 Check the installed client certificate

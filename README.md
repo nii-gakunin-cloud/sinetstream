@@ -45,7 +45,7 @@ SINETStreamは
 のメッセージングシステムである。
 Brokerを実現するバックエンドのメッセージングシステムとしてKafkaまたはMQTTを利用している。
 
-SINETStreamではPublisherをWriterと呼び、SubscriberをReaderと呼ぶ。
+SINETStreamではPublisherを`Writer`と呼び、Subscriberを`Reader`と呼ぶ。
 
 ![メッセージングシステムの概念図](docs/images/overview.png)
 
@@ -114,18 +114,19 @@ Python/Java版の`SINETStream API`は、以下のプログラム言語で実装�
 * Python 3.7～3.9
 * Java 11
 
-Python/Java版のSINETStreamは、以下のメッセージングシステムに対応する。
+Python/Java版の`SINETStream API`は、以下のメッセージングシステムに対応する。
 
 * [Apache Kafka](https://kafka.apache.org/) 2.2.1
-* MQTT v3.1, v3.1.1
+* MQTT v3.1, v3.1.1, v5.0
     * [Eclipse Mosquitto](https://mosquitto.org/) v1.6.2
 * S3
     * AWS S3
     * [MinIO](https://min.io/)
 
-Python/Java版のSINETStreamが対応するOS条件は以下の通り。
+Python/Java版の`SINETStream API`が対応するOS条件は以下の通り。
 
 * CentOS 7
+* Ubuntu 20.04 LTS
 * Windows 10
 
 ### Android版
@@ -133,16 +134,27 @@ Python/Java版のSINETStreamが対応するOS条件は以下の通り。
 Android版の`SINETStream API`は、以下のプログラム言語で実装される。
 
 * Java 11
-* Kotlin 1.6.x
+* Kotlin 1.7.10
 
-Android版のSINETStreamは、以下のメッセージングシステムに対応する。
+Android版の`SINETStream API`は、以下のメッセージングシステムに対応する。
 
 * MQTT v3.1, v3.1.1
     * [Eclipse Paho Android Client](https://www.eclipse.org/paho/index.php?page=clients/android/index.php)
 
-Android版のSINETStreamが対応するOS条件は以下の通り。
+> <em>注意</em><br>
+> `Eclipse Paho Android Client`プロジェクトのGitHubリポジトリ[eclipse/paho.mqtt.android](https://github.com/eclipse/paho.mqtt.android)
+> は何年も放置状態となっている。
+> Android 12で導入された[システム挙動変更](https://developer.android.com/about/versions/12/behavior-changes-12?hl=ja#pending-intent-mutability)
+> の影響により、Android 12以降の環境で`Paho`のライブラリを使うと実行時エラーが発生する。
+> 有志が上記GitHubに修正パッチを投稿しているが一向に反映されないため、
+> `SINETStream`プロジェクトで独自に改修した版`PahoMqttAndroid-bugfix`を使うことにする。
+
+Android版の`SINETStream API`が対応するOS条件は以下の通り。
 
 * Android 8.0 (API level 26) 以降
+
+> この制約条件は`SINETStreamメッセージ`の「シリアライザ／デシリアライザ」
+> 機能で用いる`Apache Avro`ライブラリの[実装上の都合](https://www.mail-archive.com/dev@avro.apache.org/msg24138.html)に依るものである。
 
 ## 準備
 ### Python/Java版

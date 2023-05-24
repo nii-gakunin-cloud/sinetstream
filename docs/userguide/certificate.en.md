@@ -1,4 +1,4 @@
- <!--
+<!--
 Copyright (C) 2020 National Institute of Informatics
 
 Licensed to the Apache Software Foundation (ASF) under one

@@ -235,16 +235,16 @@ public class SecretDecoder {
                 .array();
 
 
-	try {
-	    MessageDigest md = MessageDigest.getInstance("SHA-256");
-	    md.update(publicKeyBytes);
-	    final byte[] fpPlain = md.digest();
-	    final String fp = Base64.getEncoder().encodeToString(fpPlain).replaceAll("=", "");
-	    return fp;
-	}
-	catch (Exception e) {
-	    throw new RuntimeException("Cannot calculate fingerprint", e);
-	}
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            md.update(publicKeyBytes);
+            final byte[] fpPlain = md.digest();
+            final String fp = Base64.getEncoder().encodeToString(fpPlain).replaceAll("=", "");
+            return fp;
+        }
+        catch (Exception e) {
+            throw new RuntimeException("Cannot calculate fingerprint", e);
+        }
         /*
         priv_key = RSA.importKey(open('private_key.pem').read())
         pub_key = priv_key.public_key().export_key('OpenSSH').split(None, 2)[1]

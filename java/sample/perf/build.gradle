@@ -27,7 +27,7 @@ plugins {
 
 sourceCompatibility = 1.11
 
-version = '1.7.2'
+version = '1.8.0'
 
 repositories {
     flatDir {
@@ -47,7 +47,7 @@ dependencies {
     implementation 'net.sinetstream:SINETStream-api:[1.2,2.0)'
     runtimeOnly 'net.sinetstream:SINETStream-kafka:[1.2,2.0)'
     runtimeOnly 'net.sinetstream:SINETStream-mqtt:[1.2,2.0)'
-    runtimeOnly 'org.slf4j:slf4j-nop:1.7.36'
+    runtimeOnly 'org.slf4j:slf4j-nop:2.0.7'
     implementation group: 'org.jdeferred.v2', name: 'jdeferred-core', version: '2.0.+'
     implementation group: 'org.apache.kafka', name: 'kafka-clients', version: '2.+'
     implementation group: 'org.eclipse.paho', name: 'org.eclipse.paho.client.mqttv3', version: '1.2.+'
@@ -57,6 +57,12 @@ dependencies {
 application {
     mainClassName = 'jp.ad.sinet.stream.example.perf.SinetstreamBinaryProducer'
     applicationName = 'sinetstream-binary-producer'
+
+    // WORKAROUND for:
+    //     WARNING: An illegal reflective access operation has occurred
+    //     WARNING: Illegal reflective access by org.eclipse.paho.client.mqttv3.internal.FileLock
+    // see https://github.com/eclipse/paho.mqtt.java/issues/507#issuecomment-814681499
+    applicationDefaultJvmArgs = ['--add-opens=java.base/sun.nio.ch=ALL-UNNAMED']
 }
 
 task createExtraRunApp2(type: CreateStartScripts) {
@@ -64,6 +70,12 @@ task createExtraRunApp2(type: CreateStartScripts) {
     classpath = startScripts.classpath
     outputDir = startScripts.outputDir
     applicationName = 'sinetstream-binary-consumer'
+
+    // WORKAROUND for:
+    //     WARNING: An illegal reflective access operation has occurred
+    //     WARNING: Illegal reflective access by org.eclipse.paho.client.mqttv3.internal.FileLock
+    // see https://github.com/eclipse/paho.mqtt.java/issues/507#issuecomment-814681499
+    defaultJvmOpts = ['--add-opens=java.base/sun.nio.ch=ALL-UNNAMED']
 }
 
 task createExtraRunApp3(type: CreateStartScripts) {
@@ -71,6 +83,12 @@ task createExtraRunApp3(type: CreateStartScripts) {
     classpath = startScripts.classpath
     outputDir = startScripts.outputDir
     applicationName = 'kafka-binary-producer'
+
+    // WORKAROUND for:
+    //     WARNING: An illegal reflective access operation has occurred
+    //     WARNING: Illegal reflective access by org.eclipse.paho.client.mqttv3.internal.FileLock
+    // see https://github.com/eclipse/paho.mqtt.java/issues/507#issuecomment-814681499
+    defaultJvmOpts = ['--add-opens=java.base/sun.nio.ch=ALL-UNNAMED']
 }
 
 task createExtraRunApp4(type: CreateStartScripts) {
@@ -78,6 +96,12 @@ task createExtraRunApp4(type: CreateStartScripts) {
     classpath = startScripts.classpath
     outputDir = startScripts.outputDir
     applicationName = 'kafka-binary-consumer'
+
+    // WORKAROUND for:
+    //     WARNING: An illegal reflective access operation has occurred
+    //     WARNING: Illegal reflective access by org.eclipse.paho.client.mqttv3.internal.FileLock
+    // see https://github.com/eclipse/paho.mqtt.java/issues/507#issuecomment-814681499
+    defaultJvmOpts = ['--add-opens=java.base/sun.nio.ch=ALL-UNNAMED']
 }
 
 task createExtraRunApp5(type: CreateStartScripts) {
@@ -85,6 +109,12 @@ task createExtraRunApp5(type: CreateStartScripts) {
     classpath = startScripts.classpath
     outputDir = startScripts.outputDir
     applicationName = 'mqtt-binary-producer'
+
+    // WORKAROUND for:
+    //     WARNING: An illegal reflective access operation has occurred
+    //     WARNING: Illegal reflective access by org.eclipse.paho.client.mqttv3.internal.FileLock
+    // see https://github.com/eclipse/paho.mqtt.java/issues/507#issuecomment-814681499
+    defaultJvmOpts = ['--add-opens=java.base/sun.nio.ch=ALL-UNNAMED']
 }
 
 task createExtraRunApp6(type: CreateStartScripts) {
@@ -92,6 +122,12 @@ task createExtraRunApp6(type: CreateStartScripts) {
     classpath = startScripts.classpath
     outputDir = startScripts.outputDir
     applicationName = 'mqtt-binary-consumer'
+
+    // WORKAROUND for:
+    //     WARNING: An illegal reflective access operation has occurred
+    //     WARNING: Illegal reflective access by org.eclipse.paho.client.mqttv3.internal.FileLock
+    // see https://github.com/eclipse/paho.mqtt.java/issues/507#issuecomment-814681499
+    defaultJvmOpts = ['--add-opens=java.base/sun.nio.ch=ALL-UNNAMED']
 }
 
 task createExtraRunApp7(type: CreateStartScripts) {
@@ -99,6 +135,12 @@ task createExtraRunApp7(type: CreateStartScripts) {
     classpath = startScripts.classpath
     outputDir = startScripts.outputDir
     applicationName = 'sinetstream-binary-async-producer'
+
+    // WORKAROUND for:
+    //     WARNING: An illegal reflective access operation has occurred
+    //     WARNING: Illegal reflective access by org.eclipse.paho.client.mqttv3.internal.FileLock
+    // see https://github.com/eclipse/paho.mqtt.java/issues/507#issuecomment-814681499
+    defaultJvmOpts = ['--add-opens=java.base/sun.nio.ch=ALL-UNNAMED']
 }
 
 task createExtraRunApp8(type: CreateStartScripts) {
@@ -106,6 +148,12 @@ task createExtraRunApp8(type: CreateStartScripts) {
     classpath = startScripts.classpath
     outputDir = startScripts.outputDir
     applicationName = 'sinetstream-binary-async-consumer'
+
+    // WORKAROUND for:
+    //     WARNING: An illegal reflective access operation has occurred
+    //     WARNING: Illegal reflective access by org.eclipse.paho.client.mqttv3.internal.FileLock
+    // see https://github.com/eclipse/paho.mqtt.java/issues/507#issuecomment-814681499
+    defaultJvmOpts = ['--add-opens=java.base/sun.nio.ch=ALL-UNNAMED']
 }
 
 

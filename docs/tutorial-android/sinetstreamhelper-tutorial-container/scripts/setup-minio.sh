@@ -44,7 +44,7 @@ cat > $policy <<'EOS'
 }
 EOS
 
-mc policy set-json $policy minio/sensor-data
+mc anonymous set-json $policy minio/sensor-data
 }
 
 if wait-for-it.sh localhost:9000 -t 60 ; then

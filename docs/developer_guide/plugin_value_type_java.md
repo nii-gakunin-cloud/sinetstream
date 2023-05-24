@@ -59,7 +59,7 @@ SINETStream v1.1 以降では以下の `value_type` をサポートしていま�
 
 このドキュメントの説明は、以下の知識を有している読者を前提としています。
 
-* Java 8 
+* Java 8
 * [ServiceLoader](https://docs.oracle.com/javase/jp/8/docs/api/java/util/ServiceLoader.html)の利用方法
 * SINETStream の Java APIの利用方法、設定ファイルの記述方法
 

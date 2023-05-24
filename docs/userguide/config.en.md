@@ -25,28 +25,128 @@ SINETStream User Guide
 
 # Configuration files
 
-* Overview
-    * Location of configuration files
-    * Priority of setting values
-* Common parameters
-    * Basic parameters
-    * Parameters for SSL / TLS
-    * Parameters for encryption
-* Messaging system-specific parameters
-* Notes
-    * Difference between Python API and Java API
-    * Parameter aliases
-    * Unsupported
+<pre>
+1. Overview
+ 1.1 Location of configuration files
+ 1.2 Priority of setting values
+2. Common parameters
+ 2.1 Basic parameters
+ 2.2 API parameters
+ 2.3 Parameters for SSL / TLS
+ 2.4 Parameters for encryption
+3. Messaging system-specific parameters
+4. Notes
+ 4.1 Difference between Python API and Java API
+ 4.2 Unsupported
+</pre>
 
-## Overview
+## 1. Overview
 
 The parameters to the SINETStream API functions may also be written in the configuration file.
 By doing so you can make your source code more concise.
 The configuration file contains the service name and the parameters associated with the service.
 By specifying the service name in the API function, the parameters specified in the configuration file will be applied.
 
+Publickey cryptography can be used to encrypt confidential information such as passwords and data encryption keys in configuration files.
+
+### Using Config Server
+
+There are two ways to use a config server.
+
+1. download the configuration file from the config server's Web UI.
+2. download the access info from the config server Web UI and retrieve the configuration file from the SINETStream API.
+
+The first method is,
+instead of the user starting an editor and writing a configuration file the user simply downloads the configuration file prepared by the administrator.
+
+The second method is to,
+the config server auth info is downloaded in advance,
+the configuration file is downloaded from the config server when SINETStream is executed.
+
+The downloaded config server auth info are put in
+`$HOME/.config/sinetstream/auth.json`.
+(In Windows 10, `C:\Users\{userXX}\.config\sinetstream\auth.json`)
+
+### Encryption of secret info with public key cryptography
+
+> Limitations: supported public key cryptography is only RSA.
+
+If you put your private key in PEM format (PKCS#1) in `~/.config/sinetstream/private_key.pem`,
+it is referred to when decrypting the secret info in the configuration file.
+
+> Caution: the permissions for the private key file must be set so that others cannot read or write to it.
+
+Secret info is the following format:
+
+````
+{parameter}: !sinetstream/encrypted {config value encrypted with pubkey}
+````
+
+The encryption method is SINETStream's proprietary format.
+
+The plaintext by decryption is handled as follows:
+
+````
+{parameter}: {decrypted config value}
+````
+
+### Binary data and attachment
+
+To specify binary data instead of ASCII for parameter,
+follow the YAML binary type format and specify `!!binary` followed by a Base64-encoded string.
+To specify a file as a parameter, use the same way,
+`!!binary` followed by a Base64-encoded string of the content.
+
+````
+{parameter}: !!binary {Base64-encoded contents}
+````
+
+Note:
+
+* A space character is required between `!!binary` and the base64-encoded contetents.
+* Use `+/` for base64 alternate characters.
+* No linebreak even if the lines are long.
+
+## The format of the configuration file
+
 The format of the configuration file is YAML.
-The block that describes one service in the configuration file is as follows.
+A configuration file consists of a header section (`header:`) describing parameters of the configuration file itself and a configuration section (`config:`) describing services.
+
+````
+header:
+  header description block
+config:
+  service description block 1
+  service description block 2
+  ...
+````
+
+If the header section doesn't exist, it is considered to be in conventional format (only the configuration section).
+
+The block describing the header is as follows:
+
+```
+  {header parameter 1}: {value 1}
+  {header parameter 2}: {value 2}
+  ...
+```
+
+### Header section of the configuration file
+
+Header parameters are as follows:
+
+* version
+    * Format version of the configuration file.
+    * Version `2` can be specified.
+    * If omitted, the latest format is assumed to be specified.
+* fingerprint
+    * Fingerprint of the publickey used for encryption of secret info.
+    * Fingerprint can be omitted if encryption is not used in the configuration section.
+
+### Configuration section of Configuration file
+
+The configuration section consists of service description blocks (each block is described as an entry in a YAML associative array).
+The block that describes one service is as follows:
 
 ```
 {Service Name}:
@@ -65,7 +165,7 @@ The other parameters and values depend on the messaging system.
 For instance, the following parameters can be specified.
 
 * Parameters for communication protocol
-    * MQTT protocol version (3.1, 3.1.1)
+    * MQTT protocol version (3.1, 3.1.1, 5)
     * MQTT transport layer (TCP, WebSocket)
 * Parameters for TLS connection
     * Settings for CA certificates
@@ -74,7 +174,7 @@ For instance, the following parameters can be specified.
     * User name
     * Password
 
-### Location of the configuration file
+### 1.1 Location of the configuration file
 
 Configuration file is searched in the following order.
 Only the first file found will be used.
@@ -91,7 +191,7 @@ Only the first file found will be used.
 > `parameter 2: value 2` is written in `$HOME/.config/sinetstream/config.yml`,
 > the latter will be ignored.
 
-### Priority of setting values
+### 1.2 Priority of setting values
 
 If the parameters specified in the configuration file conflict with the parameters specified in the API functions, or
 if the common parameters conflict with the messaging system-specific parameters, the first value found in the following order is used.
@@ -101,7 +201,7 @@ if the common parameters conflict with the messaging system-specific parameters,
 1. The messaging system-specific parameter value specified in the configuration file
 1. The common parameter value specified in the configuration file
 
-## Common parameters
+## 2. Common parameters
 
 Below are the common parameters that can be specified regardless of the messaging system.
 
@@ -110,7 +210,7 @@ Below are the common parameters that can be specified regardless of the messagin
 * Parameters for SSL / TLS
 * Parameters for encryption
 
-### Basic parameters
+### 2.1 Basic parameters
 * type
     * Specify the type of the messaging system (in string).
     * Currently, the following values can be used.
@@ -136,7 +236,7 @@ Below are the common parameters that can be specified regardless of the messagin
             brokers: {host name 1}:{port number 1},{host name 2}:{port number 2}
             ```
 
-### API parameters
+### 2.2 API parameters
 
 Set the default value of the parameters of the SINETStream API functions.
 If a parameter is not specified in the API function, the value specified in the configuration file will be used as the default value.
@@ -185,7 +285,7 @@ If a parameter is not specified in the API function, the value specified in the 
 > Limitation of Python API:
 > In SINETStream v1.*, `value_serializer`/`value_deserializer` can be specified only by the API function parameters and cannot be specified in the configuration file.
 
-### Parameters for SSL/TLS
+### 2.3 Parameters for SSL/TLS
 
 While the names of the parameters for SSL/TLS differ depending on the messaging system, `SINETStream` provides a common parameter named `tls` for specifying them uniformly.
 `SINETStream` internally maps them to the messaging system-specific parameters.
@@ -199,12 +299,21 @@ The mapping may contain the following keys.
 
 * ca_certs
     * The path of the CA certificate file (PEM).
+* ca_certs_data
+    * The CA certificate (PEM).
+    * Use when attaching the CA certificate file.
 * certfile
     * Client certificate (PEM) path
+* certfile_data
+    * Client certificate (PEM)
+    * Use when attaching client certificate.
 * keyfile
     * Private key (PEM) path
+* keyfile_data
+    * Private key (PEM)
+    * Use when attaching private key.
 * keyfilePassword
-    * Private key (PEM) password
+    * Private key (PEM) password※
 * ciphers
     * A string specifying the ciphers available for SSL / TLS connections
 * check_hostname
@@ -261,7 +370,7 @@ If you specify both the `tls` parameter and a messaging system-specific paramete
 1. The messaging system-specific parameters specified in the configuration file.
 1. The `tls` parameter specified in the configuration file.
 
-### Parameters for encryption
+### 2.4 Parameters for encryption
 
 `SINETStream` is capable of message content encryption at the frontend, which is independent from the communication encryption by the backend SSL/TLS.
 By encrypting the message encryption you can protect your information even if a malicious third party peeks into the message stored in the broker.
@@ -289,8 +398,14 @@ The mapping may contain the following keys.
     * Specify the padding method.
     * Valid values: "none", "pkcs7"
     * Default value: "none"
-* password (mandatory)
+* key (mandatory; exclusive with password)
+    * Specify the encryption key.
+    * The length of the encryption key must match key_length.
+    * key and password are mutually exclusive and cannot be specified at the same time.
+* password (mandatory; exclusive with key)
     * Specify the password.
+    * password and key are mutually exclusive and cannot be specified at the same time.
+    * From password, a key with key_length is derived according to the key_derivation parameter.
 * key_derivation (optional)
     * Specify the parameters related to key derivation function by YAML mapping
     * algorithm (optional)
@@ -327,7 +442,7 @@ service-aes-1:
     password: secret-000
 ```
 
-## Messaging system-specific parameters
+## 3. Messaging system-specific parameters
 
 Parameters specific to the backend messaging system can be specified transparently.
 
@@ -335,9 +450,9 @@ Parameters specific to the backend messaging system can be specified transparent
 * [MQTT-specific parameters](config-mqtt.en.md)
 * [S3-specific parameters](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/userguide/config-s3.html)
 
-## Notes
+## 4. Notes
 
-### Difference between the Python API and the Java API
+### 4.1 Difference between the Python API and the Java API
 
 The following parameters are only valid for the Python API. They will be ignored if specified in the Java API.
 
@@ -371,7 +486,7 @@ The following parameters are only valid for the Java API. They will be ignored e
 * ssl_keystore_password
 * ssl_keystore_type
 
-### Unsupported
+### 4.2 Unsupported
 
 SINETStream v1.* does not support the following parameters.
 

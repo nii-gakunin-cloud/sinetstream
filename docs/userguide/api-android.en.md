@@ -167,7 +167,7 @@ public void initialize(@NonNull
 
 * Description:
     * Connects to the broker and prepares oneself as a subscriber.
-    * Connection parameters will be specified by external configuration file.  
+    * Connection parameters will be specified by external configuration file.<br/>
       See [Configuration files](config.en.md) for details.
 * Parameters:
     * serviceName - the service name to match configuration parameters.
@@ -234,7 +234,7 @@ public void initialize(@NonNull
 
 * Description:
     * Connects to the broker and prepares oneself as a publisher.
-    * Connection parameters will be specified by external configuration file.  
+    * Connection parameters will be specified by external configuration file.<br/>
       See [Configuration files](config.en.md) for details.
 * Parameters:
     * serviceName - the service name to match configuration parameters.

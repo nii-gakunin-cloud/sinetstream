@@ -21,7 +21,7 @@ under the License.
 
 [English](certificate.en.md)
 
-# プライベート認証局で証明書を作成する
+# プライベート認証局における証明書の作成手順
 
 ## 概要
 

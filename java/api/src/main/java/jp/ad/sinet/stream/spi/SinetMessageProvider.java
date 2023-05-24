@@ -21,6 +21,11 @@
 
 package jp.ad.sinet.stream.spi;
 
+import java.util.Map;
+
 public interface SinetMessageProvider {
     String getType();
+    default boolean isProvider(Map<String, ?> params) {
+        return true;
+    }
 }
