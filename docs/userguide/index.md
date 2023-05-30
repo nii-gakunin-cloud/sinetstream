@@ -55,6 +55,7 @@ Android版に関しては、IoT (Internet of Things) 端末としてセンサー
     * [SINETStreamHelper API (Javadoc)](http://javadoc.android.sinetstream.net/sinetstream-android-helper/)
 * [設定ファイル](config.md)
 * [認証と認可](auth.md)
+* [CLI(Command Line Interface)](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/java/sample/cli/README.md)
 
 ## 用語の定義
 
