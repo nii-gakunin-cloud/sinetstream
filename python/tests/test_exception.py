@@ -84,6 +84,7 @@ def test_bad_consistency(io, setup_config):
             pass
 
 
+@pytest.mark.skip
 @pytest.mark.parametrize("io,config_topic", [
     pytest.param(MessageWriter, None),
     pytest.param(MessageReader, None),

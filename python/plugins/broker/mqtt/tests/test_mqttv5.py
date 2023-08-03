@@ -186,7 +186,7 @@ def test_writer_mqttv5_will_delay_interval():
     with MessageWriter(SERVICE, TOPIC, protocol=mqttv5,
                        will_set={
                            'topic': TOPIC,
-                           'payload': 'XXX',
+                           'payload': b'XXX',
                            'qos': 1,
                            'delay_interval': 10
                        }) as _:

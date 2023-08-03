@@ -11,8 +11,8 @@
   "prConcurrentLimit": 0,
   "packageRules": [
     {
-      "matchPackageNames": ["openjdk"],
-      "allowedVersions": "<9"
+      "matchPackageNames": ["eclipse-temurin"],
+      "allowedVersions": "<12"
     },
     {
       "matchPackagePrefixes": ["org.mockito:mockito-"],

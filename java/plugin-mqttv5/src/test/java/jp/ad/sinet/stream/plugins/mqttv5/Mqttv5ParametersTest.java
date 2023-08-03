@@ -378,6 +378,7 @@ class Mqttv5ParametersTest implements ConfigFileAware {
     @ValueSource(ints = {0, 1, 100})
     void will_delay_ineterval(int x) {
         Map<String, Object> opts = new HashMap<>();
+        opts.put("value_type", "text");
         opts.put("payload", "message ZZZ");
         opts.put("retain", "false");
         opts.put("qos", "2");

@@ -12,6 +12,7 @@ services:
     volumes:
     - ../..:/opt/ss_test
     - ../../../../../dist:/opt/ss_test/wheelhouse
+    - ../../../iostream/dist:/opt/ss_test/wheelhouse-iostream
     environment:
       MQTT_SSL_BROKER: broker:8883
       MQTT_USER_PASSWD_BROKER: broker:1884

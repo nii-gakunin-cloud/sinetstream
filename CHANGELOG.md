@@ -10,7 +10,30 @@ https://keepachangelog.com/
 ### Security
 --->
 
-## [v1.8.0] - 2023-05-XX
+<!--- ---------------------------------------------------------------------- --->
+## [v1.8.1] - 2023-08-0X
+
+### Added
+
+- sinetstream_cli (Python, Java):
+    - `sinetstream_cli` supports short options.
+    - `sinetstream_cli` with `-nc` option doesn't read `.sinetstream_config.yml`.
+
+### Changed
+
+- Any parameters on MessageReader/MessageWriter are optional. (Python)
+    - The parameter `service` was mandatory.
+
+### Fixed
+
+- In MQTT, encode WILL payload with SINETStream. (Python, Java)
+
+### Security
+
+- Update versions of dependent packages
+
+<!--- ---------------------------------------------------------------------- --->
+## [v1.8.0] - 2023-05-26
 
 ### Added
 
@@ -50,18 +73,21 @@ https://keepachangelog.com/
 - Update versions of dependent packages
 - Use safe YAML loader to load `.sinetstream_config.yml` (Java)
 
+<!--- ---------------------------------------------------------------------- --->
 ## [v1.7.2] - 2022-09-22
 
 ### Security
 
 - Update versions of dependent packages
 
+<!--- ---------------------------------------------------------------------- --->
 ## [v1.7.1] - 2022-09-22
 
 ### Security
 
 - Update versions of dependent packages
 
+<!--- ---------------------------------------------------------------------- --->
 ## [v1.7.0] - 2022-09-22
 
 ### Added
@@ -83,18 +109,21 @@ https://keepachangelog.com/
 
 - Calculate fingerprints correctly in config-server protocol (Python, Java)
 
+<!--- ---------------------------------------------------------------------- --->
 ## [v1.6.2] - 2022-01-19
 
 ### Fixed
 
 - Enter the passphrase of private_key.pem if encrypted.
 
+<!--- ---------------------------------------------------------------------- --->
 ## [v1.6.1] - 2021-12-22
 
 ### Security
 
 - use avro-1.11.0 (Java)
 
+<!--- ---------------------------------------------------------------------- --->
 ## [v1.6.0] - 2021-12-22
 
 ### Added
@@ -188,6 +217,7 @@ https://keepachangelog.com/
 - MainActivity: Fix location notation: (longitude,latitude) -> (latitude,longitude)
 - MainActivity: Resolve race conditions between Sensor and Network; bind SensorService after connection has established, and unbind SensorService after connection has closed.
 
+<!--- ---------------------------------------------------------------------- --->
 ## [v1.5.3] - 2021-05-20
 
 ### sinetstream-android-echo
@@ -218,6 +248,7 @@ has re-created after suspend/resume.
 
 - MainActivity: Resolve race conditions between modal dialogs.
 
+<!--- ---------------------------------------------------------------------- --->
 ## [v1.5.2] for Android - 2021-05-20
 
 ### sinetstream-android
@@ -238,6 +269,7 @@ has re-created after suspend/resume.
 
 - build.gradle: Update build environ for the Android Studio 4.1.2.
 
+<!--- ---------------------------------------------------------------------- --->
 ## [v1.5.2] - 2021-04-23
 
 ### Added
@@ -254,6 +286,7 @@ has re-created after suspend/resume.
 - No division by zero occurs when calculating an average in a metrics information. (Python, Java)
 - A metrics can be gotten after close. (Python, Java)
 
+<!--- ---------------------------------------------------------------------- --->
 ## [v1.5.1] - 2021-03-24
 
 ### Fixed
@@ -261,6 +294,7 @@ has re-created after suspend/resume.
 - docfix: tutorial for Android
 - bugfix: 2 sample applications for Android
 
+<!--- ---------------------------------------------------------------------- --->
 ## [v1.5.0] - 2021-03-18
 
 ### Added
@@ -275,6 +309,7 @@ has re-created after suspend/resume.
 - Bugfix for data encryption. (Python, Java)
 - Bugfix for metrics API (Python)
 
+<!--- ---------------------------------------------------------------------- --->
 ## [v1.4.0] - 2020-10-08
 
 ### Added
@@ -283,12 +318,14 @@ has re-created after suspend/resume.
     - Limitations:
         - Data encryption is not implemented.
 
+<!--- ---------------------------------------------------------------------- --->
 ## [v1.3.0] - 2020-07-31
 
 ### Added
 
 - Support metrics API
 
+<!--- ---------------------------------------------------------------------- --->
 ## [v1.2.0] - 2020-06-08
 
 ### Added
@@ -304,6 +341,7 @@ has re-created after suspend/resume.
 
 - Fixed TLS connection setup problem, caused by MQTT-specific parameter "tls_set" (Java)
 
+<!--- ---------------------------------------------------------------------- --->
 ## [v1.1.0] - 2020-03-19
 
 ### Added
@@ -322,6 +360,7 @@ has re-created after suspend/resume.
 
 - Fixed exception handling in case of authentication / authorization error.
 
+<!--- ---------------------------------------------------------------------- --->
 ## [v1.0.0] - 2019-12-24
 
 ### Added
@@ -342,6 +381,7 @@ has re-created after suspend/resume.
 - Fix deadlock in MqttWriter.publish().
 - Bugfixes.
 
+<!--- ---------------------------------------------------------------------- --->
 ## [v0.9.7] - 2019-10-11
 
 ### Added
@@ -360,6 +400,7 @@ has re-created after suspend/resume.
 - Authorization(document only)
     - Read docs/auth.md for details.
 
+<!--- ---------------------------------------------------------------------- --->
 ## [v0.9.5] - 2019-08-26
 
 ### Added
@@ -379,6 +420,7 @@ has re-created after suspend/resume.
 
 - many bugfixes.
 
+<!--- ---------------------------------------------------------------------- --->
 ## [v0.9.1] - 2019-07-11
 
 first alpha release.

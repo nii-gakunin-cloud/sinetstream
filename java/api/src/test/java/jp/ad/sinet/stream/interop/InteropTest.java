@@ -60,6 +60,10 @@ class InteropTest {
 
     @Test
     void test_crypto() {
+        if (System.getenv("QUICKTEST") != null) {
+            System.err.println("Skip test_crypto since QUICKTEST is defined");
+            return;
+        }
         mkdir();
         for (String service: services) {
             System.err.println("TEST:service=" + service);

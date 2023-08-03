@@ -14,5 +14,6 @@ clean::
 run::
 	$(MAKE) run1 cli=`readlink -f ./sinetstream_cli-*/bin/sinetstream_cli`
 run1::
+	-$(cli) version
 	-$(cli) write --help
 	-$(cli) read --help

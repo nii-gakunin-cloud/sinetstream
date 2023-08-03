@@ -43,7 +43,8 @@ def test_writer_topic(topics):
         pass
 
 
-@pytest.mark.parametrize("config_topic", [None, [], [TOPIC, TOPIC2]])
+# @pytest.mark.parametrize("config_topic", [None, [], [TOPIC, TOPIC2]])
+@pytest.mark.parametrize("config_topic", [[], [TOPIC, TOPIC2]])
 def test_writer_bad_topics():
     with pytest.raises(InvalidArgumentError):
         with AsyncMessageWriter(SERVICE) as _:

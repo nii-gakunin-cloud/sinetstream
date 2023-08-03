@@ -19,35 +19,17 @@
 # specific language governing permissions and limitations
 # under the License.
 
-from logging import basicConfig, getLogger, INFO
-basicConfig(level=INFO)
+from logging import basicConfig, getLogger, WARNING, INFO, DEBUG
+basicConfig(level=WARNING)
 logger = getLogger(__name__)
-
-
-def make_temp_config():
-    import pathlib
-    import atexit
-    service = "tempserv"
-    path = pathlib.Path(".sinetstream_config.yml")
-    emptymap = "{}"
-    config = f"""\
-header:
-  version: 2
-config:
-  {service}: {emptymap}
-"""
-    try:
-        with path.open(mode="x") as f:
-            atexit.register(path.unlink)
-            f.write(config)
-        logger.info(f"the temporary config file {path} created")
-    except FileExistsError:
-        return None
-    return service
-
 
 sep1 = "."
 sep2 = "="
+loglvls = [WARNING, INFO, DEBUG]
+
+
+def increase_log_level(verbose_count):
+    basicConfig(level=loglvls[min(verbose_count, len(loglvls) - 1)])
 
 
 def make_parser(argv0, cmd):
@@ -57,20 +39,36 @@ def make_parser(argv0, cmd):
         description=f"SINETStream CLI: {cmd}",
         )
     parser.add_argument(
+        "-nc",
+        "--no-config-file",
+        action="store_true",
+        required=False,
+        help="don't load any sinetstream_config.yml")
+    parser.add_argument(
+        "-s",
         "--service",
         metavar="SERVICE",
         required=False,
         help="specify the service name")
     parser.add_argument(
+        "-c",
         "--config",
         metavar="CONFIG",
         required=False,
         help="specify the config name when using config service")
     parser.add_argument(
+        "-t",
         "--text",
         action="store_true",
         required=False,
         help="text mode")
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        default=0,
+        action="count",
+        required=False,
+        help="verbose mode")
     parser.add_argument(
         "parameters",
         metavar=f"KEY{sep2}VALUE",
@@ -95,10 +93,13 @@ def build_kwargs(args):
     from yaml import load, SafeLoader
     kwargs = {}
 
-    if args.config is None:
-        if args.service is None:
-            args.service = make_temp_config()
-    else:
+    if args.no_config_file is not None:
+        kwargs["no_config"] = args.no_config_file
+
+    if args.service is not None:
+        kwargs["service"] = args.service
+
+    if args.config is not None:
         kwargs["config"] = args.config
 
     for p in args.parameters:
@@ -116,23 +117,28 @@ def cmd_write(argv0, argv):
 
     parser = make_parser(argv0, "write")
     parser.add_argument(
+        "-f",
         "--file",
         metavar="INPUT",
         type=str,
         required=False,
         help="write the contents of a file as the message")
     parser.add_argument(
+        "-m",
         "--message",
         metavar="MESSAGE",
         type=str,
         required=False,
         help="write a single message from the command line")
     parser.add_argument(
+        "-l",
         "--line",
         action="store_true",
         required=False,
         help="split separate lines into separate messages")
     args = parser.parse_args(argv)
+
+    increase_log_level(args.verbose)
 
     kwargs = build_kwargs(args)
 
@@ -165,7 +171,8 @@ def cmd_write(argv0, argv):
                     yield m
 
     try:
-        with MessageWriter(args.service, **kwargs) as writer:
+
+        with MessageWriter(**kwargs) as writer:
             for msg in get_message():
                 writer.publish(msg)
     except KeyboardInterrupt:
@@ -179,27 +186,20 @@ def cmd_read(argv0, argv):
 
     parser = make_parser(argv0, "read")
     parser.add_argument(
-        "--verbose",
-        dest="ofmt",
-        default="verbose",
-        action="store_const",
-        const="verbose",
-        required=False,
-        help="print received messages verbosely")
-    parser.add_argument(
+        "-r",
         "--raw",
-        dest="ofmt",
-        action="store_const",
-        const="raw",
+        action="store_true",
         required=False,
         help="print just received messages")
     parser.add_argument(
+        "-f",
         "--file",
         metavar="DIR",
         required=False,
         type=str,
         help="save received messages under the specified directory")
     parser.add_argument(
+        "-C",
         "--count",
         metavar="N",
         required=False,
@@ -207,6 +207,8 @@ def cmd_read(argv0, argv):
         default=0,
         help="exit after the given count of messages have been received")
     args = parser.parse_args(argv)
+
+    increase_log_level(args.verbose)
 
     kwargs = build_kwargs(args)
 
@@ -226,7 +228,7 @@ def cmd_read(argv0, argv):
 
     try:
         from sys import stdout
-        with MessageReader(args.service, **kwargs) as reader:
+        with MessageReader(**kwargs) as reader:
             n = 0
             for msg in reader:
                 n += 1
@@ -235,7 +237,7 @@ def cmd_read(argv0, argv):
                     with open(opath, mode="w" if textmode else "wb") as f:
                         f.write(msg.value)
                 else:
-                    if args.ofmt == "verbose":
+                    if not args.raw:
                         # ts = datetime.fromtimestamp(msg.timestamp)
                         # output like "nats sub"
                         stdout.write(f'[#{n}] Received on "{msg.topic}"\n')

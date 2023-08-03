@@ -48,6 +48,17 @@ public class SinetStreamMessageWriter<T> extends SinetStreamBaseWriter<T, Plugin
     }
 
     @Override
+    public void write(T message, long timestampMicroseconds) {
+        try {
+            target.write(new Timestamped<byte[]>(debugLastMsgBytes = toPayload(message, timestampMicroseconds), timestampMicroseconds));
+        }
+        catch (Exception e) {
+            updateMetricsErr();
+            throw e;
+        }
+    }
+
+    @Override
     public boolean isThreadSafe() {
         return target.isThreadSafe();
     }

@@ -1,4 +1,4 @@
-FROM rockylinux:9.1.20230215
+FROM rockylinux:9.2.20230513
 
 # Install Apache Kafka
 ARG KAFKA_VERSION=3.4.0

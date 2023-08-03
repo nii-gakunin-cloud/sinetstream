@@ -28,6 +28,7 @@ from .error import (
     InvalidMessageError, AuthorizationError, InvalidConfigError,
 )
 from .value_type import TEXT, BYTE_ARRAY
+from .codec import SINETStreamMessageEncoder, SINETStreamMessageDecoder
 
 __all__ = [
     MessageReader, MessageWriter, AsyncMessageWriter, AsyncMessageReader,
@@ -38,5 +39,7 @@ __all__ = [
     ConnectionError, AlreadyConnectedError, UnsupportedServiceTypeError,
     InvalidMessageError, AuthorizationError, InvalidConfigError,
 
-    TEXT, BYTE_ARRAY
+    TEXT, BYTE_ARRAY,
+
+    SINETStreamMessageEncoder, SINETStreamMessageDecoder,
 ]

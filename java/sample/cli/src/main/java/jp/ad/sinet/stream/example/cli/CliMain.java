@@ -32,6 +32,7 @@ import java.util.Map;
 @SuppressWarnings("WeakerAccess")
 public class CliMain {
     private static void runWrite(
+        boolean noConfigFile,
         String service,
         String config,
         boolean text,
@@ -42,6 +43,7 @@ public class CliMain {
     {
         try {
             new CliWriter(
+                noConfigFile,
                 service,
                 config,
                 text,
@@ -56,6 +58,7 @@ public class CliMain {
     }
 
     private static void runRead(
+        boolean noConfigFile,
         String service,
         String config,
         boolean text,
@@ -67,6 +70,7 @@ public class CliMain {
     {
         try {
             new CliReader(
+                noConfigFile,
                 service,
                 config,
                 text,
@@ -124,31 +128,43 @@ public class CliMain {
         opts.addOption(Option.builder("h").longOpt("help")
                                        .desc("this help")
                                        .build());
-        opts.addOption(Option.builder().longOpt("service")
+        opts.addOption(Option.builder("s").longOpt("service")
                                        .hasArg().argName("SERVICE")
                                        .desc("specify the service name")
                                        .build());
-        opts.addOption(Option.builder().longOpt("config")
+        opts.addOption(Option.builder("c").longOpt("config")
                                        .hasArg().argName("CONFIG")
                                        .desc("specify the config name when using config service")
                                        .build());
-        opts.addOption(Option.builder().longOpt("text")
+        opts.addOption(Option.builder("t").longOpt("text")
                                        .desc("text mode")
+                                       .build());
+        opts.addOption(Option.builder("nc").longOpt("no-config-file")
+                                       .desc("don't load any sinetstream_config.yml")
+                                       .build());
+        opts.addOption(Option.builder("v").longOpt("verbose")
+                                       .desc("verbose mode")
                                        .build());
         return opts;
     }
 
+    private static void setLogLevel(CommandLine cmd) {
+        for (Option o : cmd.getOptions())
+            if (o.getOpt().equals("v"))
+                CliUtil.verbosely();
+    }
+
     private static void parseWrite(String[] args) {
         Options opts = buildOptions();
-        opts.addOption(Option.builder().longOpt("file")
+        opts.addOption(Option.builder("f").longOpt("file")
                                        .hasArg().argName("INPUT")
                                        .desc("write the contents of a file as the message")
                                        .build());
-        opts.addOption(Option.builder().longOpt("message")
+        opts.addOption(Option.builder("m").longOpt("message")
                                        .hasArg().argName("MESSAGE")
                                        .desc("write a single message from the command line")
                                        .build());
-        opts.addOption(Option.builder().longOpt("line")
+        opts.addOption(Option.builder("l").longOpt("line")
                                        .desc("split separate lines into separate messages")
                                        .build());
 
@@ -157,7 +173,9 @@ public class CliMain {
             CommandLine cmd = parser.parse(opts, args);
             if (cmd.hasOption("help"))
                 printHelp(opts);
+            setLogLevel(cmd);
             runWrite(
+                cmd.hasOption("no-config-file"),
                 cmd.getOptionValue("service"),
                 cmd.getOptionValue("config"),
                 cmd.hasOption("text"),
@@ -173,28 +191,14 @@ public class CliMain {
 
     private static void parseRead(String[] args) {
         Options opts = buildOptions();
-        if (false) {
-        opts.addOption(Option.builder().longOpt("verbose")
-                                       .desc("print received messages verbosely")
-                                       .build());
-        opts.addOption(Option.builder().longOpt("raw")
+        opts.addOption(Option.builder("r").longOpt("raw")
                                        .desc("print just received messages")
                                        .build());
-        } else {
-        OptionGroup g = new OptionGroup();
-        g.addOption(Option.builder().longOpt("verbose")
-                                       .desc("print received messages verbosely")
-                                       .build());
-        g.addOption(Option.builder().longOpt("raw")
-                                       .desc("print just received messages")
-                                       .build());
-        opts.addOptionGroup(g);
-        }
-        opts.addOption(Option.builder().longOpt("file")
+        opts.addOption(Option.builder("f").longOpt("file")
                                        .hasArg().argName("DIR")
                                        .desc("save received messages under the specified directory")
                                        .build());
-        opts.addOption(Option.builder().longOpt("count")
+        opts.addOption(Option.builder("c").longOpt("count")
                                        .hasArg().argName("N").type(Number.class)
                                        .desc("exit after the given count of messages have been received")
                                        .build());
@@ -203,7 +207,9 @@ public class CliMain {
             CommandLine cmd = parser.parse(opts, args);
             if (cmd.hasOption("help"))
                 printHelp(opts);
+            setLogLevel(cmd);
             runRead(
+                cmd.hasOption("no-config-file"),
                 cmd.getOptionValue("service"),
                 cmd.getOptionValue("config"),
                 cmd.hasOption("text"),
@@ -223,9 +229,14 @@ public class CliMain {
         System.exit(1);
     }
 
+    static void printVersion() {
+        CliUtil.printVersion();
+    }
+
     public static void main(String[] args) {
+        final String subcmdsHelp = "(only `write`, `read` or `version` can be specified)";
         if (args.length == 0)
-            CliUtil.err("no subcommand specified (only `write` or `read` can be specified)");
+            CliUtil.err("no subcommand specified " + subcmdsHelp);
 
         String arg0 = args[0];
         String[] args1 = Arrays.copyOfRange(args, 1, args.length);
@@ -237,8 +248,13 @@ public class CliMain {
         case "read":
             parseRead(args1);
             break;
+        case "--version":
+        case "-v":
+        case "version":
+            printVersion();
+            break;
         default:
-            CliUtil.err("invalid subcommand: %s (only `write` or `read` can be specified)", arg0);
+            CliUtil.err("invalid subcommand: %s " + subcmdsHelp, arg0);
             break;
         }
     }

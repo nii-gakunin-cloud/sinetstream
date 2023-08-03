@@ -169,8 +169,8 @@ def normalize_params(params):
             crypto["password"] = {"value": password}
 
 
-def merge_parameter(service, kwargs, default_values, config=None, config_file=None):
-    service, raw_params = get_config_params(service, config, config_file)
+def merge_parameter(service, kwargs, default_values, config=None, config_file=None, no_config=False):
+    service, raw_params = get_config_params(service, config, config_file) if not no_config else (None, {})
     svc_params = convert_params(raw_params)
     # Merge parameters
     # Priority:
@@ -471,6 +471,9 @@ class MessageIO(object):
                 return None
             return f(ipath[1:], kwargs)
 
+    def _debug_get_plugin(self):
+        return self._plugin
+
 
 class BaseMessageReader(MessageIO):
     default_params = {
@@ -478,12 +481,20 @@ class BaseMessageReader(MessageIO):
         "receive_timeout_ms": float("inf"),
     }
 
-    def __init__(self, registry, service, topics=None, config=None, config_file=None, **kwargs):
+    def __init__(self,
+                 registry,
+                 service=None,
+                 topics=None,
+                 config=None,
+                 config_file=None,
+                 no_config=False,
+                 **kwargs):
         service, params = merge_parameter(service,
                                           kwargs,
                                           BaseMessageReader.default_params,
                                           config=config,
-                                          config_file=config_file)
+                                          config_file=config_file,
+                                          no_config=no_config)
         params["topics"] = _setup_topics(params, topics)
         super().__init__(service, params, registry)
         self.unmarshaller = Unmarshaller() if not params.get("user_data_only") else None
@@ -549,7 +560,7 @@ class BaseMessageReader(MessageIO):
 
 
 READER_USAGE = '''MessageReader(
-    service=SERVICE,                 # Service name defined in the configuration file. (REQUIRED)
+    service=SERVICE,                 # Service name defined in the configuration file.
     topics=TOPICS,                   # The topic to receive.
     config=CONFIG,                   # Config name on the config-server.
     consistency=AT_MOST_ONCE,        # consistency: AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE
@@ -559,7 +570,7 @@ READER_USAGE = '''MessageReader(
 )'''
 
 ASYNC_READER_USAGE = '''AsyncMessageReader(
-    service=SERVICE,                 # Service name defined in the configuration file. (REQUIRED)
+    service=SERVICE,                 # Service name defined in the configuration file.
     topics=TOPICS,                   # The topic to receive.
     config=CONFIG,                   # Config name on the config-server.
     consistency=AT_MOST_ONCE,        # consistency: AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE
@@ -576,7 +587,7 @@ class MessageReader(BaseMessageReader):
     def usage():
         return READER_USAGE
 
-    def __init__(self, service, topics=None, config=None, config_file=None, **kwargs):
+    def __init__(self, service=None, topics=None, config=None, config_file=None, **kwargs):
         logger.debug("MessageReader:init")
         super().__init__(MessageReader.registry, service, topics, config, config_file, **kwargs)
         self.debug_inject_msg_bytes = None  # for injection: None or tuple (message, topic, raw)
@@ -600,7 +611,7 @@ class MessageReader(BaseMessageReader):
 
 
 WRITER_USAGE = '''MessageWriter(
-    service=SERVICE,                 # Service name defined in the configuration file. (REQUIRED)
+    service=SERVICE,                 # Service name defined in the configuration file.
     topic=TOPIC,                     # The topic to send.
     config=CONFIG,                   # Config name on the config-server.
     consistency=AT_MOST_ONCE,        # consistency: AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE
@@ -610,7 +621,7 @@ WRITER_USAGE = '''MessageWriter(
 )'''
 
 ASYNC_WRITER_USAGE = '''AsyncMessageWriter(
-    service=SERVICE,                 # Service name defined in the configuration file. (REQUIRED)
+    service=SERVICE,                 # Service name defined in the configuration file.
     topic=TOPIC,                     # The topic to send.
     config=CONFIG,                   # Config name on the config-server.
     consistency=AT_MOST_ONCE,        # consistency: AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE
@@ -625,13 +636,21 @@ class BaseMessageWriter(MessageIO):
         **default_params
     }
 
-    def __init__(self, registry, service, topic=None, config=None, config_file=None, **kwargs):
+    def __init__(self,
+                 registry,
+                 service=None,
+                 topic=None,
+                 config=None,
+                 config_file=None,
+                 no_config=False,
+                 **kwargs):
         logger.debug("MessageWriter:init")
         service, params = merge_parameter(service,
                                           kwargs,
                                           MessageWriter.default_params,
                                           config=config,
-                                          config_file=config_file)
+                                          config_file=config_file,
+                                          no_config=no_config)
         params["topic"] = _setup_topic(params, topic)
         super().__init__(service, params, registry)
         self.marshaller = Marshaller() if not params.get("user_data_only") else None
@@ -639,8 +658,8 @@ class BaseMessageWriter(MessageIO):
         self.compressor = self._setup_compressor()
         self.debug_last_msg_bytes = None  # for inspection
 
-    def _publish(self, msg):
-        tstamp = int(time.time() * 1000_000)
+    def _publish(self, msg, timestamp):
+        tstamp = int((timestamp if timestamp is not None else time.time()) * 1000_000)
         msg_bytes = PluginMessage(self._to_bytes(msg, tstamp))
         msg_bytes.set_timestamp(tstamp)  # for s3-broker
         if self.debug_last_msg_bytes is not None:
@@ -707,12 +726,12 @@ class MessageWriter(BaseMessageWriter):
     def usage():
         return WRITER_USAGE
 
-    def __init__(self, service, topic=None, config=None, config_file=None, **kwargs):
+    def __init__(self, service=None, topic=None, config=None, config_file=None, **kwargs):
         super().__init__(MessageWriter.registry, service, topic, config, config_file, **kwargs)
 
-    def publish(self, msg):
+    def publish(self, msg, timestamp=None):
         try:
-            return super()._publish(msg)
+            return super()._publish(msg, timestamp)
         except Exception:
             self.iometrics.update_err()
             raise
@@ -724,7 +743,8 @@ def _setup_topic(params, topic):
     elif "topic" in params:
         ret = params["topic"]
     else:
-        raise InvalidArgumentError("You must specify a topic.")
+        # raise InvalidArgumentError("You must specify a topic.")
+        return None
 
     if isinstance(ret, list):
         num_topic = len(ret)
@@ -745,7 +765,8 @@ def _setup_topics(params, topics):
     elif "topic" in params:
         ret = params["topic"]
     else:
-        raise InvalidArgumentError("You must specify several topics.")
+        # raise InvalidArgumentError("You must specify several topics.")
+        return None
 
     if isinstance(ret, list) and len(ret) == 0:
         raise InvalidArgumentError("You must specify several topics.")
@@ -759,15 +780,15 @@ class AsyncMessageWriter(BaseMessageWriter):
     def usage():
         return ASYNC_WRITER_USAGE
 
-    def __init__(self, service, topic=None, config=None, config_file=None, **kwargs):
+    def __init__(self, service=None, topic=None, config=None, config_file=None, **kwargs):
         super().__init__(AsyncMessageWriter.registry, service, topic, config, config_file, **kwargs)
 
     def _err(self, e):
         self.iometrics.update_err()
         raise e
 
-    def publish(self, msg):
-        promise = super()._publish(msg)
+    def publish(self, msg, timestamp=None):
+        promise = super()._publish(msg, timestamp)
         return promise.catch(lambda e: self._err(e))
 
 
@@ -778,7 +799,7 @@ class AsyncMessageReader(BaseMessageReader):
     def usage():
         return ASYNC_READER_USAGE
 
-    def __init__(self, service, topics=None, config=None, config_file=None, **kwargs):
+    def __init__(self, service=None, topics=None, config=None, config_file=None, **kwargs):
         logger.debug("AsyncMessageReader:init")
         super().__init__(AsyncMessageReader.registry, service, topics, config, config_file, **kwargs)
         self._executor = None

@@ -1,3 +1,24 @@
+<!--
+Copyright (C) 2022 National Institute of Informatics
+
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
 # SINETStream CLI (Python版,Java版)
 
 ## 概要
@@ -16,10 +37,10 @@ Java版は
 
 * Python版
     * Python3.8以上
-    * SINETStream v1.7.0(Python)
+    * SINETStream v1.9.0(Python)
 * Java版
     * Java11以上
-    * SINETStream v1.7.3(Java)
+    * SINETStream v1.9.0(Java)
 * [SINETStream API 設定ファイル](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/docs/userguide/config.md) (データ送受信先の接続情報等が記述されているもの)
 
 ## ビルド
@@ -68,22 +89,25 @@ $ sinetstream_cli-*/bin/sinetstream_cli ...
 ## 書式
 
 sinetstream-cli write
-[--service *SERVICE*]
-[--config *CONFIG*]
-[--text]
-[--file *FILE*]
-[--message *MESSAGE*]
-[--line]
+[-nc|--no-config-file]
+[-s|--service *SERVICE*]
+[-c|--config *CONFIG*]
+[-t|--text]
+[-f|--file *FILE*]
+[-m|--message *MESSAGE*]
+[-l|--line]
+[-v|--verbose]
 [*KEY*=*VALUE* [*KEY*=*VALUE* ...]]
 
 sinetstream_cli read
-[--service *SERVICE*]
-[--config *CONFIG*]
-[--text]
-[--verbose]
-[--raw]
-[--file *DIR*]
-[--count *COUNT*]
+[-nc|--no-config-file]
+[-s|--service *SERVICE*]
+[-c|--config *CONFIG*]
+[-t|--text]
+[-v|--verbose]
+[-r|--raw]
+[-f|--file *DIR*]
+[-C|--count *COUNT*]
 [*KEY*=*VALUE* [*KEY*=*VALUE* ...]]
 
 ## 説明
@@ -95,30 +119,34 @@ sinetstream_cli read
 
 ## オプション
 
-* `--service` *SERVICE*
+* `-nc`, `--no-config-file`
+    * コンフィグファイルを読み込まない。
+    * コマンドラインだけから設定パラメータを指定する場合に指定する。
+* `-s` *SERVICE*, `--service` *SERVICE*
     * SINETStream API で使用するサービス名
     * CONFIGもSERVICEも指定されていない場合は実行時に `./.sinetstream_config.yml` が作成されダミーのサービスが定義される。
         * 終了時にこのファイルは削除される。
         * sinetstream_cliをおなじディレクトリで複数実行した場合は一時作成された `./.sinetstream_config.yml` は共有される。
-* --config *CONFIG*
+* `-c` *CONFIG*, `--config` *CONFIG*
     * SINETStream API で使用するコンフィグ名
     * 指定するとコンフィグサーバーから設定を取得する。
-* --text
+* `-t`, `--text`
     * value_typeをTEXTに設定して入出力はテキストとして扱われる。
-* --file *PATH*
+* `-f` *PATH*, `--file` *PATH*
     * writeのときは指定されたファイルからメッセージを読み込む。
     * readのときは指定されたディレクトリの下にメッセージを保存する。ファイル名は "トピック名-ランダム文字列-シリアル番号" である。
       (トピック名はパーセントエンコーディングされる。)
-* --message *MESSAGE*
+* `-m` *MESSAGE*, `--message` *MESSAGE*
     * writeのとき、コマンドラインから送信メッセージを指定する。
     * 省略時は標準入力から送信メッセージを読み込む。
-* --line
+* `-l`, `--line`
     * writeのとき、標準入力から送信メッセージを読み込むとき1行ごとに送信する。
-* --verbose
+* `-v`, `--verbose`
+    * ログレベルを上げる(複数回指定可)。
     * 受信メッセージを出力するときにトピック名とシリアル番号を表示する。
-* --raw
+* `-r`, `--raw`
     * 受信メッセージをだけを表示する。
-* --count *COUNT*
+* `-C` *COUNT*, `--count` *COUNT*
     * COUNT数のメッセージを受信したら終了する。
 * *KEY*=*VALUE*
     * SINETStreamの設定パラメータを個別に指定する。
@@ -138,7 +166,7 @@ sinetstream_cli read
 1メッセージを受信したらコマンドが終了するように `--count 1` を指定している。
 
 ```
-$ sinetstream_cli read --text type=mqtt brokers=mqtt topic=test --count 1
+$ sinetstream_cli read -nc --text type=mqtt brokers=mqtt topic=test --count 1
 
 ```
 
@@ -147,7 +175,7 @@ $ sinetstream_cli read --text type=mqtt brokers=mqtt topic=test --count 1
 `--message` オプションをつかってコマンドラインで送信メッセージを指定している。
 
 ```
-$ sinetstream_cli write --text type=mqtt brokers=mqtt topic=test --message 'this is a test message.'
+$ sinetstream_cli write -nc --text type=mqtt brokers=mqtt topic=test --message 'this is a test message.'
 $
 ```
 
@@ -173,7 +201,7 @@ $ echo '{"test-1":{"value_type":"text","type":"mqtt","brokers":"mqtt","topic":"t
 #### <read側での入力内容>
 
 ```
-$ sinetstream_cli read --service test-1 --text --count 1
+$ sinetstream_cli read -nc --service test-1 --text --count 1
 [#1] Received on "test"
 this is a test message.
 
@@ -182,7 +210,7 @@ this is a test message.
 #### <write側での入力内容>
 
 ```
-$ sinetstream_cli write --service test-1 --text --message 'this is a test message.'
+$ sinetstream_cli write -nc --service test-1 --text --message 'this is a test message.'
 $
 ```
 
@@ -213,7 +241,7 @@ $
 #### <read側での入力内容>
 
 ```
-$ sinetstream_cli read --text type=mqtt brokers=mqtt topic=test --count 1
+$ sinetstream_cli read -nc --text type=mqtt brokers=mqtt topic=test --count 1
 
 ```
 
@@ -222,7 +250,7 @@ $ sinetstream_cli read --text type=mqtt brokers=mqtt topic=test --count 1
 `--file` オプションをつかって送信するファイルを指定している。
 
 ```
-$ sinetstream_cli write --text type=mqtt brokers=mqtt topic=test --file message.txt
+$ sinetstream_cli write -nc --text type=mqtt brokers=mqtt topic=test --file message.txt
 rm message.txt
 $
 ```
@@ -249,14 +277,14 @@ $
 `--raw` オプションをつかって `[#1] Received on "test"` のようなメッセージのメタ情報表示を抑制している。
 
 ```
-$ sinetstream_cli read --text type=mqtt brokers=mqtt topic=test --count 1 --raw
+$ sinetstream_cli read -nc --text type=mqtt brokers=mqtt topic=test --count 1 --raw
 
 ```
 
 #### <write側での入力内容>
 
 ```
-$ sinetstream_cli write --text type=mqtt brokers=mqtt topic=test --message 'this is a test message.'
+$ sinetstream_cli write -nc --text type=mqtt brokers=mqtt topic=test --message 'this is a test message.'
 $
 ```
 
@@ -286,7 +314,7 @@ $
 `--raw` オプションをつけないと出力にメタ情報表示が含まれてバイナリデータが壊れる。
 
 ```
-$ sinetstream_cli read type=mqtt brokers=mqtt topic=test --count 1 --raw >receivd.bin
+$ sinetstream_cli read -nc type=mqtt brokers=mqtt topic=test --count 1 --raw >receivd.bin
 
 ```
 
@@ -295,7 +323,7 @@ $ sinetstream_cli read type=mqtt brokers=mqtt topic=test --count 1 --raw >receiv
 テキストではなくバイナリメッセージを送るときは `--text` オプションをつけない。
 
 ```
-$ sinetstream_cli write type=mqtt brokers=mqtt topic=test <message.bin
+$ sinetstream_cli write -nc type=mqtt brokers=mqtt topic=test <message.bin
 $
 ```
 
@@ -323,15 +351,15 @@ $
 `--file` オプションをつかうと受信メッセージをファイルに保存できる。
 
 ```
-$ mkdir recved && sinetstream_cli read --text type=mqtt brokers=mqtt topic=test/sub --count 2 --file recved
+$ mkdir recved && sinetstream_cli read -nc --text type=mqtt brokers=mqtt topic=test/sub --count 2 --file recved
 
 ```
 
 #### <write側での入力内容>
 
 ```
-$ sinetstream_cli write --text type=mqtt brokers=mqtt topic=test/sub --message 'this is the first message.'
-$ sinetstream_cli write --text type=mqtt brokers=mqtt topic=test/sub --message 'this is the second message.'
+$ sinetstream_cli write -nc --text type=mqtt brokers=mqtt topic=test/sub --message 'this is the first message.'
+$ sinetstream_cli write -nc --text type=mqtt brokers=mqtt topic=test/sub --message 'this is the second message.'
 $
 ```
 
@@ -367,7 +395,7 @@ $
 #### <read側での入力内容>
 
 ```
-$ sinetstream_cli read --text type=mqtt brokers=mqtt data_compression=true compression.algorithm=zstd topic=test --count 1
+$ sinetstream_cli read -nc --text type=mqtt brokers=mqtt data_compression=true compression.algorithm=zstd topic=test --count 1
 
 ```
 
@@ -377,7 +405,7 @@ $ sinetstream_cli read --text type=mqtt brokers=mqtt data_compression=true compr
 この例では圧縮アルゴリズムにzstdを指定している。
 
 ```
-$ sinetstream_cli write --text type=mqtt brokers=mqtt data_compression=true compression.algorithm=zstd topic=test --message 'this is a test message.'
+$ sinetstream_cli write -nc --text type=mqtt brokers=mqtt data_compression=true compression.algorithm=zstd topic=test --message 'this is a test message.'
 $
 ```
 
@@ -407,7 +435,7 @@ service-1:
 #### <read側での入力内容>
 
 ```
-$ sinetstream_cli read --text type=kafka brokers='[kafka1,kafka2]' topic=test --count 1
+$ sinetstream_cli read -nc --text type=kafka brokers='[kafka1,kafka2]' topic=test --count 1
 
 ```
 
@@ -417,7 +445,7 @@ $ sinetstream_cli read --text type=kafka brokers='[kafka1,kafka2]' topic=test --
 この例ではKafkaのブローカ指定で2つのサーバーを指定している。
 
 ```
-$ sinetstream_cli write --text type=kafka brokers='[kafka1,kafka2]' topic=test --message 'this is a test message.'
+$ sinetstream_cli write -nc --text type=kafka brokers='[kafka1,kafka2]' topic=test --message 'this is a test message.'
 ...
 $
 ```
@@ -437,7 +465,7 @@ $
 #### <read側での入力内容>
 
 ```
-$ sinetstream_cli read --text type=mqtt brokers=mqtt topic=test --count 1
+$ sinetstream_cli read -nc --text type=mqtt brokers=mqtt topic=test --count 1
 
 ```
 
@@ -448,7 +476,7 @@ $ sinetstream_cli read --text type=mqtt brokers=mqtt topic=test --count 1
 ```
 $ echo 'aaa
 > bbb
-> ccc' | sinetstream_cli write --text type=mqtt brokers=mqtt topic=test
+> ccc' | sinetstream_cli write -nc --text type=mqtt brokers=mqtt topic=test
 $
 ```
 
@@ -467,7 +495,7 @@ $
 #### <read側での入力内容>
 
 ```
-$ sinetstream_cli read --text type=mqtt brokers=mqtt topic=test --count 3
+$ sinetstream_cli read -nc --text type=mqtt brokers=mqtt topic=test --count 3
 
 ```
 
@@ -476,7 +504,7 @@ $ sinetstream_cli read --text type=mqtt brokers=mqtt topic=test --count 3
 ```
 $ echo 'aaa
 > bbb
-> ccc' | sinetstream_cli write --text type=mqtt brokers=mqtt topic=test --line
+> ccc' | sinetstream_cli write -nc --text type=mqtt brokers=mqtt topic=test --line
 $
 ```
 
@@ -502,15 +530,15 @@ $
 #### <read側での入力内容>
 
 ```
-$ sinetstream_cli read --text type=mqtt brokers=mqtt topic=test --count 2 --raw | while read X; do echo "$X" | jq 'add'; done
+$ sinetstream_cli read -nc --text type=mqtt brokers=mqtt topic=test --count 2 --raw | while read X; do echo "$X" | jq 'add'; done
 
 ```
 
 #### <write側での入力内容>
 
 ```
-$ echo '[1,2,3]' | jq -c . | sinetstream_cli write --text type=mqtt brokers=mqtt topic=test
-$ echo '[10,20,30]' | jq -c . | sinetstream_cli write --text type=mqtt brokers=mqtt topic=test
+$ echo '[1,2,3]' | jq -c . | sinetstream_cli write -nc --text type=mqtt brokers=mqtt topic=test
+$ echo '[10,20,30]' | jq -c . | sinetstream_cli write -nc --text type=mqtt brokers=mqtt topic=test
 $
 ```
 

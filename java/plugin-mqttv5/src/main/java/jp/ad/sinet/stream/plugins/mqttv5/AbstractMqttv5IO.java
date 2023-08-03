@@ -25,6 +25,7 @@ import jp.ad.sinet.stream.api.*;
 import jp.ad.sinet.stream.api.valuetype.SimpleValueType;
 import jp.ad.sinet.stream.utils.KeyStoreUtil;
 import jp.ad.sinet.stream.utils.MessageUtils;
+import jp.ad.sinet.stream.utils.MessageWriterFactory;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.java.Log;
@@ -41,6 +42,7 @@ import org.eclipse.paho.mqttv5.common.MqttMessage;
 
 import org.eclipse.paho.mqttv5.common.packet.UserProperty;
 
+import java.io.ByteArrayOutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
@@ -393,6 +395,23 @@ public abstract class AbstractMqttv5IO<T> {
     }
 
     @SuppressWarnings("unchecked")
+    private byte[] encodeMessage(Object payload, Map<String, Object> params) {
+        Map<String, Object> ioparams = new HashMap<String, Object>();
+        ByteArrayOutputStream ost = new ByteArrayOutputStream();
+        ioparams.put("output_stream", ost);
+        params.put("iostream", ioparams);
+        MessageWriterFactory factory = MessageWriterFactory.builder()
+                .noConfig(true)
+                .type("iostream")
+                .parameters(params)
+                .build();
+        try (MessageWriter writer = factory.getWriter()) {
+            writer.write(payload, 0);
+        }
+        return ost.toByteArray();
+    }
+
+    @SuppressWarnings("unchecked")
     private void setupWill(MqttConnectionOptions opts) {
         Optional.ofNullable(config.get("will_set"))
                 .filter(Map.class::isInstance).map(Map.class::cast).ifPresent(will -> {
@@ -418,13 +437,11 @@ public abstract class AbstractMqttv5IO<T> {
 
             Optional.ofNullable(will.get("payload"))
                     .map(loggingException(x -> {
-                        if (x instanceof byte[]) {
-                            return (byte[]) x;
-                        } else if (x instanceof String) {
-                            return SimpleValueType.TEXT.getSerializer().serialize(x);
-                        } else {
-                            return this.valueType.getSerializer().serialize(x);
-                        }
+                        HashMap<String, Object> will2 = new HashMap<String, Object>(will);
+                        will2.remove("retain");
+                        will2.remove("qos");
+                        will2.remove("topic");
+                        return encodeMessage(x, will2);
                     })).ifPresent(payload -> {
                                 opts.setWill(willTopic, new MqttMessage(payload, willQos, willRetain, null));
                                 if (willDelayProp != null)

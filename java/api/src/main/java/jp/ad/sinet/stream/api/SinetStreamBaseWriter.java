@@ -111,4 +111,15 @@ public class SinetStreamBaseWriter<T, U extends PluginMessageIO> extends SinetSt
         updateMetrics(payload.length, cm.compLen, cm.uncompLen);
         return payload;
     }
+
+    byte[] toPayload(T message, long tstamp) {
+        byte[] payload = compositeSerializer.serialize(new Timestamped<>(message, tstamp));
+        CompressionMetrics cm = compressionMetrics.get();
+        updateMetrics(payload.length, cm.compLen, cm.uncompLen);
+        return payload;
+    }
+
+    public void debugDisconnectForcibly() throws Exception {
+        target.debugDisconnectForcibly();
+    }
 }

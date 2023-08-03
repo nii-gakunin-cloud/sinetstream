@@ -76,4 +76,11 @@ public class Mqttv5SyncBaseIO extends AbstractMqttv5IO<MqttClient> {
 
     public Object getMetrics() { return null; }
     public void resetMetrics() { }
+
+    public void debugDisconnectForcibly() throws MqttException {
+        long quiesceTimeout_ms = 0;
+        long disconnectTimeout_ms = 0;
+        boolean sendDisconnectPacket = false;
+        client.disconnectForcibly(quiesceTimeout_ms, disconnectTimeout_ms, sendDisconnectPacket);
+    }
 }

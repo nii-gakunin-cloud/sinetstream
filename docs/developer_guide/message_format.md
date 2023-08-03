@@ -473,7 +473,9 @@ Avro Sigle-object EncodingはAvro Binary Encodingの前にAvro markerとスキ�
         メッセージングシステムから
 ````
 
+## Version 3.1
 
+timestmap=0はタイムスタンプが設定されていないことを示す。
 
 
 <!--- link definitions --->

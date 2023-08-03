@@ -80,7 +80,7 @@ service-2:
 ```python
 from sinetstream import MessageWriter
 
-writer = MessageWriter('service-1', 'topic-1')
+writer = MessageWriter(service='service-1', topic='topic-1')
 with writer as f:
     f.publish(b'Hello! This is the 1st message.')
     f.publish(b'Hello! This is the 2nd message.')
@@ -102,7 +102,7 @@ with writer as f:
 ```python
 from sinetstream import MessageReader
 
-reader = MessageReader('service-1', 'topic-001')
+reader = MessageReader(service='service-1', topic='topic-001')
 with reader as f:
     for msg in f:
         print(msg.value)
@@ -141,14 +141,9 @@ MessageReaderクラスのコンストラクタ。
 
 ```
 MessageReader(
-    service,
+    service=None,
     topics=None,
     config=None,
-    consistency=AT_MOST_ONCE,
-    client_id=DEFAULT_CLIENT_ID,
-    value_type="byte_array",
-    value_deserializer=None,
-    receive_timeout_ms=float("inf"),
     **kwargs)
 ```
 
@@ -167,39 +162,42 @@ MessageReader(
     * コンフィグ名が指定されるとコンフィグサーバからコンフィグ情報を取得する。
     * コンフィグ情報のなかで定義されているサービスが1つしかないとわかっている場合はサービス名にNoneを指定してもよい。
     * コンフィグ名が指定されなかった場合、コンフィグ情報を得るために設定ファイルが読み込まれる。
-* consistency
-    * メッセージ配信の信頼性を指定する
-    * AT_MOST_ONCE (=0)
-        * メッセージは届かないかもしれない
-    * AT_LEAST_ONCE (=1)
-        * メッセージは必ず届くが何度も届くかもしれない
-    * EXACTLY_ONCE (=2)
-        * メッセージは必ず一度だけ届く
-* client_id
-    * クライアントの名前
-    * DEFAULT_CLIENT_ID, None, 空文字のいずれかが指定された場合はライブラリが値を自動生成する
-    * 自動生成した値は、このオブジェクトのプロパティとして取得できる
-* value_type
-    * メッセージのデータ本体部分（ペイロード）のタイプ名
-    * ここで指定された値によって`MessageReader`が返すペイロードの型が定まる
-    * 標準パッケージでは `"byte_array"`, `"text"` の何れかを指定する
-        * `"byte_array"`(デフォルト値)を指定した場合、ペイロードの型は `bytes` となる
-        * `"text"`を指定した場合、ペイロードの型は `str` となる
-    * 追加パッケージをインストールすることにより、`value_type`に指定できるタイプ名を増やすことができる
-        * SINETStream v1.1 以降では画像タイプを追加するパッケージを提供している
-        * 追加されるタイプ名は `"image"` となる
-        * `"image"`を指定し当た場合、ペイロードの型は `numpy.ndarray`（OpenCVの画像データ） となる
-        * `numpy.ndarray`の画像データにおける色順序は OpenCV のもの（青、緑、赤）となる
-* value_deserializer
-    * メッセージのバイト列から値を復元（デシリアライズ）するために使用する関数
-    * このパラメータを指定しない場合、`value_type`に指定した値によりデシリアライズする関数が定まる
-* receive_timeout_ms
-    * メッセージの到着を待つ最大時間 (ms)
-    * 一度タイムアウトするとこのコネクションからメッセージを読み込むことはできない。
-* data_encryption
-    * メッセージの暗号化、復号化の有効、無効を指定する
 * kwargs
-    * メッセージングシステム固有のパラメータを YAML のマッピングとして記述する
+    * no_config
+        * bool
+        * Trueを指定すると設定ファイルを読み込まない。
+    * consistency
+	* メッセージ配信の信頼性を指定する
+	* AT_MOST_ONCE (=0)
+	    * メッセージは届かないかもしれない
+	* AT_LEAST_ONCE (=1)
+	    * メッセージは必ず届くが何度も届くかもしれない
+	* EXACTLY_ONCE (=2)
+	    * メッセージは必ず一度だけ届く
+    * client_id
+	* クライアントの名前
+	* DEFAULT_CLIENT_ID, None, 空文字のいずれかが指定された場合はライブラリが値を自動生成する
+	* 自動生成した値は、このオブジェクトのプロパティとして取得できる
+    * value_type
+	* メッセージのデータ本体部分（ペイロード）のタイプ名
+	* ここで指定された値によって`MessageReader`が返すペイロードの型が定まる
+	* 標準パッケージでは `"byte_array"`, `"text"` の何れかを指定する
+	    * `"byte_array"`(デフォルト値)を指定した場合、ペイロードの型は `bytes` となる
+	    * `"text"`を指定した場合、ペイロードの型は `str` となる
+	* 追加パッケージをインストールすることにより、`value_type`に指定できるタイプ名を増やすことができる
+	    * SINETStream v1.1 以降では画像タイプを追加するパッケージを提供している
+	    * 追加されるタイプ名は `"image"` となる
+	    * `"image"`を指定し当た場合、ペイロードの型は `numpy.ndarray`（OpenCVの画像データ） となる
+	    * `numpy.ndarray`の画像データにおける色順序は OpenCV のもの（青、緑、赤）となる
+    * value_deserializer
+	* メッセージのバイト列から値を復元（デシリアライズ）するために使用する関数
+	* このパラメータを指定しない場合、`value_type`に指定した値によりデシリアライズする関数が定まる
+    * receive_timeout_ms
+	* メッセージの到着を待つ最大時間 (ms)
+	* 一度タイムアウトするとこのコネクションからメッセージを読み込むことはできない。
+    * data_encryption
+	* メッセージの暗号化、復号化の有効、無効を指定する
+    * そのほか、メッセージングシステム固有のパラメータを YAML のマッピングとして記述する
 
 `kwargs` に記述されたパラメータは、バックエンドのメッセージングシステムのコンストラクタにそのまま渡される。
 詳細は [メッセージングシステム固有のパラメータ](#メッセージングシステム固有のパラメータ) を参照。

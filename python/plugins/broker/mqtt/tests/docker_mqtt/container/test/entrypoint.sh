@@ -26,11 +26,13 @@ setup_bad_hostname() {
 }
 
 install_packages() {
-  if [ -d wheelhouse ]; then
-    for pkg in wheelhouse/*.whl; do
-      pip install -U --exists-action a ${pkg}
-    done
-  fi
+  for wheelhouse in wheelhouse*; do
+    if [ -d ${wheelhouse} ]; then
+      for pkg in ${wheelhouse}/*.whl; do
+        pip install -U --exists-action a ${pkg}
+      done
+    fi
+  done
 }
 
 install_packages

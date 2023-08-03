@@ -43,7 +43,10 @@ import static jp.ad.sinet.stream.api.Consistency.AT_MOST_ONCE;
 public class MessageReaderFactory<T> {
 
     @Getter
-    @Parameter(required=true)
+    @Description("Provider name")
+    private String type;
+
+    @Getter
     @Description("Service name defined in the configuration file.")
     private String service;
 
@@ -95,6 +98,12 @@ public class MessageReaderFactory<T> {
     @Parameter("data_encryption")
     @Description("Message encryption.")
     private Boolean dataEncryption;
+
+    @Getter
+    @Parameter("no_config")
+    @Description("Don't read a configuration file")
+    @Builder.Default
+    private Boolean noConfig = false;
 
     @Getter
     @Parameter(value="config_file", hide=true)
@@ -180,17 +189,27 @@ public class MessageReaderFactory<T> {
     private void setupServiceParameters() {
         MessageUtils utils = new MessageUtils();
         Map<String, Object> serviceParameters = new HashMap<>(defaultValues);
-        serviceParameters.putAll(utils.loadServiceParameters(service, configFile, configName, authFile, privKeyFile, debugHttpTransport));
+        if (!noConfig && !MessageUtils.toBoolean(parameters.getOrDefault("no_config", false)))
+            serviceParameters.putAll(utils.loadServiceParameters(service, configFile, configName, authFile, privKeyFile, debugHttpTransport));
         utils.mergeParameters(serviceParameters, parameters);
         tmpLst = new LinkedList<File>();
         ConfigLoader.replaceInlineData(serviceParameters, tmpLst);
         updateFactoryParameters(serviceParameters);
+        /* XXX broker plugin should whether check topics is set.
         if (topics.isEmpty()) {
             throw new InvalidConfigurationException("Topic has not been set.");
+        }
+        */
+        if (!parameters.containsKey("type") && type != null) {
+            parameters.put("type", type);
         }
     }
 
     private void updateFactoryParameters(Map<String, Object> params) {
+        if (Objects.isNull(type)) {
+            Optional.ofNullable(params.get("type")).map(MessageUtils::toString)
+                    .ifPresent(x -> type = x);
+        }
         if (Objects.isNull(consistency)) {
             Optional.ofNullable(params.get("consistency")).map(MessageUtils::toConsistency)
                     .ifPresent(x -> consistency = x);

@@ -40,4 +40,6 @@ public interface PluginMessageIO {
     default void resetMetrics() {}
 
     default Object getInfo(List<String> ipath) { return null; }
+
+    default void debugDisconnectForcibly() throws Exception {}
 }

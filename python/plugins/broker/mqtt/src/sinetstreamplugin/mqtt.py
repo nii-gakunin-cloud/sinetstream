@@ -41,12 +41,17 @@ from sinetstream import (
     InvalidArgumentError, ConnectionError,
     SinetError)
 
+from sinetstream import SINETStreamMessageEncoder
+
 logger = logging.getLogger(__name__)
 
 QOS_MAP = {
     AT_MOST_ONCE: 0,
     AT_LEAST_ONCE: 1,
     EXACTLY_ONCE: 2,
+    'AT_MOST_ONCE': 0,
+    'AT_LEAST_ONCE': 1,
+    'EXACTLY_ONCE': 2,
 }
 
 
@@ -204,10 +209,27 @@ def _replace_will_params(params):
     if 'will_set' not in params:
         return
     will_params = params['will_set']
+
+    for k in ['topic', 'payload']:
+        if k not in will_params:
+            raise InvalidArgumentError(f'the parameter {k} in will_set must be specified')
+
     if 'delay_interval' in will_params:
         props = Properties(PacketTypes.WILLMESSAGE)
         props.WillDelayInterval = will_params.pop('delay_interval')
         will_params['properties'] = props
+
+    will_params['qos'] = _to_qos(will_params)
+    will_params.pop('consistency', None)  # note: del will_params['consistency'] safely.
+
+    args = ['topic', 'payload', 'qos', 'retain', 'properties']
+    will_params2 = {k: will_params[k] for k in args if k in will_params}
+    writer_params = {k: will_params[k] for k in will_params.keys() if k not in args}
+    with SINETStreamMessageEncoder(**writer_params) as enc:
+        payload = will_params['payload']
+        will_params2['payload'] = enc.encode(payload, timestamp=0)
+
+    params['will_set'] = will_params2
 
 
 class MqttClient(object):
@@ -323,6 +345,9 @@ class MqttClient(object):
         with self._conn_cond:
             self._connection_result = rc
             self._conn_cond.notify_all()
+
+    def _debug_get_socket(self):
+        return self._mqttc.socket()
 
 
 class BaseMqttReader(MqttClient):

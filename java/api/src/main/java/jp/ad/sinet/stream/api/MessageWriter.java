@@ -25,6 +25,8 @@ public interface MessageWriter<T> extends MessageIO {
 
     void write(T message);
 
+    void write(T message, long timestampMicroseconds);
+
     Serializer<T> getSerializer();
 
     default boolean isThreadSafe() {

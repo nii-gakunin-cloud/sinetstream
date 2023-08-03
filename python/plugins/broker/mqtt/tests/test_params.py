@@ -152,6 +152,7 @@ def test_ws_set_options(io):
 will_set_params = {
     'will_set': {
         'topic': TOPIC,
+        'value_type': 'text',
         'payload': 'XXX',
         'qos': 1,
         'retain': True,

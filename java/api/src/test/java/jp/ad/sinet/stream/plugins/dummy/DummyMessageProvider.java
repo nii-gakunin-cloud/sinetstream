@@ -22,6 +22,7 @@
 package jp.ad.sinet.stream.plugins.dummy;
 
 import jp.ad.sinet.stream.api.Consistency;
+import jp.ad.sinet.stream.api.InvalidConfigurationException;
 import jp.ad.sinet.stream.spi.*;
 import jp.ad.sinet.stream.utils.Timestamped;
 import lombok.Data;
@@ -78,6 +79,9 @@ public class DummyMessageProvider implements MessageWriterProvider, MessageReade
             clientId = params.getClientId();
             config = Collections.unmodifiableMap(params.getConfig());
             topic = params.getTopic();
+            if (Objects.isNull(topic)) {
+                throw new InvalidConfigurationException("Topic has not been set.");
+            }
         }
 
         DummyIO(ReaderParameters params) {
@@ -85,6 +89,9 @@ public class DummyMessageProvider implements MessageWriterProvider, MessageReade
             consistency = params.getConsistency();
             clientId = params.getClientId();
             config = Collections.unmodifiableMap(params.getConfig());
+            if (params.getTopics().isEmpty()) {
+                throw new InvalidConfigurationException("Topic has not been set.");
+            }
             topic = String.join(",", params.getTopics());
         }
 

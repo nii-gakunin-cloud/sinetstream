@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3.6
+#!/usr/local/bin/python3
 
 # Copyright (C) 2019 National Institute of Informatics
 #

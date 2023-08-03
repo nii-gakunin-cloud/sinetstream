@@ -262,7 +262,7 @@ def decrypt_params(x):
         return x
 
 
-def get_config_params(service, config=None, config_file=None, **kwargs):
+def get_config_params(service=None, config=None, config_file=None, **kwargs):
     if config is None:
         service, params = get_config_params_local(service, config_file, **kwargs)
     else:

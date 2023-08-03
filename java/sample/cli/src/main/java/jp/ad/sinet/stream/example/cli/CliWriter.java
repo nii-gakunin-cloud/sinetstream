@@ -39,6 +39,7 @@ import java.util.Scanner;
 @AllArgsConstructor
 @ToString
 class CliWriter {
+    private boolean noConfigFile;
     private String service;
     private String config;
     private boolean text;
@@ -130,9 +131,7 @@ class CliWriter {
     public void run() throws Exception {
         CliUtil.debug("CliWriter.run: %s\n", this.toString());
         MessageWriterFactory.MessageWriterFactoryBuilder builder = MessageWriterFactory.builder();
-        if (service == null && config == null) {
-            service = CliUtil.makeTempConfig();
-        }
+        builder.noConfig(noConfigFile);
         if (service != null)
             builder.service(service);
         if (config != null)
