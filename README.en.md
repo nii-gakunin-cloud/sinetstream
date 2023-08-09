@@ -107,7 +107,7 @@ Writers and Readers send/receive a message specifying a topic, allowing differen
 The Python/Java `SINETStream API` is implemented with following programing
 languages.
 
-* Python 3.7 - 3.9
+* Python 3.8 or later
 * Java 11
 
 The Python/Java `SINETStream API` supports the following messaging systems.

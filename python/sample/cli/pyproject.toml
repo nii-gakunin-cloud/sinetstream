@@ -24,7 +24,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "sinetstream_cli"
 description = "SINETStream Command Line Interface"
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 license = {text = "Apache License, Version 2.0"}
 classifiers = [
     "License :: OSI Approved :: Apache Software License",
@@ -39,7 +39,7 @@ dependencies = [
     "sinetstream-s3>=1.7.0",
 ]
 #dynamic = ["version"]
-version = "1.8.0"
+version = "1.8.1"
 
 [project.scripts]
 sinetstream_cli = "sinetstream_cli.sinetstream_cli:main"

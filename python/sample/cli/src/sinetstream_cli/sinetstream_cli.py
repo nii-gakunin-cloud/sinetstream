@@ -267,7 +267,7 @@ def main():
     else:
         if cmd is not None:
             logger.error(f"invalid cmd: {cmd}")
-        logger.info(f"usage: {argv[0]} write|read ...")
+        logger.error(f"usage: {argv[0]} write|read ...")
         exit(1)
 
 
