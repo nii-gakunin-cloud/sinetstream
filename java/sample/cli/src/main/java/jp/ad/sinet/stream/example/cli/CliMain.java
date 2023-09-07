@@ -198,7 +198,7 @@ public class CliMain {
                                        .hasArg().argName("DIR")
                                        .desc("save received messages under the specified directory")
                                        .build());
-        opts.addOption(Option.builder("c").longOpt("count")
+        opts.addOption(Option.builder("C").longOpt("count")
                                        .hasArg().argName("N").type(Number.class)
                                        .desc("exit after the given count of messages have been received")
                                        .build());
@@ -225,7 +225,14 @@ public class CliMain {
     }
 
     static void printHelp(Options opts) {
-        new HelpFormatter().printHelp(CliUtil.prog + " [--option ...] [KEY=VALUE ...]", opts);
+        new HelpFormatter().printHelp(
+                120,
+                CliUtil.prog + " [--option ...] [KEY=VALUE ...]",
+                "",
+                opts,
+                " KEY=VALUE parameter for SINETStream (ex: brokers=mqtt.example.net compression.algorithm=gzip)",
+                false
+                );
         System.exit(1);
     }
 

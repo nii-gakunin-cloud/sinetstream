@@ -33,10 +33,10 @@ classifiers = [
     "Environment :: Console",
 ]
 dependencies = [
-    "sinetstream>=1.7.0",
-    "sinetstream-kafka>=1.7.0",
-    "sinetstream-mqtt>=1.7.0",
-    "sinetstream-s3>=1.7.0",
+    "sinetstream>=1.8.1",
+    "sinetstream-kafka>=1.8.1",
+    "sinetstream-mqtt>=1.8.1",
+    "sinetstream-s3>=1.8.1",
 ]
 #dynamic = ["version"]
 version = "1.8.1"

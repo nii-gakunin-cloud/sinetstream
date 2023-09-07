@@ -37,10 +37,10 @@ Java版は
 
 * Python版
     * Python3.8以上
-    * SINETStream v1.9.0(Python)
+    * SINETStream v1.8.1(Python)
 * Java版
     * Java11以上
-    * SINETStream v1.9.0(Java)
+    * SINETStream v1.8.1(Java)
 * [SINETStream API 設定ファイル](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/docs/userguide/config.md) (データ送受信先の接続情報等が記述されているもの)
 
 ## ビルド

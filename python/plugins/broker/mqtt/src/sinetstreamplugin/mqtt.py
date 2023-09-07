@@ -63,8 +63,11 @@ def _to_qos(params):
         return qos
 
     consistency = params.get('consistency')
-    assert consistency in QOS_MAP
-    return QOS_MAP[consistency]
+    if consistency is not None:
+        assert consistency in QOS_MAP
+        return QOS_MAP[consistency]
+
+    return None
 
 
 class MqttReaderHandleIter(object):
@@ -219,7 +222,9 @@ def _replace_will_params(params):
         props.WillDelayInterval = will_params.pop('delay_interval')
         will_params['properties'] = props
 
-    will_params['qos'] = _to_qos(will_params)
+    qos = _to_qos(will_params)
+    if qos is not None:
+        will_params['qos'] = qos
     will_params.pop('consistency', None)  # note: del will_params['consistency'] safely.
 
     args = ['topic', 'payload', 'qos', 'retain', 'properties']
