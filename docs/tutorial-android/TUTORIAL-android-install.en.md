@@ -136,10 +136,10 @@ Open the Android `Chrome` application and access to the following URL
 to download the target file `xxx.apk`.
 
 * STEP1: `Echo`, the text send/recv application
-[sinetstream-android-echo v1.6.0](https://github.com/nii-gakunin-cloud/sinetstream-android-echo/releases/download/v1.6.0/sinetstream-android-echo-v1.6.0.apk)
+[sinetstream-android-echo v1.8.0](https://github.com/nii-gakunin-cloud/sinetstream-android-echo/releases/download/v1.8.0/sinetstream-android-sample-app-release-v1.8.0.apk)
 
 * STEP2: `Sensor`, the sensor data publishing application
-[sinetstream-android-sensor-publisher v1.6.0](https://github.com/nii-gakunin-cloud/sinetstream-android-sensor-publisher/releases/download/v1.6.0/sinetstream-android-sensor-publisher-v1.6.0.apk)
+[sinetstream-android-sensor-publisher v1.8.0](https://github.com/nii-gakunin-cloud/sinetstream-android-sensor-publisher/releases/download/v1.8.0/sinetstream-sensor-publisher-sample-release-v1.8.0.apk)
 
 Once download has succeeded, the `APK` will be placed under `Downloads`
 directory of the Android device.
