@@ -20,30 +20,31 @@
  */
 
 plugins {
-    id "io.freefair.lombok" version "5.3.3.3"
+    //id "io.freefair.lombok" version "5.3.3.3"
+    id "io.freefair.lombok" version "8.4"
 }
-generateLombokConfig.enabled = false
+//generateLombokConfig.enabled = false
 
 dependencies {
     implementation group: 'org.yaml', name: 'snakeyaml', version: '1.33'
     implementation group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.70'
     implementation group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.70'
-    implementation group: 'org.apache.commons', name: 'commons-text', version: '1.10.0'
+    implementation group: 'org.apache.commons', name: 'commons-text', version: '1.11.0'
     implementation group: 'org.apache.commons', name: 'commons-rng-simple', version: '1.5'
     implementation group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
-    implementation group: 'org.apache.avro', name: 'avro', version: '1.11.2'
-    implementation group: 'com.github.luben', name: 'zstd-jni', version: '1.5.5-4'
-    implementation group: 'org.apache.commons', name: 'commons-compress', version: '1.23.0'
+    implementation group: 'org.apache.avro', name: 'avro', version: '1.11.3'
+    implementation group: 'com.github.luben', name: 'zstd-jni', version: '1.5.5-10'
+    implementation group: 'org.apache.commons', name: 'commons-compress', version: '1.24.0'
     implementation 'javax.xml.bind:jaxb-api:2.3.1'
-    implementation 'com.sun.xml.bind:jaxb-core:4.0.2'
-    implementation 'com.sun.xml.bind:jaxb-impl:4.0.2'
+    implementation 'com.sun.xml.bind:jaxb-core:4.0.4'
+    implementation 'com.sun.xml.bind:jaxb-impl:4.0.4'
     implementation 'javax.activation:javax.activation-api:1.2.0'
     implementation group: 'org.jdeferred.v2', name: 'jdeferred-core', version: '2.0.0'
     implementation 'com.google.http-client:google-http-client:1.43.3'
     implementation 'com.google.http-client:google-http-client-gson:1.43.3'
 
-    compileOnly "org.projectlombok:lombok:1.18.28"
-    annotationProcessor "org.projectlombok:lombok:1.18.28"
+    compileOnly "org.projectlombok:lombok:1.18.30"
+    annotationProcessor "org.projectlombok:lombok:1.18.30"
 
     testImplementation 'org.mockito:mockito-core:2.26.0'
     testImplementation 'org.mockito:mockito-junit-jupiter:2.26.0'
@@ -53,12 +54,13 @@ dependencies {
     testImplementation 'org.powermock:powermock-api-mockito2:2.0.2'
     testImplementation 'org.powermock:powermock-module-junit4:2.0.2'
     testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:5.7.2'
-    testImplementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
-    testCompileOnly "org.projectlombok:lombok:1.18.28"
-    testAnnotationProcessor "org.projectlombok:lombok:1.18.28"
+    testImplementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.13.0'
+    testCompileOnly "org.projectlombok:lombok:1.18.30"
+    testAnnotationProcessor "org.projectlombok:lombok:1.18.30"
     testImplementation project(':SINETStream-type-image')
     testImplementation project(':SINETStream-comp-lz4')
-    testRuntime group: 'org.slf4j', name: 'slf4j-nop', version: '2.0.7'
+    //testRuntime group: 'org.slf4j', name: 'slf4j-nop', version: '2.0.9'
+    testImplementation group: 'org.slf4j', name: 'slf4j-nop', version: '2.0.9'
 }
 
 jar {
@@ -68,7 +70,7 @@ jar {
 }
 
 task runApp(type: JavaExec) {
-    main = 'jp.ad.sinet.stream.utils.Usage'
+    mainClass = 'jp.ad.sinet.stream.utils.Usage'
     classpath = sourceSets.main.runtimeClasspath
 }
 

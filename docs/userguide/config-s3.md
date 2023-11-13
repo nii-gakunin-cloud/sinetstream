@@ -31,10 +31,6 @@ SINETStream ユーザガイド
     * 指定できない
 * consistency
     * AT_MOST_ONCE のみ指定できる
-* user_data_only (bool)
-    * trueを指定するとwriterが送ったデータのみが保存される。
-    * falseを指定するとwriterが送ったデータに送信時刻タイムスタンプなどが付け加えられたSINETStream形式で保存される(デフォルト)
-    * 注意: データ暗号化(data_encryption)を有効にする場合にはuser_data_onlyはfalseを指定しなければならない。
 * s3
     * endpoint_url (必須)
         * S3ストレージのURL

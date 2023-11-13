@@ -1,0 +1,35 @@
+
+build-ndarray:
+  stage: build
+  before_script:
+    - apt update
+    - apt install -y git
+    - pip install build
+  script:
+    - mkdir -p wheelhouse
+    - cd plugins/value_type/ndarray
+    - python -m build
+    - cp dist/* ../../../wheelhouse/
+  artifacts:
+    paths:
+      - wheelhouse/*
+    expire_in: 3 days
+
+test-ndarray:
+  stage: test
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends git
+    - cd plugins/value_type/ndarray
+    - pip install '.[test]'
+  script:
+    - pytest --junitxml=output/junit-report.xml --html=output/report.html --cov-report=html:output/htmlcov
+  artifacts:
+    paths:
+      - plugins/value_type/ndarray/output/*
+      - plugins/value_type/ndarray/output/**/*
+    when: always
+    reports:
+      junit:
+        - plugins/value_type/ndarray/output/junit-report.xml
+  needs:
+    - build-ndarray

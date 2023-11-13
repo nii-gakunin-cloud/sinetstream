@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sinetstream-type-ndarray"
+description = "ndarray type plugin for SINETStream library"
+requires-python = ">=3.8"
+license = { text = "Apache License, Version 2.0" }
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = ["sinetstream>=1.7.0", "numpy>=1.18.0"]
+dynamic = ["version"]
+
+[project.entry-points."sinetstream.value_type"]
+ndarray = "sinetstreamplugin.valuetype.ndarray:NdarrayValueType"
+
+[project.optional-dependencies]
+test = ["pytest>=6.0", "pytest-html>=3.0", "pytest-cov>=4.0"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools_scm]
+root = "../../.."
+
+[tool.pytest.ini_options]
+pythonpath = "src"
+minversion = "6.0"
+addopts = [
+    "-ra",
+    "--showlocals",
+    "--import-mode=importlib",
+    "--cov=sinetstreamplugin.valuetype.ndarray",
+    "--cov-report=term",
+]
+testpaths = ["tests"]
+filterwarnings = ["ignore:.*Parse.*is deprecated in avro:DeprecationWarning"]

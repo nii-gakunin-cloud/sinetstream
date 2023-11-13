@@ -1,0 +1,15 @@
+header:
+  version: 2
+config:
+  sound-1:
+    type: kafka
+    brokers: kafka.example.org
+    topic: sound-topic-1
+    consistency: AT_LEAST_ONCE
+    value_type: ndarray
+  sound-2:
+    type: mqtt
+    brokers: mqtt.example.org
+    topic: sound-topic-2
+    consistency: AT_LEAST_ONCE
+    value_type: ndarray

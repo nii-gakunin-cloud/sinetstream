@@ -19,7 +19,7 @@
 
 import logging
 
-from pkg_resources import iter_entry_points
+from importlib.metadata import entry_points
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +54,7 @@ class Registry(object):
         self._plugins[name] = plugin
 
     def register_entry_points(self):
-        for ep in iter_entry_points(self.group):
+        for ep in entry_points().get(self.group, []):
             logger.debug(f"entry_point.name={ep.name}")
             self.register(ep.name, ep)
 

@@ -21,7 +21,7 @@
 
 wrapper {
     // To upgrade: rewrite the version and run "./gradlew wrapper"
-    gradleVersion = '6.8.3'
+    gradleVersion = '7.6.3'
 }
 
 allprojects {
@@ -66,7 +66,7 @@ subprojects {
     test.finalizedBy jacocoTestReport
 
     jacoco {
-        toolVersion = "0.8.10"
+        toolVersion = "0.8.11"
     }
 
     dependencies {

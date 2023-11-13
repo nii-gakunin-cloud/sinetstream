@@ -47,14 +47,15 @@ under the License.
 
 WriterのバージョンとReaderのバージョンの互換性をまとめると以下のとおり。
 
-| Writer \ Reader | V0    | V1    | V2  | V3  |
-| --------------- | ---   | ---   | --- | --- |
-| **V0**          | Yes   | No *1 | No  | No  |
-| **V1**          | No *1 | Yes   | No  | No  |
-| **V2**          | No    | No    | Yes | No  |
-| **V3**          | No    | No    | No  | Yes |
+| Writer \ Reader | V0    | V1    | V2  | V3    |
+| --------------- | ---   | ---   | --- | ---   |
+| **V0**          | Yes   | No *1 | No  | No    |
+| **V1**          | No *1 | Yes   | No  | No    |
+| **V2**          | No    | No    | Yes | No *2 |
+| **V3**          | No    | No    | No  | Yes   |
 
-*1 V1側が暗号化を無効にすれば通信可能
+- *1 V1側が暗号化を無効にすれば通信可能
+- *2 V3 ReaderがV2ダウングレードを許可していれば通信可能
 
 
 ## Version 0
@@ -329,6 +330,11 @@ Avro Sigle-object EncodingはAvro Binary Encodingの前にAvro markerとスキ�
 ```
 
 
+## Version 2.1
+
+timestmap=0はタイムスタンプが設定されていないことを示す。
+
+
 ## Version 3
 
 メッセージの暗号化につかうパスワードを途中で変更できるように、
@@ -339,10 +345,11 @@ Avro Sigle-object EncodingはAvro Binary Encodingの前にAvro markerとスキ�
 先頭から:
 
 - message marker
-    - バイト長: 2
-    - `DF 03`
+    - バイト長: 4
+    - `DF 03 00 00`
     - 1バイト目の `DF` はLatin1でßになりSINETStreamっぽい文字ということで選ばれた。
     - 2バイト目の `03` はバージョン番号を意味する。
+    - 3～4バイト目の `00` はV2フォーマットとの衝突確率を低減するためのフィラー。
 - key version
     - バイト長: 2
     - 鍵バージョン番号(符号無し整数)
@@ -380,7 +387,7 @@ Avro Sigle-object EncodingはAvro Binary Encodingの前にAvro markerとスキ�
 暗号化無効時は:
 
 - message marker
-    - `DF 03`
+    - `DF 03 00 00`
 - key version
     - `00 00`
     - 暗号化なしのときは鍵バージョンは 0 を指定しなければならない。
@@ -472,11 +479,6 @@ Avro Sigle-object EncodingはAvro Binary Encodingの前にAvro markerとスキ�
            |
         メッセージングシステムから
 ````
-
-## Version 3.1
-
-timestmap=0はタイムスタンプが設定されていないことを示す。
-
 
 <!--- link definitions --->
 [avro]:http://avro.apache.org/
