@@ -75,4 +75,4 @@ Please refer to the following link for details on the structure and operating en
 "SINETStream: Enabling Research IoT Applications with Portability, Security and Performance Requirements,"
 2021 IEEE 45th Annual Computers, Software, and Applications Conference (COMPSAC), pp. 482-492, 2021.
 doi: 10.1109/COMPSAC51774.2021.00073.
-- [Publications](https://nii-gakunin-cloud.github.io/#sinetstream)
+- [Publications](https://ccrd.nii.ac.jp/publications/en.html#sinetstream)
