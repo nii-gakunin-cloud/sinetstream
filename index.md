@@ -93,7 +93,7 @@ SINETStreamの仕組みや動作環境などの詳細については以下のリ
 "SINETStream: Enabling Research IoT Applications with Portability, Security and Performance Requirements,"
 2021 IEEE 45th Annual Computers, Software, and Applications Conference (COMPSAC), pp. 482-492, 2021.
 doi: 10.1109/COMPSAC51774.2021.00073.
-- [SINETStream外部発表](https://nii-gakunin-cloud.github.io/#sinetstream)
+- [SINETStream外部発表](https://ccrd.nii.ac.jp/publications/jp.html#sinetstream)
 - [国立情報学研究所 クラウド支援室](https://cloud.gakunin.jp/)
 - [モバイルSINET](https://www.sinet.ad.jp/wadci)
 
