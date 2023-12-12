@@ -69,6 +69,7 @@ FAQのご紹介等の情報提供をさせていただきます。
 
 SINETStreamの仕組みや動作環境などの詳細については以下のリンク先を参照してください。
 * [ドキュメント](README.md)
+* [SINETStreamデモパッケージ](https://github.com/nii-gakunin-cloud/sinetstream-demo)
 
 ## チュートリアル
 
