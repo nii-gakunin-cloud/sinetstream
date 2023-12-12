@@ -63,6 +63,7 @@ Please refer to the following link for details on the structure and operating en
 
 * [Quick Start Guide (Python/Java)](docs/tutorial/index.en.md)
 * [Quick Start Guide (Android)](docs/tutorial-android/index.en.md)
+* [SINETStream Demo Package](https://github.com/nii-gakunin-cloud/sinetstream-demo/blob/main/README.en.md)
 
 ## Live demo using the SINETStream
 
