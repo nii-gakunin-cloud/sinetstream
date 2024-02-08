@@ -61,8 +61,8 @@ class Marshaller(object):
         self._writer = avro.io.DatumWriter(message_schema)
 
     def marshal(self, msg, tstamp):
-        assert type(tstamp) == int
-        assert type(msg) == bytes
+        assert type(tstamp) is int
+        assert type(msg) is bytes
         bytes_writer = io.BytesIO()
         bytes_writer.write(avro_signle_object_format_marker)
         bytes_writer.write(message_schema_fingerprint)

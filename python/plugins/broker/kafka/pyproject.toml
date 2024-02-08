@@ -1,0 +1,65 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sinetstream-kafka"
+version = "1.8.2"       # SINETStreamVERSION
+description = "Apache Kafka plugin for SINETStream library"
+requires-python = ">=3.8"       # PythonVERSION
+license = { text = "Apache License, Version 2.0" }
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "sinetstream>=1.8.1; python_version<'3.12'",        # SINETStreamVERSION PythonVERSION
+    "sinetstream>=1.8.2; python_version>='3.12'",       # SINETStreamVERSION PythonVERSION
+    "kafka-python>=2.0",
+    "promise",
+]
+
+[project.entry-points."sinetstream.reader"]
+kafka = "sinetstreamplugin.kafka:KafkaReader"
+
+[project.entry-points."sinetstream.async_reader"]
+kafka = "sinetstreamplugin.kafka:KafkaAsyncReader"
+
+[project.entry-points."sinetstream.writer"]
+kafka = "sinetstreamplugin.kafka:KafkaWriter"
+
+[project.entry-points."sinetstream.async_writer"]
+kafka = "sinetstreamplugin.kafka:KafkaAsyncWriter"
+
+[project.urls]
+Documentation = "https://www.sinetstream.net/"
+Repository = "https://github.com/nii-gakunin-cloud/sinetstream.git"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sinetstreamplugin"]
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+    "/tests",
+    "/tox.ini",
+    "Makefile",
+]
+
+[tool.pytest.ini_options]
+pythonpath = "src"
+minversion = "6.0"
+addopts = [
+    "-ra",
+    "--showlocals",
+    "--durations=0",
+    "--cov=sinetstreamplugin",
+    "--cov-report=term",
+    "--cov-report=html:output/htmlcov",
+    "--junitxml=output/junit-report.xml",
+    "--html=output/report.html",
+]
+testpaths = ["tests"]
+junit_family = "xunit2"
+filterwarnings = ["ignore:.*Parse.*is deprecated in avro:DeprecationWarning"]

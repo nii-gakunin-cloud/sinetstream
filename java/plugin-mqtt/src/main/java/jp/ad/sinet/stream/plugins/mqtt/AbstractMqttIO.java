@@ -141,8 +141,12 @@ public abstract class AbstractMqttIO<T> {
                 .ifPresent(opts::setMqttVersion);
 
         Optional.ofNullable(config.get("max_inflight_messages_set"))
-                .map(loggingException(MessageUtils::toInteger))
-                .ifPresent(opts::setMaxInflight);
+                .filter(Map.class::isInstance).map(Map.class::cast)
+                .ifPresent(inflightOpt -> {
+                    Optional.ofNullable(inflightOpt.get("inflight"))
+                            .map(loggingException(MessageUtils::toInteger))
+                            .ifPresent(opts::setMaxInflight);
+                    });
 
         Optional.ofNullable(config.get("clean_session")).map(loggingException(MessageUtils::toBoolean))
                 .ifPresent(opts::setCleanSession);

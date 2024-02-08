@@ -134,7 +134,7 @@ class S3Client(object):
 
 def get_mandatory_param(params, k, pfx):
     if k not in params:
-        raise(InvalidArgumentError(f"missing mandatory parameter: {pfx}{k}"))
+        raise InvalidArgumentError(f"missing mandatory parameter: {pfx}{k}")
     return params[k]
 
 

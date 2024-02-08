@@ -1,0 +1,53 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sinetstream-type-ndarray"
+version = "1.8.2"       # SINETStreamVERSION
+description = "ndarray type plugin for SINETStream library"
+requires-python = ">=3.8"       # PythonVERSION
+license = { text = "Apache License, Version 2.0" }
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "sinetstream>=1.7.0; python_version<'3.12'",        # SINETStreamVERSION PythonVERSION
+    "sinetstream>=1.8.2; python_version>='3.12'",       # SINETStreamVERSION PythonVERSION
+    "numpy>=1.18.0",
+]
+
+[project.entry-points."sinetstream.value_type"]
+ndarray = "sinetstreamplugin.valuetype.ndarray:NdarrayValueType"
+
+[project.urls]
+Documentation = "https://www.sinetstream.net/"
+Repository = "https://github.com/nii-gakunin-cloud/sinetstream.git"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sinetstreamplugin"]
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+    "/tests",
+    "/tox.ini",
+    "/Makefile",
+]
+
+[tool.pytest.ini_options]
+pythonpath = "src"
+minversion = "6.0"
+addopts = [
+    "-ra",
+    "--showlocals",
+    "--import-mode=importlib",
+    "--cov=sinetstreamplugin.valuetype.ndarray",
+    "--cov-report=term",
+    "--junitxml=output/junit-report.xml",
+    "--html=output/report.html",
+]
+testpaths = ["tests"]
+filterwarnings = ["ignore:.*Parse.*is deprecated in avro:DeprecationWarning"]

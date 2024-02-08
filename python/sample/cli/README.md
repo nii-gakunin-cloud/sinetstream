@@ -36,11 +36,11 @@ Java版は
 ## 前提条件
 
 * Python版
-    * Python3.8以上
-    * SINETStream v1.8.1(Python)
+    * Python3.8以上                     <!--- PythonVERSION --->
+    * SINETStream v1.8.2(Python)        <!--- SINETStreamVERSION --->
 * Java版
-    * Java11以上
-    * SINETStream v1.8.1(Java)
+    * Java11以上                        <!--- JavaVERSION --->
+    * SINETStream v1.8.1(Java)          <!--- SINETStreamVERSION --->
 * [SINETStream API 設定ファイル](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/docs/userguide/config.md) (データ送受信先の接続情報等が記述されているもの)
 
 ## ビルド

@@ -45,6 +45,15 @@ The SINETStream also supports authentication of sensor devices and encryption of
 <iframe width="560" height="315" src="https://www.youtube.com/embed/Z0wlUi4lr6c" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </div>
 
+## SINETStream Use Case
+
+<div align="center">
+<br/>
+<a href="https://www.youtube.com/watch?v=eO9mtqAKENw">Mobile Animal Laboratory [Bio-Innovation Research Center(BIRC), Tokushima Univ.]</a>
+<br/>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/eO9mtqAKENw" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
+
 ## Use of the SINETStream
 
 To use SINETStream, please complete a user registration.

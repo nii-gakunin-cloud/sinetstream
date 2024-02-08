@@ -99,8 +99,8 @@ SINETStream設定における記法のバージョン識別のため、下図中
 |大分類|中分類|小分類|型|値域|必須|備考|
 |:-----|:-----|:-----|:-|:---|:---|:---|
 ||topics||String|topic1[,topic2[, ...]]|o|複数要素の場合はコンマで連結する|
-||client_id||String|Any|x|省略時はMQTTライブラリ内部で自動生成する|
-||consistency||String|{"AT_MOST_ONCE","AT_LEAST_ONCE","EXACTLY_ONCE"}|x|省略時は"AT_LEAST_ONCE"|
+||client_id||String|Any||省略時はMQTTライブラリ内部で自動生成する|
+||consistency||String|{"AT_MOST_ONCE","AT_LEAST_ONCE","EXACTLY_ONCE"}||省略時は"AT_LEAST_ONCE"|
 
 * 項目`client_id`は`無効`とする。
 
@@ -113,7 +113,7 @@ SINETStream設定における記法のバージョン識別のため、下図中
 
 |大分類|中分類|小分類|型|値域|必須|備考|
 |:-----|:-----|:-----|:-|:---|:---|:---|
-||tls||Boolean|{true,false}|x|省略時はfalse|
+||tls||Boolean|{true,false}||省略時はfalse|
 
 * 子要素なしで「tls: true」指定の場合、以下に示す限定的な使用形態と看做す。
   * クライアント証明書の提示をサーバ側から要求されない。
@@ -126,10 +126,10 @@ SINETStream設定における記法のバージョン識別のため、下図中
 
 |大分類|中分類|小分類|型|値域|必須|備考|
 |:-----|:-----|:-----|:-|:---|:---|:---|
-||tls|protocol|String|{TLSv1.2,TLSv1.3}|x|省略時は"TLSv1.2"|
-||tls|client_certs|Boolean|{true,false}|x|省略時はfalse|
-||tls|server_certs|Boolean|{true,false}|x|省略時はfalse|
-||tls|check_hostname|Boolean|{true,false}|x|省略時はtrue|
+||tls|protocol|String|{TLSv1.2,TLSv1.3}||省略時は"TLSv1.2"|
+||tls|client_certs|Boolean|{true,false}||省略時はfalse|
+||tls|server_certs|Boolean|{true,false}||省略時はfalse|
+||tls|check_hostname|Boolean|{true,false}||省略時はtrue|
 
 * SSL/TLS関連の証明書は、事前にAndroidシステム秘匿領域「[キーチェイン](https://developer.android.com/reference/android/security/KeyChain)」に格納されたものを参照する運用とする。
   * クライアント証明書を使う場合、項目`client_certs`をtrueとする。
@@ -156,9 +156,9 @@ SINETStream設定における記法のバージョン識別のため、下図中
 
 |大分類|中分類|小分類|型|値域|必須|備考|
 |:-----|:-----|:-----|:-|:---|:---|:---|
-||tls|protocol|String|{TLSv1.2,TLSv1.3}|x|省略時は"TLSv1.2"|
-||tls|keyfilePassword|String|Any|x|クライアント証明書（xxx.pfx）のパスワード|
-||tls|check_hostname|Boolean|{true,false}|x|省略時はtrue|
+||tls|protocol|String|{TLSv1.2,TLSv1.3}||省略時は"TLSv1.2"|
+||tls|keyfilePassword|String|Any||クライアント証明書（xxx.pfx）のパスワード|
+||tls|check_hostname|Boolean|{true,false}||省略時はtrue|
 
 * SSL/TLS関連の証明書は、設定サーバから取得したものを参照する。
   * クライアント証明書は添付情報（`attachments`配列のうち、`target`の値が`*.tls.certfile_data`に対応する要素の値）として入手できる。
@@ -184,17 +184,17 @@ SINETStream設定における記法のバージョン識別のため、下図中
 
 |大分類|中分類|小分類|型|値域|必須|備考|
 |:-----|:-----|:-----|:-|:---|:---|:---|
-||clean_session||Boolean|{true,false}|x|省略時はtrue|
-||protocol \[1\]||String|{"MQTTv31","MQTTv311","DEFAULT"}|x|省略時は"DEFAULT"|
-||transport||String|{"tcp","websocket"}|x|省略時は"tcp"|
-||qos||Integer|{0,1,2}|x|省略時は1|
-||retain||Boolean|{true,false}|x|省略時はtrue|
-||max_inflight_messages_set|inflight|Integer|正整数|x|省略時は10|
-||reconnect_delay_set|max_delay|Integer|正整数|x|省略時は128000|
-||connect|keepalive|Integer|正整数|x|省略時は60|
-||connect|automatic_reconnect|Boolean|{true,false}|x|省略時はfalse|
-||connect|connection_timeout|Integer|正整数|x|省略時は30|
-||mqtt_debug \[2\]||Boolean|{true,false}|x|Default: false|
+||clean_session||Boolean|{true,false}||省略時はtrue|
+||protocol \[1\]||String|{"MQTTv31","MQTTv311","DEFAULT"}||省略時は"DEFAULT"|
+||transport||String|{"tcp","websocket"}||省略時は"tcp"|
+||qos||Integer|{0,1,2}||省略時は1|
+||retain||Boolean|{true,false}||省略時はtrue|
+||max_inflight_messages_set|inflight|Integer|正整数||省略時は10|
+||reconnect_delay_set|max_delay|Integer|正整数||省略時は128000|
+||connect|keepalive|Integer|正整数||省略時は60|
+||connect|automatic_reconnect|Boolean|{true,false}||省略時はfalse|
+||connect|connection_timeout|Integer|正整数||省略時は30|
+||mqtt_debug \[2\]||Boolean|{true,false}||Default: false|
 
 * 項目`protocol`での`"DEFAULT"`指定時は、
 [まずMQTTv311を試し、次にMQTTv31を試す](https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttConnectOptions.html#MQTT_VERSION_DEFAULT)という振る舞いとなる。
@@ -211,8 +211,8 @@ SINETStream設定における記法のバージョン識別のため、下図中
 
 |大分類|中分類|小分類|型|値域|必須|備考|
 |:-----|:-----|:-----|:-|:---|:---|:---|
-||username_pw_set|username|String|Any|x||
-||username_pw_set|password|String|Any|x||
+||username_pw_set|username|String|Any|||
+||username_pw_set|password|String|Any|||
 
 * ユーザ認証パラメータは項目`username`と`password`の両方を同時に設定、
 または両方同時に省略のいずれかとすること。
@@ -240,10 +240,10 @@ SINETStream設定における記法のバージョン識別のため、下図中
 <!-- OBSOLETED
 |大分類|中分類|小分類|型|値域|必須|備考|
 |:-----|:-----|:-----|:-|:---|:---|:---|
-||tls_set|ca_certs|String|Any|x|自己署名サーバ証明書（xxx.crt）のファイル名|
-||tls_set|certfile|String|Any|x|クライアント証明書（xxx.pfx）のファイル名|
-||tls_set|keyfilePassword|String|Any|x|クライアント証明書（xxx.pfx）のパスワード|
-||tls_insecure_set|value|Boolean|{true,false}|x|省略時はtrue|
+||tls_set|ca_certs|String|Any||自己署名サーバ証明書（xxx.crt）のファイル名|
+||tls_set|certfile|String|Any||クライアント証明書（xxx.pfx）のファイル名|
+||tls_set|keyfilePassword|String|Any||クライアント証明書（xxx.pfx）のパスワード|
+||tls_insecure_set|value|Boolean|{true,false}||省略時はtrue|
 -->
 
 * 本カテゴリーは`無効`とする。

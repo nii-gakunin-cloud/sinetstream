@@ -311,6 +311,11 @@ API にパラメータを指定しなかった場合は、設定ファイルに�
 * data_encryption
     * メッセージの暗号化/復号化の有効/無効を指定する
     * デフォルト値: false
+* user_data_only
+    * trueを指定するとwriterが送ったデータのみが保存される。
+    * falseを指定するとwriterが送ったデータに送信時刻タイムスタンプなどが付け加えられたSINETStream形式で保存される
+    * 注意: データ暗号化(data_encryption)や圧縮/展開(data_compression)を有効にする場合にはuser_data_onlyはfalseを指定しなければならない。
+    * デフォルト値: false
 * receive_timeout_ms
     * `MessageReader` がメッセージ到着を待つ最大待ち時間 (ms)
 

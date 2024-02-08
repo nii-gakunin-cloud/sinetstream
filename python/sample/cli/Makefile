@@ -1,13 +1,13 @@
 all::
 
 lint::
-	flake8 src
+	tox -e lint
 
 build::
-	python3 -mvenv .
+	python3 -m venv .
 	bin/pip install -U pip setuptools
 	bin/pip install build
-	bin/python -mbuild
+	bin/python -m build
 
 clean::
 	-rm -rf dist bin include lib lib64 share pyvenv.cfg

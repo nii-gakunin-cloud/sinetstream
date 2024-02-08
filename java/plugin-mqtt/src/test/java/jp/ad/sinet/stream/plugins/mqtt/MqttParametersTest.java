@@ -218,11 +218,13 @@ class MqttParametersTest implements ConfigFileAware {
     class MaxInflightMessages {
         @Test
         void maxInflightMessages() {
+            Map<String, String> max_inflight_messages = new HashMap<>();
+            max_inflight_messages.put("inflight", "50");
             MessageWriterFactory<String> builder =
                     MessageWriterFactory.<String>builder()
                             .configFile(getConfigFile(workdir)).service(getServiceName())
                             .consistency(Consistency.AT_LEAST_ONCE)
-                            .parameter("max_inflight_messages_set", "50")
+                            .parameter("max_inflight_messages_set", max_inflight_messages)
                             .build();
             try (MessageWriter<String> writer = builder.getWriter()) {
                 writer.write("message-1");
@@ -231,11 +233,13 @@ class MqttParametersTest implements ConfigFileAware {
 
         @Test
         void badValueMaxInflightMessages() {
+            Map<String, String> max_inflight_messages = new HashMap<>();
+            max_inflight_messages.put("inflight", "xxx");
             MessageWriterFactory<String> builder =
                     MessageWriterFactory.<String>builder()
                             .configFile(getConfigFile(workdir)).service(getServiceName())
                             .consistency(Consistency.AT_LEAST_ONCE)
-                            .parameter("max_inflight_messages_set", "xxx")
+                            .parameter("max_inflight_messages_set", max_inflight_messages)
                             .build();
             try (MessageWriter<String> writer = builder.getWriter()) {
                 writer.write("message-1");
@@ -244,11 +248,13 @@ class MqttParametersTest implements ConfigFileAware {
 
         @Test
         void intValueMaxInflightMessages() {
+            Map<String, Integer> max_inflight_messages = new HashMap<>();
+            max_inflight_messages.put("inflight", 30);
             MessageWriterFactory<String> builder =
                     MessageWriterFactory.<String>builder()
                             .configFile(getConfigFile(workdir)).service(getServiceName())
                             .consistency(Consistency.AT_LEAST_ONCE)
-                            .parameter("max_inflight_messages_set", 30)
+                            .parameter("max_inflight_messages_set", max_inflight_messages)
                             .build();
             try (MessageWriter<String> writer = builder.getWriter()) {
                 writer.write("message-1");

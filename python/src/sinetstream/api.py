@@ -520,7 +520,7 @@ class BaseMessageReader(MessageIO):
             tstamp, value = self.unmarshaller.unmarshal(value)
         else:
             tstamp = value_tstamp
-        assert type(tstamp) == int
+        assert type(tstamp) is int
         assert isinstance(value, bytes)
         clen = len(value)
         value = self.decompressor(value)
@@ -659,7 +659,7 @@ class BaseMessageWriter(MessageIO):
         self.debug_last_msg_bytes = None  # for inspection
 
     def _publish(self, msg, timestamp):
-        tstamp = int((timestamp if timestamp is not None else time.time()) * 1000_000)
+        tstamp = time.time_ns() // 1000 if timestamp is None else int(timestamp * 1000_000)
         msg_bytes = PluginMessage(self._to_bytes(msg, tstamp))
         msg_bytes.set_timestamp(tstamp)  # for s3-broker
         if self.debug_last_msg_bytes is not None:
@@ -703,17 +703,17 @@ class BaseMessageWriter(MessageIO):
     def _to_bytes(self, msg, tstamp):
         if self.value_serializer is not None:
             msg = self.value_serializer(msg)
-        if type(msg) != bytes:
+        if type(msg) is not bytes:
             raise self._invalid_message(type(msg))
         ulen = len(msg)
         msg = self.compressor(msg)
         clen = len(msg)
-        assert type(msg) == bytes
+        assert type(msg) is bytes
         if self.marshaller:
             msg = self.marshaller.marshal(msg, tstamp)
         if self.cipher:
             msg = self.cipher.encrypt(msg)
-        assert type(msg) == bytes
+        assert type(msg) is bytes
         mlen = len(msg)
         self.iometrics.update(mlen, clen, ulen)
         return msg

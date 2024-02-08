@@ -103,7 +103,7 @@ def make_key(crypto_params, salt=None):
     if key is not None:
         if crypto_params.get("password") is not None:
             raise InvalidArgumentError("only one of crypto.key or crypto.password can be specified.")
-        if type(key) != bytes:
+        if type(key) is not bytes:
             raise InvalidArgumentError("crypto.key must be bytes")
         if len(key) * 8 != key_length:
             emsg = f"length of crypto.key (={len(key) * 8}) must be same as crypto.key_length(={key_length})"

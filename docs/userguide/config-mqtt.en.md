@@ -40,7 +40,9 @@ SINETStream User Guide
 * retain
     * Whether the server keeps this message.
 * max_inflight_messages_set
-    * The maximum number of messages with QoS > 0 that can pass through network flows at once.
+    * The following parameters can be specified.
+    * inflight
+        * The maximum number of messages with QoS > 0 that can pass through network flows at once.
 * ws_set_options
     * Options for the WebSocket connection.
     * The following parameters can be specified.

@@ -25,16 +25,6 @@ setup_bad_hostname() {
   export KAFKA_SSL_BROKER_BAD_HOSTNAME="${ip_addr}:${ssl_broker[1]}"
 }
 
-install_packages() {
-  if [ -d wheelhouse ]; then
-    for pkg in wheelhouse/*.whl; do
-      pip install -U --exists-action a ${pkg}
-    done
-  fi
-}
-
-install_packages
-
 if [ -n "${CERT_URL}" ]; then
   setup_certs
   if [ -n "${KAFKA_SSL_BROKER}" ]; then
@@ -42,10 +32,8 @@ if [ -n "${CERT_URL}" ]; then
   fi
 fi
 
-install_packages
-
 if [ "$#" -eq 0 ]; then
-  set -- python setup.py test
+  set -- tox
 fi
 
 exec "$@"

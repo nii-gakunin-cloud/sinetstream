@@ -1,4 +1,3 @@
-version: '2.4'
 services:
   broker:
     build: container/broker/
@@ -6,13 +5,17 @@ services:
     networks:
       other-name-mqtt:
         aliases:
-        - bad-broker
+          - bad-broker
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 1883 || exit 1"]
+      start_period: 10s
+      interval: 5s
+      timeout: 10s
+      retries: 5
   test:
     build: container/test/
     volumes:
-    - ../..:/opt/ss_test
-    - ../../../../../dist:/opt/ss_test/wheelhouse
-    - ../../../iostream/dist:/opt/ss_test/wheelhouse-iostream
+      - ../..:/opt/ss_test
     environment:
       MQTT_SSL_BROKER: broker:8883
       MQTT_USER_PASSWD_BROKER: broker:1884
@@ -33,9 +36,12 @@ services:
       MQTT_SSL_BROKER_BAD_HOSTNAME: bad-broker:8883
       MQTT_WS_BROKER: broker:80
       MQTT_WSS_BROKER: broker:443
-#    command: bash
-#    tty: true
+#   command: bash
+#   tty: true
     networks:
       other-name-mqtt:
+    depends_on:
+      broker:
+        condition: service_healthy
 networks:
   other-name-mqtt:

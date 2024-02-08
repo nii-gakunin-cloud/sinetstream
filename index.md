@@ -56,6 +56,16 @@ SINETStreamは、広域ネットワークを介してデータを欠損なく確
 <iframe width="560" height="315" src="https://www.youtube.com/embed/Z0wlUi4lr6c" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </div>
 
+## SINETStreamの事例紹介
+
+<div align="center">
+<br/>
+<a href="https://www.youtube.com/watch?v=NAPdXjJIqrw">トレーラー型動物施設 [徳島大学 バイオイノベーション研究所]</a>
+<br/>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/NAPdXjJIqrw" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
+
+
 ## SINETStreamの利用
 
 SINETStreamのご利用にあたり、ユーザ登録をお願いしております。

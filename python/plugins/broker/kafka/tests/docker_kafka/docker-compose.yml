@@ -1,4 +1,3 @@
-version: '2.4'
 services:
   broker:
     build: container/broker/
@@ -6,12 +5,17 @@ services:
     networks:
       other-name-kafka:
         aliases:
-        - bad-broker
+          - bad-broker
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 9092 || exit 1"]
+      start_period: 10s
+      interval: 5s
+      timeout: 10s
+      retries: 5
   test:
     build: container/test/
     volumes:
-    - ../..:/opt/ss_test
-    - ../../../../../dist:/opt/ss_test/wheelhouse
+      - ../..:/opt/ss_test
     environment:
       KAFKA_SSL_BROKER: broker:9093
       KAFKA_USER_PASSWD_BROKER: broker:9094
@@ -28,11 +32,12 @@ services:
       KAFKA_WRITE_USER: user03
       KAFKA_WRITE_PASSWD: user03
       KAFKA_SSL_BROKER_BAD_HOSTNAME: bad-broker:9093
-#    command: bash
-#    tty: true
-    # command: python setup.py test --addopts '-vv --log-level=warning'
-    # command: python setup.py test --addopts '-vv --log-level=debug tests/test_pubsub.py'
+#   command: bash
+#   tty: true
     networks:
-    - other-name-kafka
+      - other-name-kafka
+    depends_on:
+      broker:
+        condition: service_healthy
 networks:
   other-name-kafka:

@@ -15,10 +15,13 @@ site
 .#*
 .sass-cache
 /_site
-/.venv
+.venv
 /venv
 /.idea
 output
 .sinetstream_config.yml
 /.vscode
 /tests/data/python
+*.whl
+.pytest_cache
+.tox

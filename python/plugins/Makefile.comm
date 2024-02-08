@@ -1,32 +1,30 @@
 # vim:noexpandtab tabstop=8 shiftwidth=8
 
 PYTHON3 = python3
-SETUP = $(PYTHON3) setup.py
-LINT = flake8 --max-line-length 110
 
 all: lint
 
 lint:
-	$(LINT) src tests || true
+	tox -e lint || true
 
 sdist:
-	$(SETUP) sdist
-
-bdist:
-	$(SETUP) bdist
+	$(PYTHON3) -m build --sdist .
 
 bdist_wheel:
-	$(SETUP) bdist_wheel
+	$(PYTHON3) -m build --wheel .
 
 install:
-	$(SETUP) install --user
+	$(PYTHON3) -m pip install .
 
 uninstall:
-	$(PYTHON3) -m pip uninstall -y `$(SETUP) --name`
+	$(PYTHON3) -m pip uninstall -y `$(PYTHON3) -c 'import toml; print(toml.load("pyproject.toml")["project"]["name"])'`
 
 reinstall:
 	$(MAKE) uninstall
 	$(MAKE) install
+
+clean::
+	-rm -rf dist
 
 test:
 	cd ../../.. && make bdist_wheel-local
@@ -39,12 +37,18 @@ test:
 
 test-shell:
 	cd ../../.. && make bdist_wheel-local
-	cd tests/docker_* && sed '/command: bash\|tty: true/{s/^#//}' docker-compose.yml >docker-compose-shell.yml
+	cd tests/docker_* && sed '/command: bash\|tty: true/{s/^#/ /}' docker-compose.yml >docker-compose-shell.yml
 	cd tests/docker_* && docker compose build && docker compose down && docker compose -f docker-compose-shell.yml up -d
 	rm tests/docker_*/docker-compose-shell.yml
 	sleep 3  # XXX wait for docker_*_test_1
 	docker exec -it docker_$$(basename $$(pwd))-test-1 bash || true
 	cd tests/docker_* && docker compose down
+# example in test-shell:
+#   tox
+#   tox -e py38
 
 tags::
 	uctags -R --exclude=".*" --exclude="*.css" --exclude="*.js" src tests ../../../src $(HOME)/.local/lib
+
+twine-upload::
+	twine upload --verbose dist/*

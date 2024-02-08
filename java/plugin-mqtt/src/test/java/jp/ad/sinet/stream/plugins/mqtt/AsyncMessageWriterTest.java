@@ -34,7 +34,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -57,10 +59,12 @@ class AsyncMessageWriterTest implements ConfigFileAware {
     void writeMessages(Consistency consistency) throws InterruptedException {
         final AtomicInteger count = new AtomicInteger(0);
         CountDownLatch done = new CountDownLatch(lines.size());
+        Map<String, Integer> max_inflight_messages = new HashMap<>();
+        max_inflight_messages.put("inflight", 20);
         MessageWriterFactory<String> factory = MessageWriterFactory.<String>builder()
                 .configFile(getConfigFile(workdir)).service(getServiceName())
                 .consistency(consistency)
-                .parameter("max_inflight_messages_set", 20)
+                .parameter("max_inflight_messages_set", max_inflight_messages)
                 .build();
         try (AsyncMessageWriter<String> writer = factory.getAsyncWriter()) {
             lines.forEach(line ->

@@ -1,0 +1,9 @@
+header:
+  version: 2
+config:
+  sound:
+    type: kafka
+    brokers: kafka.example.org
+    topic: sound-topic
+    consistency: AT_LEAST_ONCE
+    value_type: ndarray

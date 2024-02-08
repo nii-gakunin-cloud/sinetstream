@@ -26,12 +26,12 @@ generateLombokConfig.enabled = false
 
 dependencies {
     implementation project(':SINETStream-api')
-    implementation group: 'org.apache.kafka', name: 'kafka-clients', version: '3.5.0'
-    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
+    implementation group: 'org.apache.kafka', name: 'kafka-clients', version: '3.6.1'
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.14.0'
     implementation group: 'org.jdeferred.v2', name: 'jdeferred-core', version: '2.0.0'
-    compileOnly "org.projectlombok:lombok:1.18.28"
-    annotationProcessor "org.projectlombok:lombok:1.18.28"
-    testImplementation group: 'org.apache.commons', name: 'commons-text', version: '1.10.0'
+    compileOnly "org.projectlombok:lombok:1.18.30"
+    annotationProcessor "org.projectlombok:lombok:1.18.30"
+    testImplementation group: 'org.apache.commons', name: 'commons-text', version: '1.11.0'
     testCompileOnly group: 'org.yaml', name: 'snakeyaml', version: '1.33'
-    testRuntime group: 'org.slf4j', name: 'slf4j-nop', version: '2.0.7'
+    testRuntime group: 'org.slf4j', name: 'slf4j-nop', version: '2.0.11'
 }

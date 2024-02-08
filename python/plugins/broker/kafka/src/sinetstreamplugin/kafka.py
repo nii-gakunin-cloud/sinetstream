@@ -114,8 +114,8 @@ class KafkaClient(object):
         if 'brokers' not in params:
             raise InvalidArgumentError("You must specify several brokers.")
         self._brokers = params['brokers']
-        if (type(self._brokers) != str and
-            (type(self._brokers) != list or
+        if (type(self._brokers) is not str and
+            (type(self._brokers) is not list or
              len(self._brokers) == 0
              )):
             raise InvalidArgumentError("You must specify several brokers.")

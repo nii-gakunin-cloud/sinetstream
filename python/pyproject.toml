@@ -1,0 +1,57 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sinetstream"
+version = "1.8.2"       # SINETStreamVERSION
+description = "Library for operating messaging systems such as Apache Kafka and MQTT with the same API."
+readme = "README.en.md"
+requires-python = ">=3.8"       # PythonVERSION
+license = { text = "Apache License, Version 2.0" }
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "pyyaml",
+    "pycryptodomex",
+    "avro-python3",
+    "promise",
+    "requests",
+    "zstandard",
+]
+
+[project.urls]
+Documentation = "https://www.sinetstream.net/"
+Repository = "https://github.com/nii-gakunin-cloud/sinetstream.git"
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+    "/tests",
+    "/plugins",
+    "/sample",
+    "/.gitlab-ci.yml",
+    "/tox.ini",
+    "/.flake8",
+    "/.cache",
+]
+
+[tool.pytest.ini_options]
+pythonpath = "src"
+minversion = "6.0"
+addopts = [
+    "-ra",
+    "--showlocals",
+    "--durations=0",
+    "--cov=sinetstream",
+    "--cov-report=term",
+    "--cov-report=html:output/htmlcov",
+    "--junitxml=output/junit-report.xml",
+    "--html=output/report.html",
+]
+testpaths = ["tests"]
+junit_family = "xunit2"
+filterwarnings = ["ignore:.*Parse.*is deprecated in avro:DeprecationWarning"]

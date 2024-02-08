@@ -19,12 +19,18 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import pytest
-from sinetstream import MessageReader, MessageWriter
-from sinetstream import SINETStreamMessageEncoder, SINETStreamMessageDecoder
-# from sinetstream import InvalidConfigError, InvalidArgumentError
-# from threading import Condition
+from io import SEEK_SET, BytesIO
+from time import time, time_ns
 
+import pytest
+
+from sinetstream import (
+    MessageReader,
+    MessageWriter,
+    SINETStreamMessageDecoder,
+    SINETStreamMessageEncoder,
+)
+from sinetstream.api import Message
 
 smsgs = [
     "",
@@ -37,27 +43,28 @@ smsgs = [
 msgs = list(map(lambda x: x.encode(), smsgs))
 
 
-@pytest.mark.parametrize("comp,udato,tstamp", [
-    # data_compression, user_data_only, iostream.timestamp
-    (False, False, None),
-    (True,  False, None),
-    (True,  True,  None),
-    (False, True,  None),
-    (False, False, 0),
-    (False, False, 1.1),
-    ])
+@pytest.mark.parametrize(
+    "comp,udato,tstamp",
+    [
+        # data_compression, user_data_only, iostream.timestamp
+        (False, False, None),
+        (True, False, None),
+        (True, True, None),
+        (False, True, None),
+        (False, False, 0),
+        (False, False, 1.1),
+    ],
+)
 def test_pubsub(comp, udato, tstamp):
-    from io import BytesIO, SEEK_SET
-    from time import time
-
     t_start = time()
     xs = []
-    with BytesIO() as bio, \
-         MessageWriter(type="iostream",
-                       no_config=True,
-                       data_compression=comp,
-                       user_data_only=udato,
-                       iostream={"iobase": bio}) as w:
+    with BytesIO() as bio, MessageWriter(
+        type="iostream",
+        no_config=True,
+        data_compression=comp,
+        user_data_only=udato,
+        iostream={"iobase": bio},
+    ) as w:
         for m in msgs:
             if udato and len(m) == 0:
                 # when user_data_only=True,
@@ -74,12 +81,13 @@ def test_pubsub(comp, udato, tstamp):
     t_end = time()
 
     ms = []
-    with BytesIO() as bio, \
-         MessageReader(type="iostream",
-                       no_config=True,
-                       data_compression=comp,
-                       user_data_only=udato,
-                       iostream={"iobase": bio}) as r:
+    with BytesIO() as bio, MessageReader(
+        type="iostream",
+        no_config=True,
+        data_compression=comp,
+        user_data_only=udato,
+        iostream={"iobase": bio},
+    ) as r:
         i = iter(r)
         for x, m in xs:
             bio.write(x)
@@ -91,56 +99,58 @@ def test_pubsub(comp, udato, tstamp):
             bio.truncate(0)
 
     for b, a in ms:
-        assert(a == b.value)
-        assert(b.topic is None)
+        assert a == b.value
+        assert b.topic is None
         if udato:
             pass
         elif tstamp is not None:
-            assert(b.timestamp == tstamp)
+            assert b.timestamp == tstamp
         else:
-            assert(b.timestamp > t_start and b.timestamp < t_end)
+            assert b.timestamp > t_start and b.timestamp < t_end
 
 
-@pytest.mark.parametrize("comp,tstamp", [
-    # data_compression, iostream.timestamp
-    (False, None),
-    (True,  None),
-    (False, 0),
-    (False, 1.1),
-    ])
+@pytest.mark.parametrize(
+    "comp,tstamp",
+    [
+        # data_compression, iostream.timestamp
+        (False, None),
+        (True, None),
+        (False, 0),
+        (False, 1.1),
+    ],
+)
 def test_pubsub_compound(comp, tstamp):
-    from io import BytesIO, SEEK_SET
-    from time import time
-
     with BytesIO() as bio:
         t_start = time()
-        with MessageWriter(type="iostream",
-                           no_config=True,
-                           data_compression=comp,
-                           iostream={"iobase": bio}) as w:
+        with MessageWriter(
+            type="iostream",
+            no_config=True,
+            data_compression=comp,
+            iostream={"iobase": bio},
+        ) as w:
             for m in msgs:
                 w.publish(m, timestamp=tstamp)
         t_end = time()
 
         bio.seek(0, SEEK_SET)
 
-        with MessageReader(type="iostream",
-                           no_config=True,
-                           data_compression=comp,
-                           iostream={"iobase": bio}) as r:
+        with MessageReader(
+            type="iostream",
+            no_config=True,
+            data_compression=comp,
+            iostream={"iobase": bio},
+        ) as r:
             i = iter(r)
             for m2, m1 in zip(i, msgs):
-                assert(m2.value == m1)
-                assert(m2.topic is None)
+                assert m2.value == m1
+                assert m2.topic is None
                 if tstamp is not None:
-                    assert(m2.timestamp == tstamp)
+                    assert m2.timestamp == tstamp
                 else:
-                    assert(m2.timestamp > t_start and m2.timestamp < t_end)
+                    assert m2.timestamp > t_start and m2.timestamp < t_end
 
 
 def test_pubsub_concat():
-    from io import BytesIO, SEEK_SET
-
     comp = False
     # (printf 'a'|gzip -c; printf 'b'|gzip -c) | gzip -cd => 'ab'
     # SINETStream uses zlib not gzip, concatanation does not work.
@@ -148,69 +158,66 @@ def test_pubsub_concat():
     # smsgs = ["AAA", "BBB"]
 
     with BytesIO() as bio:
-        with MessageWriter(type="iostream",
-                           no_config=True,
-                           value_type="text",
-                           data_compression=comp,
-                           # compression={"algorithm": "zstd"},
-                           user_data_only=True,
-                           iostream={"iobase": bio}) as w:
+        with MessageWriter(
+            type="iostream",
+            no_config=True,
+            value_type="text",
+            data_compression=comp,
+            # compression={"algorithm": "zstd"},
+            user_data_only=True,
+            iostream={"iobase": bio},
+        ) as w:
             for m in smsgs:
                 w.publish(m)
 
         bio.seek(0, SEEK_SET)
 
-        with MessageReader(type="iostream",
-                           no_config=True,
-                           value_type="text",
-                           data_compression=comp,
-                           # compression={"algorithm": "zstd"},
-                           user_data_only=True,
-                           iostream={"iobase": bio}) as r:
+        with MessageReader(
+            type="iostream",
+            no_config=True,
+            value_type="text",
+            data_compression=comp,
+            # compression={"algorithm": "zstd"},
+            user_data_only=True,
+            iostream={"iobase": bio},
+        ) as r:
             i = iter(r)
             m2 = next(i)
-            assert(m2.value == "".join(smsgs))
+            assert m2.value == "".join(smsgs)
 
 
-@pytest.mark.parametrize("value_type,datalist",
-                         [("byte_array", msgs),
-                          ("text", smsgs)])
+@pytest.mark.parametrize("value_type,datalist", [("byte_array", msgs), ("text", smsgs)])
 def test_codec_with(value_type, datalist):
-
-    writer_params = dict(
-        value_type=value_type,
-        no_config=True,
-    )
+    writer_params = {
+        "value_type": value_type,
+        "no_config": True,
+    }
     reader_params = writer_params
 
     with SINETStreamMessageEncoder(**writer_params) as enc, \
          SINETStreamMessageDecoder(**reader_params) as dec:
-        for m, i in zip(datalist, range(len(datalist))):
+        for i, m in enumerate(datalist):
             b = enc.encode(m, timestamp=i)
             m2 = dec.decode(b)
-            assert(m2.value == m)
-            assert(m2.timestamp == i)
+            assert m2.value == m
+            assert m2.timestamp == i
 
         for m in datalist:
-            from time import time
-            t_start = time()
+            t_start = time_ns() // 1000
             b = enc.encode(m)
-            t_end = time()
+            t_end = time_ns() // 1000
             m2 = dec.decode(b)
-            from sinetstream.api import Message
-            assert(type(m2) == Message)
-            assert(m2.value == m)
-            assert(m2.timestamp > t_start and m2.timestamp < t_end)
+            assert isinstance(m2, Message)
+            assert m2.value == m
+            assert m2.timestamp_us >= t_start and m2.timestamp_us <= t_end
 
 
-@pytest.mark.parametrize("value_type,datalist",
-                         [("byte_array", msgs),
-                          ("text", smsgs)])
+@pytest.mark.parametrize("value_type,datalist", [("byte_array", msgs), ("text", smsgs)])
 def test_codec_without(value_type, datalist):
-    writer_params = dict(
-        value_type=value_type,
-        no_config=True,
-    )
+    writer_params = {
+        "value_type": value_type,
+        "no_config": True,
+    }
     reader_params = writer_params
 
     enc = SINETStreamMessageEncoder(**writer_params)
@@ -222,34 +229,40 @@ def test_codec_without(value_type, datalist):
     for m, i in zip(datalist, range(len(datalist))):
         b = enc.encode(m, timestamp=i)
         m2 = dec.decode(b)
-        assert(m2.value == m)
-        assert(m2.timestamp == i)
+        assert m2.value == m
+        assert m2.timestamp == i
 
     enc.close()  # XXX Currently it works without it.
     dec.close()  # XXX Currently it works without it.
 
 
-@pytest.mark.parametrize("service,comp,udato", [
-    # service, data_compression, user_data_only
-    (None, False, False),
-    (None, True,  False),
-    (None, True,  True,),
-    (None, False, True,),
-    ("s1", False, False),
-    ])
+@pytest.mark.parametrize(
+    "service,comp,udato",
+    [
+        # service, data_compression, user_data_only
+        (None, False, False),
+        (None, True, False),
+        (None, True, True),
+        (None, False, True),
+        ("s1", False, False),
+    ],
+)
 def test_codec_any(service, comp, udato):
-    writer_params = dict(
-        service=service,
-        value_type="text",
-        data_compression=comp,
-        user_data_only=udato,
-    )
+    writer_params = {
+        "service": service,
+        "value_type": "text",
+        "data_compression": comp,
+        "user_data_only": udato,
+    }
     reader_params = writer_params
 
     with SINETStreamMessageEncoder(**writer_params) as enc, \
          SINETStreamMessageDecoder(**reader_params) as dec:
-        from sinetstream.api import Message
         for m in smsgs:
             b = enc.encode(m) if not udato or len(m) > 0 else b""
-            m2 = dec.decode(b) if not udato or len(b) > 0 else Message("", None, None, None)
-            assert(m2.value == m)
+            m2 = (
+                dec.decode(b)
+                if not udato or len(b) > 0
+                else Message("", None, None, None)
+            )
+            assert m2.value == m
