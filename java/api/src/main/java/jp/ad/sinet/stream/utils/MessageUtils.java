@@ -34,12 +34,12 @@ import java.util.stream.Collectors;
 
 public class MessageUtils {
     @SuppressWarnings("unchecked")
-    Map<String,Object> loadServiceParameters(String service, Path configFile, String configName, Path authFile, Path privKeyFile, Object debugHttpTransport) {
+    Map<String,Object> loadServiceParameters(String service, Path configFile, String configName, boolean needAllKey, Path authFile, Path privKeyFile, Object debugHttpTransport) {
         if (privKeyFile == null)
             privKeyFile= Paths.get(System.getProperty("user.home"), ".config", "sinetstream", "private_key.pem");
         Map<String,Object> params;
         if (configName != null) {
-            params = ConfigClient.getConfig(service, configName, authFile, privKeyFile, debugHttpTransport);
+            params = ConfigClient.getConfig(service, configName, needAllKey, authFile, privKeyFile, debugHttpTransport);
         } else {
             Map<String,Map<String,Object>> configs = new ConfigLoader(configFile).loadConfigFile();
             Map<String,Object> header = configs.get("header");
@@ -92,9 +92,9 @@ public class MessageUtils {
     @SuppressWarnings("unchecked")
     private Object decryptoParameters1(Object x, SecretDecoder decoder) throws Exception {
         if (x instanceof Map) {
-            Map<String,Object> map = (Map<String,Object>) x;
-            Map<String,Object> map2 = new LinkedHashMap<String,Object>(map.size());
-            for (Map.Entry<String, Object> e : map.entrySet()) {
+            Map<Object,Object> map = (Map<Object,Object>) x;
+            Map<Object,Object> map2 = new LinkedHashMap<Object,Object>(map.size());
+            for (Map.Entry<Object, Object> e : map.entrySet()) {
                 map2.put(e.getKey(), decryptoParameters1(e.getValue(), decoder));
             }
             return map2;

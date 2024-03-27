@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sinetstream-type-image"
-version = "1.8.2"       # SINETStreamVERSION
+version = "1.9.1"       # SINETStreamVERSION
 description = "Image Type plugin for SINETStream library"
 requires-python = ">=3.8"       # PythonVERSION
 license = { text = "Apache License, Version 2.0" }

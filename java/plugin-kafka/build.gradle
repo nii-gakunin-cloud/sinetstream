@@ -19,19 +19,16 @@
  * under the License.
  */
 
-plugins {
-    id "io.freefair.lombok" version "5.3.3.3"
-}
-generateLombokConfig.enabled = false
-
 dependencies {
     implementation project(':SINETStream-api')
-    implementation group: 'org.apache.kafka', name: 'kafka-clients', version: '3.6.1'
+    implementation group: 'org.apache.kafka', name: 'kafka-clients', version: '3.7.0'
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.14.0'
     implementation group: 'org.jdeferred.v2', name: 'jdeferred-core', version: '2.0.0'
     compileOnly "org.projectlombok:lombok:1.18.30"
     annotationProcessor "org.projectlombok:lombok:1.18.30"
+    testCompileOnly "org.projectlombok:lombok:1.18.30"
+    testAnnotationProcessor "org.projectlombok:lombok:1.18.30"
     testImplementation group: 'org.apache.commons', name: 'commons-text', version: '1.11.0'
     testCompileOnly group: 'org.yaml', name: 'snakeyaml', version: '1.33'
-    testRuntime group: 'org.slf4j', name: 'slf4j-nop', version: '2.0.11'
+    testImplementation group: 'org.slf4j', name: 'slf4j-nop', version: '2.0.12'
 }

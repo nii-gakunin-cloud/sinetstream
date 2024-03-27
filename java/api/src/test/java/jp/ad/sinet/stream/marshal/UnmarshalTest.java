@@ -79,10 +79,19 @@ class UnmarshalTest implements ConfigFileAware {
             System.err.println("ORIGINAL: " + Arrays.toString(original_bytes));
 
         // break and try
-        int[] pos_list = {
+        /*
+        int[] pos_list_v2 = {
             0, 1,                       // marker
             2, 3, 4, 5, 6, 7, 8, 9,     // fingerprint
             18,                         // length of record.msg
+        };
+        */
+        int[] pos_list = {
+            0, 1, 2, 3,                 // v3: marker
+            4, 5,                       // v3: key version
+            6, 7,                       // avro: marker
+            8, 9,10,11,12,13,14,15,     // avro: fingerprint
+            24,                         // avro: length of record.msg
         };
         for (int pos : pos_list) {
             if (debug)

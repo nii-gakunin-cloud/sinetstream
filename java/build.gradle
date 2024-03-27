@@ -21,7 +21,7 @@
 
 wrapper {
     // To upgrade: rewrite the version and run "./gradlew wrapper"
-    gradleVersion = '6.8.3'
+    gradleVersion = '8.6'
 }
 
 allprojects {
@@ -50,7 +50,9 @@ subprojects {
     apply plugin: 'maven-publish'
     apply plugin: 'signing'
 
-    sourceCompatibility = 1.11
+    java {
+        sourceCompatibility = JavaVersion.VERSION_11
+    }
     compileJava.options.encoding = 'UTF-8'
     compileTestJava.options.encoding = 'UTF-8'
 
@@ -140,5 +142,6 @@ subprojects {
         if (JavaVersion.current().isJava9Compatible()) {
             options.addBooleanOption('html5', true)
         }
+        options.addStringOption('Xdoclint:none', '-quiet')
     }
 }

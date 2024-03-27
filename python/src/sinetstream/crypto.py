@@ -86,8 +86,17 @@ def conv_param(s, d, kwd):
     return d[s]
 
 
-def make_key(crypto_params, salt=None):
-    key = crypto_params.get("key")
+def make_key(crypto_params, key_version, salt=None):
+    logger.debug(f"make_key:key_version={key_version}")
+    if "_keys" in crypto_params:
+        key = crypto_params["_keys"].get(key_version)
+        if key is None:
+            raise InvalidArgumentError(f"key_version={key_version} not found")
+    else:
+        if key_version == 1:
+            key = crypto_params.get("key")
+        else:
+            raise InvalidArgumentError(f"key_version={key_version} not found")
     key_length = crypto_params["key_length"]
     kd_params = crypto_params["key_derivation"]
     algorithm = kd_params["algorithm"]
@@ -190,17 +199,22 @@ class CipherAES(object):
         self.enc_salt = None
         self.counter = None     # for CTR
         self.dec_keys = {}
+        self.max_key_version = \
+            max(crypto_params["_keys"].keys()) if "_keys" in crypto_params else \
+            1 if "key" in crypto_params else \
+            1 if "password" in crypto_params else \
+            None
 
-    def setup_enc(self):
-        key, salt = make_key(self.crypto_params)
+    def setup_enc(self, keyver):
+        key, salt = make_key(self.crypto_params, keyver)
         self.enc_key = key
         self.enc_salt = salt
 
-    def encrypt(self, data):
+    def encrypt(self, data, keyver=None):
         assert type(data) is bytes
 
         if self.enc_key is None:
-            self.setup_enc()
+            self.setup_enc(keyver or self.max_key_version)
 
         if self.padding:
             data = pad(data, AES.block_size, style=self.padding)
@@ -246,7 +260,7 @@ class CipherAES(object):
         logger.debug(f"XXX:enc: tag={hexlify(tag)}")
         return self.enc_salt + ivnonce + cdata + tag
 
-    def decrypt(self, cmsg):
+    def decrypt(self, cmsg, key_version):
         assert isinstance(cmsg, bytes)
         salt_bytes = self.crypto_params["key_derivation"]["salt_bytes"]
         dummy_key = b"0123456789abcdef"         # XXX Cryptodome/Cipher/AES.py: key_size = (16, 24, 32)
@@ -280,10 +294,10 @@ class CipherAES(object):
         logger.debug(f"XXX:dec: cdata={hexlify(cdata)}")
         logger.debug(f"XXX:dec: tag={hexlify(tag)}")
 
-        key = self.dec_keys.get(salt)
+        key = self.dec_keys.get((key_version, salt))
         if key is None:
-            key, _salt = make_key(self.crypto_params, salt=salt)
-            self.dec_keys[salt] = key
+            key, _salt = make_key(self.crypto_params, key_version=key_version, salt=salt)
+            self.dec_keys[(key_version, salt)] = key
 
         if self.mode_type == "nonce":
             if self.aead:

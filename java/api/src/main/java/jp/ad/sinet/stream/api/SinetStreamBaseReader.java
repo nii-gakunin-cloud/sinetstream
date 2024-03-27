@@ -24,10 +24,13 @@ package jp.ad.sinet.stream.api;
 import jp.ad.sinet.stream.api.compression.CompressionFactory;
 import jp.ad.sinet.stream.crypto.CryptoDeserializerWrapper;
 import jp.ad.sinet.stream.marshal.Unmarshaller;
+import jp.ad.sinet.stream.packet.Packet;
 import jp.ad.sinet.stream.spi.PluginMessageIO;
 import jp.ad.sinet.stream.spi.PluginMessageWrapper;
 import jp.ad.sinet.stream.spi.ReaderParameters;
+import jp.ad.sinet.stream.utils.Pair;
 import jp.ad.sinet.stream.utils.Timestamped;
+
 import lombok.Getter;
 
 import java.time.Duration;
@@ -35,6 +38,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 
 public class SinetStreamBaseReader<T, U extends PluginMessageIO> extends SinetStreamIO<U> {
 
@@ -50,6 +54,7 @@ public class SinetStreamBaseReader<T, U extends PluginMessageIO> extends SinetSt
     @Getter
     private final Decompressor decompressor;
 
+    @Getter
     private final Deserializer<Timestamped<T>> compositeDeserializer;
 
     static private class CompressionMetrics {
@@ -109,9 +114,41 @@ public class SinetStreamBaseReader<T, U extends PluginMessageIO> extends SinetSt
             return (bytes) -> bytes;
     }
 
+    static public class PktDeserializer implements Deserializer<Pair<byte[], Integer>> {
+        public Pair<byte[], Integer> deserialize(byte[] bytes) {
+            Packet pkt = Packet.decode(bytes);
+            if (pkt != null) {
+                Packet.Header hdr = pkt.getHeader();
+                Integer keyVer = (int)hdr.getKeyVersion();
+                return Pair.of(pkt.getMessage(), keyVer);
+            }
+            // not v3
+            return Pair.of(bytes, null);
+        }
+    }
+
+    static public class ThruDeserializer implements Deserializer<Pair<byte[], Integer>> {
+        public Pair<byte[], Integer> deserialize(byte[] bytes) {
+            return Pair.of(bytes, null);
+        }
+    }
+
     private Deserializer<Timestamped<T>> generateDeserializer(ReaderParameters parameters) {
         if (this.isUserDataOnly())
             return new UserDataOnlyDeserializer<T>(this.deserializer);
+
+        int messageFormat = getMessageFormat();
+        Deserializer<Pair<byte[], Integer>> pktdes;
+        switch (messageFormat) {
+        case 2:
+            pktdes = new ThruDeserializer();
+            break;
+        case 3:
+            pktdes = new PktDeserializer();
+            break;
+        default:
+            throw new InvalidConfigurationException("message_format=" + messageFormat + " is not supported");
+        }
 
         final Unmarshaller unmashaller = new Unmarshaller();
         Deserializer<Timestamped<T>> tsdes = (bytes) -> {
@@ -121,7 +158,8 @@ public class SinetStreamBaseReader<T, U extends PluginMessageIO> extends SinetSt
             T value = this.deserializer.deserialize(decomped);
             return new Timestamped<>(value, data.getTstamp());
         };
-        return CryptoDeserializerWrapper.getDeserializer(parameters.getConfig(), tsdes);
+
+        return CryptoDeserializerWrapper.getDeserializer(parameters.getConfig(), pktdes, tsdes);
     }
 
     protected Message<T> toMessage(PluginMessageWrapper pluginMessage) {
@@ -130,7 +168,7 @@ public class SinetStreamBaseReader<T, U extends PluginMessageIO> extends SinetSt
         }
         Timestamped<byte[]> tvalue = pluginMessage.getValue();
         byte[] payload = tvalue.getValue();
-        Timestamped<T> tsRecord = compositeDeserializer.deserialize(payload);
+        Timestamped<T> tsRecord = getCompositeDeserializer().deserialize(payload);
         CompressionMetrics cm = compressionMetrics.get();
         updateMetrics(payload.length, cm.compLen, cm.uncompLen);
         long tstamp = tsRecord.getTstamp();
@@ -141,5 +179,10 @@ public class SinetStreamBaseReader<T, U extends PluginMessageIO> extends SinetSt
 
     public String getTopic() {
         return String.join(",", topics);
+    }
+
+    public void debugDisconnectForcibly() throws Exception {
+        System.err.println("XXX: SinetStreamBaseReader: target=" + target);
+        target.debugDisconnectForcibly();
     }
 }

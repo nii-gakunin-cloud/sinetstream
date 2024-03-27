@@ -50,6 +50,7 @@ SINETStream provides three API versions, i.e., Python API, Java API and Android 
 * [Configuration file](config.en.md)
 * [Authentication and authorization](auth.en.md)
 * [CLI(Command Line Interface)](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://github.com/nii-gakunin-cloud/sinetstream/blob/main/java/sample/cli/README.md)
+* [Compatibility](https://translate.google.com/translate?hl=en&sl=ja&tl=en&u=https://nii-gakunin-cloud.github.io/sinetstream/docs/userguide/compat.html)
 
 ## Definition of technical terms
 

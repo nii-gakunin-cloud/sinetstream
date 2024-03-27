@@ -282,13 +282,13 @@ public class ConfigClient {
         params.put(tpath[tpath.length - 1], value);
     }
     @SuppressWarnings("unchecked")
-    public static Map<String, Object> getConfig(String serviceName, String configName, Path authFile, Path privKeyFile, Object debugHttpTransport) {
+    public static Map<String, Object> getConfig(String serviceName, String configName, boolean needAllKey, Path authFile, Path privKeyFile, Object debugHttpTransport) {
         AuthInfo authInfo = readAuthFile(authFile);
         HttpTransport httpTransport = debugHttpTransport != null ? (HttpTransport) debugHttpTransport : new NetHttpTransport();
-        return getConfig(serviceName, configName, authInfo, privKeyFile, httpTransport);
+        return getConfig(serviceName, configName, needAllKey, authInfo, privKeyFile, httpTransport);
     }
     @SuppressWarnings("unchecked")
-    public static Map<String, Object> getConfig(String serviceName, String configName, AuthInfo authInfo, Path privKeyFile, HttpTransport httpTransport) {
+    public static Map<String, Object> getConfig(String serviceName, String configName, boolean needAllKey, AuthInfo authInfo, Path privKeyFile, HttpTransport httpTransport) {
         try (ConfigServer configServer = new ConfigServer(authInfo.configServer.address, httpTransport)) {
             configServer.postAuthentication(authInfo.configServer.user, authInfo.configServer.secretKey);
             ConfigServer.ConfigsRes configs = configServer.getConfigs(configName);
@@ -343,21 +343,6 @@ public class ConfigClient {
                         throw new InvalidConfigurationException("target " +  secret.target + " is too short");
                     }
                     if (tpath[0].equals("*") || tpath[0].equals(serviceName)) {
-                        String secId = null;
-                        if (secret.ids != null) {
-                            long maxVer = 0;
-                            for (ConfigServer.ConfigsRes.Secret.SId sid : secret.ids) {
-                                if (sid.version > maxVer && sid.id != null) {
-                                    secId = sid.id;
-                                    maxVer = sid.version;
-                                }
-                            }
-                        } else if (secret.id != null) {
-                            secId = secret.id;
-                        }
-                        if (secId == null) {
-                            throw new InvalidConfigurationException("no valid id exists for " + secret.target);
-                        }
                         if (secretDecoder == null) {
                             try {
                                 secretDecoder = new SecretDecoder(privKeyFile);
@@ -369,11 +354,48 @@ public class ConfigClient {
                                 throw new RuntimeException(e);
                             }
                         }
-                        ConfigServer.SecretsRes sec = configServer.getSecret(secId, fp);
-                        if (!sec.id.equals(secId) || (fp != null && !sec.fingerprint.equals("SHA256:" + fp)) || !sec.target.equals(secret.target)) {
-                            throw new InvalidConfigurationException("server returns malformed response: " + sec);
+                        if (pathCompare(tpath, 1, "crypto", "key")) {
+                            Map<Integer, SecretValue> keys = new HashMap<>();
+                            // writer: read max version on "crypto.key", set to "crypto._keys"
+                            // reader: read all version on "crypto.key", set to "crypto._keys"
+                            long maxVer = 0;
+                            for (ConfigServer.ConfigsRes.Secret.SId sid : secret.ids) {
+                                if (!needAllKey && sid.version <= maxVer)
+                                    continue;
+                                ConfigServer.SecretsRes sec = configServer.getSecret(sid.id, fp);
+                                if (!sec.id.equals(sid.id) || (fp != null && !sec.fingerprint.equals("SHA256:" + fp)) || !sec.target.equals(secret.target)) {
+                                    throw new InvalidConfigurationException("server returns malformed response: " + sec);
+                                }
+                                if (!needAllKey)
+                                    keys.clear();
+                                keys.put((int)sid.version, new SecretValue(b64decoder.decode(sec.value), sec.fingerprint, secretDecoder));
+                            }
+                            if (keys.isEmpty())
+                                throw new InvalidConfigurationException("no valid id exists for " + secret.target);
+                            String[] crypto_keys = { "<dummy>", "crypto", "_keys" };
+                            update_value(params, crypto_keys, keys);
+                        } else {
+                            String secId = null;
+                            if (secret.ids != null) {
+                                long maxVer = 0;
+                                for (ConfigServer.ConfigsRes.Secret.SId sid : secret.ids) {
+                                    if (sid.version > maxVer && sid.id != null) {
+                                        secId = sid.id;
+                                        maxVer = sid.version;
+                                    }
+                                }
+                            } else if (secret.id != null) {
+                                secId = secret.id;
+                            }
+                            if (secId == null) {
+                                throw new InvalidConfigurationException("no valid id exists for " + secret.target);
+                            }
+                            ConfigServer.SecretsRes sec = configServer.getSecret(secId, fp);
+                            if (!sec.id.equals(secId) || (fp != null && !sec.fingerprint.equals("SHA256:" + fp)) || !sec.target.equals(secret.target)) {
+                                throw new InvalidConfigurationException("server returns malformed response: " + sec);
+                            }
+                            update_value(params, tpath, new SecretValue(b64decoder.decode(sec.value), sec.fingerprint, secretDecoder));
                         }
-                        update_value(params, tpath, new SecretValue(b64decoder.decode(sec.value), sec.fingerprint, secretDecoder));
                     }
                 }
             }
@@ -384,5 +406,19 @@ public class ConfigClient {
             //e.printStackTrace();
             return null;
         }
+    }
+
+    static boolean pathCompare(String[] tpath, int index, String... ss) {
+        int end = tpath.length;
+        if (end <= index)
+            return false;
+        if (end - index != ss.length)
+            return false;
+        int k = 0;
+        for (int i = index; i < end; i++, k++) {
+            if (!tpath[i].equals(ss[k]))
+                return false;
+            }
+        return true;
     }
 }

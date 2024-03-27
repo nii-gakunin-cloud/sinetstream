@@ -70,6 +70,12 @@ def make_parser(argv0, cmd):
         required=False,
         help="verbose mode")
     parser.add_argument(
+        "-k",
+        "--keep-going",
+        action="store_true",
+        required=False,
+        help="continue as much as possible after an error")
+    parser.add_argument(
         "parameters",
         metavar=f"KEY{sep2}VALUE",
         type=str,
@@ -230,26 +236,33 @@ def cmd_read(argv0, argv):
         from sys import stdout
         with MessageReader(**kwargs) as reader:
             n = 0
-            for msg in reader:
-                n += 1
-                if args.file:
-                    opath = Path(args.file, f"{quote(msg.topic, safe='')}-{rand}-{n}")
-                    with open(opath, mode="w" if textmode else "wb") as f:
-                        f.write(msg.value)
-                else:
-                    if not args.raw:
-                        # ts = datetime.fromtimestamp(msg.timestamp)
-                        # output like "nats sub"
-                        stdout.write(f'[#{n}] Received on "{msg.topic}"\n')
-                    if textmode:
-                        stdout.write(msg.value)
-                        if msg.value[-1] != "\n":
-                            stdout.write("\n")  # like nats sub
+            while True:
+                try:
+                    for msg in reader:
+                        n += 1
+                        if args.file:
+                            opath = Path(args.file, f"{quote(msg.topic, safe='')}-{rand}-{n}")
+                            with open(opath, mode="w" if textmode else "wb") as f:
+                                f.write(msg.value)
+                        else:
+                            if not args.raw:
+                                # ts = datetime.fromtimestamp(msg.timestamp)
+                                # output like "nats sub"
+                                stdout.write(f'[#{n}] Received on "{msg.topic}"\n')
+                            if textmode:
+                                stdout.write(msg.value)
+                                if msg.value[-1] != "\n":
+                                    stdout.write("\n")  # like nats sub
+                            else:
+                                stdout.buffer.write(msg.value)
+                            stdout.flush()
+                        if args.count and n >= args.count:
+                            break
+                except Exception as ex:
+                    if args.keep_going:
+                        logger.exception("keep going")
                     else:
-                        stdout.buffer.write(msg.value)
-                    stdout.flush()
-                if args.count and n >= args.count:
-                    break
+                        raise
     except KeyboardInterrupt:
         pass
     exit()

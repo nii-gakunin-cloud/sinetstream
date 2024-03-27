@@ -19,21 +19,16 @@
  * under the License.
  */
 
-plugins {
-    id "io.freefair.lombok" version "5.3.3.3"
-}
-generateLombokConfig.enabled = false
-
 dependencies {
     implementation group: 'org.yaml', name: 'snakeyaml', version: '1.33'
-    implementation group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.70'
-    implementation group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.70'
+    implementation group: 'org.bouncycastle', name: 'bcprov-jdk18on', version: '1.77'
+    implementation group: 'org.bouncycastle', name: 'bcpkix-jdk18on', version: '1.77'
     implementation group: 'org.apache.commons', name: 'commons-text', version: '1.11.0'
     implementation group: 'org.apache.commons', name: 'commons-rng-simple', version: '1.5'
     implementation group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
     implementation group: 'org.apache.avro', name: 'avro', version: '1.11.3'
     implementation group: 'com.github.luben', name: 'zstd-jni', version: '1.5.5-11'
-    implementation group: 'org.apache.commons', name: 'commons-compress', version: '1.25.0'
+    implementation group: 'org.apache.commons', name: 'commons-compress', version: '1.26.0'
     implementation 'javax.xml.bind:jaxb-api:2.3.1'
     implementation 'com.sun.xml.bind:jaxb-core:4.0.4'
     implementation 'com.sun.xml.bind:jaxb-impl:4.0.4'
@@ -58,7 +53,7 @@ dependencies {
     testAnnotationProcessor "org.projectlombok:lombok:1.18.30"
     testImplementation project(':SINETStream-type-image')
     testImplementation project(':SINETStream-comp-lz4')
-    testRuntime group: 'org.slf4j', name: 'slf4j-nop', version: '2.0.11'
+    testImplementation group: 'org.slf4j', name: 'slf4j-nop', version: '2.0.12'
 }
 
 jar {
@@ -68,7 +63,7 @@ jar {
 }
 
 task runApp(type: JavaExec) {
-    main = 'jp.ad.sinet.stream.utils.Usage'
+    mainClass = 'jp.ad.sinet.stream.utils.Usage'
     classpath = sourceSets.main.runtimeClasspath
 }
 

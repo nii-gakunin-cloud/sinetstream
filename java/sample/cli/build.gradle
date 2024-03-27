@@ -27,7 +27,7 @@ plugins {
 
 sourceCompatibility = 1.11
 
-version = '1.8.1'
+version = '1.9.0-SNAPSHOT'
 
 repositories {
     flatDir {
@@ -44,7 +44,7 @@ dependencies {
     implementation 'net.sinetstream:SINETStream-mqtt:1.+'
     implementation 'net.sinetstream:SINETStream-mqttv5:1.+'
     implementation 'net.sinetstream:SINETStream-s3:1.+'
-    runtimeOnly 'org.slf4j:slf4j-nop:2.0.11'
+    runtimeOnly 'org.slf4j:slf4j-nop:2.0.12'
     implementation group: 'org.yaml', name: 'snakeyaml', version: '1.33'
 
     compileOnly "org.projectlombok:lombok:1.18.30"
@@ -54,8 +54,8 @@ dependencies {
         /* XXX: inject dependency when using flatDir */
         // api
         runtimeOnly group: 'org.yaml', name: 'snakeyaml', version: '1.33'
-        runtimeOnly group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.70'
-        runtimeOnly group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.70'
+        runtimeOnly group: 'org.bouncycastle', name: 'bcprov-jdk18on', version: '1.77'
+        runtimeOnly group: 'org.bouncycastle', name: 'bcpkix-jdk18on', version: '1.77'
         runtimeOnly group: 'org.apache.commons', name: 'commons-text', version: '1.11.0'
         runtimeOnly group: 'org.apache.commons', name: 'commons-rng-simple', version: '1.5'
         runtimeOnly group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
@@ -69,7 +69,7 @@ dependencies {
         runtimeOnly 'com.google.http-client:google-http-client-gson:1.44.1'
 
         //plugin-kafka
-        runtimeOnly group: 'org.apache.kafka', name: 'kafka-clients', version: '3.6.1'
+        runtimeOnly group: 'org.apache.kafka', name: 'kafka-clients', version: '3.7.0'
         runtimeOnly group: 'org.apache.commons', name: 'commons-lang3', version: '3.14.0'
         runtimeOnly group: 'org.jdeferred.v2', name: 'jdeferred-core', version: '2.0.0'
 
@@ -82,7 +82,7 @@ dependencies {
         runtimeOnly group: 'org.jdeferred.v2', name: 'jdeferred-core', version: '2.0.0'
 
         //plugin-s3
-        runtimeOnly platform('software.amazon.awssdk:bom:2.23.14')
+        runtimeOnly platform('software.amazon.awssdk:bom:2.25.4')
         runtimeOnly 'software.amazon.awssdk:s3'
     }
 }

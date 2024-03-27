@@ -23,13 +23,13 @@ package jp.ad.sinet.stream.api.compression;
 
 import jp.ad.sinet.stream.api.Compressor;
 import jp.ad.sinet.stream.api.SinetStreamIOException;
-import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
-import org.apache.commons.compress.compressors.gzip.GzipParameters;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
+import java.util.zip.Deflater;
+import java.util.zip.DeflaterOutputStream;
 
 class GzipCompressor implements Compressor {
     Integer level;
@@ -38,10 +38,8 @@ class GzipCompressor implements Compressor {
     }
     public byte[] compress(byte[] data) {
         ByteArrayOutputStream compOut = new ByteArrayOutputStream();
-        GzipParameters params = new GzipParameters();
-        if (level != null)
-            params.setCompressionLevel(level);
-        try (OutputStream compIn = new GzipCompressorOutputStream(compOut, params)) {
+        Deflater def = level != null ? new Deflater(level) : new Deflater();
+        try (OutputStream compIn = new DeflaterOutputStream(compOut, def)) {
             compIn.write(data);
         } catch (IOException e) {
             throw new SinetStreamIOException(e);

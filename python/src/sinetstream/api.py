@@ -42,6 +42,7 @@ from sinetstream.spi import (
 from sinetstream.utils import Registry
 from sinetstream.value_type import BYTE_ARRAY, value_type_registry
 from sinetstream.compression import compression_registry
+from sinetstream.packet import Packet
 
 logger = logging.getLogger(__name__)
 
@@ -131,6 +132,8 @@ key_derivation_params = {
 
 def make_cipher(crypto_params):
     algorithm = crypto_params["algorithm"]
+    # if "_keys" not in crypto_params and "key" in crypto_params:
+    #     crypto_params["_keys"] = {1: crypto_params.pop("key")}
     if algorithm == "AES":
         return CipherAES(crypto_params)
     else:
@@ -350,7 +353,7 @@ class MessageIO(object):
                 if isinstance(v, dict):
                     self._convert_inline_data(v)
                 else:
-                    if k.endswith(_data):
+                    if isinstance(k, str) and k.endswith(_data):
                         k2 = k[0:-len(_data)]
                         with NamedTemporaryFile(mode=("wt" if isinstance(v, str) else "wb"),
                                                 prefix="sinetstream-",
@@ -500,6 +503,8 @@ class BaseMessageReader(MessageIO):
         self.unmarshaller = Unmarshaller() if not params.get("user_data_only") else None
         self.value_deserializer = self._setup_deserializer()
         self.decompressor = self._setup_decompressor()
+        self.user_data_only = params.get("user_data_only", False)
+        self.message_format = params.get("message_format", 3)
 
     @property
     def topics(self):
@@ -513,8 +518,30 @@ class BaseMessageReader(MessageIO):
         value_tstamp = value.timestamp if hasattr(value, "timestamp") else 0
         mlen = len(value)
         assert isinstance(value, bytes)
+
+        key_version = None
+        if not self.user_data_only and self.message_format >= 3:
+            key_version, value = Packet.unpack(value)
+            if key_version is None:
+                # Ok, this is not v3, assume v2
+                key_version = self.cipher.max_key_version if self.cipher is not None else 0
+                pass
+            else:
+                assert key_version >= 0
+                # note: key_version == 0 means plain text (not encrypted)
+                # note: key_version > 0 means cipher text (encrypted)
+                if (key_version != Packet.KEYVER_NOENC) == (self.cipher is None):
+                    emsg = f"invalid key_version={key_version} in recved message"
+                    logger.error(emsg)
+                    raise InvalidMessageError(emsg)
+                if key_version == Packet.KEYVER_NOENC:
+                    key_version = None
+        else:
+            key_version = self.cipher.max_key_version if self.cipher is not None else 0
+
         if self.cipher is not None:
-            value = self.cipher.decrypt(value)
+            assert key_version is not None
+            value = self.cipher.decrypt(value, key_version)
         assert isinstance(value, bytes)
         if self.unmarshaller:
             tstamp, value = self.unmarshaller.unmarshal(value)
@@ -657,6 +684,8 @@ class BaseMessageWriter(MessageIO):
         self.value_serializer = self._setup_serializer()
         self.compressor = self._setup_compressor()
         self.debug_last_msg_bytes = None  # for inspection
+        self.user_data_only = params.get("user_data_only", False)
+        self.message_format = params.get("message_format", 3)
 
     def _publish(self, msg, timestamp):
         tstamp = time.time_ns() // 1000 if timestamp is None else int(timestamp * 1000_000)
@@ -712,8 +741,13 @@ class BaseMessageWriter(MessageIO):
         if self.marshaller:
             msg = self.marshaller.marshal(msg, tstamp)
         if self.cipher:
-            msg = self.cipher.encrypt(msg)
+            keyver = self.cipher.max_key_version
+            msg = self.cipher.encrypt(msg, keyver)
+        else:
+            keyver = Packet.KEYVER_NOENC
         assert type(msg) is bytes
+        if not self.user_data_only and self.message_format >= 3:
+            msg = Packet.pack(msg, keyver)
         mlen = len(msg)
         self.iometrics.update(mlen, clen, ulen)
         return msg

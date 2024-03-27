@@ -1,5 +1,6 @@
-repo_python = $(HOME)/repo/intercrypto/sinetstream-python
-repo_java = $(HOME)/repo/intercrypto/sinetstream-java
+topdir = $(PWD)/../..
+repo_python = $(topdir)/../sinetstream-python
+repo_java = $(topdir)/../sinetstream-java
 test_python = $(repo_python)/tests
 test_java = $(repo_java)/api/src/test/java/jp/ad/sinet/stream/interop
 test_dummy = ./dummy
@@ -8,21 +9,21 @@ test_android = $(test_dummy)
 langs = python java android
 
 all: $(test_dummy)
-	$(MAKE) test 2>&1 | tee log
+	time $(MAKE) test 2>&1 | tee log
 
 test:
-	$(MAKE) clean-for-langs
-	$(MAKE) test-for-langs 2>&1 | tee log1
-	$(MAKE) gather-for-langs
-	$(MAKE) scatter-for-langs
-	$(MAKE) test-for-langs 2>&1 | tee log2
-	$(MAKE) stat
+	time $(MAKE) clean-for-langs
+	time $(MAKE) test-for-langs 2>&1 | tee log1
+	time $(MAKE) gather-for-langs
+	time $(MAKE) scatter-for-langs
+	time $(MAKE) test-for-langs 2>&1 | tee log2
+	time $(MAKE) stat
 
 clean-for-langs:
 	$(MAKE) for-langs TARGET=clean
 
 test-for-langs:
-	$(MAKE) for-langs TARGET=test
+	$(MAKE) for-langs TARGET=test-interop
 
 gather-for-langs:
 	mkdir -p data

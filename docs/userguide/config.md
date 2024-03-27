@@ -318,6 +318,14 @@ API にパラメータを指定しなかった場合は、設定ファイルに�
     * デフォルト値: false
 * receive_timeout_ms
     * `MessageReader` がメッセージ到着を待つ最大待ち時間 (ms)
+<!---
+* message_format
+    * SINETStreamメッセージフォーマットバージョンを指定する。
+    * 指定できる値: 2, 3
+    * デフォルト値: 3
+    * Writerは指定されたバージョンで送信する。
+    * Readerは3が指定さたら3でデコードしようとしてダメだったら2を試す。2が指定されたときは2でデコードする。
+--->
 
 `value_serializer`/`value_deserializer` は `value_type` よりも優先される。
 
@@ -504,6 +512,13 @@ SINETStream では、バックエンドの SSL/TLS による通信の暗号化�
         * 鍵導出関数(pseudorandom function)を指定する
         * 指定可能な値: "HMAC-SHA256"
         * デフォルト値: "HMAC-SHA256"
+<!---
+* _keys
+    * コンフィグサーバーからバージョン管理された暗号鍵を取得したとき、SINETStreamの内部でこのパラメータが使われる。
+    * 型は
+        * Java: `Map<Integer, byte[]>`
+        * Python: `{int, bytes}'
+--->
 
 #### 設定例
 

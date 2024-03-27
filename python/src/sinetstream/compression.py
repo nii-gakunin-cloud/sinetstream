@@ -23,6 +23,7 @@ from sinetstream.utils import Registry
 import copy
 import zlib
 import zstandard as zstd
+from io import BytesIO
 
 GZIP = "gzip"
 ZSTD = "zstd"
@@ -70,7 +71,28 @@ class ZstdCompression(object):
     @property
     def decompressor(self):
         dctx = zstd.ZstdDecompressor(**self._params)
-        return lambda data: dctx.decompress(data)
+        return lambda data: ZstdCompression._decompress(dctx, data)
+
+    def _decompress(dctx, data):
+        # import sys
+        # print(f"XXX:decomp:data={ZstdCompression._zstd_dump(data)}", file=sys.stderr)
+        content_size = zstd.get_frame_parameters(data).content_size
+        if content_size >= 0 and content_size < ((1 << 64) - 1):
+            return dctx.decompress(data)
+        else:
+            ifh = BytesIO(data)
+            ofh = BytesIO()
+            dctx.copy_stream(ifh, ofh)
+            return ofh.getvalue()
+
+    def _zstd_dump(data):
+        frame_params = zstd.get_frame_parameters(data)
+        return ("FrameParameters{"
+                f"content_size={frame_params.content_size}(0x{frame_params.content_size:x})"
+                f",window_size={frame_params.window_size}(0x{frame_params.window_size:x})"
+                f",dict_id={frame_params.dict_id}"
+                f",has_checksum={frame_params.has_checksum}"
+                "}")
 
 
 class GzipCompressionEntryPoint(object):

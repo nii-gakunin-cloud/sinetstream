@@ -38,7 +38,7 @@ class ZstdDecompressor implements Decompressor {
     ZstdDecompressCtx ctx;
     public ZstdDecompressor(Map<String, Object> parameters) {
         this.ctx = new ZstdDecompressCtx();
-        this.imp = (int)parameters.getOrDefault("_zstd_imp", 0);
+        this.imp = (int)parameters.getOrDefault("_zstd_imp", 2);
     }
     private byte[] decompress0(byte[] bytes) {
         int bufsz = 1000;
@@ -57,12 +57,12 @@ class ZstdDecompressor implements Decompressor {
     }
     private byte[] decompress1(byte[] bytes) {
         int origSz = (int) Zstd.decompressedSize(bytes);
-        return origSz > 0 ? Zstd.decompress(bytes, origSz) : Zstd.decompress(bytes, 1<<10);
+        return origSz >= 0 ? Zstd.decompress(bytes, origSz) : decompress0(bytes);
     }
     private byte[] decompress2(byte[] bytes) {
         int origSz = (int) Zstd.decompressedSize(bytes);
         ctx.reset();
-        return origSz > 0 ? ctx.decompress(bytes, origSz) : ctx.decompress(bytes, 1<<10);
+        return origSz >= 0 ? ctx.decompress(bytes, origSz) : decompress0(bytes);
     }
     public byte[] decompress(byte[] bytes) {
         switch (imp%10) {

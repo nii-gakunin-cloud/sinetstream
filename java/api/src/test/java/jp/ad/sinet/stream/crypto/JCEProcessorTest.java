@@ -22,6 +22,8 @@
 package jp.ad.sinet.stream.crypto;
 
 import jp.ad.sinet.stream.api.Crypto;
+import jp.ad.sinet.stream.utils.Pair;
+
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -32,9 +34,11 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class JCEProcessorTest {
@@ -63,12 +67,18 @@ class JCEProcessorTest {
         JCEProvider provider = new JCEProvider();
         assertTrue(provider.isSupported(params));
         Crypto crypto = provider.getCrypto(params);
-        Function<byte[], byte[]> enc = crypto.getEncoder(params);
-        Function<byte[], byte[]> dec = crypto.getDecoder(params);
+        Function<byte[], Pair<byte[], Integer>> enc = crypto.getEncoder(params);
+        BiFunction<byte[], Integer, byte[]> dec = crypto.getDecoder(params);
+        assertNotNull(enc);
+        assertNotNull(dec);
 
         byte[] data = "abcdefg".getBytes(StandardCharsets.UTF_8);
-        byte[] encrypted = enc.apply(data);
-        byte[] data1 = dec.apply(encrypted);
+        Pair<byte[], Integer> encrypted = enc.apply(data);
+        assertNotNull(encrypted);
+        assertNotNull(dec);
+        assertNotNull(encrypted.getV1());
+        assertNotNull(encrypted.getV2());
+        byte[] data1 = dec.apply(encrypted.getV1(), encrypted.getV2());
         assertArrayEquals(data, data1);
     }
 
@@ -84,12 +94,13 @@ class JCEProcessorTest {
         JCEProvider provider = new JCEProvider();
         assertTrue(provider.isSupported(params));
         Crypto crypto = provider.getCrypto(params);
-        Function<byte[], byte[]> enc = crypto.getEncoder(params);
-        Function<byte[], byte[]> dec = crypto.getDecoder(params);
+        Function<byte[], Pair<byte[], Integer>> enc = crypto.getEncoder(params);
+        BiFunction<byte[], Integer, byte[]> dec = crypto.getDecoder(params);
 
         byte[] data = "abcdefg".getBytes(StandardCharsets.UTF_8);
-        byte[] encrypted = enc.apply(data);
-        byte[] data1 = dec.apply(encrypted);
+        Pair<byte[], Integer> encrypted = enc.apply(data);
+        assertNotNull(encrypted);
+        byte[] data1 = dec.apply(encrypted.getV1(), encrypted.getV2());
         assertArrayEquals(data, data1);
     }
 
@@ -106,8 +117,7 @@ class JCEProcessorTest {
         JCEProvider provider = new JCEProvider();
         assertTrue(provider.isSupported(params));
         Crypto crypto = provider.getCrypto(params);
-        Function<byte[], byte[]> enc = crypto.getEncoder(params);
-
+        Function<byte[], Pair<byte[], Integer>> enc = crypto.getEncoder(params);
 
         Map<String, Object> params2 = new HashMap<>();
         params2.put("algorithm", "AES");
@@ -120,13 +130,14 @@ class JCEProcessorTest {
         assertTrue(provider2.isSupported(params2));
         params2.put("key", Arrays.copyOfRange("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX".getBytes(), 0, keylen/8));
         Crypto crypto2 = provider.getCrypto(params2);
-        Function<byte[], byte[]> dec = crypto2.getDecoder(params2);
+        BiFunction<byte[], Integer, byte[]> dec = crypto2.getDecoder(params2);
 
         byte[] data = "abcdefg".getBytes(StandardCharsets.UTF_8);
         boolean caught = false;
         try {
-            byte[] encrypted = enc.apply(data);
-            byte[] data1 = dec.apply(encrypted);
+            Pair<byte[], Integer> encrypted = enc.apply(data);
+            assertNotNull(encrypted);
+            byte[] data1 = dec.apply(encrypted.getV1(), encrypted.getV2());
             assertArrayEquals(data, data1);
         }
         catch (Exception e) {
@@ -149,12 +160,13 @@ class JCEProcessorTest {
         JCEProvider provider = new JCEProvider();
         assertTrue(provider.isSupported(params));
         Crypto crypto = provider.getCrypto(params);
-        Function<byte[], byte[]> enc = crypto.getEncoder(params);
-        Function<byte[], byte[]> dec = crypto.getDecoder(params);
+        Function<byte[], Pair<byte[], Integer>> enc = crypto.getEncoder(params);
+        BiFunction<byte[], Integer, byte[]> dec = crypto.getDecoder(params);
 
         byte[] data = "abcdefg".getBytes(StandardCharsets.UTF_8);
-        byte[] encrypted = enc.apply(data);
-        byte[] data1 = dec.apply(encrypted);
+        Pair<byte[], Integer> encrypted = enc.apply(data);
+        assertNotNull(encrypted);
+        byte[] data1 = dec.apply(encrypted.getV1(), encrypted.getV2());
         assertArrayEquals(data, data1);
     }
 
@@ -171,12 +183,13 @@ class JCEProcessorTest {
         JCEProvider provider = new JCEProvider();
         assertTrue(provider.isSupported(params));
         Crypto crypto = provider.getCrypto(params);
-        Function<byte[], byte[]> enc = crypto.getEncoder(params);
-        Function<byte[], byte[]> dec = crypto.getDecoder(params);
+        Function<byte[], Pair<byte[], Integer>> enc = crypto.getEncoder(params);
+        BiFunction<byte[], Integer, byte[]> dec = crypto.getDecoder(params);
 
         byte[] data = "abcdefg".getBytes(StandardCharsets.UTF_8);
-        byte[] encrypted = enc.apply(data);
-        byte[] data1 = dec.apply(encrypted);
+        Pair<byte[], Integer> encrypted = enc.apply(data);
+        assertNotNull(encrypted);
+        byte[] data1 = dec.apply(encrypted.getV1(), encrypted.getV2());
         System.out.println(new String(data1, StandardCharsets.UTF_8));
     }
 }

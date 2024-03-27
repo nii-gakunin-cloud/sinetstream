@@ -72,9 +72,8 @@ testenv:
 # (cd sample/cli && make clean && make build)
 # make twine-upload
 twine-upload::
-	read -p "TWINE_USERNAME: " TWINE_USERNAME && \
-	export TWINE_USERNAME && \
-	read -p "TWINE_PASSWORD: " TWINE_PASSWORD && \
+	export TWINE_USERNAME=__token__ && \
+	read -p "PyPI API TOKEN: " TWINE_PASSWORD && \
 	export TWINE_PASSWORD && \
 	twine upload --verbose dist/* && \
 	$(MAKE) recurse-plugins TARGET="twine-upload" && \

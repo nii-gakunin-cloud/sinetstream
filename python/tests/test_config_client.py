@@ -348,3 +348,64 @@ def test_get_config__secret(setup_auth, setup_privkey, svc):
     except Exception as ex:
         logger.error(f"caught={ex}")
         assert False
+
+
+v3_configs_secret_resp = copy.deepcopy(configs_attach_resp)
+v3_configs_secret_resp["secrets"] = [
+    {"ids": [
+            {"id": "secret_id_1", "version": 1},
+            {"id": "secret_id_2", "version": 2},
+     ],
+     "target": "*.crypto.key"},
+]
+
+
+# *.crypto.keyのバージョン化された暗号鍵はcrypto._keysにdictとして保存される
+@pytest.mark.parametrize("svc", ["service-kafka-001", None])
+def test_get_config__secret_msgv3(setup_auth, setup_privkey, svc):
+    adapter = requests_mock.Adapter()
+    adapter.register_uri("POST",
+                         "/api/v1/authentication",
+                         status_code=201,
+                         json=authentication_resp)
+    adapter.register_uri("GET",
+                         "/api/v1/configs/stream009",
+                         status_code=200,
+                         json=v3_configs_secret_resp)
+    himitsu1_value = b"abcdefghijklmn"
+    himitsu1_secret = make_secret(himitsu1_value)
+    secret_resp = {
+        "id": "secret_id_1",
+        "fingerprint": "1234",
+        "target": "*.crypto.key",
+        "value": himitsu1_secret,
+    }
+    adapter.register_uri("GET",
+                         "/api/v1/secrets/secret_id_1",
+                         status_code=200,
+                         json=secret_resp)
+    himitsu2_value = b"opqrstuvwxyz"
+    himitsu2_secret = make_secret(himitsu2_value)
+    secret2_resp = {
+        "id": "secret_id_2",
+        "fingerprint": "1234",
+        "target": "*.crypto.key",
+        "value": himitsu2_secret,
+    }
+    adapter.register_uri("GET",
+                         "/api/v1/secrets/secret_id_2",
+                         status_code=200,
+                         json=secret2_resp)
+    try:
+        service, params = sinetstream.configs.get_config_params(
+                    svc,
+                    config="stream009",
+                    auth_path=setup_auth,
+                    mount_args=("https://", adapter))
+        assert service == "service-kafka-001"
+        assert "key" not in params["crypto"]
+        assert params["crypto"]["_keys"] == {1: himitsu1_value, 2: himitsu2_value}
+        print(f"XXX params={params}")
+    except Exception as ex:
+        logger.error(f"caught={ex}")
+        assert False

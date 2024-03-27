@@ -178,7 +178,7 @@ public class MessageWriterFactory<T> {
         MessageUtils utils = new MessageUtils();
         Map<String, Object> serviceParameters = new HashMap<>(defaultValues);
         if (!noConfig && !MessageUtils.toBoolean(parameters.getOrDefault("no_config", false)))
-            serviceParameters.putAll(utils.loadServiceParameters(service, configFile, configName, authFile, privKeyFile, debugHttpTransport));
+            serviceParameters.putAll(utils.loadServiceParameters(service, configFile, configName, false, authFile, privKeyFile, debugHttpTransport));
         utils.mergeParameters(serviceParameters, parameters);
         tmpLst = new LinkedList<File>();
         ConfigLoader.replaceInlineData(serviceParameters, tmpLst);

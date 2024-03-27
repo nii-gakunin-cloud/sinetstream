@@ -24,9 +24,13 @@ package jp.ad.sinet.stream.api;
 import jp.ad.sinet.stream.api.compression.CompressionFactory;
 import jp.ad.sinet.stream.crypto.CryptoSerializerWrapper;
 import jp.ad.sinet.stream.marshal.Marshaller;
+import jp.ad.sinet.stream.packet.Packet;
 import jp.ad.sinet.stream.spi.PluginMessageIO;
 import jp.ad.sinet.stream.spi.WriterParameters;
+import jp.ad.sinet.stream.utils.CtxSerializer;
+import jp.ad.sinet.stream.utils.Pair;
 import jp.ad.sinet.stream.utils.Timestamped;
+
 import lombok.Getter;
 
 import java.util.Map;
@@ -43,6 +47,7 @@ public class SinetStreamBaseWriter<T, U extends PluginMessageIO> extends SinetSt
     @Getter
     private final Compressor compressor;
 
+    @Getter
     private final Serializer<Timestamped<T>> compositeSerializer;
 
     static private class CompressionMetrics {
@@ -60,6 +65,21 @@ public class SinetStreamBaseWriter<T, U extends PluginMessageIO> extends SinetSt
         }
     };
     // XXX we assume no nested SINETStream (aka broker is sinetstream)
+
+    private class PacketSerializer<T> implements Serializer<T> {
+        private byte formatVersion;
+        private CtxSerializer<T, Integer> ctxser;
+
+        PacketSerializer(byte formatVersion, CtxSerializer<T, Integer> ctxser) {
+            this.formatVersion = formatVersion;
+            this.ctxser = ctxser;
+        }
+
+        public byte[] serialize(T data) {
+            Pair<byte[], Integer> serialized = ctxser.serialize(data);
+            return Packet.encode(formatVersion, serialized.getV2(), serialized.getV1());
+        }
+    }
 
     public SinetStreamBaseWriter(U pluginWriter, WriterParameters parameters, Serializer<T> serializer) {
         super(parameters, pluginWriter);
@@ -102,18 +122,28 @@ public class SinetStreamBaseWriter<T, U extends PluginMessageIO> extends SinetSt
             compressionMetrics.get().set(comped.length, bytes.length);
             return marshaller.encode(data.getTstamp(), comped);
         };
-        return CryptoSerializerWrapper.getSerializer(parameters.getConfig(), tsser);
+        CtxSerializer<Timestamped<T>, Integer> ctxser = CryptoSerializerWrapper.getSerializer(parameters.getConfig(), tsser);
+        int messageFormat = this.getMessageFormat();
+        switch (messageFormat) {
+        case 2:
+            return CtxSerializer.getSerializer(ctxser);
+        case 3:
+            return new PacketSerializer<Timestamped<T>>((byte)messageFormat, ctxser);
+        default:
+            assert(messageFormat == 2 || messageFormat == 3);
+            throw new SinetStreamException("INTERNAL ERROR: messageFormat=" + messageFormat);
+        }
     }
 
     byte[] toPayload(T message) {
-        byte[] payload = compositeSerializer.serialize(new Timestamped<>(message));
+        byte[] payload = getCompositeSerializer().serialize(new Timestamped<>(message));
         CompressionMetrics cm = compressionMetrics.get();
         updateMetrics(payload.length, cm.compLen, cm.uncompLen);
         return payload;
     }
 
     byte[] toPayload(T message, long tstamp) {
-        byte[] payload = compositeSerializer.serialize(new Timestamped<>(message, tstamp));
+        byte[] payload = getCompositeSerializer().serialize(new Timestamped<>(message, tstamp));
         CompressionMetrics cm = compressionMetrics.get();
         updateMetrics(payload.length, cm.compLen, cm.uncompLen);
         return payload;

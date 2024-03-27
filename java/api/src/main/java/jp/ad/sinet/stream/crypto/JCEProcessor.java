@@ -21,12 +21,16 @@
 
 package jp.ad.sinet.stream.crypto;
 
+import jp.ad.sinet.stream.api.Crypto;
+import jp.ad.sinet.stream.api.InvalidConfigurationException;
+import jp.ad.sinet.stream.api.InvalidMessageException;
+import jp.ad.sinet.stream.api.SinetStreamException;
+import jp.ad.sinet.stream.utils.Pair;
+
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import jp.ad.sinet.stream.api.Crypto;
-import jp.ad.sinet.stream.api.InvalidConfigurationException;
-import jp.ad.sinet.stream.api.SinetStreamException;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.extern.java.Log;
@@ -50,6 +54,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 @Log
@@ -63,7 +68,8 @@ public class JCEProcessor implements Crypto {
     private int keyLength;
     private SecretKeyFactory keyFactory;
     private char[] password;
-    private byte[] key1;
+    private Map<Integer, byte[]> keys;
+    private Integer maxKeyVer;
     private int saltBytes;
     private int iterationCount;
     private String mode;
@@ -155,6 +161,7 @@ public class JCEProcessor implements Crypto {
             } else {
                 throw new InvalidConfigurationException();
             }
+            this.maxKeyVer = 1;
         }
         this.saltBytes = Optional.ofNullable(keyParams.get("salt_bytes"))
                 .filter(Integer.class::isInstance).map(Integer.class::cast).orElse(8);
@@ -162,17 +169,50 @@ public class JCEProcessor implements Crypto {
                 .filter(Integer.class::isInstance).map(Integer.class::cast).orElse(10000);
         if (parameters.containsKey("key")) {
             Object o = parameters.get("key");
-            if (o instanceof byte[]) {
-                this.key1 = (byte[]) o;
-            } else {
+            if (!(o instanceof byte[])) {
                 throw new InvalidConfigurationException();
             }
-            if (this.key1.length != keyLength / 8) {
-                throw new InvalidConfigurationException("key_length mismatch");
-            }
+            this.keys = new HashMap<Integer, byte[]>();
+            this.keys.put(1, (byte[]) o);
         }
-        if (this.key1 != null && this.password != null) {
-            throw new InvalidConfigurationException("both key and password are specified");
+        if (parameters.containsKey("_keys")) {
+            Object o = parameters.get("_keys");
+            if (!(o instanceof Map))
+                throw new InvalidConfigurationException();
+            @SuppressWarnings("unchecked")
+            Map<Object, Object> m = (Map<Object, Object>)o;
+            for (Map.Entry e : m.entrySet()) {
+                if (!(e.getKey() instanceof Integer))
+                    throw new InvalidConfigurationException();
+                if (!(e.getValue() instanceof byte[]))
+                    throw new InvalidConfigurationException();
+            }
+            @SuppressWarnings("unchecked")
+            Map<Integer, byte[]> keys =(Map<Integer, byte[]>) o;
+            if (debug) {
+                System.err.println("XXX:keys={");
+                for (Map.Entry<Integer, byte[]> e : keys.entrySet()) {
+                    System.err.println(String.format("XXX: [%d]=%s", e.getKey(), DatatypeConverter.printHexBinary(e.getValue())));
+                }
+                System.err.println("XXX:}");
+            }
+            this.keys = keys;
+        }
+        if (this.keys != null && this.password != null) {
+            throw new InvalidConfigurationException("only either key or password can be specified");
+        }
+        if (this.keys != null) {
+            for (Map.Entry<Integer, byte[]> e : this.keys.entrySet()) {
+                if (e.getKey() <= 0)
+                    throw new InvalidConfigurationException("key version must be positvie");
+                if (e.getValue().length != keyLength / 8) {
+                    String msg = String.format("key_length mismatch: keys[%d].length=%d; key_length=%d expected",
+                                               e.getKey(), e.getValue().length * 8, keyLength);
+                    throw new InvalidConfigurationException(msg);
+                }
+            }
+            assert(!this.keys.isEmpty());
+            this.maxKeyVer = this.keys.keySet().stream().max(Integer::compareTo).get();
         }
     }
 
@@ -197,7 +237,7 @@ public class JCEProcessor implements Crypto {
         };
         saltCache = CacheBuilder.newBuilder().expireAfterWrite(60, TimeUnit.MINUTES).build(saltLoader);
 
-        if (this.key1 == null) {
+        if (this.keys == null) {
             CacheLoader<SaltBytes, byte[]> keyCacheLoader = new CacheLoader<SaltBytes, byte[]>() {
                 @Override
                 public byte[] load(SaltBytes salt) throws InvalidKeySpecException {
@@ -211,7 +251,7 @@ public class JCEProcessor implements Crypto {
     }
 
     @Override
-    public Function<byte[], byte[]> getEncoder(Map<String, ?> parameters) {
+    public Function<byte[], Pair<byte[], Integer>> getEncoder(Map<String, ?> parameters) {
         if (isAAD()) {
             return this::encryptAAD;
         } else {
@@ -231,10 +271,11 @@ public class JCEProcessor implements Crypto {
         }
     }
 
-    private byte[] encrypt(byte[] data) {
+    private Pair<byte[], Integer> encrypt(byte[] data) {
         try {
+            Integer keyVer = this.maxKeyVer;
             byte[] salt = getSalt();
-            SecretKeySpec key = getSecretKeySpec(salt);
+            SecretKeySpec key = getSecretKeySpec(salt, keyVer);
 
             byte[] iv = new byte[ivLength];
             random.nextBytes(iv);
@@ -250,22 +291,31 @@ public class JCEProcessor implements Crypto {
                 System.err.println("XXX:encrypt: encrypted.length=" + encrypted.length);
                 System.err.println("XXX:encrypt: encrypted='" + DatatypeConverter.printHexBinary(encrypted) + "'");
             }
-            return ByteBuffer.allocate(saltBytes + iv.length + encrypted.length)
+            byte[] encbytes = ByteBuffer.allocate(saltBytes + iv.length + encrypted.length)
                     .put(salt).put(iv).put(encrypted).array();
+            return Pair.of(encbytes, keyVer);
         } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException e) {
             throw new SinetStreamException(e);
         }
     }
 
-    private SecretKeySpec getSecretKeySpec(byte[] salt) {
-        byte[] key = this.key1 != null ? this.key1 : keyCache.getUnchecked(new SaltBytes(salt));
+    private SecretKeySpec getSecretKeySpec(byte[] salt, Integer keyVer) {
+        byte[] key;
+        if (this.keys != null) {
+            if (!this.keys.containsKey(keyVer))
+                throw new InvalidMessageException(String.format("No encryption key version=%d of received message", keyVer));
+            key = this.keys.get(keyVer);
+        } else {
+            key = keyCache.getUnchecked(new SaltBytes(salt));
+        }
         return new SecretKeySpec(key, cipher.getAlgorithm());
     }
 
-    private byte[] encryptAAD(byte[] data) {
+    private Pair<byte[], Integer> encryptAAD(byte[] data) {
         try {
+            Integer keyVer = this.maxKeyVer;
             byte[] salt = getSalt();
-            SecretKeySpec key = getSecretKeySpec(salt);
+            SecretKeySpec key = getSecretKeySpec(salt, keyVer);
 
             byte[] iv = new byte[ivLength];
             random.nextBytes(iv);
@@ -284,8 +334,9 @@ public class JCEProcessor implements Crypto {
                 System.err.println("XXX:encryptAAD: encrypted.length=" + encrypted.length);
                 System.err.println("XXX:encryptAAD: encrypted='" + DatatypeConverter.printHexBinary(encrypted) + "'");
             }
-            return ByteBuffer.allocate(saltBytes + iv.length + encrypted.length)
+            byte[] encbytes = ByteBuffer.allocate(saltBytes + iv.length + encrypted.length)
                     .put(salt).put(iv).put(encrypted).array();
+            return Pair.of(encbytes, keyVer);
         } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException e) {
             throw new SinetStreamException(e);
         }
@@ -296,7 +347,7 @@ public class JCEProcessor implements Crypto {
     }
 
     @Override
-    public Function<byte[], byte[]> getDecoder(Map<String, ?> parameters) {
+    public BiFunction<byte[], Integer, byte[]> getDecoder(Map<String, ?> parameters) {
         if (isAAD()) {
             return this::decryptAAD;
         } else {
@@ -304,7 +355,11 @@ public class JCEProcessor implements Crypto {
         }
     }
 
-    private byte[] decrypt(byte[] data) {
+    int getKeyVer(Integer keyVer) {
+        return keyVer != null ? keyVer : this.maxKeyVer;
+    }
+
+    private byte[] decrypt(byte[] data, Integer keyVer) {
         try {
             if (debug)
                 System.err.println("XXX:decrypt: data='" + DatatypeConverter.printHexBinary(data) + "'");
@@ -314,7 +369,7 @@ public class JCEProcessor implements Crypto {
                 System.err.println("XXX:decrypt: saltBytes=" + saltBytes);
                 System.err.println("XXX:decrypt: salt='" + DatatypeConverter.printHexBinary(salt) + "'");
             }
-            SecretKeySpec key = getSecretKeySpec(salt);
+            SecretKeySpec key = getSecretKeySpec(salt, getKeyVer(keyVer));
             if (debug)
                 System.err.println("XXX:decrypt: key='" + DatatypeConverter.printHexBinary(key.getEncoded()) + "'");
 
@@ -340,7 +395,7 @@ public class JCEProcessor implements Crypto {
         }
     }
 
-    private byte[] decryptAAD(byte[] data) {
+    private byte[] decryptAAD(byte[] data, Integer keyVer) {
         try {
             if (debug)
                 System.err.println("XXX:decryptAAD: data='" + DatatypeConverter.printHexBinary(data) + "'");
@@ -350,7 +405,7 @@ public class JCEProcessor implements Crypto {
                 System.err.println("XXX:decryptAAD: saltBytes=" + saltBytes);
                 System.err.println("XXX:decryptAAD: salt='" + DatatypeConverter.printHexBinary(salt) + "'");
             }
-            SecretKeySpec key = getSecretKeySpec(salt);
+            SecretKeySpec key = getSecretKeySpec(salt, getKeyVer(keyVer));
             if (debug) {
                 System.err.println("XXX:decryptAAD: key='" + DatatypeConverter.printHexBinary(key.getEncoded()) + "'");
             }

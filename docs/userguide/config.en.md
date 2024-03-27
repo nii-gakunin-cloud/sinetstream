@@ -277,6 +277,10 @@ If a parameter is not specified in the API function, the value specified in the 
     * Enable or disable message encryption and decryption.
 * receive_timeout_ms
     * Maximum time (in milliseconds) for `MessageReader` to wait for message arrival.
+<!---
+* message_format
+    * XXX
+--->
 
 `value_serializer` and `value_deserializer` take precedence over value_type.
 
@@ -422,6 +426,10 @@ The mapping may contain the following keys.
         * Specify the key derivation function (pseudorandom function).
 	* Valid values: "HMAC-SHA256"
 	* Default value: "HMAC-SHA256"
+<!---
+* _keys
+    * XXX
+--->
 
 #### Setting Example
 

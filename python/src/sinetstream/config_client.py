@@ -248,7 +248,7 @@ def dict_update_value(d, path, value):
     d[path[-1]] = value
 
 
-def get_config_params_server(service, config_name, mount_args=None, **kwargs):
+def get_config_params_server(service, config_name, need_all_key, mount_args=None, **kwargs):
     auth_info = get_auth_info(auth_path=kwargs.get("auth_path"))
     (address, user, secret_key) = auth_info
     if insecure_log:
@@ -305,28 +305,44 @@ def get_config_params_server(service, config_name, mount_args=None, **kwargs):
         target = secret.get("target")
         path = target.split(".")
         if path[0] == "*" or path[0] == service:
+            crypto_key = ["crypto", "key"]
+            crypto_keys = ["crypto", "_keys"]
             ids = secret.get("ids")
-            if ids is not None:
-                # get the latest id
-                sec_id = None
-                max_ver = 0
+            if need_all_key and (path[1:] == crypto_key) and ids is not None:
+                _, _, fingerprint = sinetstream.configs.get_private_key()
+                keys = {}
                 for e in ids:
                     id1 = e.get("id")
                     ver = e.get("version")
                     if id1 is None or ver is None:
                         raise InvalidConfigError(f"malformed entry '{e}' exists for '{target}'")
-                    if ver > max_ver and id1 is not None:
-                        max_ver = ver
-                        sec_id = id1
-                if sec_id is None:
-                    raise InvalidConfigError(f"no valid id exists for '{target}'")
+                    (evalue, sec_target) = get_secret(session, base_uri, common_headers, id1, fingerprint)
+                    if sec_target != target:
+                        raise InvalidConfigError(f"target={sec_target} must be {target}")
+                    keys[ver] = evalue
+                dict_update_value(params, crypto_keys, keys)
             else:
-                sec_id = secret.get("id")
-            _, _, fingerprint = sinetstream.configs.get_private_key()
-            (evalue, sec_target) = get_secret(session, base_uri, common_headers, sec_id, fingerprint)
-            if sec_target != target:
-                raise InvalidConfigError(f"target={sec_target} must be {target}")
-            dict_update_value(params, path[1:], evalue)
+                if ids is not None:
+                    # get the latest id
+                    sec_id = None
+                    max_ver = 0
+                    for e in ids:
+                        id1 = e.get("id")
+                        ver = e.get("version")
+                        if id1 is None or ver is None:
+                            raise InvalidConfigError(f"malformed entry '{e}' exists for '{target}'")
+                        if ver > max_ver and id1 is not None:
+                            max_ver = ver
+                            sec_id = id1
+                    if sec_id is None:
+                        raise InvalidConfigError(f"no valid id exists for '{target}'")
+                else:
+                    sec_id = secret.get("id")
+                _, _, fingerprint = sinetstream.configs.get_private_key()
+                (evalue, sec_target) = get_secret(session, base_uri, common_headers, sec_id, fingerprint)
+                if sec_target != target:
+                    raise InvalidConfigError(f"target={sec_target} must be {target}")
+                dict_update_value(params, path[1:], evalue)
 
     # XXX: attachとsecretでtargetが被った場合はしらん。
 

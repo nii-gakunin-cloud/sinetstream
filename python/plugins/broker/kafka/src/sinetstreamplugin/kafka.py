@@ -81,21 +81,23 @@ def degrade_consistency(params):
 
 
 SINETSTREAM_PARAM_LIST = [
-    "service",
     "brokers",
+    "compression",
+    "consistency",
+    "crypto",
+    "data_compression",
+    "data_encryption",
+    "message_format",
+    "receive_timeout_ms",
+    "service",
+    "tls",
     "topic",
     "topics",
     "type",
-    "consistency",
-    "value_type",
-    "value_serializer",
+    "user_data_only",
     "value_deserializer",
-    "receive_timeout_ms",
-    "tls",
-    "crypto",
-    "data_encryption",
-    "compression",
-    "data_compression",
+    "value_serializer",
+    "value_type",
 ]
 
 

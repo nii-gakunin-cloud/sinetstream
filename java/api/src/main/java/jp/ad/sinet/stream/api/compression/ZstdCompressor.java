@@ -40,11 +40,12 @@ class ZstdCompressor implements Compressor {
     public ZstdCompressor(Integer level, Map<String, Object> parameters) {
         this.ctx = new ZstdCompressCtx();
         this.level = level;
-        this.imp = (int)parameters.getOrDefault("_zstd_imp", 0);
+        this.imp = (int)parameters.getOrDefault("_zstd_imp", 20);
     }
 
     // using apache commons-compress
     public byte[] compress0(byte[] data) {
+        // NOTE: Frame_Content_Size in Frame_Header is not set when using streaming method.
         ByteArrayOutputStream compOut = new ByteArrayOutputStream();
         try (OutputStream compIn = (level != null ? new ZstdCompressorOutputStream(compOut, level)
                                                   : new ZstdCompressorOutputStream(compOut))) {
@@ -65,6 +66,7 @@ class ZstdCompressor implements Compressor {
         ctx.reset();
         if (level != null)
             ctx.setLevel(level);
+        // ctx.setContentSize(true);
         return ctx.compress(data);
     }
 

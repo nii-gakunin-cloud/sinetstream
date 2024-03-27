@@ -23,13 +23,14 @@ package jp.ad.sinet.stream.api.compression;
 
 import jp.ad.sinet.stream.api.Decompressor;
 import jp.ad.sinet.stream.api.SinetStreamIOException;
-import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
+import java.util.zip.Inflater;
+import java.util.zip.InflaterInputStream;
 
 class GzipDecompressor implements Decompressor {
     public GzipDecompressor(Map<String, Object> parameters) {
@@ -38,7 +39,7 @@ class GzipDecompressor implements Decompressor {
         int bufsz = 1000;
         ByteArrayInputStream decompIn = new ByteArrayInputStream(bytes);
         ByteArrayOutputStream data = new ByteArrayOutputStream(bufsz);
-        try (InputStream decompOut = new GzipCompressorInputStream(decompIn)) {
+        try (InputStream decompOut = new java.util.zip.InflaterInputStream(decompIn)) {
             byte[] buf = new byte[bufsz];
             int n = 0;
             while ((n = decompOut.read(buf)) != -1) {

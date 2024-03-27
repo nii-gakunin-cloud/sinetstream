@@ -9,6 +9,8 @@ build::
 	bin/pip install build
 	bin/python -m build
 
+bdist_wheel:: build
+
 clean::
 	-rm -rf dist bin include lib lib64 share pyvenv.cfg
 	-rm -rf src/sinetstream_cli.egg-info

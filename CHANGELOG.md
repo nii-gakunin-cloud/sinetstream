@@ -11,6 +11,31 @@ https://keepachangelog.com/
 --->
 
 <!--- ---------------------------------------------------------------------- --->
+## [v1.9.0] - 2024-03-XX
+
+### Added
+
+- Support key versioning provided config-server.
+
+### Changed
+
+- Send message in the message format version 3. (Python, Java)
+    - NOTE: older SINETStream cannot receive this.
+- Message format version 3 (also 2) can be received. (Python, Java)
+
+### Deprecated
+### Removed
+### Fixed
+
+- Fixed to be able to use `user_data_only:` in Kafka (Python)
+- In algorithm=gzip, use ZLIB not GZIP (Java).
+- In algorithm=zstd decompression, work even if content_size in frame is not set. (Python, Java)
+- In algorithm=zstd compression, set content_size to frame_header. (Java)
+
+### Security
+
+
+<!--- ---------------------------------------------------------------------- --->
 ## [v1.8.1] - 2023-08-04
 
 ### Added

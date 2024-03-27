@@ -259,6 +259,8 @@ MessageReader(
 
 * AuthorizationError
     * 認可されていないトピックに対してメッセージの取得を行った
+* InvalidMessageError
+    * SINETStreamメッセージフォーマットに違反している
 
 メッセージングシステムによっては認可されていない操作をおこなっても上記の例外が発生しないことがある。
 MQTT(Mosquitto)がこれに該当し、認可されていない操作を行っても例外が発生しない。

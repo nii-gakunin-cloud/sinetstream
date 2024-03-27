@@ -1,6 +1,6 @@
 all:
-	../gradlew build
+	../gradlew assemble
 
 test:
-	../gradlew test
-	#../gradlew test --no-daemon --debug --console plain
+	../gradlew test --rerun-tasks --info
+	#../gradlew test --rerun-tasks --info --console plain jp.ad.sinet.stream.packet.MsgV3Test

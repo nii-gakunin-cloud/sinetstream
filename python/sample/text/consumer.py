@@ -28,8 +28,13 @@ from sinetstream import MessageReader
 
 def consumer(service, **kwargs):
     with MessageReader(service, **kwargs) as reader:
-        for message in reader:
-            show_message(message)
+        while True:
+            try:
+                for message in reader:
+                    show_message(message)
+                break
+            except Exception as ex:
+                print(f"caught: {ex}")
 
 
 def show_message(message):

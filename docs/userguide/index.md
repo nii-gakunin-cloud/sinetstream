@@ -56,6 +56,7 @@ Android版に関しては、IoT (Internet of Things) 端末としてセンサー
 * [設定ファイル](config.md)
 * [認証と認可](auth.md)
 * [CLI(Command Line Interface)](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/java/sample/cli/README.md)
+* [互換性](compat.md)
 
 ## 用語の定義
 

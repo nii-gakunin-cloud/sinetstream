@@ -23,6 +23,8 @@ package jp.ad.sinet.stream.crypto;
 
 import jp.ad.sinet.stream.api.Crypto;
 import jp.ad.sinet.stream.api.Serializer;
+import jp.ad.sinet.stream.utils.CtxSerializer;
+import jp.ad.sinet.stream.utils.Pair;
 import lombok.EqualsAndHashCode;
 
 import java.util.Map;
@@ -31,23 +33,38 @@ import java.util.Optional;
 import java.util.function.Function;
 
 @EqualsAndHashCode
-public class CryptoSerializerWrapper<T> implements Serializer<T> {
+public class CryptoSerializerWrapper<T> implements CtxSerializer<T, Integer> {
+
+    static public class ThruSer<T> implements CtxSerializer<T, Integer> {
+        private final Serializer<T> serializer;
+        private ThruSer(Serializer<T> serializer) {
+            this.serializer = serializer;
+        }
+        @Override
+        public Pair<byte[], Integer> serialize(T data) {
+            Integer keyVer = 0;
+            return Pair.of(serializer.serialize(data), keyVer);
+        }
+    }
+
 
     private final Serializer<T> serializer;
-    private final Function<byte[], byte[]> encrypt;
+    private final Function<byte[], Pair<byte[], Integer>> encrypt;
+    private Crypto crypto;
 
     private CryptoSerializerWrapper(Crypto crypto, Serializer<T> serializer, Map<String, ?> parameters) {
         this.serializer = serializer;
-        encrypt = crypto.getEncoder(parameters);
+        this.encrypt = crypto.getEncoder(parameters);
+        this.crypto = crypto;
     }
 
     @Override
-    public byte[] serialize(T data) {
+    public Pair<byte[], Integer> serialize(T data) {
         return encrypt.apply(serializer.serialize(data));
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> Serializer<T> getSerializer(Map<String, ?> config, final Serializer<T> serializer) {
+    public static <T> CtxSerializer<T, Integer> getSerializer(Map<String, ?> config, final Serializer<T> serializer) {
         Optional<CryptoSerializerWrapper> ret = Optional.ofNullable(config.get("crypto"))
                 .filter(Map.class::isInstance).map(Map.class::cast)
                 .flatMap(cryptoParams ->
@@ -56,7 +73,7 @@ public class CryptoSerializerWrapper<T> implements Serializer<T> {
                                 .map(crypto -> new CryptoSerializerWrapper<>(crypto, serializer, cryptoParams)));
         CryptoSerializerWrapper ser = ret.orElse(null);
         if (Objects.isNull(ser)) {
-            return serializer;
+            return new ThruSer(serializer);
         }
         return ser;
     }

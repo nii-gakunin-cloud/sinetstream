@@ -78,6 +78,7 @@ public class MqttSyncBaseIO extends AbstractMqttIO<MqttClient> {
     public void resetMetrics() { }
 
     public void debugDisconnectForcibly() throws MqttException {
+        System.err.println("invoking client.disconnectForcibly(0,0,false)");
         long quiesceTimeout_ms = 0;
         long disconnectTimeout_ms = 0;
         boolean sendDisconnectPacket = false;

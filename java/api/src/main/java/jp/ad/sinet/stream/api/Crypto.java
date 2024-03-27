@@ -21,10 +21,13 @@
 
 package jp.ad.sinet.stream.api;
 
+import jp.ad.sinet.stream.utils.Pair;
+
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public interface Crypto {
-    Function<byte[], byte[]> getEncoder(Map<String, ?> parameters);
-    Function<byte[], byte[]> getDecoder(Map<String, ?> parameters);
+    Function<byte[], Pair<byte[], Integer>> getEncoder(Map<String, ?> parameters);
+    BiFunction<byte[], Integer, byte[]> getDecoder(Map<String, ?> parameters);
 }

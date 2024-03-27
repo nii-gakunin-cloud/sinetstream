@@ -253,6 +253,8 @@ The following errors may occur when calling `next()` to the iterator.
 
 * AuthorizationError
     * Tried to receive messages from an unauthorized topic.
+* InvalidMessageError
+    * Invalid message format in SINETStream.
 
 AuthorizationError does not occur in the following cases:
 

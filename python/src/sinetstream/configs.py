@@ -266,7 +266,8 @@ def get_config_params(service=None, config=None, config_file=None, **kwargs):
     if config is None:
         service, params = get_config_params_local(service, config_file, **kwargs)
     else:
-        service, params = get_config_params_server(service, config, **kwargs)
+        need_all_key = True
+        service, params = get_config_params_server(service, config, need_all_key, **kwargs)
     if params is None:
         logger.error(f"invalid service: {service}")
         raise NoServiceError()

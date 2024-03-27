@@ -41,8 +41,9 @@ msgs = ['test message 1',
         'test message 003']
 
 nmsg = len(msgs)
-min_avro_overhead = 2 + 8 + 8 + 1  # marker + fingerprint + timestamp + body_len
-msglens = [len(m) + min_avro_overhead for m in msgs]
+avro_overhead = 2 + 8 + 8 + 1  # marker + fingerprint + timestamp + body_len
+pack_overhead = 4 + 2  # marker + key_version
+msglens = [len(m) + avro_overhead + pack_overhead for m in msgs]
 sum_len = sum(msglens)
 min_len = min(msglens)
 max_len = max(msglens)

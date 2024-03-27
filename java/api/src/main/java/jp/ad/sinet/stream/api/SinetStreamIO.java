@@ -23,6 +23,7 @@ package jp.ad.sinet.stream.api;
 
 import jp.ad.sinet.stream.spi.PluginMessageIO;
 import jp.ad.sinet.stream.spi.SinetStreamParameters;
+
 import lombok.Getter;
 import lombok.extern.java.Log;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -34,6 +35,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Log
 public class SinetStreamIO<T extends PluginMessageIO> {
+
+    /* messageFormat:
+     *   v0: user_data_only
+     *   v1: data_encription (crypto_header + user_data)
+     *   v2: avro(tstamp, msg), crypto_header + avro(tstamp, msg)
+     *   v3: mhdr(key_version) + v2
+     */
+    @Getter
+    private final int messageFormat;
 
     @Getter
     private final boolean isUserDataOnly;
@@ -153,6 +163,16 @@ public class SinetStreamIO<T extends PluginMessageIO> {
         this.valueType = parameters.getValueType();
         this.ioMetrics = new IOMetrics();
         this.tmpLst = parameters.getTmpLst();
+        this.messageFormat = Optional.ofNullable(parameters.getConfig().get("message_format"))
+                                     .filter(Integer.class::isInstance).map(Integer.class::cast)
+                                     .orElse(3);
+        switch (this.messageFormat) {
+        case 2:
+        case 3:
+            break;
+        default:
+            throw new InvalidConfigurationException("invalid message_format specified");
+        }
     }
 
     public String getClientId() {

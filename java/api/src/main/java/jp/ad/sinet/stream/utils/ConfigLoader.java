@@ -142,6 +142,9 @@ class ConfigLoader {
                 replaceInlineData((Map<String, Object>) v, tmpLst);
                 continue;
             }
+            // note: crypto._keys is Map<Integer, byte[]>)
+            if (!(e.getKey() instanceof String))
+                continue;
             String k = e.getKey();
             if (k.length() > sfx.length() && k.endsWith(sfx)) {
                 String k2 = k.substring(0, k.length() - sfx.length());

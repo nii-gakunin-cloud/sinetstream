@@ -44,12 +44,12 @@ class ProviderUtils<T extends SinetMessageProvider> {
         String type = getProviderType(parameters);
         ServiceLoader<T> loader = ServiceLoader.load(providerClass);
         for (T provider : loader) {
-            //System.err.println("proviertype=" + provider.getType());
+            //System.err.println("providertype=" + provider.getType());
             if (provider.getType().equals(type) && provider.isProvider(parameters)) {
                 return provider;
             }
         }
-        throw new UnsupportedServiceTypeException();
+        throw new UnsupportedServiceTypeException("type=" + type + " not found");
     }
 
     private String getProviderType(Map<String, ?> parameters) {
