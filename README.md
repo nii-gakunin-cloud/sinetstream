@@ -36,6 +36,8 @@ under the License.
 * コンフィグサーバー
     * [github](https://github.com/nii-gakunin-cloud/sinetstream-config-server)
     * [manual](http://manual.config-server.sinetstream.net/manual/docs/home/index.html)
+* ブリッジ
+    * [github](https://github.com/nii-gakunin-cloud/sinetstream-bridge)
 * [更新履歴](CHANGELOG.md)
 
 ## メッセージングシステムの概念

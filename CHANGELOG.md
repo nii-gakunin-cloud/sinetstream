@@ -11,20 +11,27 @@ https://keepachangelog.com/
 --->
 
 <!--- ---------------------------------------------------------------------- --->
-## [v1.9.0] - 2024-03-XX
+## [v1.9.1] - 2024-03-29
+
+### Security
+
+- Upgrade pycryptodomex (Python)
+
+<!--- ---------------------------------------------------------------------- --->
+## [v1.9.0] - 2024-03-29
 
 ### Added
 
-- Support key versioning provided config-server.
+- Support key versioning provided by config-server. (Python, Java)
+- Support Java 21 (Java)
 
 ### Changed
 
 - Send message in the message format version 3. (Python, Java)
     - NOTE: older SINETStream cannot receive this.
 - Message format version 3 (also 2) can be received. (Python, Java)
+- Use kafka-python-ng instead of kefka-python which has not been maintained. (Python)
 
-### Deprecated
-### Removed
 ### Fixed
 
 - Fixed to be able to use `user_data_only:` in Kafka (Python)
@@ -34,6 +41,8 @@ https://keepachangelog.com/
 
 ### Security
 
+- Upgrade bouncy castle (Java)
+- Update versions of dependent packages (Android Tutorial Container)
 
 <!--- ---------------------------------------------------------------------- --->
 ## [v1.8.1] - 2023-08-04

@@ -33,6 +33,8 @@ under the License.
 * Config Server
     * [github](https://github.com/nii-gakunin-cloud/sinetstream-config-server)
     * [manual](http://manual.config-server.sinetstream.net/manual/docs/home/index.html)
+* Bridge
+    * [github](https://github.com/nii-gakunin-cloud/sinetstream-bridge)
 * [Update log](CHANGELOG.md)
 
 ## Concept of a messaging system
