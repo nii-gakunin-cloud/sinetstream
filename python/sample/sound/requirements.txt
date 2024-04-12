@@ -2,7 +2,7 @@ avro-python3==1.10.2
 certifi==2023.11.17
 cffi==1.16.0
 charset-normalizer==3.3.2
-idna==3.6
+idna==3.7
 kafka-python==2.0.2
 numpy==1.26.2
 paho-mqtt==1.6.1
