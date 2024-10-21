@@ -70,11 +70,11 @@ def convert_params(params):
             consistency if isinstance(consistency, Consistency)
             else Consistency[consistency])
         return new_params
-    except KeyError:
-        raise InvalidArgumentError(f'invalid consistency: {consistency}')
+    except KeyError as ex:
+        raise InvalidArgumentError(f'invalid consistency: {consistency}') from ex
 
 
-class Message(object):
+class Message:
     NOTSTAMP = 0
 
     def __init__(self, value, topic, tstamp, raw):
@@ -109,25 +109,23 @@ class Message(object):
         return self._raw
 
 
-'''
-crypto_params = {
-    # name             must   default available
-    ("algorithm",      True,  None,   ["AES"]),
-    ("key_length",     False, 128,    None),
-    ("mode",           True,  None,   ["CBC", "EAX"]),
-    ("padding",        False, "none", [None, "none", NoPadding", "pkcs7"]),
-    ("key_derivation", False, key_derivation_params,   None),
-    ("password",       True,  None,   None),
-}
-
-key_derivation_params = {
-    # name             must   default available
-    ("algorithm",      False, "pbkdf2",      ["pbkdf2"]),
-    ("salt_bytes",     False, 8,             None),
-    ("iteration",      False, 10000,         None),
-    ("prf",            False, "HMAC-SHA256", ["HMAC-SHA256", "HMAC-SHA384", "HMAC-SHA512"]),
-}
-'''
+# crypto_params = {
+#     # name             must   default available
+#     ("algorithm",      True,  None,   ["AES"]),
+#     ("key_length",     False, 128,    None),
+#     ("mode",           True,  None,   ["CBC", "EAX"]),
+#     ("padding",        False, "none", [None, "none", NoPadding", "pkcs7"]),
+#     ("key_derivation", False, key_derivation_params,   None),
+#     ("password",       True,  None,   None),
+# }
+#
+# key_derivation_params = {
+#     # name             must   default available
+#     ("algorithm",      False, "pbkdf2",      ["pbkdf2"]),
+#     ("salt_bytes",     False, 8,             None),
+#     ("iteration",      False, 10000,         None),
+#     ("prf",            False, "HMAC-SHA256", ["HMAC-SHA256", "HMAC-SHA384", "HMAC-SHA512"]),
+# }
 
 
 def make_cipher(crypto_params):
@@ -145,7 +143,7 @@ def make_client_id():
     return "sinetstream-" + str(uuid.uuid4())
 
 
-def validate_config(params):
+def validate_config(_params):
     pass
 
 
@@ -168,7 +166,7 @@ def normalize_params(params):
     crypto = params["crypto"]
     if "password" in crypto:
         password = crypto["password"]
-        if type(password) is str:
+        if isinstance(password, str):
             crypto["password"] = {"value": password}
 
 
@@ -210,7 +208,7 @@ default_params = {
 }
 
 
-class Metrics(object):
+class Metrics:
     def __init__(self):
         pass
         # self.start_time
@@ -283,7 +281,7 @@ class Metrics(object):
                 f"error_count_rate={self.error_count_rate}")
 
 
-class IOMetrics(object):
+class IOMetrics:
     MAXSIZE = (1 << 63) - 1
 
     def __init__(self):
@@ -328,7 +326,7 @@ class IOMetrics(object):
         return r
 
 
-class MessageIO(object):
+class MessageIO:
 
     def __init__(self, service, params, registry):
         validate_config(params)
@@ -460,11 +458,13 @@ class MessageIO(object):
         lst = {
             "client_id": lambda *_: self.client_id,
             "metrics": lambda *_: self.metrics,
-            self.params["type"]: lambda ipath, kwargs: self._plugin.info(ipath, kwargs),
+            # self.params["type"]: lambda ipath, kwargs: self._plugin.info(ipath, kwargs),
+            self.params["type"]: self._plugin.info
         }
 
         return MessageIO._fill_info(ipath, kwargs, lst)
 
+    @staticmethod
     def _fill_info(ipath, kwargs, lst):
         if len(ipath) == 0:
             return {k: f(ipath, kwargs) for k, f in lst.items()}
@@ -525,7 +525,6 @@ class BaseMessageReader(MessageIO):
             if key_version is None:
                 # Ok, this is not v3, assume v2
                 key_version = self.cipher.max_key_version if self.cipher is not None else 0
-                pass
             else:
                 assert key_version >= 0
                 # note: key_version == 0 means plain text (not encrypted)
@@ -547,7 +546,7 @@ class BaseMessageReader(MessageIO):
             tstamp, value = self.unmarshaller.unmarshal(value)
         else:
             tstamp = value_tstamp
-        assert type(tstamp) is int
+        assert isinstance(tstamp, int)
         assert isinstance(value, bytes)
         clen = len(value)
         value = self.decompressor(value)
@@ -618,6 +617,7 @@ class MessageReader(BaseMessageReader):
         logger.debug("MessageReader:init")
         super().__init__(MessageReader.registry, service, topics, config, config_file, **kwargs)
         self.debug_inject_msg_bytes = None  # for injection: None or tuple (message, topic, raw)
+        self._iter = None
 
     def __iter__(self):
         logger.debug("MessageReader:iter")
@@ -732,12 +732,12 @@ class BaseMessageWriter(MessageIO):
     def _to_bytes(self, msg, tstamp):
         if self.value_serializer is not None:
             msg = self.value_serializer(msg)
-        if type(msg) is not bytes:
+        if not isinstance(msg, bytes):
             raise self._invalid_message(type(msg))
         ulen = len(msg)
         msg = self.compressor(msg)
         clen = len(msg)
-        assert type(msg) is bytes
+        assert isinstance(msg, bytes)
         if self.marshaller:
             msg = self.marshaller.marshal(msg, tstamp)
         if self.cipher:
@@ -745,7 +745,7 @@ class BaseMessageWriter(MessageIO):
             msg = self.cipher.encrypt(msg, keyver)
         else:
             keyver = Packet.KEYVER_NOENC
-        assert type(msg) is bytes
+        assert isinstance(msg, bytes)
         if not self.user_data_only and self.message_format >= 3:
             msg = Packet.pack(msg, keyver)
         mlen = len(msg)

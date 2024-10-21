@@ -193,9 +193,6 @@ config:
 
 設定ファイルは以下の順序で検索され、最初に見つかったファイルのみが読み込まれる。
 
-1. 環境変数 `SINETSTREAM_CONFIG_URL` に指定された場所(URL)
-    * 設定ファイルをリモートの web サーバに置くことも可能
-    * ローカルファイルを指定する場合は `file://{設定ファイルの絶対パス}` の形式で指定する。
 1. カレントディレクトリの `.sinetstream_config.yml`
 1. `$HOME/.config/sinetstream/config.yml`
     * Windows 10 では `C:\Users\{userXX}\.config\sinetstream\config.yml`
@@ -318,6 +315,7 @@ API にパラメータを指定しなかった場合は、設定ファイルに�
     * デフォルト値: false
 * receive_timeout_ms
     * `MessageReader` がメッセージ到着を待つ最大待ち時間 (ms)
+
 <!---
 * message_format
     * SINETStreamメッセージフォーマットバージョンを指定する。
@@ -512,6 +510,7 @@ SINETStream では、バックエンドの SSL/TLS による通信の暗号化�
         * 鍵導出関数(pseudorandom function)を指定する
         * 指定可能な値: "HMAC-SHA256"
         * デフォルト値: "HMAC-SHA256"
+
 <!---
 * _keys
     * コンフィグサーバーからバージョン管理された暗号鍵を取得したとき、SINETStreamの内部でこのパラメータが使われる。

@@ -26,15 +26,16 @@ from sys import exc_info
 from threading import RLock
 from time import sleep
 
-from kafka import KafkaProducer, KafkaConsumer
-from kafka.errors import (
-    KafkaError, TopicAuthorizationFailedError, GroupAuthorizationFailedError,
-)
 from promise import Promise
 
 from sinetstream import (
     AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE,
     ConnectionError, SinetError, AuthorizationError,
+)
+
+from kafka import KafkaProducer, KafkaConsumer
+from kafka.errors import (
+    KafkaError, TopicAuthorizationFailedError, GroupAuthorizationFailedError,
 )
 
 from sinetstream.error import InvalidArgumentError
@@ -56,7 +57,7 @@ def trans_dict1(d, t):
 def conv_tls(tls_params):
     configs = {}
     if tls_params:
-        if type(tls_params) is bool:
+        if isinstance(tls_params, bool):
             configs["security_protocol"] = "SSL"
         else:
             t = {
@@ -109,15 +110,15 @@ def del_sinetstream_param(params):
     }
 
 
-class KafkaClient(object):
+class KafkaClient:
     def __init__(self, params):
         self._params = params
         self._client = None
         if 'brokers' not in params:
             raise InvalidArgumentError("You must specify several brokers.")
         self._brokers = params['brokers']
-        if (type(self._brokers) is not str and
-            (type(self._brokers) is not list or
+        if (not isinstance(self._brokers, str) and
+            (not isinstance(self._brokers, list) or
              len(self._brokers) == 0
              )):
             raise InvalidArgumentError("You must specify several brokers.")
@@ -133,10 +134,10 @@ class KafkaClient(object):
         try:
             logger.debug(f"kafka_params={self._kafka_params}")
             self._client = self._create_client()
-        except (KafkaError, SSLError):
-            logger.error(f"cannot connect broker: {self._brokers}")
+        except (KafkaError, SSLError) as ex:
+            logger.error(f"cannot connect broker: {self._brokers}", exc_info=True)
             self.close()
-            raise ConnectionError()
+            raise ConnectionError() from ex
         if not self._client.bootstrap_connected():
             self.close()
             raise ConnectionError()
@@ -152,7 +153,7 @@ class KafkaClient(object):
             self._client.close()
             self._client = None
         except Exception:
-            logger.error('kafka close() error')
+            logger.error('kafka close() error', exc_info=True)
 
     def metrics(self):
         if self._client is None:
@@ -230,7 +231,7 @@ class KafkaReader(BaseKafkaReader):
             return rec.value, rec.topic, rec
         except (TopicAuthorizationFailedError,
                 GroupAuthorizationFailedError) as ex:
-            raise AuthorizationError(ex)
+            raise AuthorizationError(ex) from ex
 
 
 class KafkaAsyncReader(BaseKafkaReader):
@@ -260,14 +261,14 @@ class KafkaAsyncReader(BaseKafkaReader):
             e = AuthorizationError(ex)
             if self._on_failure is not None:
                 self._executor.submit(lambda x, t: self._on_failure(x, traceback=tb), e, tb)
-            raise e
+            raise e from ex
 
     def _reader_loop(self):
         assert self._client is not None
         assert self._is_set_callback()
         while not self._closed:
             record_map = self._poll()
-            for tp, records in record_map.items():
+            for _tp, records in record_map.items():
                 for record in records:
                     self._executor.submit(
                         lambda r: self._on_message(r.value, r.topic, r),
@@ -333,7 +334,7 @@ class KafkaWriter(BaseKafkaWriter):
         try:
             return super().publish(msg).get()
         except TopicAuthorizationFailedError as ex:
-            raise AuthorizationError(ex)
+            raise AuthorizationError(ex) from ex
 
 
 class KafkaAsyncWriter(BaseKafkaWriter):

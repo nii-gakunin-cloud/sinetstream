@@ -38,7 +38,7 @@ SINETStreamでSSL/TLS接続を行うために必要となる証明書をプラ�
 
 設定手順の記述を簡潔にするために、ここでは以下の前提条件をおく。
 
-* プライベート認証局の実行環境はCentOS 7とする
+* プライベート認証局の実行環境はUbuntu 24とする
 * プライベート認証局で作成する証明書の形式はPEMとする
 
 設定例を示す場合のホスト名などの値を以下に示す。
@@ -46,37 +46,37 @@ SINETStreamでSSL/TLS接続を行うために必要となる証明書をプラ�
 
 * プライベート認証局
     * OpenSSLの設定ファイル
-        * /etc/pki/tls/openssl.cnf
+        * /etc/ssl/openssl.cnf
     * CAに関連するファイルを配置するディレクトリ
-        * /etc/pki/CA
+        * /etc/ssl
 * 証明書
     * CA証明書
         * 証明書ファイルのパス
-            * /etc/pki/CA/cacert.pem
+            * /etc/ssl/cacert.pem
         * 秘密鍵のパス
-            * /etc/pki/CA/private/cakey.pem
+            * /etc/ssl/private/cakey.pem
         * サブジェクト
             * /C=JP/ST=Example_State/O=Example_Organization/CN=private-ca
         * 有効期限（日）
             * 3650
     * ブローカーのサーバ証明書
         * 証明書ファイルのパス
-            * /etc/pki/CA/certs/broker.crt
+            * /etc/ssl/certs/broker.crt
         * 秘密鍵のパス
-            * /etc/pki/CA/private/broker.key
+            * /etc/ssl/private/broker.key
         * サブジェクト
             * /C=JP/CN=broker.example.org
     * クライアント証明書
         * 証明書ファイルのパス
-            * /etc/pki/CA/certs/client0.crt
+            * /etc/ssl/certs/client0.crt
         * 秘密鍵のパス
-            * /etc/pki/CA/private/client0.key
+            * /etc/ssl/private/client0.key
         * サブジェクト
             * /C=JP/CN=client0
 
 ## プライベート認証局を構築する
 
-プライベート認証局を構築する。 ここで示す手順は CentOS 7 で実行することを前提としている。
+プライベート認証局を構築する。 ここで示す手順は Ubuntu 24 で実行することを前提としている。
 
 > プライベート認証局はブローカーを実行している環境に構築する必要はない。
 
@@ -85,17 +85,19 @@ SINETStreamでSSL/TLS接続を行うために必要となる証明書をプラ�
 `openssl` パッケージをインストールする。
 > インストール済であればスキップしてよい。
 ```bash
-$ sudo yum -y install openssl
+$ sudo apt -y install openssl
 ```
 
 証明書や秘密鍵などを格納するディレクトリを作成する。
 
 ```bash
-$ sudo mkdir -p /etc/pki/CA/certs /etc/pki/CA/crl /etc/pki/CA/newcerts /etc/pki/CA/private
+$ sudo mkdir -p /etc/ssl/certs /etc/ssl/crl /etc/ssl/newcerts /etc/ssl/private
 ```
 
 OpenSSLの設定ファイルを変更し、プライベート認証局のために必要となる設定を行う。以下のパラメータを変更する。
 
+* dir
+    * トップディレクトリとして `/etc/ssl` を指定する。
 * unique_subject
     * CA証明書のロールオーバーを簡単にするために `no` を指定する
 * copy_extensions
@@ -108,6 +110,7 @@ OpenSSLの設定ファイルを変更し、プライベート認証局のため�
 
 ```
 [ CA_default ]
+dir             = /etc/ssl              # Where everything is kept
 (中略)
 unique_subject  = no                    # Set to 'no' to allow creation of
                                         # several ctificates with same subject.
@@ -119,29 +122,29 @@ copy_extensions = copy
 プライベート認証局が署名した証明書を記録するためのファイル `index.txt` を作成する。
 
 ```bash
-$ sudo touch /etc/pki/CA/index.txt
+$ sudo touch /etc/ssl/index.txt
 ```
 
 CA証明書のCSRと秘密鍵を作成する。
 
 ```bash
-$ sudo openssl req -new -keyout /etc/pki/CA/private/cakey.pem \
-       -out /etc/pki/CA/careq.pem -nodes \
+$ sudo openssl req -new -keyout /etc/ssl/private/cakey.pem \
+       -out /etc/ssl/careq.pem -nodes \
        -subj /C=JP/ST=Example_State/O=Example_Organization/CN=private-ca
 ```
 
 自己署名によるCA証明書を作成する。
 
 ```bash
-$ sudo openssl ca -batch -in /etc/pki/CA/careq.pem -selfsign -extensions v3_ca \
-       -keyfile /etc/pki/CA/private/cakey.pem -days 3650 -create_serial \
-       -out /etc/pki/CA/cacert.pem
+$ sudo openssl ca -batch -in /etc/ssl/careq.pem -selfsign -extensions v3_ca \
+       -keyfile /etc/ssl/private/cakey.pem -days 3650 -create_serial \
+       -out /etc/ssl/cacert.pem
 ```
 
-作成したCA証明書`/etc/pki/CA/cacert.pem`の内容を確認する。
+作成したCA証明書`/etc/ssl/cacert.pem`の内容を確認する。
 
 ```bash
-$ openssl x509 -in /etc/pki/CA/cacert.pem -noout -text
+$ openssl x509 -in /etc/ssl/cacert.pem -noout -text
 ```
 
 以下のような出力内容が表示される。
@@ -194,23 +197,23 @@ DNS = broker.example.org
 `-subj`に証明書のサブジェクトを指定する。
 
 ```bash
-$ sudo openssl req -new -keyout /etc/pki/CA/private/broker.key \
-       -out /etc/pki/CA/broker.csr -nodes -subj /C=JP/CN=broker.example.org
+$ sudo openssl req -new -keyout /etc/ssl/private/broker.key \
+       -out /etc/ssl/broker.csr -nodes -subj /C=JP/CN=broker.example.org
 ```
 
 CA証明書で署名をおこない、サーバ証明書を作成する。`-keyfile`, `-cert`にCA証明書の秘密鍵と証明書のファイル名を、
 `-in`にサーバ証明書のCSRを、`-out`に証明書の出力ファイル名を指定する。
 
 ```bash
-$ sudo openssl ca -batch -keyfile /etc/pki/CA/private/cakey.pem \
-      -cert /etc/pki/CA/cacert.pem -in /etc/pki/CA/broker.csr \
-      -out /etc/pki/CA/certs/broker.crt -policy policy_anything
+$ sudo openssl ca -batch -keyfile /etc/ssl/private/cakey.pem \
+      -cert /etc/ssl/cacert.pem -in /etc/ssl/broker.csr \
+      -out /etc/ssl/certs/broker.crt -policy policy_anything
 ```
 
-作成したサーバ証明書`/etc/pki/CA/certs/broker.crt`の内容を確認する。
+作成したサーバ証明書`/etc/ssl/certs/broker.crt`の内容を確認する。
 
 ```bash
-$ openssl x509 -in /etc/pki/CA/certs/broker.crt -noout -text
+$ openssl x509 -in /etc/ssl/certs/broker.crt -noout -text
 ```
 
 以下のような出力内容が表示される。
@@ -243,23 +246,23 @@ Certificate:
 `-subj`に証明書のサブジェクトを指定する。
 
 ```bash
-$ sudo openssl req -new -keyout /etc/pki/CA/private/client0.key \
-       -out /etc/pki/CA/client0.csr -nodes -subj /C=JP/CN=client0
+$ sudo openssl req -new -keyout /etc/ssl/private/client0.key \
+       -out /etc/ssl/client0.csr -nodes -subj /C=JP/CN=client0
 ```
 
 CA証明書で署名をおこない、クライアント証明書を作成する。`-keyfile`, `-cert`にCA証明書の秘密鍵と証明書のファイル名を、
 `-in`に証明書のCSRを、`-out`に証明書の出力ファイル名を指定する。
 
 ```bash
-$ sudo openssl ca -batch -keyfile /etc/pki/CA/private/cakey.pem \
-      -cert /etc/pki/CA/cacert.pem -in /etc/pki/CA/client0.csr \
-      -out /etc/pki/CA/certs/client0.crt -policy policy_anything
+$ sudo openssl ca -batch -keyfile /etc/ssl/private/cakey.pem \
+      -cert /etc/ssl/cacert.pem -in /etc/ssl/client0.csr \
+      -out /etc/ssl/certs/client0.crt -policy policy_anything
 ```
 
-作成したクライアント証明書`/etc/pki/CA/certs/client0.crt`の内容を確認する。
+作成したクライアント証明書`/etc/ssl/certs/client0.crt`の内容を確認する。
 
 ```bash
-$ openssl x509 -in /etc/pki/CA/certs/client0.crt -noout -text
+$ openssl x509 -in /etc/ssl/certs/client0.crt -noout -text
 ```
 
 以下のような出力内容が表示される。

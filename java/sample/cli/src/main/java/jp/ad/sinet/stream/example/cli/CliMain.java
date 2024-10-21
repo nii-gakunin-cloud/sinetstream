@@ -23,6 +23,7 @@ package jp.ad.sinet.stream.example.cli;
 
 import org.apache.commons.cli.*;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 
 import java.util.Arrays;
@@ -104,7 +105,7 @@ public class CliMain {
     }
 
     private static Object loadYaml(String x) {
-        Yaml yaml = new Yaml(new SafeConstructor());
+        Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
         return yaml.load(x);
     }
 

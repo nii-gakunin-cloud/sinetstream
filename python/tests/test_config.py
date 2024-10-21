@@ -52,26 +52,6 @@ def test_load_home_config(setup_home_config, service):
     assert set(params["brokers"]) == {BROKER}
 
 
-@pytest.mark.parametrize("service", [SERVICE, None])
-def test_load_env_config(setup_env_config, service):
-    svc, params = sinetstream.configs.get_config_params(service)
-    logger.info(f"params={params}")
-    assert svc == SERVICE
-    assert params is not None
-    assert params["type"] == SERVICE_TYPE
-    assert set(params["brokers"]) == {BROKER}
-
-
-@pytest.mark.parametrize("service", [SERVICE, None])
-def test_load_config_and_bad_env(setup_bad_env_config, service):
-    svc, params = sinetstream.configs.get_config_params(service)
-    logger.info(f"params={params}")
-    assert svc == SERVICE
-    assert params is not None
-    assert params["type"] == SERVICE_TYPE
-    assert set(params["brokers"]) == {BROKER}
-
-
 @pytest.fixture()
 def setup_home_config(tmp_path, config_brokers, config_topic):
     cwd = Path.cwd().absolute()
@@ -92,31 +72,3 @@ def setup_home_config(tmp_path, config_brokers, config_topic):
             copyfile(backup, config)
         else:
             config.unlink()
-
-
-@pytest.fixture()
-def setup_env_config(tmp_path, config_brokers, config_topic):
-    cwd = Path.cwd().absolute()
-    try:
-        os.chdir(str(tmp_path))
-        config = tmp_path / 'ss-config.yml'
-        create_config_file(brokers=config_brokers, topic=config_topic, config=config)
-        os.environ['SINETSTREAM_CONFIG_URL'] = config.as_uri()
-        yield
-    finally:
-        del(os.environ['SINETSTREAM_CONFIG_URL'])
-        os.chdir(str(cwd))
-
-
-@pytest.fixture()
-def setup_bad_env_config(tmp_path, config_brokers, config_topic):
-    cwd = Path.cwd().absolute()
-    try:
-        os.chdir(str(tmp_path))
-        config = tmp_path / 'ss-config.yml'
-        create_config_file(brokers=config_brokers, topic=config_topic)
-        os.environ['SINETSTREAM_CONFIG_URL'] = config.as_uri()
-        yield
-    finally:
-        del(os.environ['SINETSTREAM_CONFIG_URL'])
-        os.chdir(str(cwd))

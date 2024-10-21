@@ -59,7 +59,7 @@ class PluginMessageWriter(metaclass=ABCMeta):
     def reset_metrics(self):
         pass
 
-    def info(self, name, kwargs):
+    def info(self, _name, _kwargs):
         return None
 
     @abstractmethod
@@ -86,7 +86,7 @@ class PluginAsyncMessageWriter(metaclass=ABCMeta):
     def reset_metrics(self):
         pass
 
-    def info(self, name, kwargs):
+    def info(self, _name, _kwargs):
         return None
 
     @abstractmethod
@@ -113,7 +113,7 @@ class PluginMessageReader(metaclass=ABCMeta):
     def reset_metrics(self):
         pass
 
-    def info(self, name, kwargs):
+    def info(self, _name, _kwargs):
         return None
 
     @abstractmethod
@@ -140,7 +140,7 @@ class PluginAsyncMessageReader(metaclass=ABCMeta):
     def reset_metrics(self):
         pass
 
-    def info(self, name, kwargs):
+    def info(self, _name, _kwargs):
         return None
 
     @property

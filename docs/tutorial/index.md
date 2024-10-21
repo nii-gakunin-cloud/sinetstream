@@ -56,13 +56,13 @@ under the License.
 代表的なプラットフォームにおけるインストール手順を示したDocker公式サイトへのリンクを以下に記します。
 
 * macOS
-    - [Install Docker Desktop on Mac](https://docs.docker.com/docker-for-mac/install/)
+    - [Install Docker Desktop on Mac](https://docs.docker.com/desktop/install/mac-install/)
 * Microsoft Windows 10
-    - [Install Docker Desktop on Windows](https://docs.docker.com/docker-for-windows/install/)
-* CentOS(x86_64)
-    - [Get Docker Engine - Community for CentOS](https://docs.docker.com/install/linux/docker-ce/centos/)
+    - [Install Docker Desktop on Windows](https://docs.docker.com/desktop/install/windows-install/)
+* Ubuntu(x86_64)
+    - [Install Docker Engine on Ubuntu](https://docs.docker.com/engine/install/ubuntu/)
 
-その他のOSについてはDocker公式サイトの[Supported platforms](https://docs.docker.com/install/#supported-platforms) に記載されているリンク先などを参照してください。
+その他のOSについてはDocker公式サイトの[Get Docker](https://docs.docker.com/get-started/get-docker/) に記載されているリンク先などを参照してください。
 
 ## チュートリアルの実行
 

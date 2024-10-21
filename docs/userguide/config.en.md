@@ -179,11 +179,8 @@ For instance, the following parameters can be specified.
 Configuration file is searched in the following order.
 Only the first file found will be used.
 
-1. Location (URL) specified in environment variable `SINETSTREAM_CONFIG_URL`
-    * Configuration files are allowed to be located on a remote web server.
-    * When specifying a local file, specify it in the format `file://{absolute path of the configuration file}`.
-2. `.sinetstream_config.yml` in the current directory
-3. `$HOME/.config/sinetstream/config.yml`
+1. `.sinetstream_config.yml` in the current directory
+1. `$HOME/.config/sinetstream/config.yml`
     * `C:\Users\{userXX}\.Config\sinetstream\config.yml` on Windows 10
 
 > Multiple configuration files cannot be cascaded;
@@ -277,6 +274,7 @@ If a parameter is not specified in the API function, the value specified in the 
     * Enable or disable message encryption and decryption.
 * receive_timeout_ms
     * Maximum time (in milliseconds) for `MessageReader` to wait for message arrival.
+
 <!---
 * message_format
     * XXX
@@ -426,6 +424,7 @@ The mapping may contain the following keys.
         * Specify the key derivation function (pseudorandom function).
 	* Valid values: "HMAC-SHA256"
 	* Default value: "HMAC-SHA256"
+
 <!---
 * _keys
     * XXX

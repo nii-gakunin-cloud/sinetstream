@@ -10,6 +10,28 @@ https://keepachangelog.com/
 ### Security
 --->
 
+## [v1.9.2] - 2024-XX-XX
+
+### Changed
+
+- Use Ubuntu instead of CentOS in docs/userguide/certificate.md
+- Update dependencies (Java)
+
+### Removed
+
+- Because supporting config-server, remove the feature loading a config from `$SINETSTREAM_CONFIG_URL`. (Python, Java)
+
+### Fixed
+
+- Bugfix for `sinetstream_cli read --count N` doesn't work. (Python)
+- Lint-fix (Python)
+- Link-fix (document)
+
+### Security
+
+- Use safe YAML loader to deserialize a config. (Python)
+- Update SnakeYAML 1.x -> 2.x (Java)
+
 <!--- ---------------------------------------------------------------------- --->
 ## [v1.9.1] - 2024-03-29
 

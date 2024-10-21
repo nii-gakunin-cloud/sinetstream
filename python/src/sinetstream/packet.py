@@ -30,10 +30,11 @@ logger = logging.getLogger(__name__)
 message_marker_v3 = b"\xDF\x03\x00\x00"
 
 
-class Packet(object):
+class Packet:
 
     KEYVER_NOENC = 0
 
+    @staticmethod
     def pack(payload, key_version):
         logger.debug(f"Packet.pack:key_version={key_version}")
         bytes_writer = io.BytesIO()
@@ -42,6 +43,7 @@ class Packet(object):
         bytes_writer.write(payload)
         return bytes_writer.getvalue()
 
+    @staticmethod
     def unpack(buf):
         bytes_reader = io.BytesIO(buf)
         if len(buf) <= 4 + 2:
@@ -63,17 +65,3 @@ class Packet(object):
         logger.debug(f"Packet.unpack:key_version={key_version}")
         rest = bytes_reader.read()
         return key_version, rest
-
-    """
-    def hoge():
-        try:
-            return self.unmarshal3(msg)
-        except InvalidMessageError as ex3:
-            try:
-                return self._unmarshaller2.unmarshal2(msg) + (None,)
-            except InvalidMessageError as ex2:
-                # XXX should suppress logger.error(msg) on unmarshal3 and unmarshal2
-                emsg = f"Unmarshaller: malformed ver3 because {ex3}, and malformed ver2 because {ex2}"
-                logger.error(emsg)
-                raise InvalidMessageError(emsg) from None
-    """

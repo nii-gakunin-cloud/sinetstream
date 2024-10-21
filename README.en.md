@@ -109,23 +109,17 @@ Writers and Readers send/receive a message specifying a topic, allowing differen
 The Python/Java `SINETStream API` is implemented with following programing
 languages.
 
-* Python 3.8 or later
+* Python 3.9 or later
 * Java 11
 
 The Python/Java `SINETStream API` supports the following messaging systems.
 
-* [Apache Kafka](https://kafka.apache.org/) 2.2.1
+* [Apache Kafka](https://kafka.apache.org/) 3.8
 * MQTT v3.1, v3.1.1, v5.0
-    * [Eclipse Mosquitto](https://mosquitto.org/) v1.6.2
+    * [Eclipse Mosquitto](https://mosquitto.org/) v2.0.15
 * S3
     * AWS S3
     * [MinIO](https://min.io/)
-
-The Python/Java `SINETStream API` runs on following operating systems.
-
-* CentOS 7
-* Ubuntu 20.04 LTS
-* Windows 10
 
 ### Android version
 

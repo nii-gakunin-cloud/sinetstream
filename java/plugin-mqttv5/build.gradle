@@ -24,13 +24,13 @@ dependencies {
     // https://mvnrepository.com/artifact/org.eclipse.paho/org.eclipse.paho.mqttv5.client
     implementation 'org.eclipse.paho:org.eclipse.paho.mqttv5.client:1.2.5'
     implementation group: 'org.jdeferred.v2', name: 'jdeferred-core', version: '2.0.0'
-    compileOnly "org.projectlombok:lombok:1.18.30"
-    annotationProcessor "org.projectlombok:lombok:1.18.30"
+    compileOnly "org.projectlombok:lombok:1.18.32"
+    annotationProcessor "org.projectlombok:lombok:1.18.32"
     testImplementation project(':SINETStream-iostream')
-    testCompileOnly "org.projectlombok:lombok:1.18.30"
-    testAnnotationProcessor "org.projectlombok:lombok:1.18.30"
+    testCompileOnly "org.projectlombok:lombok:1.18.32"
+    testAnnotationProcessor "org.projectlombok:lombok:1.18.32"
     testImplementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.14.0'
-    testImplementation group: 'org.apache.commons', name: 'commons-text', version: '1.11.0'
-    testImplementation group: 'org.yaml', name: 'snakeyaml', version: '1.33'
-    testImplementation group: 'org.slf4j', name: 'slf4j-nop', version: '2.0.12'
+    testImplementation group: 'org.apache.commons', name: 'commons-text', version: '1.12.0'
+    testImplementation group: 'org.yaml', name: 'snakeyaml', version: '2.1'
+    testImplementation group: 'org.slf4j', name: 'slf4j-nop', version: '2.0.13'
 }

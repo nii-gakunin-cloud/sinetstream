@@ -21,7 +21,6 @@
 
 import logging
 import os
-import yaml
 
 from base64 import b64encode, b64decode
 from getpass import getpass
@@ -29,6 +28,8 @@ from hashlib import sha256
 from pathlib import Path
 from struct import unpack
 from threading import Lock
+
+import yaml
 
 from Cryptodome.Cipher import PKCS1_OAEP, AES
 from Cryptodome.Hash import SHA256
@@ -49,21 +50,22 @@ def sinetstream_encrypted_ctor(constructor, node):
 
 
 def secret_value_repl(representer, native):
-    v, fp = native.get()
+    v, _fp = native.get()
     return representer.represent_scalar("!sinetstream/encrypted", str(v))
 
 
 def setup_yaml():
-    yaml.add_constructor("!sinetstream/encrypted", sinetstream_encrypted_ctor)
+    yaml.add_constructor("!sinetstream/encrypted", sinetstream_encrypted_ctor, Loader=yaml.SafeLoader)
     yaml.add_representer(SecretValue, secret_value_repl)
 
 
 def yaml_load(s):
     try:
         setup_yaml()
-        yml = yaml.load(s, Loader=yaml.Loader)
+        yml = yaml.load(s, Loader=yaml.SafeLoader)
         return yml
     except yaml.scanner.ScannerError:
+        logger.error("bad yaml", exc_info=True)
         return None
 
 
@@ -76,7 +78,7 @@ config_files = [
 CONFIG_VERSION_2 = 2
 
 
-def get_config_params_local(service, config_file, **kwargs):
+def get_config_params_local(service, config_file, **_kwargs):
     content, config_file = load_config_file(config_file)
     if "header" in content:
         header = content["header"]
@@ -101,10 +103,10 @@ def get_config_params_local(service, config_file, **kwargs):
 
     if service is None:
         if len(config) > 1:
-            logger.error(f"services in {config_file}: {[svc for svc in config.keys()]}")
+            logger.error(f"services in {config_file}: {config.keys()}")
             raise NoConfigError("The parameter service must be specified "
                                 f"since many services are defined in {config_file}")
-        service = config.keys().__iter__().__next__()
+        service = next(iter(config.keys()))
         # service = [k for k in config.keys()][0]
 
     return service, config.get(service) if isinstance(config, dict) else None
@@ -118,17 +120,10 @@ def load_config_file(config_file):
             raise NoConfigError(f"No configuration file exist: {config_file}")
         return content, config_file
 
-    url = os.environ.get("SINETSTREAM_CONFIG_URL")
-    if url:
-        logger.info(f"SINETSTREAM_CONFIG_URL={url}")
-        content = load_config_from_url(url)
-        if content:
-            return content, url
-
-    for config_file in config_files:
-        content = load_config_from_file(config_file)
+    for cfile in config_files:
+        content = load_config_from_file(cfile)
         if content is not None:
-            return content, config_file
+            return content, cfile
 
     logger.error("No configuration file exist")
     raise NoConfigError()
@@ -148,13 +143,14 @@ def load_config_from_url(url):
 
 def load_config_from_file(file):
     try:
-        with open(os.path.expanduser(file)) as fp:
+        with open(os.path.expanduser(file), mode="rb") as fp:
             logger.debug(f"load config file from {os.path.abspath(file)}")
             yml = yaml_load(fp.read())
             if yml:
                 return yml
     except FileNotFoundError:
         logger.info(f"{file}: not found")
+    return None
 
 
 private_key_cache_lock = Lock()
@@ -197,8 +193,8 @@ def load_private_key(private_key_path=None):
     pw = os.environ.get("SINETSTREAM_PRIVATE_KEY_PASSPHRASE", None)
     last_ex = None
     n_try = 3
-    for i in range(n_try):
-        with private_key_path.open() as f:
+    for _i in range(n_try):
+        with private_key_path.open(mode="rb") as f:
             try:
                 private_key = RSA.importKey(f.read(), passphrase=pw)
                 fingerprint = make_fingerprint(private_key.publickey())

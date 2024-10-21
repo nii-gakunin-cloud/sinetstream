@@ -70,7 +70,7 @@ def _to_qos(params):
     return None
 
 
-class MqttReaderHandleIter(object):
+class MqttReaderHandleIter:
     def __init__(self, reader):
         logger.debug("MqttReaderHandleIter:init")
         self._reader = reader
@@ -81,9 +81,9 @@ class MqttReaderHandleIter(object):
             raise StopIteration()
         try:
             return self._reader.pop_rcvq()
-        except Empty:
+        except Empty as ex:
             self._reader = None
-            raise StopIteration()
+            raise StopIteration() from ex
 
 
 def _get_broker(params):
@@ -174,14 +174,13 @@ def _translate_tls_params(params):
     tls = params.get('tls')
     if tls is None:
         return {}
-    elif type(tls) is bool:
+    elif isinstance(tls, bool):
         return {'tls_set': {}}
-    elif type(tls) is dict:
-        tls_set = dict([
-            (key, tls[key])
-            for key in ['ca_certs', 'certfile', 'keyfile', 'ciphers']
-            if key in tls
-        ])
+    elif isinstance(tls, dict):
+        tls_set = {key: tls[key]
+                   for key in ['ca_certs', 'certfile', 'keyfile', 'ciphers']
+                   if key in tls
+                   }
         mqtt_params = {'tls_set': tls_set}
         if 'check_hostname' in tls:
             mqtt_params['tls_insecure_set'] = {
@@ -196,16 +195,14 @@ def _translate_tls_params(params):
 def _replace_ssl_params(params):
     if 'tls_set' not in params:
         return
-    params['tls_set'] = dict([
-        (
-            key,
-            (value
-             if not (key in ['cert_reqs', 'tls_version'] and
-                     isinstance(value, str) and hasattr(ssl, value))
-             else getattr(ssl, value))
-        )
+    params['tls_set'] = {
+        key: (getattr(ssl, value)
+              if (key in ['cert_reqs', 'tls_version'] and
+                  isinstance(value, str) and
+                  hasattr(ssl, value))
+              else value)
         for key, value in params['tls_set'].items()
-    ])
+    }
 
 
 def _replace_will_params(params):
@@ -237,7 +234,7 @@ def _replace_will_params(params):
     params['will_set'] = will_params2
 
 
-class MqttClient(object):
+class MqttClient:
     def __init__(self, params):
         self._params = _translate_tls_params(params)
         self._params.update(params)
@@ -248,7 +245,7 @@ class MqttClient(object):
         try:
             self._mqttc = _create_mqtt_client(self._params)
         except ValueError as ex:
-            raise InvalidArgumentError(ex)
+            raise InvalidArgumentError(ex) from ex
 
         self._mqttc.on_connect = self._on_connect
         self.qos = _to_qos(self._params)
@@ -281,7 +278,7 @@ class MqttClient(object):
                 if name_ == "user_property":
                     val = [(k, v) for k, v in val.items()]
                 try:
-                    properties.__setattr__(name, val)
+                    setattr(properties, name, val)
                 except MQTTException as ex:
                     # ok, maybe packet type mismatch.
                     logger.warning(f"{name_}: {ex}")
@@ -302,11 +299,11 @@ class MqttClient(object):
             if properties is not None:
                 kwargs["properties"] = properties
             self._mqttc.connect(**kwargs)
-        except (socket.error, OSError, WebsocketConnectionError, ValueError):
-            logger.error(f"cannot connect broker: {self.host}:{self.port}")
+        except (socket.error, OSError, WebsocketConnectionError, ValueError) as ex:
+            logger.error(f"cannot connect broker: {self.host}:{self.port}", exc_info=True)
             self.close()
             raise ConnectionError(
-                f"cannot connect broker: {self.host}:{self.port}")
+                f"cannot connect broker: {self.host}:{self.port}") from ex
 
         self._mqttc.loop_start()
 
@@ -332,7 +329,7 @@ class MqttClient(object):
             self._mqttc.disconnect()
             self._mqttc.loop_stop()
         except Exception:
-            logger.error("mqtt close() error")
+            logger.error("mqtt close() error", exc_info=True)
 
     def metrics(self):
         return None
@@ -343,7 +340,7 @@ class MqttClient(object):
     def _is_connected(self):
         return self._connection_result is not None
 
-    def _on_connect(self, client, userdata, flags, rc, properties=None):
+    def _on_connect(self, _client, _userdata, _flags, rc, _properties=None):
         logger.debug(f"MQTT:on_connect: rc={rc}")
         if rc != 0:
             logger.error(f"MQTT: {connack_string(rc)}: {rc}")
@@ -379,7 +376,7 @@ class MqttReader(BaseMqttReader):
         self._rcvq = Queue()
         self._mqttc.on_message = self._on_message
 
-    def _on_message(self, client, userdata, message):
+    def _on_message(self, _client, _userdata, message):
         logger.debug(f"MQTT:on_message: message={message}")
         self._rcvq.put(message)
 
@@ -399,7 +396,7 @@ class MqttAsyncReader(BaseMqttReader):
         self._mqttc.on_message = self._mqtt_callback
         self._on_message = None
 
-    def _mqtt_callback(self, client, userdata, message):
+    def _mqtt_callback(self, _client, _userdata, message):
         logger.debug(f"MQTT:on_message: message={message}")
         if self._on_message is not None:
             self._on_message(message.payload, message.topic, message)
@@ -465,13 +462,13 @@ class MqttAsyncWriter(BaseMqttWriter):
                     reject(SinetError(f'mqtt error: rc={msg_info.rc}'))
                 else:
                     self._add_on_publish(msg_info, resolve)
-            except Exception as e:
+            except Exception as ex:
                 tb = exc_info()[2]
-                reject(e, tb)
+                reject(ex, tb)
 
         return Promise(executor)
 
-    def _on_publish(self, client, user_data, mid):
+    def _on_publish(self, _client, _userdata, mid):
         cb = self._callbacks.pop(mid, None)
         if cb is not None:
             cb[0](cb[1])

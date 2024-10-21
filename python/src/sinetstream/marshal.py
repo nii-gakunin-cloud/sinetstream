@@ -56,13 +56,13 @@ message_schema_fingerprint = b'\x1f\x9c\x0c\x91\xeb\x33\x66\x4f'  # 64 bits
 avro_signle_object_format_marker = b"\xC3\x01"
 
 
-class Marshaller(object):
+class Marshaller:
     def __init__(self):
         self._writer = avro.io.DatumWriter(message_schema)
 
     def marshal(self, msg, tstamp):
-        assert type(tstamp) is int
-        assert type(msg) is bytes
+        assert isinstance(tstamp, int)
+        assert isinstance(msg, bytes)
         bytes_writer = io.BytesIO()
         bytes_writer.write(avro_signle_object_format_marker)
         bytes_writer.write(message_schema_fingerprint)
@@ -72,7 +72,7 @@ class Marshaller(object):
         return bytes_writer.getvalue()
 
 
-class Unmarshaller(object):
+class Unmarshaller:
     def __init__(self):
         self._reader = avro.io.DatumReader(message_schema, message_schema)
 
@@ -98,7 +98,7 @@ class Unmarshaller(object):
         try:
             m = self._reader.read(decoder)
         except AssertionError as ex:
-            raise InvalidMessageError(ex)
+            raise InvalidMessageError(ex) from ex
         # rest = bytes_reader.read()
         # assert len(rest) == 0
         return m["tstamp"], m["msg"]

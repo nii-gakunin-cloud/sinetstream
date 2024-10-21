@@ -2,10 +2,13 @@
 
 PYTHON3 = python3
 
-all: lint
+all: lint lint2
 
 lint:
 	tox -e lint || true
+
+lint2:
+	tox -e lint2 || true
 
 sdist:
 	$(PYTHON3) -m build --sdist .

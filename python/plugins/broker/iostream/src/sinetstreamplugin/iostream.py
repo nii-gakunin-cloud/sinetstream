@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 # logger.setLevel(logging.DEBUG)
 
 
-class IOStreamMetrics(object):
+class IOStreamMetrics:
     def __int__(self):
         pass
 
@@ -82,7 +82,7 @@ class BaseIOStreamWriter:
     def reset_metrics(self):
         return self._metrics.reset()
 
-    def info(self, ipath, kwargs):
+    def info(self, _ipath, _kwargs):
         return None
 
 
@@ -133,7 +133,7 @@ class BaseIOStreamReader:
     def reset_metrics(self):
         return self._metrics.reset()
 
-    def info(self, name, kwargs):
+    def info(self, _name, _kwargs):
         return None
 
 
@@ -142,7 +142,7 @@ class IOStreamReader(BaseIOStreamReader):
         logger.debug("IOStreamReader:init")
         super().__init__(params)
 
-    class Iter(object):
+    class Iter:
         def __init__(self, ioreader):
             logger.debug("IOStreamReader.Iter:__init__")
             self._ioreader = ioreader

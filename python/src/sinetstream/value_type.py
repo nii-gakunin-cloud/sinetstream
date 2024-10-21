@@ -25,7 +25,7 @@ BYTE_ARRAY = "byte_array"
 value_type_registry = Registry('sinetstream.value_type', PluginValueType)
 
 
-class ByteArrayValueType(object):
+class ByteArrayValueType:
     @property
     def serializer(self):
         return None
@@ -35,7 +35,7 @@ class ByteArrayValueType(object):
         return None
 
 
-class TextValueType(object):
+class TextValueType:
     @property
     def serializer(self):
         return lambda x: x.encode()
@@ -45,13 +45,13 @@ class TextValueType(object):
         return lambda x: x.decode()
 
 
-class ByteArrayValueTypeEntryPoint(object):
+class ByteArrayValueTypeEntryPoint:
     @classmethod
     def load(cls):
         return ByteArrayValueType
 
 
-class TextValueTypeEntryPoint(object):
+class TextValueTypeEntryPoint:
     @classmethod
     def load(cls):
         return TextValueType

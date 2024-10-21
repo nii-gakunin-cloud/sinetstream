@@ -27,7 +27,7 @@ user_config_dir = "~/.config/sinetstream"
 
 
 # class SecretValue(yaml.YAMLObject):
-class SecretValue(object):
+class SecretValue:
     def __init__(self, v, fp):
         self.v = v
         self.fp = fp
@@ -42,7 +42,7 @@ class SecretValue(object):
         return self.__repr__()
 
 
-class Registry(object):
+class Registry:
 
     def __init__(self, group, cls=None):
         self.group = group

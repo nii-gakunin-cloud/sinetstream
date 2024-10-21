@@ -19,14 +19,14 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import boto3
-
 from datetime import datetime
 import uuid
 import re
-
 import logging
 from concurrent.futures.thread import ThreadPoolExecutor
+
+import boto3
+
 from promise import Promise
 
 from sinetstream import (
@@ -43,7 +43,7 @@ logger.setLevel(logging.DEBUG)
 # botocore.session.Session().set_debug_logger()
 
 
-class S3Metrics(object):
+class S3Metrics:
     def __int__(self):
         pass
 
@@ -54,13 +54,13 @@ class S3Metrics(object):
         pass
 
 
-class S3Client(object):
+class S3Client:
     def __init__(self, s3params, s3metrics):
         self._s3params = s3params
         self._s3metrics = s3metrics
         self._s3 = None
 
-    def open(self, timeout=None):
+    def open(self, _timeout=None):
         logger.debug("S3Client:open")
         # https://boto3.amazonaws.com/v1/documentation/api/latest/guide/clients.html
         # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/core/boto3.html
@@ -92,9 +92,9 @@ class S3Client(object):
         try:
             res = self._s3.put_object(Body=msg, Bucket=bucket, Key=path, Metadata=metadata)
             logger.debug(f"put_object.res={res}")
-            assert type(res) is dict
-        except Exception:
-            raise ConnectionError("put_object failed")
+            assert isinstance(res, dict)
+        except Exception as ex:
+            raise ConnectionError("put_object failed") from ex
 
     def _s3_list_obj(self, bucket, prefix, key_filter, continuation_token):
         logger.debug("S3Client:_s3_list_obj:"
@@ -150,12 +150,15 @@ class S3WriterMetrics(S3Metrics):
 
 
 class BaseS3Writer(S3Client):
+    @staticmethod
     def day_format(dt):
         return f"{dt.year}/{dt.month:02}/{dt.day:02}"
 
+    @staticmethod
     def hour_format(dt):
         return f"{dt.year}/{dt.month:02}/{dt.day:02}/{dt.hour:02}"
 
+    @staticmethod
     def minute_format(dt):
         return f"{dt.year}/{dt.month:02}/{dt.day:02}/{dt.hour:02}/{dt.minute:02}"
 
@@ -183,8 +186,8 @@ class BaseS3Writer(S3Client):
         try:
             self._timezone = (datetime.strptime(utc_offset, "%z").tzinfo if utc_offset is not None
                               else None)
-        except Exception:
-            raise InvalidArgumentError(f"s3.utc_offset={utc_offset} is invalid")
+        except Exception as ex:
+            raise InvalidArgumentError(f"s3.utc_offset={utc_offset} is invalid") from ex
         self._uuid = str(uuid.uuid4())
         self._seqno = 0
         self._metrics = S3WriterMetrics()
@@ -247,8 +250,9 @@ class S3ReaderMetrics(S3Metrics):
 
 
 class BaseS3Reader(S3Client):
+    @staticmethod
     def make_filter(prefix, topics, name, suffix):
-        if type(topics) is str:
+        if isinstance(topics, str):
             topics = [topics]
 
         def escape(topic):
@@ -318,7 +322,7 @@ class BaseS3Reader(S3Client):
         # note: key = prefix/topic/name.../topic-uuid-seqno.suffix
         return payload, topic, raw
 
-    def info(self, name, kwargs):
+    def info(self, _name, _kwargs):
         return None
 
 
@@ -327,7 +331,7 @@ class S3Reader(BaseS3Reader):
         logger.debug("S3Reader:init")
         super().__init__(params)
 
-    class Iter(object):
+    class Iter:
         def __init__(self, s3reader, key_list, token):
             logger.debug("S3Reader.Iter:__init__")
             self._s3reader = s3reader
@@ -363,7 +367,7 @@ class S3AsyncReader(BaseS3Reader):
         self._closed = True
         self._future = None
 
-    def open(self):
+    def open(self, _timeout=None):
         logger.debug("S3AsyncReader:open")
         super().open()
         self._closed = False

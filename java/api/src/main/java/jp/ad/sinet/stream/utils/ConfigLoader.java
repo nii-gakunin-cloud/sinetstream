@@ -25,6 +25,7 @@ import jp.ad.sinet.stream.api.InvalidConfigurationException;
 import jp.ad.sinet.stream.api.NoConfigException;
 import jp.ad.sinet.stream.api.SinetStreamException;
 import lombok.extern.java.Log;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.AbstractConstruct;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
@@ -54,11 +55,6 @@ class ConfigLoader {
         this.config = config;
     }
 
-    private Map<String, Map<String, Object>> loadConfigFromEnvUrl() {
-        return Optional.ofNullable(System.getenv("SINETSTREAM_CONFIG_URL"))
-                .map(this::loadConfigFileFromURL).orElse(null);
-    }
-
     private Map<String, Map<String, Object>> loadConfigFromHome() {
         return loadConfigFileFromPath(Paths.get(System.getProperty("user.home"), ".config", "sinetstream", "config.yml"));
     }
@@ -74,7 +70,6 @@ class ConfigLoader {
     Map<String, Map<String, Object>> loadConfigFile() {
         List<Supplier<Map<String, Map<String, Object>>>> configLoaders = Arrays.asList(
                 this::loadConfigFromPath,
-                this::loadConfigFromEnvUrl,
                 this::loadConfigFromHome,
                 this::loadConfigFromCwd
         );
@@ -115,6 +110,7 @@ class ConfigLoader {
     class SINETStreamConstructor extends SafeConstructor {
         private Base64.Decoder b64decoder;
         SINETStreamConstructor() {
+            super(new LoaderOptions());
             this.yamlConstructors.put(new Tag("!sinetstream/encrypted"), new ConstructEncrypted());
             this.b64decoder = Base64.getDecoder();
         }

@@ -113,23 +113,17 @@ Writer/Readerはトピックを指定してメッセージの送受信を行う�
 
 Python/Java版の`SINETStream API`は、以下のプログラム言語で実装される。
 
-* Python 3.8以降
+* Python 3.9以降
 * Java 11
 
 Python/Java版の`SINETStream API`は、以下のメッセージングシステムに対応する。
 
-* [Apache Kafka](https://kafka.apache.org/) 2.2.1
+* [Apache Kafka](https://kafka.apache.org/) 3.8
 * MQTT v3.1, v3.1.1, v5.0
-    * [Eclipse Mosquitto](https://mosquitto.org/) v1.6.2
+    * [Eclipse Mosquitto](https://mosquitto.org/) v2.0.15
 * S3
     * AWS S3
     * [MinIO](https://min.io/)
-
-Python/Java版の`SINETStream API`が対応するOS条件は以下の通り。
-
-* CentOS 7
-* Ubuntu 20.04 LTS
-* Windows 10
 
 ### Android版
 

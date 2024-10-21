@@ -56,11 +56,11 @@ The following links to installation instructions for Docker Engine on major plat
 Below are the official Docker site that shows the installation procedure on typical platforms.
 
 * macOS
-    - [Install Docker Desktop on Mac](https://docs.docker.com/docker-for-mac/install/)
+    - [Install Docker Desktop on Mac](https://docs.docker.com/desktop/install/mac-install/)
 * Microsoft Windows 10
-    - [Install Docker Desktop on Windows](https://docs.docker.com/docker-for-windows/install/)
-* CentOS(x86_64)
-    - [Get Docker Engine - Community for CentOS](https://docs.docker.com/install/linux/docker-ce/centos/)
+    - [Install Docker Desktop on Windows](https://docs.docker.com/desktop/install/windows-install/)
+* Ubuntu(x86_64)
+    - [Install Docker Engine on Ubuntu](https://docs.docker.com/engine/install/ubuntu/)
 
 For other operating systems, please refer to the links listed on the supported platforms on the official Docker website.
 

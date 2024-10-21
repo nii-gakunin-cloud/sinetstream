@@ -48,13 +48,6 @@ def test_no_config(io, setup_no_config):
             pass
 
 
-@pytest.mark.parametrize('io', [MessageReader, MessageWriter])
-def test_config_bad_url(io, setup_bad_url_config):
-    with pytest.raises(NoConfigError):
-        with io(SERVICE) as _:
-            pass
-
-
 @pytest.fixture()
 def setup_no_config(tmp_path):
     cwd = Path.cwd().absolute()
@@ -63,18 +56,6 @@ def setup_no_config(tmp_path):
         yield
     finally:
         os.chdir(str(cwd))
-
-
-@pytest.fixture()
-def setup_bad_url_config(tmp_path):
-    cwd = Path.cwd().absolute()
-    try:
-        os.environ['SINETSTREAM_CONFIG_URL'] = 'http://localhost:8000/config'
-        os.chdir(str(tmp_path))
-        yield
-    finally:
-        os.chdir(str(cwd))
-        del(os.environ['SINETSTREAM_CONFIG_URL'])
 
 
 @pytest.mark.parametrize("io", [MessageWriter, MessageReader])

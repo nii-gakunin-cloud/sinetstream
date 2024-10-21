@@ -21,14 +21,14 @@ import numpy as np
 from sinetstream import InvalidArgumentError
 
 
-class ImageValueType(object):
+class ImageValueType:
     def __init__(self, img_format='.png', img_params=()):
         self._format = img_format
         self._encode_params = img_params
         self._decode_flags = cv2.IMREAD_COLOR
 
     def _image_to_bytes(self, image):
-        if type(image) is not np.ndarray:
+        if not isinstance(image, np.ndarray):
             raise InvalidArgumentError(f'invalid image object type: {type(image)}')
         ret, enc_img = cv2.imencode(self._format, image, self._encode_params)
         if not ret:

@@ -232,6 +232,9 @@ def cmd_read(argv0, argv):
         rand = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
         from urllib.parse import quote
 
+    class Quit (BaseException):
+        pass
+
     try:
         from sys import stdout
         with MessageReader(**kwargs) as reader:
@@ -257,13 +260,13 @@ def cmd_read(argv0, argv):
                                 stdout.buffer.write(msg.value)
                             stdout.flush()
                         if args.count and n >= args.count:
-                            break
+                            raise Quit()
                 except Exception as ex:
                     if args.keep_going:
                         logger.exception("keep going")
                     else:
                         raise
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, Quit):
         pass
     exit()
 

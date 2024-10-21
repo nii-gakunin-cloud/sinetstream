@@ -21,8 +21,10 @@ import copy
 import lz4.frame
 
 
-class LZ4Compression(object):
-    def __init__(self, level=None, params={}):
+class LZ4Compression:
+    def __init__(self, level=None, params=None):
+        if params is None:
+            params = {}
         self._level = level
         self._params = params
 

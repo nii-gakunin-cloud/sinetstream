@@ -17,21 +17,25 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import copy
+import zlib
+from io import BytesIO
+
+import zstandard as zstd
+
 from sinetstream.spi import PluginCompression
 from sinetstream.utils import Registry
 
-import copy
-import zlib
-import zstandard as zstd
-from io import BytesIO
 
 GZIP = "gzip"
 ZSTD = "zstd"
 compression_registry = Registry('sinetstream.compression', PluginCompression)
 
 
-class GzipCompression(object):
-    def __init__(self, level=None, params={}):
+class GzipCompression:
+    def __init__(self, level=None, params=None):
+        if params is None:
+            params = {}
         self._level = level
         self._params = params
 
@@ -55,8 +59,10 @@ class GzipCompression(object):
         return lambda data: self.decompress(data, self._params)
 
 
-class ZstdCompression(object):
-    def __init__(self, level=None, params={}):
+class ZstdCompression:
+    def __init__(self, level=None, params=None):
+        if params is None:
+            params = {}
         self._level = level
         self._params = params
 
@@ -66,13 +72,14 @@ class ZstdCompression(object):
         if self._level is not None and "level" not in params:
             params["level"] = self._level
         cctx = zstd.ZstdCompressor(**params)
-        return lambda data: cctx.compress(data)
+        return cctx.compress  # = lambda data: cctx.compress(data)
 
     @property
     def decompressor(self):
         dctx = zstd.ZstdDecompressor(**self._params)
         return lambda data: ZstdCompression._decompress(dctx, data)
 
+    @staticmethod
     def _decompress(dctx, data):
         # import sys
         # print(f"XXX:decomp:data={ZstdCompression._zstd_dump(data)}", file=sys.stderr)
@@ -85,6 +92,7 @@ class ZstdCompression(object):
             dctx.copy_stream(ifh, ofh)
             return ofh.getvalue()
 
+    @staticmethod
     def _zstd_dump(data):
         frame_params = zstd.get_frame_parameters(data)
         return ("FrameParameters{"
@@ -95,13 +103,13 @@ class ZstdCompression(object):
                 "}")
 
 
-class GzipCompressionEntryPoint(object):
+class GzipCompressionEntryPoint:
     @classmethod
     def load(cls):
         return GzipCompression
 
 
-class ZstdCompressionEntryPoint(object):
+class ZstdCompressionEntryPoint:
     @classmethod
     def load(cls):
         return ZstdCompression

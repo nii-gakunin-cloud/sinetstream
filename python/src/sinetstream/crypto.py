@@ -55,10 +55,9 @@ def hexlify(x):
 
 def get_password(crypto_params):
     password = crypto_params["password"]
-    typ = type(password)
-    if typ is str:
+    if isinstance(password, str):
         return password
-    elif typ is dict:
+    elif isinstance(password, dict):
         value = password.get("value")
         path = password.get("path")
         if value is None and path is None:
@@ -112,14 +111,14 @@ def make_key(crypto_params, key_version, salt=None):
     if key is not None:
         if crypto_params.get("password") is not None:
             raise InvalidArgumentError("only one of crypto.key or crypto.password can be specified.")
-        if type(key) is not bytes:
+        if not isinstance(key, bytes):
             raise InvalidArgumentError("crypto.key must be bytes")
         if len(key) * 8 != key_length:
             emsg = f"length of crypto.key (={len(key) * 8}) must be same as crypto.key_length(={key_length})"
             raise InvalidArgumentError(emsg)
     else:
         password = get_password(crypto_params)
-        if algorithm == "pbkdf2" or algorithm == "PBKDF2WithHmacSHA256":
+        if algorithm in ["pbkdf2", "PBKDF2WithHmacSHA256"]:
             hmac_hash_module = conv_param(prf,
                                           {
                                               "HMAC-SHA256": SHA256,
@@ -142,7 +141,7 @@ def make_key(crypto_params, key_version, salt=None):
     return key, salt
 
 
-class CipherAES(object):
+class CipherAES:
     def __init__(self, crypto_params):
         assert crypto_params["algorithm"] == "AES"
 
@@ -211,7 +210,7 @@ class CipherAES(object):
         self.enc_salt = salt
 
     def encrypt(self, data, keyver=None):
-        assert type(data) is bytes
+        assert isinstance(data, bytes)
 
         if self.enc_key is None:
             self.setup_enc(keyver or self.max_key_version)
@@ -318,11 +317,3 @@ class CipherAES(object):
             data = unpad(data, AES.block_size, style=self.padding)
 
         return data
-
-
-def make_cipher(crypto_params):
-    algorithm = crypto_params["algorithm"]
-    if algorithm == "AES":
-        return CipherAES(crypto_params)
-    else:
-        assert False

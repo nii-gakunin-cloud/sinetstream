@@ -22,8 +22,9 @@
 import json
 import logging
 import os
-import requests
 import base64
+
+import requests
 
 from sinetstream.error import (
     NoConfigError, NoServiceError, InvalidConfigError, AuthorizationError, ConnectionError)
@@ -93,7 +94,7 @@ def get_value(d, k, t, optional=False, default=None):
         raise InvalidConfigError(f"No '{k}' in response")
     v = d.get(k)
     if not isinstance(v, t):
-        if type(t) is not tuple:
+        if not isinstance(t, tuple):
             t = (t,)
         raise InvalidConfigError(f"'{k}' is not {','.join([x.__class__.__name__ for x in t])}")
     return v
@@ -104,7 +105,7 @@ def get_auth_info(auth_path=None):
     try:
         path = os.path.expanduser(auth_path)
         logger.debug(f"read {path}")
-        with open(path) as fp:
+        with open(path, mode="rb") as fp:
             auth_info = json.load(fp)
             try:
                 config_server = get_value(auth_info, "config-server", dict)
@@ -113,10 +114,10 @@ def get_auth_info(auth_path=None):
                 secret_key = get_value(config_server, "secret-key", str)
             except InvalidConfigError as e:
                 e0 = e.args[0].replace("in response", f"in {path}")  # hack...
-                raise InvalidConfigError((e0,) + e.args[1:])
+                raise InvalidConfigError((e0,) + e.args[1:]) from e
             return (address, user, secret_key)
-    except FileNotFoundError:
-        raise NoConfigError(f"No API key file exist: {auth_path}")
+    except FileNotFoundError as e:
+        raise NoConfigError(f"No API key file exist: {auth_path}") from e
 
 
 def get_access_token(session, base_uri, user, secret_key):
@@ -182,7 +183,7 @@ def get_config_info(session, base_uri, common_headers, config_name):
     #         target: str
     #         id: str
 
-    if type(res) is not dict:
+    if not isinstance(res, dict):
         raise InvalidConfigError("Bad response")
     name = get_value(res, "name", str)
     if name != config_name:
@@ -192,7 +193,7 @@ def get_config_info(session, base_uri, common_headers, config_name):
     if "attachments" in res:
         attachments = get_value(res, "attachments", list)
         for attachment in attachments:
-            if type(attachment) is not dict:
+            if not isinstance(attachment, dict):
                 raise InvalidConfigError("'attachments[]' is not dict")
     else:
         attachments = []
@@ -200,7 +201,7 @@ def get_config_info(session, base_uri, common_headers, config_name):
     if "secrets" in res:
         secrets = get_value(res, "secrets", list)
         for secret in secrets:
-            if type(secret) is not dict:
+            if not isinstance(secret, dict):
                 raise InvalidConfigError("'secrets[]' is not dict")
     else:
         secrets = []
@@ -260,7 +261,7 @@ def get_config_params_server(service, config_name, need_all_key, mount_args=None
     if mount_args is not None:
         session.mount(*mount_args)
 
-    (access_token, expired) = get_access_token(session, base_uri, user, secret_key)
+    (access_token, _expired) = get_access_token(session, base_uri, user, secret_key)
 
     common_headers = {
         "Authorization": "Bearer " + access_token
@@ -280,7 +281,7 @@ def get_config_params_server(service, config_name, need_all_key, mount_args=None
         if len(config) == 0:
             raise NoConfigError("empty config")
         if len(config) > 1:
-            logger.error(f"services in {config_name}: {[svc for svc in config.keys()]}")
+            logger.error(f"services in {config_name}: {config.keys()}")
             raise NoConfigError("The parameter service must be specified "
                                 f"since many services are defined in the config {config_name}")
         service = list(config.keys()).pop()

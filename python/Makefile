@@ -7,9 +7,23 @@ all:: lint
 recurse-plugins:
 	find plugins -name Makefile -print | xargs dirname | while read dir; do $(MAKE) -C $$dir $(TARGET); done
 
-lint: lint-local #lint-plugins
+lint: lint-local lint-plugins
 lint-local:
 	tox -e lint || true
+lint-plugins:
+	$(MAKE) recurse-plugins TARGET="lint"
+
+lint2: lint2-local lint2-plugins
+lint2-local:
+	tox -e lint2 || true
+lint2-plugins: distribute-pylintrc
+	$(MAKE) recurse-plugins TARGET="lint2"
+distribute-pylintrc::
+	find plugins -name Makefile -print | xargs dirname | while read dir; do f=$$dir/pylintrc; $(MAKE) S=pylintrc T=$$f $$f; done
+$T: $S
+	-rm -f $@
+	(echo "# THIS IS A COPY OF $S"; cat $S) >$@
+	chmod a-w $@
 
 sdist: sdist-local sdist-plugins
 sdist-local:
