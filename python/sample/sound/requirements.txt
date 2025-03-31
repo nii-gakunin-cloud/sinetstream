@@ -10,7 +10,7 @@ promise==2.3
 pycparser==2.21
 pycryptodomex==3.19.1
 PyYAML==6.0.1
-requests==2.31.0
+requests==2.32.0
 sinetstream==1.8.2              # SINETStreamVERSION
 sinetstream-kafka==1.8.2        # SINETStreamVERSION
 sinetstream-mqtt==1.8.2         # SINETStreamVERSION
