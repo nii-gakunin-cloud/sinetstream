@@ -10,7 +10,7 @@ https://keepachangelog.com/
 ### Security
 --->
 
-## [v1.9.2] - 2024-XX-XX
+## [v1.9.2] - 2025-03-31
 
 ### Changed
 
