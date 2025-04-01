@@ -23,7 +23,8 @@ under the License.
 
 ## News
 
-**お知らせ `2024-03-29`** [SINETStreamの1.9版を公開](docs/news/20240329-release_v19.md)いたしました。<br/>
+**お知らせ `2025-03-31`** SINETStreamの1.9.2版を公開いたしました。<br/>
+お知らせ `2024-03-29` [SINETStreamの1.9版を公開](docs/news/20240329-release_v19.md)いたしました。<br/>
 お知らせ `2023-05-30` [SINETStreamの1.8版を公開](docs/news/20230526-release_v18.md)いたしました。<br/>
 お知らせ `2022-09-22` [SINETStreamの1.7版を公開](docs/news/20220922-release_v17.md)いたしました。<br/>
 お知らせ `2022-04-27` [SINETStreamデモパッケージ最新版公開](docs/news/20220427-release-demo.md)いたしました。<br/>
