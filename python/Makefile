@@ -1,21 +1,30 @@
 # vim:noexpandtab tabstop=8 shiftwidth=8
 
-PYTHON3 = python3
+venvdir = $(PWD)/venv
+PYTHON3SYS = python3
+PYTHON3 = $(venvdir)/bin/python3
 
-all:: lint
+all:: venv lint
+
+venv:: $(PYTHON3)
+$(PYTHON3):
+	$(MAKE) make-venv
+make-venv::
+	$(PYTHON3SYS) -m venv venv
+	$(PYTHON3) -m pip install build tox twine pyyaml
 
 recurse-plugins:
-	find plugins -name Makefile -print | xargs dirname | while read dir; do $(MAKE) -C $$dir $(TARGET); done
+	find plugins -name Makefile -print | xargs dirname | while read dir; do $(MAKE) -C $$dir PYTHON3=$(PYTHON3) $(TARGET); done
 
 lint: lint-local lint-plugins
 lint-local:
-	tox -e lint || true
+	$(PYTHON3) -m tox -e lint || true
 lint-plugins:
 	$(MAKE) recurse-plugins TARGET="lint"
 
 lint2: lint2-local lint2-plugins
 lint2-local:
-	tox -e lint2 || true
+	$(PYTHON3) -m tox -e lint2 || true
 lint2-plugins: distribute-pylintrc
 	$(MAKE) recurse-plugins TARGET="lint2"
 distribute-pylintrc::
@@ -64,7 +73,7 @@ clean-plugins:
 
 test: test-local #test-plugins
 test-local:
-	tox
+	$(PYTHON3) -m tox
 test-plugins:
 	$(MAKE) recurse-plugins TARGET="test"
 
@@ -89,8 +98,8 @@ twine-upload::
 	export TWINE_USERNAME=__token__ && \
 	read -p "PyPI API TOKEN: " TWINE_PASSWORD && \
 	export TWINE_PASSWORD && \
-	twine upload --verbose dist/* && \
+	$(PYTHON3) -m twine upload --verbose dist/* && \
 	$(MAKE) recurse-plugins TARGET="twine-upload" && \
-        (cd sample/cli && twine upload --verbose dist/*)
+        (cd sample/cli && $(PYTHON3) -m twine upload --verbose dist/*)
 list-dist::
 	ls -l `find . -name .tox -prune -o -name "dist" -type d -print | sed 's|$$|/*|'`

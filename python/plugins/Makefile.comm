@@ -1,14 +1,16 @@
 # vim:noexpandtab tabstop=8 shiftwidth=8
 
 PYTHON3 = python3
+TOX = $(PYTHON3) -m tox
+TWINE = $(PYTHON3) -m twine
 
 all: lint lint2
 
 lint:
-	tox -e lint || true
+	$(PYTHON3) -m tox -e lint || true
 
 lint2:
-	tox -e lint2 || true
+	$(PYTHON3) -m tox -e lint2 || true
 
 sdist:
 	$(PYTHON3) -m build --sdist .
@@ -54,4 +56,4 @@ tags::
 	uctags -R --exclude=".*" --exclude="*.css" --exclude="*.js" src tests ../../../src $(HOME)/.local/lib
 
 twine-upload::
-	twine upload --verbose dist/*
+	$(PYTHON3) -m twine upload --verbose dist/*

@@ -4,10 +4,10 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sinetstream"
-version = "1.9.1"       # SINETStreamVERSION
+version = "1.9.2"       # SINETStreamVERSION
 description = "Library for operating messaging systems such as Apache Kafka and MQTT with the same API."
 readme = "README.en.md"
-requires-python = ">=3.8"       # PythonVERSION
+requires-python = ">=3.9"       # PythonVERSION
 license = { text = "Apache License, Version 2.0" }
 classifiers = [
     "License :: OSI Approved :: Apache Software License",

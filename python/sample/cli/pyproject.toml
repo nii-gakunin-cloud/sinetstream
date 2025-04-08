@@ -24,7 +24,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "sinetstream_cli"
 description = "SINETStream Command Line Interface"
-requires-python = ">=3.8"       # PythonVERSION
+requires-python = ">=3.9"       # PythonVERSION
 license = {text = "Apache License, Version 2.0"}
 classifiers = [
     "License :: OSI Approved :: Apache Software License",
@@ -33,13 +33,13 @@ classifiers = [
     "Environment :: Console",
 ]
 dependencies = [
-    "sinetstream>=1.9.1",       # SINETStreamVERSION
-    "sinetstream-kafka>=1.9.1", # SINETStreamVERSION
-    "sinetstream-mqtt>=1.9.1",  # SINETStreamVERSION
-    "sinetstream-s3>=1.9.1",    # SINETStreamVERSION
+    "sinetstream>=1.9.2",       # SINETStreamVERSION
+    "sinetstream-kafka>=1.9.2", # SINETStreamVERSION
+    "sinetstream-mqtt>=1.9.2",  # SINETStreamVERSION
+    "sinetstream-s3>=1.9.2",    # SINETStreamVERSION
 ]
 #dynamic = ["version"]
-version = "1.9.1"       # SINETStreamVERSION
+version = "1.9.2"       # SINETStreamVERSION
 
 [project.scripts]
 sinetstream_cli = "sinetstream_cli.sinetstream_cli:main"
