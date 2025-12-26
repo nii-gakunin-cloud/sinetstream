@@ -25,6 +25,9 @@ SINETStream User Guide
 
 # Kafka-specific parameters
 
+These are messaging system-specific parameters that can be specified with type_spec:.
+(In config version 1 or 2, they are specified as other parameters.)
+
 ## Parameters for `MessageWriter`
 
 * acks
@@ -155,9 +158,13 @@ When compressing a batch of records with gzip using the Kafka's function, set th
 (It is only necessary to specify `compression_type` on the Writer side)
 
 ```
-service-kafka:
-  type: kafka
-  brokers:
-    - kafka0.example.org:9092
-  compression_type: gzip
+header:
+  version: 3
+config:
+  service-kafka:
+    type: kafka
+    brokers:
+      - kafka0.example.org:9092
+    type_spec:
+      compression_type: gzip
 ```

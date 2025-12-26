@@ -101,6 +101,12 @@ SINETSTREAM_PARAM_LIST = [
     "value_type",
 ]
 
+# Parameters that kafka-python expects as str type
+SASL_STRING_PARAMS = [
+    "sasl_plain_username",
+    "sasl_plain_password",
+]
+
 
 def del_sinetstream_param(params):
     return {
@@ -110,25 +116,44 @@ def del_sinetstream_param(params):
     }
 
 
+def conv_bytes_to_str(params):
+    """Convert bytes to str for SASL parameters that kafka-python expects as str."""
+    for key in SASL_STRING_PARAMS:
+        if key in params and isinstance(params[key], bytes):
+            params[key] = params[key].decode('utf-8')
+
+
 class KafkaClient:
-    def __init__(self, params):
-        self._params = params
+    def __init__(self, confver, params):
+        if confver.type_spec():
+            self._comm_params = params.copy()
+            self._comm_params.pop("type_spec", None)
+            self._spec_params = params.get("type_spec", {})
+        else:
+            self._comm_params = params
+            self._spec_params = params
         self._client = None
-        if 'brokers' not in params:
+        if 'brokers' not in self._comm_params:
             raise InvalidArgumentError("You must specify several brokers.")
-        self._brokers = params['brokers']
+        self._brokers = self._comm_params['brokers']
         if (not isinstance(self._brokers, str) and
             (not isinstance(self._brokers, list) or
              len(self._brokers) == 0
              )):
             raise InvalidArgumentError("You must specify several brokers.")
-        degrade_consistency(self._params)
+        degrade_consistency(self._comm_params)
         self._kafka_params = {
             "bootstrap_servers": self._brokers,
             **self._conv_consistency(),
-            **conv_tls(self._params.get("tls")),
+            **conv_tls(self._comm_params.get("tls")),
         }
-        self._kafka_params.update(del_sinetstream_param(self._params))
+
+        if confver.type_spec():
+            self._kafka_params.update(self._spec_params)
+        else:
+            self._kafka_params.update(del_sinetstream_param(self._spec_params))
+
+        conv_bytes_to_str(self._kafka_params)
 
     def open(self):
         try:
@@ -165,12 +190,12 @@ class KafkaClient:
 
 
 class BaseKafkaReader(KafkaClient):
-    def __init__(self, params):
-        super().__init__(params)
-        rtoms = self._params["receive_timeout_ms"]
+    def __init__(self, confver, params):
+        super().__init__(confver, params)
+        rtoms = self._comm_params["receive_timeout_ms"]
         if rtoms != float("inf"):
             self._kafka_params["consumer_timeout_ms"] = int(rtoms)
-        topics = self._params["topics"]
+        topics = self._comm_params["topics"]
         if isinstance(topics, list):
             self._topics = tuple(topics)
         else:
@@ -181,7 +206,7 @@ class BaseKafkaReader(KafkaClient):
 
     def _conv_consistency(self):
         configs = {}
-        consistency = self._params['consistency']
+        consistency = self._comm_params['consistency']
         if consistency == AT_MOST_ONCE:
             # commit asap to prevent kafka-broker resending.
             configs["enable_auto_commit"] = True
@@ -235,9 +260,9 @@ class KafkaReader(BaseKafkaReader):
 
 
 class KafkaAsyncReader(BaseKafkaReader):
-    def __init__(self, params):
+    def __init__(self, confver, params):
         logger.debug("KafkaAsyncReader:init")
-        super().__init__(params)
+        super().__init__(confver, params)
         self._executor = None
         self._reader_executor = None
         self._on_message = None
@@ -314,7 +339,7 @@ class BaseKafkaWriter(KafkaClient):
 
     def _conv_consistency(self):
         configs = {}
-        consistency = self._params['consistency']
+        consistency = self._comm_params['consistency']
         if consistency == AT_MOST_ONCE:
             # Producer will not wait for any acknowledgment from the server.
             configs["acks"] = 0
@@ -326,7 +351,7 @@ class BaseKafkaWriter(KafkaClient):
         return configs
 
     def publish(self, msg):
-        return self._client.send(self._params["topic"], memoryview(msg))
+        return self._client.send(self._comm_params["topic"], memoryview(msg))
 
 
 class KafkaWriter(BaseKafkaWriter):
@@ -338,8 +363,8 @@ class KafkaWriter(BaseKafkaWriter):
 
 
 class KafkaAsyncWriter(BaseKafkaWriter):
-    def __init__(self, params):
-        super().__init__(params)
+    def __init__(self, confver, params):
+        super().__init__(confver, params)
         self._lock = RLock()
 
     def publish(self, msg):

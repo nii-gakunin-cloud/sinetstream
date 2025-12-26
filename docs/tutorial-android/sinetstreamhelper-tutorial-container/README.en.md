@@ -121,11 +121,14 @@ To send messages from the SINETStream to the MQTT broker running on the
 tutorial container, set the SINETStream configuration as follows.
 
 ```yaml
-service-tutorial-mqtt:
-    type: mqtt
-    brokers: "192.168.1.XXX:1883"
-    topic: sensor-data
-    value_type: text
+header:
+    version: 3
+config:
+    service-tutorial-mqtt:
+        type: mqtt
+        brokers: "192.168.1.XXX:1883"
+        topic: sensor-data
+        value_type: text
 ```
 
 Adjust the `brokers` value so that it fits to your running environment.

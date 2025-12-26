@@ -168,13 +168,14 @@ class BaseS3Writer(S3Client):
         "minute": minute_format,
     }
 
-    def __init__(self, params):
+    def __init__(self, confver, params):
         logger.debug("BaseS3Writer:init")
+        spec_name = "type_spec" if confver.type_spec() else "s3"
         if "brokers" in params:
-            raise InvalidConfigError("brokers: cannot be specfied; use s3.endpoint_url")
+            raise InvalidConfigError(f"brokers: cannot be specfied; use {spec_name}.endpoint_url")
         self._topic = params["topic"]
         self._consistency = params["consistency"]
-        self._s3params = get_mandatory_param(params, "s3", "")
+        self._s3params = get_mandatory_param(params, spec_name, "")
         self._bucket = get_mandatory_param(self._s3params, "bucket", "s3.")
         self._prefix = get_mandatory_param(self._s3params, "prefix", "s3.")
         self._suffix = get_mandatory_param(self._s3params, "suffix", "s3.")
@@ -228,18 +229,18 @@ class BaseS3Writer(S3Client):
 
 
 class S3Writer(BaseS3Writer):
-    def __init__(self, params):
+    def __init__(self, confver, params):
         logger.debug("S3Writer:init")
-        super().__init__(params)
+        super().__init__(confver, params)
 
     def publish(self, msg):
         return self._publish(msg)
 
 
 class S3AsyncWriter(BaseS3Writer):
-    def __init__(self, params):
+    def __init__(self, confver, params):
         logger.debug("S3AsyncWriter:init")
-        super().__init__(params)
+        super().__init__(confver, params)
 
     def publish(self, msg):
         return Promise(lambda resolve, reject: [self._publish(msg), resolve(None)])
@@ -283,13 +284,14 @@ class BaseS3Reader(S3Client):
         prog = re.compile(pat)
         return lambda path: re.match(prog, path) is not None
 
-    def __init__(self, params):
+    def __init__(self, confver, params):
         logger.debug("BaseS3Reader:init")
+        spec_name = "type_spec" if confver.type_spec() else "s3"
         if "brokers" in params:
-            raise InvalidConfigError("brokers: cannot be specfied; use s3.endpoint_url")
+            raise InvalidConfigError(f"brokers: cannot be specfied; use {spec_name}.endpoint_url")
         self._topics = params["topics"]
         self._consistency = params["consistency"]
-        self._s3params = get_mandatory_param(params, "s3", "")
+        self._s3params = get_mandatory_param(params, spec_name, "")
         self._bucket = get_mandatory_param(self._s3params, "bucket", "s3.")
         self._prefix = get_mandatory_param(self._s3params, "prefix", "s3.")
         self._suffix = get_mandatory_param(self._s3params, "suffix", "s3.")
@@ -327,9 +329,9 @@ class BaseS3Reader(S3Client):
 
 
 class S3Reader(BaseS3Reader):
-    def __init__(self, params):
+    def __init__(self, confver, params):
         logger.debug("S3Reader:init")
-        super().__init__(params)
+        super().__init__(confver, params)
 
     class Iter:
         def __init__(self, s3reader, key_list, token):
@@ -358,9 +360,9 @@ class S3Reader(BaseS3Reader):
 
 
 class S3AsyncReader(BaseS3Reader):
-    def __init__(self, params):
+    def __init__(self, confver, params):
         logger.debug("S3AsyncReader:init")
-        super().__init__(params)
+        super().__init__(confver, params)
         self._reader_executor = None
         self._on_message = None
         self._on_failure = None

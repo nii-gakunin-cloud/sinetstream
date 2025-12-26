@@ -78,18 +78,21 @@ AWS S3にテキストを保存する場合の設定例。
 を指定している(デフォルト設定の `user_data_only: no` だと読み出しにSINETStreamが必要になるため)。
 
 ```
-service-s3:
-  type: s3
-  topic: test-topic
-  value_type: text
-  user_data_only: yes
-  s3:
-    endpoint_url: "https://s3.amazonaws.com"
-    bucket: test-bucket
-    prefix: test-prefix
-    name: minute
-    suffix: .txt
-    aws_access_key_id: "<ACCESS_KEY>"
-    aws_secret_access_key: "<SECRET_ACCESS_KEY>"
+header:
+  version: 3
+config:
+  service-s3:
+    type: s3
+    topic: test-topic
+    value_type: text
+    user_data_only: yes
+    type_spec:
+      endpoint_url: "https://s3.amazonaws.com"
+      bucket: test-bucket
+      prefix: test-prefix
+      name: minute
+      suffix: .txt
+      aws_access_key_id: "<ACCESS_KEY>"
+      aws_secret_access_key: "<SECRET_ACCESS_KEY>"
 ```
 

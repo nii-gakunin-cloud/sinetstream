@@ -221,17 +221,20 @@ SINETStreamは、設定ファイルに記されたパスから証明書を読み
 > 設定自体は SASL/SCRAM認証の設定と同じ内容になる。
 
 ```yaml
-service-kafka:
-  brokers: broker.example.org:9094
-  type: kafka
-  topic: topic-001
-  consistency: AT_LEAST_ONCE
-  tls:
-    ca_certs: /opt/certs/cacert.pem
-  security_protocol: SASL_SSL
-  sasl_mechanism: SCRAM-SHA-256
-  sasl_plain_username: user03
-  sasl_plain_password: user03-pass
+header:
+  version: 3
+config:
+  service-kafka:
+    brokers: broker.example.org:9094
+    type: kafka
+    topic: topic-001
+    consistency: AT_LEAST_ONCE
+    tls:
+      ca_certs: /opt/certs/cacert.pem
+    security_protocol: SASL_SSL
+    sasl_mechanism: SCRAM-SHA-256
+    sasl_plain_username: user03
+    sasl_plain_password: user03-pass
 ```
 
 `brokers`, `type`, `topic`, `consistency`, `tls` についてはSASL認証を利用しない場合の設定ファイルと同様なので説明を省く。

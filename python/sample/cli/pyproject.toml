@@ -33,13 +33,13 @@ classifiers = [
     "Environment :: Console",
 ]
 dependencies = [
-    "sinetstream>=1.9.2",       # SINETStreamVERSION
-    "sinetstream-kafka>=1.9.2", # SINETStreamVERSION
-    "sinetstream-mqtt>=1.9.2",  # SINETStreamVERSION
-    "sinetstream-s3>=1.9.2",    # SINETStreamVERSION
+    "sinetstream>=1.10.0",       # SINETStreamVERSION
+    "sinetstream-kafka>=1.10.0", # SINETStreamVERSION
+    "sinetstream-mqtt>=1.10.0",  # SINETStreamVERSION
+    "sinetstream-s3>=1.10.0",    # SINETStreamVERSION
 ]
 #dynamic = ["version"]
-version = "1.9.2"       # SINETStreamVERSION
+version = "1.10.0"       # SINETStreamVERSION
 
 [project.scripts]
 sinetstream_cli = "sinetstream_cli.sinetstream_cli:main"

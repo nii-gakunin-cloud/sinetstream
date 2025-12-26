@@ -34,7 +34,8 @@ class SINETStreamMessageEncoder:
         self._wr = MessageWriter(**dict(writer_params,
                                         no_config=True,
                                         type="iostream",
-                                        iostream={"iobase": self._bio}))
+                                        iostream={"iobase": self._bio},
+                                        type_spec={"iobase": self._bio}))
         self._opened = False
 
     def open(self):
@@ -71,7 +72,8 @@ class SINETStreamMessageDecoder:
         self._rd = MessageReader(**dict(reader_params,
                                         no_config=True,
                                         type="iostream",
-                                        iostream={"iobase": self._bio}))
+                                        iostream={"iobase": self._bio},
+                                        type_spec={"iobase": self._bio}))
         self._opened = False
 
     def open(self):

@@ -26,6 +26,10 @@ from logging import getLogger
 
 import pytest
 
+CONFVER1 = 1
+CONFVER2 = 2
+CONFVER3 = 3
+CONFVER = 3
 SERVICE = 'service-1'
 TOPIC = 'mss-test-001'
 TOPIC2 = 'mss-test-002'
@@ -72,26 +76,36 @@ def config_value_type():
 
 
 @pytest.fixture()
-def config_params():
+def config_comm_params():
     return None
+
+
+@pytest.fixture()
+def config_kafka_params():
+    return None
+
+
+@pytest.fixture()
+def config_version():
+    return CONFVER
 
 
 @pytest.fixture()
 def setup_config(
         tmp_path, config_brokers, config_topics, config_value_type,
-        config_params):
+        config_comm_params, config_kafka_params, config_version):
     cwd = Path.cwd().absolute()
     try:
         os.chdir(str(tmp_path))
         create_config_file(
-            config_brokers, config_topics, config_value_type, config_params)
+            config_brokers, config_topics, config_value_type, config_comm_params, config_kafka_params, config_version)
         yield
     finally:
         os.chdir(str(cwd))
 
 
 def create_config_file(
-        brokers=None, topics=None, value_type=None, params=None,
+        brokers=None, topics=None, value_type=None, comm_params=None, kafka_params=None, confver=CONFVER,
         config=Path('.sinetstream_config.yml')):
     parameters = {SERVICE: {'type': 'kafka'}}
     if brokers is not None:
@@ -100,8 +114,16 @@ def create_config_file(
         parameters[SERVICE]['topic'] = topics
     if value_type is not None:
         parameters[SERVICE]['value_type'] = value_type
-    if params is not None:
-        parameters[SERVICE].update(params)
+    if comm_params is not None:
+        parameters[SERVICE].update(comm_params)
+    if kafka_params is not None:
+        if confver >= CONFVER3:
+            parameters[SERVICE].update({ "type_spec": kafka_params })
+        else:
+            parameters[SERVICE].update(kafka_params)
     logger.debug(f'CONFIG: {parameters}')
     with config.open(mode='w') as f:
+        if confver >= CONFVER2:
+            parameters = { "header": { "version": confver },
+                           "config": parameters }
         yaml.safe_dump(parameters, f)

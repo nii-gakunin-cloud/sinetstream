@@ -197,14 +197,17 @@ SINETStream reads the certificate from the path specified in the configuration f
 An example of SINETStream's configuration file is shown below.
 
 ```yaml
-service-kafka-ssl:
-  brokers: broker.example.org:9093
-  type: kafka
-  topic: topic-001
-  tls:
-    ca_certs: /opt/certs/cacert.pem
-    certfile: /home/user01/certs/client0.crt
-    keyfile: /home/user01/certs/client0.key
+header:
+  version 3:
+config:
+  service-kafka-ssl:
+    brokers: broker.example.org:9093
+    type: kafka
+    topic: topic-001
+    tls:
+      ca_certs: /opt/certs/cacert.pem
+      certfile: /home/user01/certs/client0.crt
+      keyfile: /home/user01/certs/client0.key
 ```
 
 The settings for `brokers`, `type`, `topic`, `consistency`, `tls` are identical to those without authentication.

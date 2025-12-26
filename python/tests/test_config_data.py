@@ -41,8 +41,8 @@ def test_config_data(setup_config_file, config_file, io):
         kfn = {k: ss.params["tls"][k] for k in ["ca_certs", "certfile", "keyfile"]}
         for k, fn in kfn.items():
             assert readfile(fn, "rb") == _config_params()["tls"][k + "_data"]
-        assert ss.params["test_data"]["test1_data"] == readfile(ss.params["test_data"]["test1"], "r")
-        assert ss.params["test_data"]["test2_data"] == readfile(ss.params["test_data"]["test2"], "rb")
+        assert _config_params()["test_data"]["test1_data"] == readfile(ss.params["test_data"]["test1"], "r")
+        assert _config_params()["test_data"]["test2_data"] == readfile(ss.params["test_data"]["test2"], "rb")
     for _, fn in kfn.items():
         # assert not os.path.exists(fn)
         pass

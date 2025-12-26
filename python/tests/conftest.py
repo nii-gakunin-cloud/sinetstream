@@ -86,7 +86,7 @@ def qclear():
 
 
 class DummyReader(PluginMessageReader):
-    def __init__(self, params):
+    def __init__(self, confver, params):
         self._params = params
         self._timeout = (
             self._params['receive_timeout_ms'] / 1000.0
@@ -129,7 +129,7 @@ class DummyReaderEntryPoint(object):
 
 class DummyAsyncReader(PluginAsyncMessageReader):
 
-    def __init__(self, params):
+    def __init__(self, confver, params):
         self._params = params
         self._executor = None
         self._reader_executor = None
@@ -203,7 +203,7 @@ def dummy_reader_plugin():
 
 
 class DummyWriter(PluginMessageWriter):
-    def __init__(self, params):
+    def __init__(self, confver, params):
         self._params = params
 
     def open(self):
@@ -229,7 +229,7 @@ class DummyWriterEntryPoint(object):
 
 
 class DummyAsyncWriter(PluginAsyncMessageWriter):
-    def __init__(self, params):
+    def __init__(self, confver, params):
         self._params = params
         self._executor = None
 

@@ -1,11 +1,14 @@
-image-1:
-  type: kafka
-  brokers: kafka.example.org:9092
-  topic: test-image-topic-1
-  consistency: AT_LEAST_ONCE
+header:
+  #version: 3
+config:
+  image-1:
+    type: kafka
+    brokers: kafka.example.org:9092
+    topic: test-image-topic-1
+    consistency: AT_LEAST_ONCE
 
-image-2:
-  type: mqtt
-  brokers: mqtt.example.org:1883
-  topic: test-image-topic-2
-  consistency: AT_LEAST_ONCE
+  image-2:
+    type: mqtt
+    brokers: mqtt.example.org:1883
+    topic: test-image-topic-2
+    consistency: AT_LEAST_ONCE

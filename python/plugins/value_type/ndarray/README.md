@@ -29,7 +29,7 @@ under the License.
 
 ```yaml
 header:
-  version: 2
+  #version: 3
 config:
   ndarray-1:
     type: kafka

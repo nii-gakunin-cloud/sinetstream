@@ -1,14 +1,14 @@
-FROM debian:bullseye-20230227
+FROM debian:bookworm-20240612
 
 # Install Apache Kafka
-ARG KAFKA_VERSION=3.4.0
-ENV KAFKA_VERSION $KAFKA_VERSION
+ARG KAFKA_VERSION=3.8.1
+ENV KAFKA_VERSION=$KAFKA_VERSION
 ARG KAFKA_URL=https://downloads.apache.org/kafka/${KAFKA_VERSION}/kafka_2.13-${KAFKA_VERSION}.tgz
 # ARG KAFKA_URL=https://ftp.jaist.ac.jp/pub/apache/kafka/${KAFKA_VERSION}/kafka_2.13-${KAFKA_VERSION}.tgz
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN apt-get update \
  && apt-get -y install --no-install-recommends \
-      openjdk-11-jdk-headless \
+      openjdk-17-jdk-headless \
       curl \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
@@ -23,25 +23,15 @@ RUN apt-get update  \
  && rm -rf /var/lib/apt/lists/*
 
 # Install Python
-ARG PYTHON_VERSION=3.10.10
-# hadolint ignore=DL3003
+ARG PYTHON_VERSION=3.11
 RUN apt-get update \
  && apt-get -y install --no-install-recommends \
-     build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev curl llvm \
-     libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev \
- && curl "https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz" | tar xzf - \
- && ( \
-       cd "Python-${PYTHON_VERSION}" \
-    && ./configure --enable-loadable-sqlite-extensions --enable-optimizations --enable-option-checking=fatal --enable-shared --with-lto --with-system-expat --without-ensurepip \
-    && make -j "$(nproc)" \
-    && make altinstall \
-    && cd .. \
-    && rm -r "Python-${PYTHON_VERSION}" \
-    ) \
+     python${PYTHON_VERSION} python3-pip \
  && apt-get clean \
- && rm -rf /var/lib/apt/lists/* \
- && ldconfig \
- && curl https://bootstrap.pypa.io/get-pip.py | "/usr/local/bin/python$(echo ${PYTHON_VERSION} | cut -d . -f 1-2)"
+ && rm -rf /var/lib/apt/lists/*
+ARG PYTHON_BINDIR=/usr/bin
+# note: if install Python manually, see the old commit.
+# ARG PYTHON_BINDIR=/usr/local/bin
 
 # Install openssh
 RUN apt-get update \
@@ -82,9 +72,9 @@ COPY init-debian.sh /usr/local/bin/init.sh
 CMD ["/usr/local/bin/init.sh"]
 
 RUN suffix="$(echo ${PYTHON_VERSION} | cut -d . -f 1-2)" \
- && update-alternatives --install /usr/bin/python3 python3 "/usr/local/bin/python${suffix}" 10 \
- && update-alternatives --install /usr/bin/pip3 pip3 "/usr/local/bin/pip${suffix}" 10 \
- && sed -i -e 's%#!/usr/bin/python3$%#!/usr/bin/python3.9%' \
+ && update-alternatives --install /usr/bin/python3 python3 "${PYTHON_BINDIR}/python${suffix}" 10 \
+ && update-alternatives --install /usr/bin/pip3 pip3 "${PYTHON_BINDIR}/pip${suffix}" 10 \
+ && sed -i.bak -e '/^#!.*python3\./n;/^#!.*python3/s|python3|python3.9|' \
       /usr/bin/supervisord /usr/bin/supervisorctl
 
 EXPOSE 9092 9093 1883 8883 8080

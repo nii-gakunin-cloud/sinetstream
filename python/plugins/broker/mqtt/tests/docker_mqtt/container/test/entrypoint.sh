@@ -25,6 +25,21 @@ setup_bad_hostname() {
   export MQTT_SSL_BROKER_BAD_HOSTNAME="${ip_addr}:${ssl_broker[1]}"
 }
 
+install_packages() {
+  for wheelhouse in wheelhouse*; do
+    if [ -d ${wheelhouse} ]; then
+      for pkg in ${wheelhouse}/*.whl; do
+        pip install -U --exists-action a ${pkg}
+      done
+    fi
+  done
+}
+
+case "${INSTALL_PACKAGES:-NO}" in
+[Yy][Ee][Ss])
+  install_packages ;;
+esac
+
 if [ -n "${CERT_URL}" ]; then
   setup_certs
   if [ -n "${MQTT_SSL_BROKER}" ]; then

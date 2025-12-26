@@ -59,7 +59,7 @@ def qedit(topic, nque):
 
 
 class DummyReader(object):
-    def __init__(self, params):
+    def __init__(self, confver, params):
         self._params = params
 
     def open(self):
@@ -101,7 +101,7 @@ def dummy_reader_plugin():
 
 
 class DummyWriter(object):
-    def __init__(self, params):
+    def __init__(self, confver, params):
         global que
         que = collections.defaultdict(collections.deque)
         self._params = params

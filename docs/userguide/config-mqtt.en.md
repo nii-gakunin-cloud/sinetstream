@@ -25,24 +25,31 @@ SINETStream User Guide
 
 # MQTT-specific parameters
 
+These are messaging system-specific parameters that can be specified with type_spec:.
+(In config version 1 or 2, they are specified as other parameters.)
+
 * clean_session (MQTTv3 only)
     * Whether to remember the state on reboot and reconnect.
 * protocol
     * MQTT Version.
     * Choose either `MQTTv31`, `MQTTv311`, or `MQTTv5`.
+    * In the MicroPython, the only value that can be specified is `MQTTv311` (upython)
 * transport
     * Choose either `tcp` or `websockets`.
+    * In the MicroPython platform, the only value that can be specified is `tcp` (upython)
 * qos
     * The QoS for sending and receiving messages.
     * Choose one of 0, 1, or 2, which correspond to `AT_MOST_ONCE`, `AT_LEAST_ONCE`, `EXACTLY_ONCE` of `Consistency`, respectively.
     * The QoS setting takes precedence over the consistency setting.
     * The value of qos affects the value obtained by `getConsistency()` from `MessageReader` and `MessageWriter`.
+    * The `EXACTLY_ONCE` flag is not available in the MicroPython platform (upython).
 * retain
     * Whether the server keeps this message.
-* max_inflight_messages_set
+* max_inflight_messages (if config version < 3, max_inflight_messages_set)
     * The following parameters can be specified.
     * inflight
         * The maximum number of messages with QoS > 0 that can pass through network flows at once.
+    * not available in the MicroPython platform (upython).
 * ws_set_options
     * Options for the WebSocket connection.
     * The following parameters can be specified.
@@ -50,7 +57,7 @@ SINETStream User Guide
             * The WebSocket path.
         * headers
             * The additional header to the standard WebSocket header. Specify by a mapping.
-* tls_set
+* tls (if config version < 3, tls_set)
     * Parameters for TLS connection. Specify by a mapping.
     * The following parameters can be specified.
         * ca_certs
@@ -77,18 +84,20 @@ SINETStream User Guide
             * The file format of the keyStore, e.g., jks, pkcs12, etc.
         * keyStorePassword (*)
             * The password of the keyStore.
+    * not implemented in the MicroPython platform (upython).
 > (*) `trustStore`, `trustStoreType`, `trustStorePassword`, `keyStore`, `keyStoreType`, `keyStorePassword`, and `keyfilePassword`
 > are valid only in the Java API.
-* tls_insecure_set
+* tls_insecure (if config version < 3, tls_insecure_set)
     * Configuration of host name verification on TLS connections.
         * value
             * Whether to skip host name verification.
-* username_pw_set
+    * not implemented in the MicroPython platform (upython).
+* username_pw (if config version < 3, username_pw_set)
     * The user and the password for authentication. Specify by a mapping.
     * The following parameters can be specified.
         * username
         * password
-* will_set
+* will (if config version < 3, will_set)
     * Parameters related to Last Will and Testament (LWT). Specify by a mapping.
     * If the client is disconnected unexpectedly, instead the broker issues the message set in LWT.
     * The following parameters can be specified.
@@ -97,13 +106,14 @@ SINETStream User Guide
         * qos
         * retain
 	* delay_interval (MQTTv5 only)
-* reconnect_delay_set
+* reconnect_delay (if config version < 3, reconnect_delay_set)
     * Parameters related to the waiting time before reconnecting. Specify by a mapping.
     * The following parameters can be specified.
         * max_delay
             * Maximum waiting time (in seconds).
         * min_delay
             * Minimum waiting time (in seconds).
+    * not available in the MicroPython platform (upython).
 * connect
     * Connection parameters. Specify by a mapping.
     * The following parameters can be specified.
@@ -155,19 +165,24 @@ SINETStream User Guide
     * send_reason_messages (Java&MQTTv5 only)
         * default: false
 	* Append  Reason String property on error.
-* max_queued_messages_set (Python only)
+* max_queued_messages (Python only) (if config version <3, max_queued_messages_set)
     * queue_size
         * default: 0
         * Set the maximum number of messages in the outgoing message queue.
         * 0 means unlimited.
+    * not available in the MicroPython platform (upython).
 
 ## The configuration example of MQTT
 
 When using WebSocket instead of TCP to connect with an MQTT broker, set the transport parameter as follows.
 
 ```
-service-mqtt:
-  type: mqtt
-  brokers: mqtt.example.org
-  transport: websockets
+header:
+  version: 3
+config:
+  service-mqtt:
+    type: mqtt
+    brokers: mqtt.example.org
+    type_spec:
+      transport: websockets
 ```

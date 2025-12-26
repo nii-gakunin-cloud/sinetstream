@@ -25,24 +25,31 @@ SINETStream ユーザガイド
 
 # MQTT固有のパラメータ
 
+これらはtype_spec:で指定できるメッセージングシステム固有のパラメータである。
+(config version 1 or 2ではその他のパラメータとして指定する)
+
 * clean_session
     * 再起動、再接続で状態を記憶するかどうか
 * protocol
     * MQTTバージョン
     * 指定できる値は `MQTTv31`, `MQTTv311`, `MQTTv5` のどれか
+    * MicroPython版では指定できる値は `MQTTv311` のみ (upython)
 * transport
     * 指定できる値は `tcp`, `websockets` のどちらか
+    * MicroPython版では指定できる値は `tcp` のみ (upython)
 * qos
     * メッセージを送受信する際の QoS
     * 0, 1, 2 が指定でき、それぞれ `Consistency` の `AT_MOST_ONCE`, `AT_LEAST_ONCE`, `EXACTLY_ONCE` に対応する
     * `Consistency` の設定値より、`qos` の設定値が優先される
     * 指定された`qos` の値は `MessageReader`, `MessageWriter` から `getConsistency()` で取得できる
+    * MicroPython版では `EXACTLY_ONCE` は利用できない (upython)
 * retain
     * サーバーがこのメッセージを保持するかどうか
-* max_inflight_messages_set
+* max_inflight_messages (config version < 3では max_inflight_messages_set)
     * 以下のパラメータを指定できる
         * inflight
             * ネットワークフローを一度に通過できる QoS > 0のメッセージの最大数
+    * MicroPython版では利用できない (upython)
 * ws_set_options
     * WebSocket接続のオプションを指定する
     * 以下のパラメータを指定できる
@@ -50,7 +57,8 @@ SINETStream ユーザガイド
             * WebSocket のパスを指定する
         * headers
             * 標準の WebSocketヘッダーに追加するヘッダーをマッピングで指定する
-* tls_set
+    * MicroPython版では利用できない (upython)
+* tls (config version < 3では tls_set)
     * TLS接続に関するパラメータをマッピングで指定する
     * 以下のパラメータを指定できる
         * ca_certs
@@ -77,18 +85,20 @@ SINETStream ユーザガイド
             * キーストアのファイルフォーマット (jks, pkcs12, ...)
         * keyStorePassword (*)
             * キーストアのパスワード
+    * MicroPython版では未実装 (upython)
 > (*) `trustStore`, `trustStoreType`, `trustStorePassword`, `keyStore`, `keyStoreType`, `keyStorePassword`, `keyfilePassword` は
 > Java APIのみで指定できるパラメータである。Python API では指定できない。
-* tls_insecure_set
+* tls_insecure (config version < 3では tls_insecure_set)
     * 以下のパラメータを指定できる
         * value
             * TLS接続でホスト名の検証を無視するかどうか
-* username_pw_set
+    * MicroPython版では未実装 (upython)
+* username_pw (config version < 3では username_pw_set)
     * 認証用のユーザ、パスワードをマッピングで指定する
     * 以下のパラメータを指定する
         * username
         * password
-* will_set
+* will (config version < 3では will_set)
     * Last Will and Testament (LWT) に関するパラメータをマッピングで指定する
     * クライアントが予期せず切断された場合、ブローカーがLWTに設定されているメッセージを代わりに発行する
     * 以下のパラメータを指定できる
@@ -97,13 +107,14 @@ SINETStream ユーザガイド
         * qos
         * retain
 	* delay_interval (MQTTv5のみ)
-* reconnect_delay_set
+* reconnect_delay (config version < 3では reconnect_delay_set)
     * 再接続するまでの待機時間に関するパラメータをマッピングで指定する
     * 以下のパラメータを指定できる
         * max_delay
             * 最大待ち時間 (秒)
         * min_delay
             * 最小待ち時間 (秒)
+    * MicroPython版では利用できない (upython)
 * connect
     * 接続に関するパラメータをマッピングで指定する
     * 以下のパラメータを指定できる
@@ -157,19 +168,24 @@ SINETStream ユーザガイド
     * send_reason_messages (Java&MQTTv5のみ)
         * デフォルト: false
         * エラー時にReason Stringプロパティを付けるかどうか。
-* max_queued_messages_set (Pythonのみ)
+* max_queued_messages (Pythonのみ) (config version < 3では max_queued_messages_set)
     * queue_size
         * デフォルト: 0
         * 出力メッセージキューの最大長を設定する。
         * 0を設定すると無制限になる。
+    * MicroPython版では利用できない (upython)
 
 ## MQTTの設定例
 
 MQTTでブローカーとの接続にTCPではなくWebSocketを使う場合は以下のようにtransportパラメータを設定する。
 
 ```
-service-mqtt:
-  type: mqtt
-  brokers: mqtt.example.org
-  transport: websockets
+header:
+  version: 3
+config:
+  service-mqtt:
+    type: mqtt
+    brokers: mqtt.example.org
+    type_spec:
+      transport: websockets
 ```

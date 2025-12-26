@@ -24,6 +24,7 @@ from threading import Condition
 
 import pytest
 from conftest import (
+    CONFVER1, CONFVER2, CONFVER3, CONFVER,
     SERVICE, USER_PASSWD_BROKER, KAFKA_READ_USER, KAFKA_READ_PASSWD,
     KAFKA_WRITE_USER, KAFKA_WRITE_PASSWD,
 )
@@ -38,40 +39,57 @@ logger = logging.getLogger(__name__)
 pytestmark = pytest.mark.skipif(
     USER_PASSWD_BROKER is None, reason='KAFKA_USER_PASSWD_BROKER is not set.')
 
+sasl_plain = {
+    'security_protocol': 'SASL_PLAINTEXT',
+    'sasl_mechanism': 'PLAIN',
+}
 
+
+testparams = {
+    'sasl_plain_username': KAFKA_READ_USER,
+    'sasl_plain_password': KAFKA_READ_PASSWD,
+}
 @pytest.mark.skipif(
     KAFKA_READ_USER is None or KAFKA_READ_PASSWD is None,
     reason='USER/PASSWD is not set.')
-def test_no_auth_write(setup_config):
-    params = {
-        'sasl_plain_username': KAFKA_READ_USER,
-        'sasl_plain_password': KAFKA_READ_PASSWD,
-    }
+@pytest.mark.parametrize("config_version,params", [
+    (CONFVER1, sasl_plain | testparams),
+    (CONFVER3, { 'type_spec': sasl_plain | testparams }),
+    ])
+def test_no_auth_write(setup_config, params, config_version):
     with pytest.raises(AuthorizationError):
         with MessageWriter(SERVICE, consistency=AT_LEAST_ONCE, **params) as f:
             f.publish(b'message-001')
 
 
+testparams = {
+    'sasl_plain_username': KAFKA_READ_USER,
+    'sasl_plain_password': KAFKA_READ_PASSWD,
+}
 @pytest.mark.skipif(
     KAFKA_READ_USER is None or KAFKA_READ_PASSWD is None,
     reason='USER/PASSWD is not set.')
-def test_no_auth_write_no_ack(setup_config):
-    params = {
-        'sasl_plain_username': KAFKA_READ_USER,
-        'sasl_plain_password': KAFKA_READ_PASSWD,
-    }
+@pytest.mark.parametrize("config_version,params", [
+    (CONFVER1, sasl_plain | testparams),
+    (CONFVER3, { 'type_spec': sasl_plain | testparams }),
+    ])
+def test_no_auth_write_no_ack(setup_config, params, config_version):
     with MessageWriter(SERVICE, consistency=AT_MOST_ONCE, **params) as f:
         f.publish(b'message-001')
 
 
+testparams = {
+    'sasl_plain_username': KAFKA_READ_USER,
+    'sasl_plain_password': KAFKA_READ_PASSWD,
+}
 @pytest.mark.skipif(
     KAFKA_READ_USER is None or KAFKA_READ_PASSWD is None,
     reason='USER/PASSWD is not set.')
-def test_no_auth_async_write(setup_config):
-    params = {
-        'sasl_plain_username': KAFKA_READ_USER,
-        'sasl_plain_password': KAFKA_READ_PASSWD,
-    }
+@pytest.mark.parametrize("config_version,params", [
+    (CONFVER1, sasl_plain | testparams),
+    (CONFVER3, { 'type_spec': sasl_plain | testparams }),
+    ])
+def test_no_auth_async_write(setup_config, params, config_version):
     error = 0
     countdown = 1
     cv = Condition()
@@ -101,14 +119,18 @@ def test_no_auth_async_write(setup_config):
     assert error == 1
 
 
+testparams = {
+    'sasl_plain_username': KAFKA_READ_USER,
+    'sasl_plain_password': KAFKA_READ_PASSWD,
+}
 @pytest.mark.skipif(
     KAFKA_READ_USER is None or KAFKA_READ_PASSWD is None,
     reason='USER/PASSWD is not set.')
-def test_no_auth_async_write_no_ack(setup_config):
-    params = {
-        'sasl_plain_username': KAFKA_READ_USER,
-        'sasl_plain_password': KAFKA_READ_PASSWD,
-    }
+@pytest.mark.parametrize("config_version,params", [
+    (CONFVER1, sasl_plain | testparams),
+    (CONFVER3, { 'type_spec': sasl_plain | testparams }),
+    ])
+def test_no_auth_async_write_no_ack(setup_config, params, config_version):
     error = 0
     countdown = 1
     cv = Condition()
@@ -137,28 +159,36 @@ def test_no_auth_async_write_no_ack(setup_config):
     assert error == 0
 
 
+testparams = {
+    'sasl_plain_username': KAFKA_WRITE_USER,
+    'sasl_plain_password': KAFKA_WRITE_PASSWD,
+}
 @pytest.mark.skipif(
     KAFKA_WRITE_USER is None or KAFKA_WRITE_PASSWD is None,
     reason='USER/PASSWD is not set.')
-def test_no_auth_read(setup_config):
-    params = {
-        'sasl_plain_username': KAFKA_WRITE_USER,
-        'sasl_plain_password': KAFKA_WRITE_PASSWD,
-    }
+@pytest.mark.parametrize("config_version,params", [
+    (CONFVER1, sasl_plain | testparams),
+    (CONFVER3, { 'type_spec': sasl_plain | testparams }),
+    ])
+def test_no_auth_read(setup_config, params, config_version):
     with pytest.raises(AuthorizationError):
         with MessageReader(SERVICE, **params) as f:
             for _ in f:
                 pass
 
 
+testparams = {
+    'sasl_plain_username': KAFKA_WRITE_USER,
+    'sasl_plain_password': KAFKA_WRITE_PASSWD,
+}
 @pytest.mark.skipif(
     KAFKA_WRITE_USER is None or KAFKA_WRITE_PASSWD is None,
     reason='USER/PASSWD is not set.')
-def test_no_auth_async_read(setup_config):
-    params = {
-        'sasl_plain_username': KAFKA_WRITE_USER,
-        'sasl_plain_password': KAFKA_WRITE_PASSWD,
-    }
+@pytest.mark.parametrize("config_version,params", [
+    (CONFVER1, sasl_plain | testparams),
+    (CONFVER3, { 'type_spec': sasl_plain | testparams }),
+    ])
+def test_no_auth_async_read(setup_config, params, config_version):
     error = 0
     countdown = 1
     cv = Condition()
@@ -180,14 +210,18 @@ def test_no_auth_async_read(setup_config):
     assert error == 1
 
 
+testparams = {
+    'sasl_plain_username': KAFKA_WRITE_USER,
+    'sasl_plain_password': KAFKA_WRITE_PASSWD,
+}
 @pytest.mark.skipif(
     KAFKA_WRITE_USER is None or KAFKA_WRITE_PASSWD is None,
     reason='USER/PASSWD is not set.')
-def test_no_auth_async_read_with_stmt(setup_config):
-    params = {
-        'sasl_plain_username': KAFKA_WRITE_USER,
-        'sasl_plain_password': KAFKA_WRITE_PASSWD,
-    }
+@pytest.mark.parametrize("config_version,params", [
+    (CONFVER1, sasl_plain | testparams),
+    (CONFVER3, { 'type_spec': sasl_plain | testparams }),
+    ])
+def test_no_auth_async_read_with_stmt(setup_config, params, config_version):
     error = 0
     countdown = 1
     cv = Condition()
@@ -218,9 +252,9 @@ def config_topics():
     return 'mss-test-003'
 
 
-@pytest.fixture()
-def config_params():
-    return {
-        'security_protocol': 'SASL_PLAINTEXT',
-        'sasl_mechanism': 'PLAIN',
-    }
+#@pytest.fixture()
+#def config_params():
+#    return {
+#        'security_protocol': 'SASL_PLAINTEXT',
+#        'sasl_mechanism': 'PLAIN',
+#    }

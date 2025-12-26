@@ -164,26 +164,48 @@ SINETStreamは、設定ファイルに記されたパスから証明書を読み
 > 設定自体は パスワード認証の設定と同じ内容になる。
 
 ```yaml
-service-mqtt:
-  brokers: broker.example.org:9094
-  type: mqtt
-  topic: topic-001
-  consistency: AT_LEAST_ONCE
-  tls:
-    ca_certs: /opt/certs/cacert.pem
-  username_pw_set:
-    username: user03
-    password: user03-pass
+header:
+  version: 3
+config:
+  service-mqtt:
+    brokers: broker.example.org:9094
+    type: mqtt
+    topic: topic-001
+    consistency: AT_LEAST_ONCE
+    tls:
+      ca_certs: /opt/certs/cacert.pem
+    type_spec:
+      username_pw:
+        username: user03
+        password: user03-pass
 ```
 
 `brokers`, `type`, `topic`, `consistency`, `tls` についてはパスワード認証を利用しない場合の設定ファイルと同様なので説明を省く。
-パスワード認証に関わる設定は `username_pw_set:` 以降の行が該当する。
+パスワード認証に関わる設定は `username_pw:` 以降の行が該当する。
 各パラメータの意味を以下に示す。
 
 * `username`
     * ユーザ名
 * `password`
     * パスワード
+
+DEPRECATED: config version 2以前の書き方:
+
+```yaml
+header:
+  version: 2
+config:
+  service-mqtt:
+    brokers: broker.example.org:9094
+    type: mqtt
+    topic: topic-001
+    consistency: AT_LEAST_ONCE
+    tls:
+      ca_certs: /opt/certs/cacert.pem
+    username_pw_set:
+      username: user03
+      password: user03-pass
+```
 
 ### SINETStreamを利用するプログラムを作成する
 

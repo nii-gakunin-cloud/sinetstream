@@ -25,6 +25,9 @@ SINETStream ユーザガイド
 
 # Kafka固有のパラメータ
 
+これらはtype_spec:で指定できるメッセージングシステム固有のパラメータである。
+(config version 1 or 2ではその他のパラメータとして指定する)
+
 ## `MessageWriter` に関するパラメータ
 
 * acks
@@ -161,9 +164,13 @@ Kafkaの機能を使ってレコード・バッチをgzipで圧縮する場合�
 (compression_typeを指定するのはWriter側だけでよい)
 
 ```
-service-kafka:
-  type: kafka
-  brokers:
-    - kafka0.example.org:9092
-  compression_type: gzip
+header:
+  version: 3
+config:
+  service-kafka:
+    type: kafka
+    brokers:
+      - kafka0.example.org:9092
+    type_spec:
+      compression_type: gzip
 ```

@@ -56,13 +56,14 @@ class IOStreamWriterMetrics(IOStreamMetrics):
 
 
 class BaseIOStreamWriter:
-    def __init__(self, params):
+    def __init__(self, confver, params):
         logger.debug("BaseIOStreamWriter:init")
-        if "iostream" not in params:
-            raise InvalidArgumentError("the parameter iostream must be specified")
-        ioparams = params["iostream"]
+        typespec = "type_spec" if confver.type_spec() else "iostream"
+        if typespec not in params:
+            raise InvalidArgumentError(f"the parameter {typespec} must be specified")
+        ioparams = params[typespec]
         if "iobase" not in ioparams:
-            raise InvalidArgumentError("the parameter iostream.iobase must be specified")
+            raise InvalidArgumentError(f"the parameter {typespec}.iobase must be specified")
         self._iobase = ioparams["iobase"]
         self._metrics = IOStreamWriterMetrics()
 
@@ -87,18 +88,18 @@ class BaseIOStreamWriter:
 
 
 class IOStreamWriter(BaseIOStreamWriter):
-    def __init__(self, params):
+    def __init__(self, confver, params):
         logger.debug("IOStreamWriter:init")
-        super().__init__(params)
+        super().__init__(confver, params)
 
     def publish(self, msg):
         return self._publish(msg)
 
 
 # class IOStreamAsyncWriter(BaseIOStreamWriter):
-#     def __init__(self, params):
+#     def __init__(self, confver, params):
 #         logger.debug("IOStreamAsyncWriter:init")
-#         super().__init__(params)
+#         super().__init__(confver, params)
 #
 #     def publish(self, msg):
 #         return Promise(lambda resolve, reject: [self._publish(msg), resolve(None)])
@@ -109,12 +110,14 @@ class IOStreamReaderMetrics(IOStreamMetrics):
 
 
 class BaseIOStreamReader:
-    def __init__(self, params):
-        if "iostream" not in params:
-            raise InvalidArgumentError("the parameter iostream must be specified")
-        ioparams = params["iostream"]
+    def __init__(self, confver, params):
+        logger.debug("BaseIOStreamReader:init")
+        typespec = "type_spec" if confver.type_spec() else "iostream"
+        if typespec not in params:
+            raise InvalidArgumentError(f"the parameter {typespec} must be specified")
+        ioparams = params[typespec]
         if "iobase" not in ioparams:
-            raise InvalidArgumentError("the parameter iostream.iobase must be specified")
+            raise InvalidArgumentError(f"the parameter {typespec}.iobase must be specified")
         self._iobase = ioparams["iobase"]
         self._metrics = IOStreamReaderMetrics()
 
@@ -138,9 +141,9 @@ class BaseIOStreamReader:
 
 
 class IOStreamReader(BaseIOStreamReader):
-    def __init__(self, params):
+    def __init__(self, confver, params):
         logger.debug("IOStreamReader:init")
-        super().__init__(params)
+        super().__init__(confver, params)
 
     class Iter:
         def __init__(self, ioreader):
@@ -163,9 +166,9 @@ class IOStreamReader(BaseIOStreamReader):
 
 
 # class IOStreamAsyncReader(BaseIOStreamReader):
-#     def __init__(self, params):
+#     def __init__(self, confver, params):
 #         logger.debug("IOStreamAsyncReader:init")
-#         super().__init__(params)
+#         super().__init__(confver, params)
 #         self._reader_executor = None
 #         self._on_message = None
 #         self._on_failure = None

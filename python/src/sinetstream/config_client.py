@@ -273,8 +273,8 @@ def get_config_params_server(service, config_name, need_all_key, mount_args=None
     config = get_value(content, "config", dict)
 
     version = get_value(header, "version", int)
-    if version != 2:
-        raise InvalidConfigError(f"version {version} must be 2")
+    if not sinetstream.configs.confver_isvalid(version):
+        raise InvalidConfigError(f"version={version} is invalid")
     # fingerprint_header = get_value(header, "fingerprint", str, optional=True)
 
     if service is None:
@@ -348,4 +348,4 @@ def get_config_params_server(service, config_name, need_all_key, mount_args=None
     # XXX: attachとsecretでtargetが被った場合はしらん。
 
     logger.debug(f"params={params}")
-    return service, params
+    return sinetstream.configs.make_confver(version), service, params

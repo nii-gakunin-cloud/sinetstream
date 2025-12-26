@@ -107,7 +107,7 @@ def test_broker(setup_config, ctor):
 def test_pub_failure(setup_config):
     with MessageWriter(service=SERVICE,
                        topic=TOPIC,
-                       s3={"endpoint_url": "http://127.0.0.99:999"}) as w:
+                       type_spec={"endpoint_url": "http://127.0.0.99:999"}) as w:
         with pytest.raises(ConnectionError):
             for m in msgs:
                 w.publish(m)
@@ -117,7 +117,7 @@ def test_pub_failure(setup_config):
 def test_utc_offset(setup_config, utc_offset):
     with MessageWriter(service=SERVICE,
                        topic=TOPIC,
-                       s3={"utc_offset": utc_offset}) as w:
+                       type_spec={"utc_offset": utc_offset}) as w:
         for m in msgs:
             w.publish(m)
 
@@ -127,7 +127,7 @@ def test_utc_offset_ng(setup_config, utc_offset):
     with pytest.raises(InvalidArgumentError):
         with MessageWriter(service=SERVICE,
                            topic=TOPIC,
-                           s3={"utc_offset": utc_offset}) as w:
+                           type_spec={"utc_offset": utc_offset}) as w:
             for m in msgs:
                 w.publish(m)
 

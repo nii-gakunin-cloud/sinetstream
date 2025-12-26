@@ -55,19 +55,24 @@ QOS_MAP = {
 }
 
 
-def _to_qos(params):
-    qos = params.get('qos')
+def _to_qos(comm_params, mqtt_params):
+    qos = mqtt_params.get('qos')
     if qos is not None:
         if qos not in QOS_MAP.values():
             raise InvalidArgumentError('Invalid QoS level')
         return qos
 
-    consistency = params.get('consistency')
+    consistency = comm_params.get('consistency')
     if consistency is not None:
         assert consistency in QOS_MAP
         return QOS_MAP[consistency]
 
     return None
+
+
+def _get_qos(comm_params):
+    consistency = comm_params['consistency']
+    return QOS_MAP[consistency]
 
 
 class MqttReaderHandleIter:
@@ -86,12 +91,12 @@ class MqttReaderHandleIter:
             raise StopIteration() from ex
 
 
-def _get_broker(params):
-    if 'brokers' not in params:
+def _get_broker(comm_params, mqtt_params):
+    if 'brokers' not in comm_params:
         logger.error("You must specify one broker.")
         raise InvalidArgumentError("You must specify one broker.")
 
-    brokers = params["brokers"]
+    brokers = comm_params["brokers"]
     if isinstance(brokers, list):
         if len(brokers) > 1:
             logger.error("only one broker can be specified")
@@ -105,12 +110,12 @@ def _get_broker(params):
     if len(host_port) == 2:
         return host_port[0], int(host_port[1])
     else:
-        return host_port[0], _get_default_port(params)
+        return host_port[0], _get_default_port(mqtt_params)
 
 
-def _get_default_port(params):
-    transport = params.get('transport')
-    is_tls = 'tls_set' in params
+def _get_default_port(mqtt_params):
+    transport = mqtt_params.get('transport')
+    is_tls = 'tls_set' in mqtt_params
 
     if transport != 'websockets':
         return 1883 if not is_tls else 8883
@@ -119,16 +124,34 @@ def _get_default_port(params):
 
 
 _MQTT_NESTED_PARAMETER = [
-    'max_inflight_messages_set',
-    'max_queued_messages_set',
-    'message_retry_set',
-    'ws_set_options',
-    'tls_set',
-    'tls_insecure_set',
-    'username_pw_set',
-    'will_set',
-    'reconnect_delay_set',
+    ('max_inflight_messages', 'max_inflight_messages_set'),
+    ('max_queued_messages',   'max_queued_messages_set'),
+    ('message_retry',         'message_retry_set'),
+    ('ws_options',            'ws_set_options'),
+    ('tls',                   'tls_set'),
+    ('tls_insecure',          'tls_insecure_set'),
+    ('username_pw',           'username_pw_set'),
+    ('will',                  'will_set'),
+    ('reconnect_delay',       'reconnect_delay_set'),
 ]
+
+# Nested parameters that paho-mqtt expects as str type
+_MQTT_STRING_PARAMS = {
+    'username_pw': ['username', 'password'],
+    'username_pw_set': ['username', 'password'],  # CONFVER1 compatibility
+}
+
+
+def _conv_bytes_to_str(params):
+    """Convert bytes to str for parameters that paho-mqtt expects as str."""
+    for param_name, keys in _MQTT_STRING_PARAMS.items():
+        if param_name not in params:
+            continue
+        nested = params[param_name]
+        for key in keys:
+            if key in nested and isinstance(nested[key], bytes):
+                nested[key] = nested[key].decode('utf-8')
+
 
 PROTOCOL_MAP = {
     'MQTTv31': MQTTv31,
@@ -144,46 +167,57 @@ def _to_protocol(protocol):
     return PROTOCOL_MAP[protocol]
 
 
-def _get_transport(params):
-    transport = params.get('transport', 'tcp')
+def _get_transport(mqtt_params):
+    transport = mqtt_params.get('transport', 'tcp')
     if transport not in ['tcp', 'websockets']:
         raise InvalidArgumentError(f'transport: invalid value: {transport}')
     return transport
 
 
-def _create_mqtt_client(params):
+def _create_mqtt_client(confver, comm_params, mqtt_params):
+    logger.debug(f"_create_mqtt_client {comm_params=} {mqtt_params=}")
     mqttc = Client(
-        client_id=params.get("client_id", ''),
-        clean_session=params.get('clean_session'),  # NOTE: MUST be None in MQTTv5, USE clean_start
-        protocol=_to_protocol(params.get('protocol')),
-        transport=_get_transport(params),
-        # reconnect_on_failure=params.get("reconnect_on_failure", True),
+        client_id=comm_params.get("client_id", ''),
+        clean_session=mqtt_params.get('clean_session'),  # NOTE: MUST be None in MQTTv5, USE clean_start
+        protocol=_to_protocol(mqtt_params.get('protocol')),
+        transport=_get_transport(mqtt_params),
+        # reconnect_on_failure=mqtt_params.get("reconnect_on_failure", True),
     )
 
-    for name in _MQTT_NESTED_PARAMETER:
-        if name not in params:
+    _conv_bytes_to_str(mqtt_params)
+
+    use_type_spec = confver.type_spec()
+    for name3, method_name in _MQTT_NESTED_PARAMETER:
+        name = name3 if use_type_spec else method_name
+        if name not in mqtt_params:
             continue
-        logger.debug(f'invoke: {name}({params[name]})')
-        getattr(mqttc, name)(**params[name])
+        logger.debug(f'invoke: {method_name}(name={name},arg={mqtt_params[name]})')
+        getattr(mqttc, method_name)(**mqtt_params[name])
 
     mqttc.enable_logger(logger)
     return mqttc
 
 
-def _translate_tls_params(params):
-    tls = params.get('tls')
+def _translate_tls_params(comm_params, is_v1):
+    key_tls = 'tls'
+    key_tls_insecure = 'tls_insecure'
+    if is_v1:
+        key_tls += '_set'
+        key_tls_insecure += '_set'
+
+    tls = comm_params.get('tls')
     if tls is None:
         return {}
     elif isinstance(tls, bool):
-        return {'tls_set': {}}
+        return {key_tls: {}}
     elif isinstance(tls, dict):
         tls_set = {key: tls[key]
                    for key in ['ca_certs', 'certfile', 'keyfile', 'ciphers']
                    if key in tls
                    }
-        mqtt_params = {'tls_set': tls_set}
+        mqtt_params = {key_tls: tls_set}
         if 'check_hostname' in tls:
-            mqtt_params['tls_insecure_set'] = {
+            mqtt_params[key_tls_insecure] = {
                 'value': not (tls['check_hostname']),
             }
         return mqtt_params
@@ -192,23 +226,29 @@ def _translate_tls_params(params):
         raise InvalidArgumentError("tls: must be bool or associative array")
 
 
-def _replace_ssl_params(params):
-    if 'tls_set' not in params:
+def _replace_ssl_params(mqtt_params, is_v1):
+    key_tls = 'tls'
+    if is_v1:
+        key_tls += '_set'
+    if key_tls not in mqtt_params:
         return
-    params['tls_set'] = {
+    mqtt_params[key_tls] = {
         key: (getattr(ssl, value)
               if (key in ['cert_reqs', 'tls_version'] and
                   isinstance(value, str) and
                   hasattr(ssl, value))
               else value)
-        for key, value in params['tls_set'].items()
+        for key, value in mqtt_params[key_tls].items()
     }
 
 
-def _replace_will_params(params):
-    if 'will_set' not in params:
+def _replace_will_params(mqtt_params, is_v1):
+    key_will = 'will'
+    if is_v1:
+        key_will += '_set'
+    if key_will not in mqtt_params:
         return
-    will_params = params['will_set']
+    will_params = mqtt_params[key_will]
 
     for k in ['topic', 'payload']:
         if k not in will_params:
@@ -219,7 +259,7 @@ def _replace_will_params(params):
         props.WillDelayInterval = will_params.pop('delay_interval')
         will_params['properties'] = props
 
-    qos = _to_qos(will_params)
+    qos = _to_qos({}, will_params)
     if qos is not None:
         will_params['qos'] = qos
     will_params.pop('consistency', None)  # note: del will_params['consistency'] safely.
@@ -231,29 +271,40 @@ def _replace_will_params(params):
         payload = will_params['payload']
         will_params2['payload'] = enc.encode(payload, timestamp=0)
 
-    params['will_set'] = will_params2
+    mqtt_params[key_will] = will_params2
 
 
 class MqttClient:
-    def __init__(self, params):
-        self._params = _translate_tls_params(params)
-        self._params.update(params)
-        _replace_ssl_params(self._params)
-        _replace_will_params(self._params)
-        logger.debug(self._params)
+    def __init__(self, confver, params):
+        if confver.type_spec():
+            self._comm_params = params.copy()
+            self._comm_params.pop("type_spec", None)
+            self._mqtt_params = params.get("type_spec", {})
+            self._mqtt_params.update(_translate_tls_params(self._comm_params, False))
+            _replace_ssl_params(self._mqtt_params, False)
+            _replace_will_params(self._mqtt_params, False)
+        else:
+            ps = _translate_tls_params(params, True)
+            ps.update(params)
+            self._comm_params = ps
+            self._mqtt_params = ps
+            _replace_ssl_params(self._mqtt_params, True)
+            _replace_will_params(self._mqtt_params, True)
+        logger.debug(self._comm_params)
+        logger.debug(self._mqtt_params)
 
         try:
-            self._mqttc = _create_mqtt_client(self._params)
+            self._mqttc = _create_mqtt_client(confver, self._comm_params, self._mqtt_params)
         except ValueError as ex:
             raise InvalidArgumentError(ex) from ex
 
         self._mqttc.on_connect = self._on_connect
-        self.qos = _to_qos(self._params)
-        self.connection_timeout = self._params.get('connection_timeout', 10)
-        self.keepalive = self._params.get('keepalive', 60)
-        self.host, self.port = _get_broker(self._params)
+        self.qos = _to_qos(self._comm_params, self._mqtt_params)
+        self.connection_timeout = self._mqtt_params.get('connection_timeout', 10)
+        self.keepalive = self._mqtt_params.get('keepalive', 60)
+        self.host, self.port = _get_broker(self._comm_params, self._mqtt_params)
         logger.debug(f'broker={self.host} port={self.port}')
-        self.protocol = _to_protocol(self._params.get('protocol'))
+        self.protocol = _to_protocol(self._mqtt_params.get('protocol'))
         self._connection_result = None
         self._conn_cond = Condition()
 
@@ -272,9 +323,9 @@ class MqttClient:
             # ptype = PacketTypes.CONNECT
             # if ptype not in properties.properties[properties.getIdentFromName(name)][1]:
             #     continue
-            if name_ in self._params:
+            if name_ in self._mqtt_params:
                 n += 1
-                val = self._params[name_]
+                val = self._mqtt_params[name_]
                 if name_ == "user_property":
                     val = [(k, v) for k, v in val.items()]
                 try:
@@ -293,8 +344,8 @@ class MqttClient:
                 "port": self.port,
                 "keepalive": self.keepalive,
             }
-            if "clean_start" in self._params:
-                kwargs["clean_start"] = self._params["clean_start"]
+            if "clean_start" in self._mqtt_params:
+                kwargs["clean_start"] = self._mqtt_params["clean_start"]
             properties = self._make_properties()
             if properties is not None:
                 kwargs["properties"] = properties
@@ -353,14 +404,14 @@ class MqttClient:
 
 
 class BaseMqttReader(MqttClient):
-    def __init__(self, params):
-        super().__init__(params)
+    def __init__(self, confver, params):
+        super().__init__(confver, params)
         self.topics = self._get_topics()
-        timeout_ms = self._params["receive_timeout_ms"]
+        timeout_ms = self._comm_params["receive_timeout_ms"]
         self._timeout = timeout_ms / 1000.0 if timeout_ms != inf else None
 
     def _get_topics(self):
-        topics = self._params.get('topics', [])
+        topics = self._comm_params.get('topics', [])
         return topics if isinstance(topics, list) else [topics]
 
     def _on_connect(self, client, userdata, flags, rc, properties=None):
@@ -370,9 +421,9 @@ class BaseMqttReader(MqttClient):
 
 
 class MqttReader(BaseMqttReader):
-    def __init__(self, params):
+    def __init__(self, confver, params):
         logger.debug("MqttReader:init")
-        super().__init__(params)
+        super().__init__(confver, params)
         self._rcvq = Queue()
         self._mqttc.on_message = self._on_message
 
@@ -390,9 +441,9 @@ class MqttReader(BaseMqttReader):
 
 
 class MqttAsyncReader(BaseMqttReader):
-    def __init__(self, params):
+    def __init__(self, confver, params):
         logger.debug("MqttAsyncReader:init")
-        super().__init__(params)
+        super().__init__(confver, params)
         self._mqttc.on_message = self._mqtt_callback
         self._on_message = None
 
@@ -415,11 +466,11 @@ class MqttAsyncReader(BaseMqttReader):
 
 
 class BaseMqttWriter(MqttClient):
-    def __init__(self, params):
+    def __init__(self, confver, params):
         logger.debug("MqttWriter:init")
-        super().__init__(params)
-        self.topic = self._params['topic']
-        self.retain = self._params.get('retain', False)
+        super().__init__(confver, params)
+        self.topic = self._comm_params['topic']
+        self.retain = self._mqtt_params.get('retain', False)
 
     def publish(self, msg):
         if not isinstance(msg, bytes):
@@ -430,8 +481,8 @@ class BaseMqttWriter(MqttClient):
 
 
 class MqttWriter(BaseMqttWriter):
-    def __init__(self, params):
-        super().__init__(params)
+    def __init__(self, confver, params):
+        super().__init__(confver, params)
 
     def publish(self, msg):
         msg_info = super().publish(msg)
@@ -443,8 +494,8 @@ class MqttWriter(BaseMqttWriter):
 
 
 class MqttAsyncWriter(BaseMqttWriter):
-    def __init__(self, params):
-        super().__init__(params)
+    def __init__(self, confver, params):
+        super().__init__(confver, params)
         self._callbacks = OrderedDict()
         self._lock = Lock()
         self._mqttc.on_publish = self._on_publish

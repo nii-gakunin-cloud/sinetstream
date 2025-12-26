@@ -16,6 +16,8 @@ services:
     build: container/test/
     volumes:
       - ../..:/opt/ss_test
+      - ../../../../../dist:/opt/ss_test/wheelhouse
+      - ../../../iostream/dist:/opt/ss_test/wheelhouse-iostream
     environment:
       MQTT_SSL_BROKER: broker:8883
       MQTT_USER_PASSWD_BROKER: broker:1884
@@ -36,6 +38,7 @@ services:
       MQTT_SSL_BROKER_BAD_HOSTNAME: bad-broker:8883
       MQTT_WS_BROKER: broker:80
       MQTT_WSS_BROKER: broker:443
+      INSTALL_PACKAGES: YES
 #   command: bash
 #   tty: true
     networks:

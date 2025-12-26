@@ -1,8 +1,8 @@
 avro-python3==1.10.2
-certifi==2023.11.17
+certifi==2024.7.4
 cffi==1.16.0
 charset-normalizer==3.3.2
-idna==3.6
+idna==3.7
 kafka-python==2.0.2
 numpy==1.26.2
 paho-mqtt==1.6.1
@@ -10,7 +10,7 @@ promise==2.3
 pycparser==2.21
 pycryptodomex==3.19.1
 PyYAML==6.0.1
-requests==2.31.0
+requests==2.32.4
 sinetstream==1.8.2              # SINETStreamVERSION
 sinetstream-kafka==1.8.2        # SINETStreamVERSION
 sinetstream-mqtt==1.8.2         # SINETStreamVERSION
@@ -18,5 +18,5 @@ sinetstream-type-ndarray==1.8.2 # SINETStreamVERSION
 six==1.16.0
 sounddevice==0.4.6
 soundfile==0.12.1
-urllib3==2.1.0
+urllib3==2.6.0
 zstandard==0.22.0

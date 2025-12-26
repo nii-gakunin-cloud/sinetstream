@@ -57,20 +57,57 @@ SINETStream ユーザガイド
 
 この例では、以下の内容の設定ファイル `.sinetstream_config.yml` をクライアントマシンのカレントディレクトリに作成する。
 
+```yaml
+header:
+  version: 3
+config:
+  service-1:
+    type: kafka
+    brokers:
+      - kafka-1:9092
+      - kafka-2:9092
+      - kafka-3:9092
+      - kafka-4:9092
+  service-2:
+    type: mqtt
+    brokers: 192.168.2.105:1883
+    type_spec:
+      username_pw:
+        username: user01
+        password: pass01
 ```
-service-1:
-  type: kafka
-  brokers:
-    - kafka-1:9092
-    - kafka-2:9092
-    - kafka-3:9092
-    - kafka-4:9092
-service-2:
-  type: mqtt
-  brokers: 192.168.2.105:1883
-  username_pw_set:
-    username: user01
-    password: pass01
+
+upython版では設定ファイルはファイル名を `sinetstream_config.json` とし、形式はYAMLではなくJSONにする。
+PCで動作させるときはカレントディレクトリに設定ファイルを配置する。
+RaspberryPi Picoのようなマイコンで動作させるときにはルートディレクトリに配置する。
+
+```json
+{
+  "header": {
+    "version": 3
+  },
+  "config": {
+    "service-1": {
+      "type": "kafka",
+      "brokers": [
+        "kafka-1:9092",
+        "kafka-2:9092",
+        "kafka-3:9092",
+        "kafka-4:9092"
+      ]
+    },
+    "service-2": {
+      "type": "mqtt",
+      "brokers": "192.168.2.105:1883",
+      "type_spec": {
+        "username_pw": {
+          "username": "user01",
+          "password": "pass01"
+        }
+      }
+    }
+  }
+}
 ```
 
 ### メッセージ送信
@@ -122,18 +159,26 @@ for ループから抜けるには、[MessageReaderクラス](#messagereaderク�
 
 * sinetstream.MessageReader
     * メッセージングシステムからメッセージを取得するクラス
+    * 対応プラットフォーム: Python, MicroPython
 * sinetstream.AsyncMessageReader
     * メッセージングシステムからメッセージを取得するクラス(非同期API)
+    * 対応プラットフォーム: Python
 * sinetstream.MessageWriter
     * メッセージングシステムにメッセージを送信するクラス
+    * 対応プラットフォーム: Python, MicroPython
 * sinetstream.AsyncMessageWriter
     * メッセージングシステムにメッセージを送信するクラス(非同期API)
+    * 対応プラットフォーム: Python
 * sinetstream.Message
     * 送受信されるメッセージを表すクラス
+    * 対応プラットフォーム: Python, MicroPython
 * sinetstream.SinetError
     * SINETStreamの例外クラス全体の親クラス
+    * 対応プラットフォーム: Python, MicroPython
 
 ### 2.1 MessageReader クラス
+
+> 対応プラットフォーム: Python, MicroPython
 
 #### `MessageReader()`
 
@@ -152,54 +197,73 @@ MessageReader(
 * service
     * サービス名
     * 設定ファイルに対応するサービス名が記述されている必要がある
+    * serviceを指定しなかった場合は設定ファイルで記述されているファイルが1つでなければならない。
+    * 対応プラットフォーム: Python, MicroPython
 * topics
     * トピック名
     * `str` または `list` を指定できる
     * 複数のトピックをsubscribeする場合は `list` を指定すること
     * 指定を行わなかった場合は設定ファイルに記述されている値が用いられる
+    * 対応プラットフォーム: Python, MicroPython
 * config
     * コンフィグ名
     * コンフィグ名が指定されるとコンフィグサーバからコンフィグ情報を取得する。
     * コンフィグ情報のなかで定義されているサービスが1つしかないとわかっている場合はサービス名にNoneを指定してもよい。
     * コンフィグ名が指定されなかった場合、コンフィグ情報を得るために設定ファイルが読み込まれる。
+    * 対応プラットフォーム: Python
 * kwargs
     * no_config
         * bool
         * Trueを指定すると設定ファイルを読み込まない。
+        * 対応プラットフォーム: Python, MicroPython
     * consistency
-	* メッセージ配信の信頼性を指定する
-	* AT_MOST_ONCE (=0)
-	    * メッセージは届かないかもしれない
-	* AT_LEAST_ONCE (=1)
-	    * メッセージは必ず届くが何度も届くかもしれない
-	* EXACTLY_ONCE (=2)
-	    * メッセージは必ず一度だけ届く
+        * メッセージ配信の信頼性を指定する
+        * AT_MOST_ONCE (=0)
+            * メッセージは届かないかもしれない
+        * AT_LEAST_ONCE (=1)
+            * メッセージは必ず届くが何度も届くかもしれない
+        * EXACTLY_ONCE (=2)
+            * メッセージは必ず一度だけ届く
+        * 対応プラットフォーム: Python, MicroPython
     * client_id
-	* クライアントの名前
-	* DEFAULT_CLIENT_ID, None, 空文字のいずれかが指定された場合はライブラリが値を自動生成する
-	* 自動生成した値は、このオブジェクトのプロパティとして取得できる
+        * クライアントの名前
+        * DEFAULT_CLIENT_ID, None, 空文字のいずれかが指定された場合はライブラリが値を自動生成する
+        * 自動生成した値は、このオブジェクトのプロパティとして取得できる
+        * 対応プラットフォーム: Python, MicroPython
     * value_type
-	* メッセージのデータ本体部分（ペイロード）のタイプ名
-	* ここで指定された値によって`MessageReader`が返すペイロードの型が定まる
-	* 標準パッケージでは `"byte_array"`, `"text"` の何れかを指定する
-	    * `"byte_array"`(デフォルト値)を指定した場合、ペイロードの型は `bytes` となる
-	    * `"text"`を指定した場合、ペイロードの型は `str` となる
-	* 追加パッケージをインストールすることにより、`value_type`に指定できるタイプ名を増やすことができる
-	    * SINETStream v1.1 以降では画像タイプを追加するパッケージを提供している
-	    * 追加されるタイプ名は `"image"` となる
-	    * `"image"`を指定し当た場合、ペイロードの型は `numpy.ndarray`（OpenCVの画像データ） となる
-	    * `numpy.ndarray`の画像データにおける色順序は OpenCV のもの（青、緑、赤）となる
+        * メッセージのデータ本体部分（ペイロード）のタイプ名
+        * ここで指定された値によって`MessageReader`が返すペイロードの型が定まる
+        * 標準パッケージでは `"byte_array"`, `"text"` の何れかを指定する
+            * `"byte_array"`(デフォルト値)を指定した場合、ペイロードの型は `bytes` となる
+            * `"text"`を指定した場合、ペイロードの型は `str` となる
+        * 追加パッケージをインストールすることにより、`value_type`に指定できるタイプ名を増やすことができる
+            * SINETStream v1.1 以降では画像タイプを追加するパッケージを提供している
+            * 追加されるタイプ名は `"image"` となる
+            * `"image"`を指定し当た場合、ペイロードの型は `numpy.ndarray`（OpenCVの画像データ） となる
+            * `numpy.ndarray`の画像データにおける色順序は OpenCV のもの（青、緑、赤）となる
+        * 対応プラットフォーム: Python, MicroPython
     * value_deserializer
-	* メッセージのバイト列から値を復元（デシリアライズ）するために使用する関数
-	* このパラメータを指定しない場合、`value_type`に指定した値によりデシリアライズする関数が定まる
+        * メッセージのバイト列から値を復元（デシリアライズ）するために使用する関数
+        * このパラメータを指定しない場合、`value_type`に指定した値によりデシリアライズする関数が定まる
+        * 対応プラットフォーム: Python, MicroPython
     * receive_timeout_ms
-	* メッセージの到着を待つ最大時間 (ms)
-	* 一度タイムアウトするとこのコネクションからメッセージを読み込むことはできない。
+        * メッセージの到着を待つ最大時間 (ms)
+        * 一度タイムアウトするとこのコネクションからメッセージを読み込むことはできない。
+        * 対応プラットフォーム: Python, MicroPython
+            * 補足: MicroPython+MQTTではタイムアウト機能は実装されていない
     * data_encryption
-	* メッセージの暗号化、復号化の有効、無効を指定する
-    * そのほか、メッセージングシステム固有のパラメータを YAML のマッピングとして記述する
+        * メッセージの暗号化、復号化の有効、無効を指定する
+        * 対応プラットフォーム: Python
+    * type_spec _(config file version >= 3)_
+        * そのほか、メッセージングシステム固有のパラメータをの YAML のマッピングとして記述する
+        * 対応プラットフォーム: Python, MicroPython
+    * そのほか、メッセージングシステム固有のパラメータをの YAML のマッピングとして記述する _(config file version < 3)_
+        * 対応プラットフォーム: Python, MicroPython
 
-`kwargs` に記述されたパラメータは、バックエンドのメッセージングシステムのコンストラクタにそのまま渡される。
+config file version >= 3では: `type_spec` に記述されたパラメータは、バックエンドのメッセージングシステムのコンストラクタにそのまま渡される。
+詳細は [メッセージングシステム固有のパラメータ](#メッセージングシステム固有のパラメータ) を参照。
+
+config file version < 2では: `kwargs` に記述されたパラメータは、バックエンドのメッセージングシステムのコンストラクタにそのまま渡される。
 詳細は [メッセージングシステム固有のパラメータ](#メッセージングシステム固有のパラメータ) を参照。
 
 `service` 以外の引数は、設定ファイルにデフォルト値を記述することができる。
@@ -268,19 +332,17 @@ MQTT(Mosquitto)がこれに該当し、認可されていない操作を行っ�
 
 ### 2.2 AsyncMessageReader クラス
 
+> 対応プラットフォーム: Python
+
 #### `AsyncMessageReader()`
 
 AsyncMessageReaderクラスのコンストラクタ。
 
 ```
 AsyncMessageReader(
-    service,
+    service=None,
     topics=None,
     config=None,
-    consistency=AT_MOST_ONCE,
-    client_id=DEFAULT_CLIENT_ID,
-    value_type="byte_array",
-    value_deserializer=None,
     **kwargs)
 ```
 
@@ -289,6 +351,7 @@ AsyncMessageReader(
 * service
     * サービス名
     * 設定ファイルに対応するサービス名が記述されている必要がある
+    * serviceを指定しなかった場合は設定ファイルで記述されているファイルが1つでなければならない。
 * topics
     * トピック名
     * `str` または `list` を指定できる
@@ -299,38 +362,43 @@ AsyncMessageReader(
     * コンフィグ名が指定されるとコンフィグサーバからコンフィグ情報を取得する。
     * コンフィグ情報のなかで定義されているサービスが1つしかないとわかっている場合はサービス名にNoneを指定してもよい。
     * コンフィグ名が指定されなかった場合、コンフィグ情報を得るために設定ファイルが読み込まれる。
-* consistency
-    * メッセージ配信の信頼性を指定する
-    * AT_MOST_ONCE (=0)
-        * メッセージは届かないかもしれない
-    * AT_LEAST_ONCE (=1)
-        * メッセージは必ず届くが何度も届くかもしれない
-    * EXACTLY_ONCE (=2)
-        * メッセージは必ず一度だけ届く
-* client_id
-    * クライアントの名前
-    * DEFAULT_CLIENT_ID, None, 空文字のいずれかが指定された場合はライブラリが値を自動生成する
-    * 自動生成した値は、このオブジェクトのプロパティとして取得できる
-* value_type
-    * メッセージのデータ本体部分（ペイロード）のタイプ名
-    * ここで指定された値によって`AsyncMessageReader`が返すペイロードの型が定まる
-    * 標準パッケージでは `"byte_array"`, `"text"` の何れかを指定する
-        * `"byte_array"`(デフォルト値)を指定した場合、ペイロードの型は `bytes` となる
-        * `"text"`を指定した場合、ペイロードの型は `str` となる
-    * 追加パッケージをインストールすることにより、`value_type`に指定できるタイプ名を増やすことができる
-        * SINETStream v1.1 以降では画像タイプを追加するパッケージを提供している
-        * 追加されるタイプ名は `"image"` となる
-        * `"image"`を指定し当た場合、ペイロードの型は `numpy.ndarray`（OpenCVの画像データ） となる
-        * `numpy.ndarray`の画像データにおける色順序は OpenCV のもの（青、緑、赤）となる
-* value_deserializer
-    * メッセージのバイト列から値を復元（デシリアライズ）するために使用する関数
-    * このパラメータを指定しない場合、`value_type`に指定した値によりデシリアライズする関数が定まる
-* data_encryption
-    * メッセージの暗号化、復号化の有効、無効を指定する
 * kwargs
-    * メッセージングシステム固有のパラメータを YAML のマッピングとして記述する
+    * consistency
+        * メッセージ配信の信頼性を指定する
+        * AT_MOST_ONCE (=0)
+            * メッセージは届かないかもしれない
+        * AT_LEAST_ONCE (=1)
+            * メッセージは必ず届くが何度も届くかもしれない
+        * EXACTLY_ONCE (=2)
+            * メッセージは必ず一度だけ届く
+    * client_id
+        * クライアントの名前
+        * DEFAULT_CLIENT_ID, None, 空文字のいずれかが指定された場合はライブラリが値を自動生成する
+        * 自動生成した値は、このオブジェクトのプロパティとして取得できる
+    * value_type
+        * メッセージのデータ本体部分（ペイロード）のタイプ名
+        * ここで指定された値によって`AsyncMessageReader`が返すペイロードの型が定まる
+        * 標準パッケージでは `"byte_array"`, `"text"` の何れかを指定する
+            * `"byte_array"`(デフォルト値)を指定した場合、ペイロードの型は `bytes` となる
+            * `"text"`を指定した場合、ペイロードの型は `str` となる
+        * 追加パッケージをインストールすることにより、`value_type`に指定できるタイプ名を増やすことができる
+            * SINETStream v1.1 以降では画像タイプを追加するパッケージを提供している
+            * 追加されるタイプ名は `"image"` となる
+            * `"image"`を指定し当た場合、ペイロードの型は `numpy.ndarray`（OpenCVの画像データ） となる
+            * `numpy.ndarray`の画像データにおける色順序は OpenCV のもの（青、緑、赤）となる
+    * value_deserializer
+        * メッセージのバイト列から値を復元（デシリアライズ）するために使用する関数
+        * このパラメータを指定しない場合、`value_type`に指定した値によりデシリアライズする関数が定まる
+    * data_encryption
+        * メッセージの暗号化、復号化の有効、無効を指定する
+    * type_spec _(config file version >= 3)_
+        * そのほか、メッセージングシステム固有のパラメータをの YAML のマッピングとして記述する
+    * そのほか、メッセージングシステム固有のパラメータをの YAML のマッピングとして記述する _(config file version < 3)_
 
-`kwargs` に記述されたパラメータは、バックエンドのメッセージングシステムのコンストラクタにそのまま渡される。
+config file version >= 3では: `type_spec` に記述されたパラメータは、バックエンドのメッセージングシステムのコンストラクタにそのまま渡される。
+詳細は [メッセージングシステム固有のパラメータ](#メッセージングシステム固有のパラメータ) を参照。
+
+config file version < 2では: `kwargs` に記述されたパラメータは、バックエンドのメッセージングシステムのコンストラクタにそのまま渡される。
 詳細は [メッセージングシステム固有のパラメータ](#メッセージングシステム固有のパラメータ) を参照。
 
 `service` 以外の引数は、設定ファイルにデフォルト値を記述することができる。
@@ -385,6 +453,8 @@ AsyncMessageReader(
 
 ### 2.3 MessageWriter クラス
 
+> 対応プラットフォーム: Python, MicroPython
+
 #### `MessageWriter()`
 
 ```
@@ -392,10 +462,6 @@ MessageWriter(
     service,
     topic,
     config=None,
-    consistency=AT_MOST_ONCE,
-    client_id=DEFAULT_CLIENT_ID,
-    value_type="byte_array",
-    value_serializer=None,
     **kwargs)
 ```
 
@@ -406,45 +472,65 @@ MessageWriterクラスのコンストラクタ。
 * service
     * サービス名
     * 設定ファイルに対応するサービス名が記述されている必要がある
+    * 対応プラットフォーム: Python, MicroPython
 * topic
     * トピック名
     * 指定を行わなかった場合は設定ファイルに記述されている値が用いられる
+    * 対応プラットフォーム: Python, MicroPython
 * config
     * コンフィグ名
     * コンフィグ名が指定されるとコンフィグサーバからコンフィグ情報を取得する。
     * コンフィグ情報のなかで定義されているサービスが1つしかないとわかっている場合はサービス名にNoneを指定してもよい。
     * コンフィグ名が指定されなかった場合、コンフィグ情報を得るために設定ファイルが読み込まれる。
-* consistency
-    * メッセージ配信の信頼性を指定する
-    * AT_MOST_ONCE (=0)
-        * メッセージは届かないかもしれない
-    * AT_LEAST_ONCE (=1)
-        * メッセージは必ず届くが何度も届くかもしれない
-    * EXACTLY_ONCE (=2)
-        * メッセージは必ず一度だけ届く
-* client_id
-    * クライアントの名前
-    * DEFAULT_CLIENT_ID, None, 空文字のいずれかが指定された場合はライブラリが値を自動生成する
-* value_type
-    * メッセージのデータ本体部分（ペイロード）のタイプ名
-    * ここで指定された値によって `MessageWriter.publish()` の引数に渡すデータの型が定まる
-    * 標準パッケージでは `"byte_array"`, `"text"` の何れかを指定する
-        * `"byte_array"`(デフォルト値)を指定した場合、ペイロードの型は `bytes` となる
-        * `"text"`を指定した場合、ペイロードの型は `str` となる
-    * 追加パッケージをインストールすることにより、`value_type`に指定できるタイプ名を増やすことができる
-        * SINETStream v1.1 以降では画像タイプを追加するパッケージを提供している
-        * 追加されるタイプ名は `"image"` となる
-        * `"image"`を指定し当た場合、ペイロードの型は `numpy.ndarray` （OpenCVの画像データ）となる
-        * `numpy.ndarray`の画像データにおける色順序は OpenCV のもの（青、緑、赤）となる
-* value_serializer
-    * メッセージの値をバイト列に変換（シリアライズ）するための関数
-    * このパラメータを指定しない場合、`value_type`に指定した値によりシリアライズする関数が定まる
-* data_encryption
-    * メッセージの暗号化、復号化の有効、無効を指定する
+    * 対応プラットフォーム: Python
 * kwargs
-    * メッセージングシステム固有のパラメータを YAML のマッピングとして記述する
+    * no_config
+        * bool
+        * Trueを指定すると設定ファイルを読み込まない。
+        * 対応プラットフォーム: Python, MicroPython
+    * consistency
+        * メッセージ配信の信頼性を指定する
+        * AT_MOST_ONCE (=0)
+            * メッセージは届かないかもしれない
+        * AT_LEAST_ONCE (=1)
+            * メッセージは必ず届くが何度も届くかもしれない
+        * EXACTLY_ONCE (=2)
+            * メッセージは必ず一度だけ届く
+        * 対応プラットフォーム: Python, MicroPython
+    * client_id
+        * クライアントの名前
+        * DEFAULT_CLIENT_ID, None, 空文字のいずれかが指定された場合はライブラリが値を自動生成する
+        * 自動生成した値は、このオブジェクトのプロパティとして取得できる
+        * 対応プラットフォーム: Python, MicroPython
+    * value_type
+        * メッセージのデータ本体部分（ペイロード）のタイプ名
+        * ここで指定された値によって `MessageWriter.publish()` の引数に渡すデータの型が定まる
+        * 標準パッケージでは `"byte_array"`, `"text"` の何れかを指定する
+            * `"byte_array"`(デフォルト値)を指定した場合、ペイロードの型は `bytes` となる
+            * `"text"`を指定した場合、ペイロードの型は `str` となる
+        * 追加パッケージをインストールすることにより、`value_type`に指定できるタイプ名を増やすことができる
+            * SINETStream v1.1 以降では画像タイプを追加するパッケージを提供している
+            * 追加されるタイプ名は `"image"` となる
+            * `"image"`を指定し当た場合、ペイロードの型は `numpy.ndarray` （OpenCVの画像データ）となる
+            * `numpy.ndarray`の画像データにおける色順序は OpenCV のもの（青、緑、赤）となる
+        * 対応プラットフォーム: Python, MicroPython
+    * value_serializer
+        * メッセージの値をバイト列に変換（シリアライズ）するための関数
+        * このパラメータを指定しない場合、`value_type`に指定した値によりシリアライズする関数が定まる
+        * 対応プラットフォーム: Python, MicroPython
+    * data_encryption
+        * メッセージの暗号化、復号化の有効、無効を指定する
+        * 対応プラットフォーム: Python
+    * type_spec _(config file version >= 3)_
+        * そのほか、メッセージングシステム固有のパラメータをの YAML のマッピングとして記述する
+        * 対応プラットフォーム: Python, MicroPython
+    * そのほか、メッセージングシステム固有のパラメータをの YAML のマッピングとして記述する _(config file version < 3)_
+        * 対応プラットフォーム: Python, MicroPython
 
-`kwargs` に記述されたパラメータは、バックエンドのメッセージングシステムのコンストラクタにそのまま渡される。
+config file version >= 3では: `type_spec` に記述されたパラメータは、バックエンドのメッセージングシステムのコンストラクタにそのまま渡される。
+詳細は [メッセージングシステム固有のパラメータ](#メッセージングシステム固有のパラメータ) を参照。
+
+config file version < 2では: `kwargs` に記述されたパラメータは、バックエンドのメッセージングシステムのコンストラクタにそのまま渡される。
 詳細は [メッセージングシステム固有のパラメータ](#メッセージングシステム固有のパラメータ) を参照。
 
 `service` 以外の引数は、設定ファイルにデフォルト値を記述することができる。
@@ -516,17 +602,15 @@ MessageWriterクラスのコンストラクタ。
 
 ### 2.4 AsyncMessageWriter クラス
 
+> 対応プラットフォーム: Python
+
 #### `AsyncMessageWriter()`
 
 ```
 AsyncMessageWriter(
-    service,
-    topic,
+    service=None,
+    topic=None,
     config=None,
-    consistency=AT_MOST_ONCE,
-    client_id=DEFAULT_CLIENT_ID,
-    value_type="byte_array",
-    value_serializer=None,
     **kwargs)
 ```
 
@@ -545,35 +629,42 @@ AsyncMessageWriterクラスのコンストラクタ。
     * コンフィグ名が指定されるとコンフィグサーバからコンフィグ情報を取得する。
     * コンフィグ情報のなかで定義されているサービスが1つしかないとわかっている場合はサービス名にNoneを指定してもよい。
     * コンフィグ名が指定されなかった場合、コンフィグ情報を得るために設定ファイルが読み込まれる。
-* consistency
-    * メッセージ配信の信頼性を指定する
-    * AT_MOST_ONCE (=0)
-        * メッセージは届かないかもしれない
-    * AT_LEAST_ONCE (=1)
-        * メッセージは必ず届くが何度も届くかもしれない
-    * EXACTLY_ONCE (=2)
-        * メッセージは必ず一度だけ届く
-* client_id
-    * クライアントの名前
-    * DEFAULT_CLIENT_ID, None, 空文字のいずれかが指定された場合はライブラリが値を自動生成する
-* value_type
-    * メッセージのデータ本体部分（ペイロード）のタイプ名
-    * ここで指定された値によって `AsyncMessageWriter.publish()` の引数に渡すデータの型が定まる
-    * 標準パッケージでは `"byte_array"`, `"text"` の何れかを指定する
-        * `"byte_array"`(デフォルト値)を指定した場合、ペイロードの型は `bytes` となる
-        * `"text"`を指定した場合、ペイロードの型は `str` となる
-    * 追加パッケージをインストールすることにより、`value_type`に指定できるタイプ名を増やすことができる
-        * SINETStream v1.1 以降では画像タイプを追加するパッケージを提供している
-        * 追加されるタイプ名は `"image"` となる
-        * `"image"`を指定し当た場合、ペイロードの型は `numpy.ndarray` （OpenCVの画像データ）となる
-        * `numpy.ndarray`の画像データにおける色順序は OpenCV のもの（青、緑、赤）となる
-* value_serializer
-    * メッセージの値をバイト列に変換（シリアライズ）するための関数
-    * このパラメータを指定しない場合、`value_type`に指定した値によりシリアライズする関数が定まる
-* data_encryption
-    * メッセージの暗号化、復号化の有効、無効を指定する
 * kwargs
-    * メッセージングシステム固有のパラメータを YAML のマッピングとして記述する
+    * no_config
+        * bool
+        * Trueを指定すると設定ファイルを読み込まない。
+    * consistency
+        * メッセージ配信の信頼性を指定する
+        * AT_MOST_ONCE (=0)
+            * メッセージは届かないかもしれない
+        * AT_LEAST_ONCE (=1)
+            * メッセージは必ず届くが何度も届くかもしれない
+        * EXACTLY_ONCE (=2)
+            * メッセージは必ず一度だけ届く
+    * client_id
+        * クライアントの名前
+        * DEFAULT_CLIENT_ID, None, 空文字のいずれかが指定された場合はライブラリが値を自動生成する
+    * value_type
+        * メッセージのデータ本体部分（ペイロード）のタイプ名
+        * ここで指定された値によって `AsyncMessageWriter.publish()` の引数に渡すデータの型が定まる
+        * 標準パッケージでは `"byte_array"`, `"text"` の何れかを指定する
+            * `"byte_array"`(デフォルト値)を指定した場合、ペイロードの型は `bytes` となる
+            * `"text"`を指定した場合、ペイロードの型は `str` となる
+        * 追加パッケージをインストールすることにより、`value_type`に指定できるタイプ名を増やすことができる
+            * SINETStream v1.1 以降では画像タイプを追加するパッケージを提供している
+            * 追加されるタイプ名は `"image"` となる
+            * `"image"`を指定し当た場合、ペイロードの型は `numpy.ndarray` （OpenCVの画像データ）となる
+            * `numpy.ndarray`の画像データにおける色順序は OpenCV のもの（青、緑、赤）となる
+    * value_serializer
+        * メッセージの値をバイト列に変換（シリアライズ）するための関数
+        * このパラメータを指定しない場合、`value_type`に指定した値によりシリアライズする関数が定まる
+    * data_encryption
+        * メッセージの暗号化、復号化の有効、無効を指定する
+    * type_spec _(config file version >= 3)_
+        * そのほか、メッセージングシステム固有のパラメータをの YAML のマッピングとして記述する
+        * 対応プラットフォーム: Python, MicroPython
+    * そのほか、メッセージングシステム固有のパラメータをの YAML のマッピングとして記述する _(config file version < 3)_
+        * 対応プラットフォーム: Python, MicroPython
 
 `kwargs` に記述されたパラメータは、バックエンドのメッセージングシステムのコンストラクタにそのまま渡される。
 詳細は [メッセージングシステム固有のパラメータ](#メッセージングシステム固有のパラメータ) を参照。
@@ -658,6 +749,8 @@ with AsyncMessageWriter('service-1') as writer:
 
 メッセージングシステムのメッセージオブジェクトのラッパークラス。
 
+> 対応プラットフォーム: Python, MicroPython
+
 #### プロパティ
 
 全て読み取りアクセスのみ。
@@ -688,6 +781,8 @@ with AsyncMessageWriter('service-1') as writer:
 Reader/Writerオブジェクトに対してmetricsプロパティを参照すると得られる。
 Reader/Writerオブジェクトをclose()したあとはcloseしたときのメトリクス情報が得られる(ただしrawはNone)。
 
+> 対応プラットフォーム: Python, MicroPython
+
 * MessageReader.metrics
 * MessageWriter.metrics
 * AsyncMessageReader.metrics
@@ -704,6 +799,7 @@ SINETStreamの統計情報だけでなくメッセージングシステム固有
 
 > Eclipse Paho(SINETStreamのMQTTプラグインで使用しているMQTTクライアントライブラリ)は統計情報を提供してない。
 > Kafkaにはメッセージングシステム固有の統計情報があるがリセット機能はない。
+> Micro PythonのMQTTプラグインは統計情報を提供していない。
 
 統計情報はSINETStreamメインライブラリとメッセージングシステムプラグインの境界で測定した値が使われる。
 したがって、SINETStreamの暗号化機能が有効の場合は暗号化されたメッセージが測定される。
@@ -722,6 +818,8 @@ Readerではメッセージングシステムプラグインからデータを�
   Avro serializer               Avro deserializer
     ↓                            ↑
   encrypt                       decrypt
+    ↓                            ↑
+  packetize                     depacketize
 - - ↓  - - - - - - - - - - - - - ↑ - - - - - - - -←メトリクス測定境界
   messaging system → broker → messaging system
 ```
@@ -846,9 +944,11 @@ with reader as f:
 
 ## 3. メッセージングシステム固有のパラメータ
 
-`kwargs` を用いて、バックエンドのメッセージングシステム固有のパラメータを透過的に指定できる。
+config file version >= 3 では `type_spec:` を用いて、
+config file version < 3 では`kwargs` を用いて、
+バックエンドのメッセージングシステム固有のパラメータを透過的に指定できる。
 実際にどのようなパラメータを渡せるかはバックエンドによって異なる。
-`kwargs` に指定されたパラメータの妥当性チェックは行われない。
+`type_spec:` や `kwargs` に指定されたパラメータの妥当性チェックは行われない。
 
 ### 3.1 Apache Kafka
 

@@ -37,10 +37,10 @@ Java版は
 
 * Python版
     * Python3.9以上                     <!--- PythonVERSION --->
-    * SINETStream v1.9.2(Python)        <!--- SINETStreamVERSION --->
+    * SINETStream v1.10.0(Python)       <!--- SINETStreamVERSION --->
 * Java版
     * Java11以上                        <!--- JavaVERSION --->
-    * SINETStream v1.9.2(Java)          <!--- SINETStreamVERSION --->
+    * SINETStream v1.10.0(Java)         <!--- SINETStreamVERSION --->
 * [SINETStream API 設定ファイル](https://github.com/nii-gakunin-cloud/sinetstream/blob/main/docs/userguide/config.md) (データ送受信先の接続情報等が記述されているもの)
 
 ## ビルド
@@ -62,11 +62,13 @@ Python版ではpipをつかってネットワークインストールするかsi
 
 ```
 # ネットワークインストール
-$ pip install --user sinetstream_cli
+$ python -m venv ./cli
+$ ./cli/bin/pip install sinetstream_cli
+$ ./cli/bin/sinetstream_cli ...
 ```
 
 ```
-# SINETStreamがインストール済みの場合はインストールせずスクリプトを直接実行できる
+# SINETStreamがインストール済みの場合はsinetstream_cliをインストールせずスクリプトを直接実行できる
 $ python src/sinetstream_cli/sinetstream_cli.py ...
 ```
 
@@ -85,6 +87,45 @@ $ unzip /path/to/sinetstream_cli-*zip
 # 実行
 $ sinetstream_cli-*/bin/sinetstream_cli ...
 ```
+
+### Windows環境でPython版をインストール
+
+Pythonの実行環境はMicrosoft Storeからインストールする <!-- かポータブル版のPythonを利用する --> 。
+
+<!---#### Store版pythonでのインストール方法:--->
+
+1. Microsoft Storeをひらく
+1. 検索窓と `python` 入力し検索
+1. インストールしたいpythonバージョンをえらんで「入手」ボタンをクリックするとユーザ環境にインストールされる。
+1. コマンドプロンプトをひらいて以下のコマンドを実行する:
+    ````
+    python -m venv cli
+    cli\Scripts\pip install sinetstream_cli
+    ````
+sinetstream_cliを実行するには `venv\Scripts\sinetstream_cli ...` のように実行する。
+
+<!---
+#### ポータブル版pythonでのインストール方法:
+
+1. [公式ダウンロードページ](https://www.python.org/downloads/windows/)から
+   embeddable package 64-bitのリンクをクリックしてダウンロードする。
+1. zipを展開する。
+1. pipを導入する。PowerShellから以下のコマンドを実行する。
+    ````
+    cd python-3.12.9-embed-amd64
+    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+    .\python get-pip.py
+    ````
+1. メモ帳などのテキストエディタで `python312._pth` をひらいてコメントアウトされている
+   `import site`
+   のコメントをはずす。
+1. pipをつかってsinetstream_cliをインストールする。
+   ````
+   .\python Scripts\pip.exe install sinetstream_cli
+   ````
+
+sinetstream_cliを実行するには `venv\Scripts\sinetstream_cli ...`
+--->
 
 ## 書式
 
@@ -420,14 +461,17 @@ $
 コマンドラインでの設定を `.sinetstream_config.yml` にしたとすると次のようになる:
 
 ```
-service-1:
-    value_type: text
-    type: mqtt
-    brokers: mqtt
-    data_compression: true
-    compression:
-        algorithm: zstd
-    topic: test
+header:
+    #version: 3
+config:
+    service-1:
+        value_type: text
+        type: mqtt
+        brokers: mqtt
+        data_compression: true
+        compression:
+            algorithm: zstd
+        topic: test
 ```
 
 ### YAMLパラメータ

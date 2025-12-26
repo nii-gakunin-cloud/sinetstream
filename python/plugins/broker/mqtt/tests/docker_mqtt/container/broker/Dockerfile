@@ -1,4 +1,4 @@
-FROM sinetstream/tutorial:1.0.1
+FROM sinetstream/tutorial:20250416
 
 RUN yum install -y nmap-ncat \
  && yum clean all
@@ -10,3 +10,4 @@ RUN cat /tmp/setup-pw.conf >> /etc/supervisord.conf \
   && mkdir -p /etc/mosquitto/conf.d
 
 COPY conf/*.conf /etc/mosquitto/conf.d/
+

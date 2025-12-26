@@ -271,6 +271,103 @@ def cmd_read(argv0, argv):
     exit()
 
 
+def pinger(writer_ready, ping_msg, args, kwargs):
+    from sinetstream import MessageWriter
+    import random
+    import string
+    import time
+
+    count = args.count
+    interval = args.interval
+
+    with MessageWriter(**kwargs) as writer:
+        writer_ready.set()
+        i = 0
+        while count is None or i < count:
+            i += 1
+            msg = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
+            ping_msg[msg] = i
+            print(f"send {i}")
+            writer.publish(msg)
+            time.sleep(interval)
+
+
+def ponger(reader_ready, ping_msg, args, kwargs):
+    from sinetstream import MessageReader
+
+    count = args.count
+    n = 0
+    pong_msg = set()
+    with MessageReader(**kwargs) as reader:
+        reader_ready.set()
+        for rcv in reader:
+
+            msg = rcv.value
+            duped = msg in pong_msg
+            if not duped:
+                pong_msg.add(msg)
+                n += 1
+
+            dup = " (DUP)" if duped else ""
+            if msg in ping_msg:
+                i = ping_msg[msg]
+                print(f"        recv {i}{dup}")
+            else:
+                print(f"        recv {msg}{dup}")
+
+            if count is not None and n >= count:
+                return
+
+
+def cmd_ping(argv0, argv):
+    import random
+    import string
+    import threading
+
+    parser = make_parser(argv0, "ping")
+    parser.add_argument(
+        "-C",
+        "--count",
+        metavar="N",
+        required=False,
+        type=int,
+        help="exit after the given count of messages have been received")
+    parser.add_argument(
+        "-i",
+        "--interval",
+        metavar="S",
+        required=False,
+        type=float,
+        default=1,
+        help="sending interval")
+    args = parser.parse_args(argv)
+
+    increase_log_level(args.verbose)
+
+    kwargs = build_kwargs(args)
+
+    kwargs["value_type"] = "text"
+    topic = "sinetstream_cli_ping_" + ''.join(random.choices(string.digits, k=8))
+    kwargs.setdefault("topic", topic)
+    print(f"topic={kwargs["topic"]}")
+
+    ping_msg = {}
+    reader_ready = threading.Event()
+    writer_ready = threading.Event()
+
+    try:
+        tr = threading.Thread(target=ponger, args=(reader_ready, ping_msg, args, kwargs))
+        tr.start()
+        reader_ready.wait()
+        tw = threading.Thread(target=pinger, args=(writer_ready, ping_msg, args, kwargs), daemon=True)
+        tw.start()
+        writer_ready.wait()
+        tr.join()
+    except (KeyboardInterrupt):
+        pass
+    exit()
+
+
 def main():
     from sys import argv
     global logger
@@ -280,10 +377,12 @@ def main():
         cmd_write(argv[0], argv[2:])
     elif cmd in ["read", "sub"]:
         cmd_read(argv[0], argv[2:])
+    elif cmd in ["ping"]:
+        cmd_ping(argv[0], argv[2:])
     else:
         if cmd is not None:
             logger.error(f"invalid cmd: {cmd}")
-        logger.error(f"usage: {argv[0]} write|read ...")
+        logger.error(f"usage: {argv[0]} write|read|ping ...")
         exit(1)
 
 

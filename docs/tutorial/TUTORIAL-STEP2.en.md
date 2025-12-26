@@ -598,17 +598,20 @@ Here is a brief description of the SINETStream configuration file and the API us
 The contents of the SINETStream configuration file `.sinetstream_config.yml` is as follows.
 
 ```yaml
-service-tutorial-kafka:
-    type: kafka
-    brokers: "broker:9092"
-    topic: topic-tutorial-kafka
-    value_type: text
+header:
+    version: 3
+config:
+    service-tutorial-kafka:
+        type: kafka
+        brokers: "broker:9092"
+        topic: topic-tutorial-kafka
+        value_type: text
 
-service-tutorial-mqtt:
-    type: mqtt
-    brokers: "broker:1883"
-    topic: topic-tutorial-mqtt
-    value_type: text
+    service-tutorial-mqtt:
+        type: mqtt
+        brokers: "broker:1883"
+        topic: topic-tutorial-mqtt
+        value_type: text
 ```
 
 The configuration file contains hierarchical keys and values in YAML format.

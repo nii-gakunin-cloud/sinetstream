@@ -28,7 +28,7 @@ from threading import Lock, RLock
 from os import unlink
 from tempfile import NamedTemporaryFile
 
-from sinetstream.configs import get_config_params
+from sinetstream.configs import (get_config_params, make_confver)
 from sinetstream.crypto import CipherAES
 from sinetstream.error import (
     InvalidArgumentError,
@@ -171,7 +171,10 @@ def normalize_params(params):
 
 
 def merge_parameter(service, kwargs, default_values, config=None, config_file=None, no_config=False):
-    service, raw_params = get_config_params(service, config, config_file) if not no_config else (None, {})
+    (confver,
+     service,
+     raw_params) = get_config_params(service, config, config_file) if not no_config \
+                   else (make_confver(), None, {})
     svc_params = convert_params(raw_params)
     # Merge parameters
     # Priority:
@@ -183,7 +186,7 @@ def merge_parameter(service, kwargs, default_values, config=None, config_file=No
     deepupdate(params, svc_params)
     deepupdate(params, convert_params(kwargs))
     normalize_params(params)
-    return service, params
+    return confver, service, params
 
 
 default_params = {
@@ -328,8 +331,9 @@ class IOMetrics:
 
 class MessageIO:
 
-    def __init__(self, service, params, registry):
+    def __init__(self, confver, service, params, registry):
         validate_config(params)
+        self._confver = confver
         self._service = service
         self.params = params
         self._tmpfile_list = []
@@ -347,11 +351,13 @@ class MessageIO:
         _data = "_data"
         if isinstance(x, dict):
             x2 = {}
+            ks = []
             for k, v in x.items():
                 if isinstance(v, dict):
                     self._convert_inline_data(v)
                 else:
                     if isinstance(k, str) and k.endswith(_data):
+                        ks.append(k)
                         k2 = k[0:-len(_data)]
                         with NamedTemporaryFile(mode=("wt" if isinstance(v, str) else "wb"),
                                                 prefix="sinetstream-",
@@ -363,6 +369,8 @@ class MessageIO:
                             f.write(v)
                         x2[k2] = fn
                         logger.debug(f"{k2}={fn}")
+            for kk in ks:
+                del x[kk]
             x.update(x2)
         elif isinstance(x, list):
             for e in x:
@@ -381,7 +389,7 @@ class MessageIO:
         plugin_class = registry.get(service_type)
         if plugin_class is None:
             raise UnsupportedServiceTypeError(f"{service_type} not found")
-        return plugin_class(self.params)
+        return plugin_class(self._confver, self.params)
 
     def __enter__(self):
         logger.debug("MessageIO:enter")
@@ -492,14 +500,16 @@ class BaseMessageReader(MessageIO):
                  config_file=None,
                  no_config=False,
                  **kwargs):
-        service, params = merge_parameter(service,
-                                          kwargs,
-                                          BaseMessageReader.default_params,
-                                          config=config,
-                                          config_file=config_file,
-                                          no_config=no_config)
+        (confver,
+         service,
+         params) = merge_parameter(service,
+                                   kwargs,
+                                   BaseMessageReader.default_params,
+                                   config=config,
+                                   config_file=config_file,
+                                   no_config=no_config)
         params["topics"] = _setup_topics(params, topics)
-        super().__init__(service, params, registry)
+        super().__init__(confver, service, params, registry)
         self.unmarshaller = Unmarshaller() if not params.get("user_data_only") else None
         self.value_deserializer = self._setup_deserializer()
         self.decompressor = self._setup_decompressor()
@@ -672,14 +682,16 @@ class BaseMessageWriter(MessageIO):
                  no_config=False,
                  **kwargs):
         logger.debug("MessageWriter:init")
-        service, params = merge_parameter(service,
-                                          kwargs,
-                                          MessageWriter.default_params,
-                                          config=config,
-                                          config_file=config_file,
-                                          no_config=no_config)
+        (confver,
+         service,
+         params) = merge_parameter(service,
+                                   kwargs,
+                                   MessageWriter.default_params,
+                                   config=config,
+                                   config_file=config_file,
+                                   no_config=no_config)
         params["topic"] = _setup_topic(params, topic)
-        super().__init__(service, params, registry)
+        super().__init__(confver, service, params, registry)
         self.marshaller = Marshaller() if not params.get("user_data_only") else None
         self.value_serializer = self._setup_serializer()
         self.compressor = self._setup_compressor()

@@ -57,20 +57,57 @@ Please refer to the [Configuration file](config.en.md) for details.
 
 In this example, we create the following configuration file `.sinetstream_config.yml` in the current directory on the client machine.
 
+```yaml
+header:
+  version: 3
+config:
+  service-1:
+    type: kafka
+    brokers:
+      - kafka-1:9092
+      - kafka-2:9092
+      - kafka-3:9092
+      - kafka-4:9092
+  service-2:
+    type: mqtt
+    brokers: 192.168.2.105:1883
+    type_spec:
+      username_pw:
+        username: user01
+        password: pass01
 ```
-service-1:
-  type: kafka
-  brokers:
-    - kafka-1:9092
-    - kafka-2:9092
-    - kafka-3:9092
-    - kafka-4:9092
-service-2:
-  type: mqtt
-  brokers: 192.168.2.105:1883
-  username_pw_set:
-    username: user01
-    password: pass01
+
+For the Python version, the configuration file should be named `sinetstream_config.json` and use JSON format instead of YAML.
+When running on a PC, place the configuration file in the current directory.
+When running on a microcontroller like the Raspberry Pi Pico, place it in the root directory.
+
+```json
+{
+  "header": {
+    "version": 3
+  },
+  "config": {
+    "service-1": {
+      "type": "kafka",
+      "brokers": [
+        "kafka-1:9092",
+        "kafka-2:9092",
+        "kafka-3:9092",
+        "kafka-4:9092"
+      ]
+    },
+    "service-2": {
+      "type": "mqtt",
+      "brokers": "192.168.2.105:1883",
+      "type_spec": {
+        "username_pw": {
+          "username": "user01",
+          "password": "pass01"
+        }
+      }
+    }
+  }
+}
 ```
 
 ### Sending Messages
@@ -121,18 +158,26 @@ To exit the `for` loop, specify the `receive_timeout_ms` parameter in the constr
 
 * sinetstream.MessageReader
     * The class to receive messages from the messaging system.
+    * supported platform: Python, MicroPython
 * sinetstream.AsyncMessageReader
     * The class to receive messages from the messaging system. (Asynchronous API)
+    * supported platform: Python
 * sinetstream.MessageWriter
     * The class to send messages to the messaging system.
+    * supported platform: Python, MicroPython
 * sinetstream. AsyncMessageWriter
     * The class to send messages to the messaging system. (Asynchronous API)
+    * supported platform: Python
 * sinetstream.Message
     * The class to represent a message.
+    * supported platform: Python, MicroPython
 * sinetstream.SinetError
     * The parent class of all the exception classes in SINETStream
+    * supported platform: Python, MicroPython
 
 ### 2.1 MessageReader Class
+
+> supported platform: Python, MicroPython
 
 #### `MessageReader()`
 
@@ -140,13 +185,9 @@ The constructor of the MessageReader class
 
 ```
 MessageReader(
-    service,
+    service=None,
     topics=None,
-    consistency=AT_MOST_ONCE,
-    client_id=DEFAULT_CLIENT_ID,
-    value_type=None,
-    value_deserializer=None,
-    receive_timeout_ms=float("inf"),
+    config=None,
     **kwargs)
 ```
 
@@ -155,45 +196,72 @@ MessageReader(
 * service
     * Service name.
     * The name must be defined in the configuration file.
+    * If no service is specified, only one service described in the configuration file must be present.
+    * supported paltform: Python, MicroPython
 * topics
     * Topic name.
     * Specify a `str` or a `list` for a single topic.
     * Specify a `list` when subscribing for multiple topics.
     * If not specified, the value specified in the configuration file will be used as default.
-* consistency
-    * The reliability of the message delivery.
-    * AT_MOST_ONCE (=0)
-        * A message may not arrive.
-    * AT_LEAST_ONCE (=1)
-        * A message always arrives but may arrive many times.
-    * EXACTLY_ONCE (=2)
-        * A message always arrives only once.
-* client_id
-    * Client name
-    * If any of DEFAULT_CLIENT_ID, None, or an empty string is specified, the library will automatically generate a value.
-    * The generated value can be obtained as a property of this object.
-* value_type
-    * The type name of message payload.
-    * `MessageReader` will treat the payload as the type specified here.
-    * When using the standard package, the following two type names are supported.
-        * Set `"byte_array"` (default) to treat the payload as `bytes`.
-        * Set `"text"` to treat the payload as `str`.
-    * When using a plugin pacakge, other type names may be supported.
-    * When using the image type plugin provided with SINETStream v1.1 (or later), the following type name is supported.
-        * Set `"image"` to treat the payload as `numpy.ndarray`, which is the image data type in OpenCV.
-        * The color order in `numpy.ndarray` is BGR, which is consistent with OpenCV.
-* value_deserializer
-    * The function used to decode the value from the byte array in the message.
-    * If not specified, an appropriate deserializer function will be used according to `value_type`.
-* receive_timeout_ms
-    * Maximum time (ms) to wait for message to arrive.
-    * Once timed out, no more messages can be read from this connection.
-* data_encryption
-    * Enable or disable message encryption and decryption.
+    * supported paltform: Python, MicroPython
+* config
+    * Config name.
+    * If a config name is specified, config information is retrieved from the config server.
+    * If it is known that only one service is defined within the config information, the service name may be specified as None.
+    * If no config name is specified, the configuration file is read to obtain config information.
+    * supported paltform: Python
 * kwargs
-    * Specify the messaging system-specific parameters as YAML mappings.
+    * no_config
+        * bool
+        * Specifying True prevents the configuration file from being loaded.
+        * supported paltform: Python, MicroPython
+    * consistency
+        * The reliability of the message delivery.
+        * AT_MOST_ONCE (=0)
+            * A message may not arrive.
+        * AT_LEAST_ONCE (=1)
+            * A message always arrives but may arrive many times.
+        * EXACTLY_ONCE (=2)
+            * A message always arrives only once.
+        * supported paltform: Python, MicroPython
+    * client_id
+        * Client name
+        * If any of DEFAULT_CLIENT_ID, None, or an empty string is specified, the library will automatically generate a value.
+        * The generated value can be obtained as a property of this object.
+        * supported paltform: Python, MicroPython
+    * value_type
+        * The type name of message payload.
+        * `MessageReader` will treat the payload as the type specified here.
+        * When using the standard package, the following two type names are supported.
+            * Set `"byte_array"` (default) to treat the payload as `bytes`.
+            * Set `"text"` to treat the payload as `str`.
+        * When using a plugin pacakge, other type names may be supported.
+        * When using the image type plugin provided with SINETStream v1.1 (or later), the following type name is supported.
+            * Set `"image"` to treat the payload as `numpy.ndarray`, which is the image data type in OpenCV.
+            * The color order in `numpy.ndarray` is BGR, which is consistent with OpenCV.
+        * supported paltform: Python, MicroPython
+    * value_deserializer
+        * The function used to decode the value from the byte array in the message.
+        * If not specified, an appropriate deserializer function will be used according to `value_type`.
+        * supported paltform: Python, MicroPython
+    * receive_timeout_ms
+        * Maximum time (ms) to wait for message to arrive.
+        * Once timed out, no more messages can be read from this connection.
+        * supported paltform: Python, MicroPython
+            * Note: The timeout function is not implemented in MicroPython+MQTT.
+    * data_encryption
+        * Enable or disable message encryption and decryption.
+        * supported paltform: Python
+    * type_spec _(config file version >= 3)_
+        * Additionally, describe parameters specific to the messaging system as YAML mappings.
+        * supported paltform: Python, MicroPython
+    * Specify the messaging system-specific parameters as YAML mappings. _(config file version < 3)_
+        * supported paltform: Python, MicroPython
 
-The parameters specified in `kwargs` are passed to the constructor of the backend messaging system.
+For config file versio >= 3: The parameters specified in `type_spec` are passed to the constructor of the backend messaging system.
+Please refer to the [Messaging system-specific parameters](#messaging-system-specific-parameters) of for details.
+
+For config file version < 2: The parameters specified in `kwargs` are passed to the constructor of the backend messaging system.
 Please refer to the [Messaging system-specific parameters](#messaging-system-specific-parameters) of for details.
 
 For the arguments other than `service`, their default values can be specified in the configuration file.
@@ -262,18 +330,17 @@ AuthorizationError does not occur in the following cases:
     * Because the MQTT broker raises no error for unauthorized operation.
 
 ### 2.2 AsyncMessageReader Class
+
+> supported platform: Python
+
 #### `AsyncMessageReader()`
 
 The constructor of the AsyncMessageReader class
 
 ```
 AsyncMessageReader(
-    service,
+    service=None,
     topics=None,
-    consistency=AT_MOST_ONCE,
-    client_id=DEFAULT_CLIENT_ID,
-    value_type="byte_array",
-    value_deserializer=None,
     **kwargs)
 ```
 
@@ -282,43 +349,50 @@ AsyncMessageReader(
 * service
     * Service name.
     * The name must be defined in the configuration file.
+    * If no service is specified, only one service described in the configuration file must be present.
 * topics
     * Topic name.
     * Specify a str or a list for a single topic.
     * Specify a list when subscribing for multiple topics.
     * If not specified, the value specified in the configuration file will be used as default.
-* consistency
-    * The reliability of the message delivery.
-    * AT_MOST_ONCE (=0)
-        * A message may not arrive.
-    * AT_LEAST_ONCE (=1)
-        * A message always arrives but may arrive many times.
-    * EXACTLY_ONCE (=2)
-        * A message always arrives only once.
-* client_id
-    * Client name
-    * If any of DEFAULT_CLIENT_ID, None, or an empty string is specified, the library will automatically generate a value.
-    * The generated value can be obtained as a property of this object.
-* value_type
-    * The type name of message payload.
-    * AsyncMessageReader will treat the payload as the type specified here.
-    * When using the standard package, the following two type names are supported.
-        * Set '"byte_array"' (default) to treat the payload as bytes.
-        * Set '"text"' to treat the payload as str.
-    * When using a plugin pacakge, other type names may be supported.
-    * When using the image type plugin provided with SINETStream, the following type name is supported.
-        * Set '"image"' to treat the payload as 'numpy.ndarray', which is the image data type in OpenCV.
-        * The color order in 'numpy.ndarray' is BGR, which is consistent with OpenCV.
-* value_deserializer
-    * The function used to decode the value from the byte array in the message.
-    * If not specified, an appropriate deserializer function will be used according to value_type.
-* data_encryption
-    * Enable or disable message encryption and decryption.
 * kwargs
-    * Specify the messaging system-specific parameters as YAML mappings.
+    * consistency
+        * The reliability of the message delivery.
+        * AT_MOST_ONCE (=0)
+            * A message may not arrive.
+        * AT_LEAST_ONCE (=1)
+            * A message always arrives but may arrive many times.
+        * EXACTLY_ONCE (=2)
+            * A message always arrives only once.
+    * client_id
+        * Client name
+        * If any of DEFAULT_CLIENT_ID, None, or an empty string is specified, the library will automatically generate a value.
+        * The generated value can be obtained as a property of this object.
+    * value_type
+        * The type name of message payload.
+        * AsyncMessageReader will treat the payload as the type specified here.
+        * When using the standard package, the following two type names are supported.
+            * Set '"byte_array"' (default) to treat the payload as bytes.
+            * Set '"text"' to treat the payload as str.
+        * When using a plugin pacakge, other type names may be supported.
+        * When using the image type plugin provided with SINETStream, the following type name is supported.
+            * Set '"image"' to treat the payload as 'numpy.ndarray', which is the image data type in OpenCV.
+            * The color order in 'numpy.ndarray' is BGR, which is consistent with OpenCV.
+    * value_deserializer
+        * The function used to decode the value from the byte array in the message.
+        * If not specified, an appropriate deserializer function will be used according to value_type.
+    * data_encryption
+        * Enable or disable message encryption and decryption.
+    * type_spec _(config file version >= 3)_
+        * Additionally, describe parameters specific to the messaging system as YAML mappings.
+        * supported paltform: Python, MicroPython
+    * Specify the messaging system-specific parameters as YAML mappings. _(config file version < 3)_
 
-The parameters specified in 'kwargs' are passed to the constructor of the backend messaging system.
-Please refer to the  [Messaging system-specific parameters](#messaging-system-specific-parameters) for details.
+For config file versio >= 3: The parameters specified in `type_spec` are passed to the constructor of the backend messaging system.
+Please refer to the [Messaging system-specific parameters](#messaging-system-specific-parameters) of for details.
+
+For config file version < 2: The parameters specified in `kwargs` are passed to the constructor of the backend messaging system.
+Please refer to the [Messaging system-specific parameters](#messaging-system-specific-parameters) of for details.
 
 For the arguments other than 'service', their default values can be specified in the configuration file.
 If the same parameter is specified in both the configuration file and the constructor argument, the value specified in the constructor argument takes precedence.
@@ -371,15 +445,15 @@ Set the callback function to be invoked when the message is received.
 
 ### 2.3 MessageWriter Class
 
+> supproted platform: Python, MicroPython
+
 #### `MessageWriter()`
 
 ```
 MessageWriter(
-    service,
-    topic,
-    consistency=AT_MOST_ONCE,
-    client_id=DEFAULT_CLIENT_ID,
-    value_serializer=None,
+    service=None,
+    topic=None,
+    cofig=None,
     **kwargs)
 ```
 
@@ -390,39 +464,62 @@ The constructor of MessageWriter class
 * service
     * Service name
     * The name must be defined in the configuration file.
+    * supproted platform: Python, MicroPython
 * topic
     * Topic name
     * If not specified, the value specified in the configuration file will be used as default.
-* consistency
-    * Specify the reliability of message delivery.
-    * AT_MOST_ONCE (=0)
-        * A message may not be delivered.
-    * AT_LEAST_ONCE (=1)
-        * A message is always delivered but may be delivered many times.
-    * EXACTLY_ONCE (=2)
-        * A message is always delivered only once.
-* client_id
-    * Client name.
-    * If any of DEFAULT_CLIENT_ID, None, or an empty string is specified, the library will automatically generate a value.
-* value_type
-    * The type name of message payload.
-    * `MessageWriter.publish()` will treat the given data as the type specified here.
-    * When using the standard package, the following two type names are supported.
-        * Set `"byte_array"` (default) to treat the payload as `bytes`.
-        * Set `"text"` to treat the payload as `str`.
-    * When using a plugin pacakge, other type names may be supported.
-    * When using the image type plugin provided with SINETStream v1.1 (or later), the following type name is supported.
-        * Set `"image"` to treat the payload as `numpy.ndarray`, which is the image data type in OpenCV.
-        * The color order in `numpy.ndarray` is BGR, which is consistent with OpenCV.
-* value_serializer
-    * The function used to encode the value to the byte array in the message.
-    * If not specified, an appropriate serializer function will be used according to `value_type`.
-* data_encryption
-    * Enable or disable message encryption and decryption.
+    * supproted platform: Python, MicroPython
+* config
+    * Config name.
+    * If a config name is specified, config information is retrieved from the config server.
+    * If it is known that only one service is defined within the config information, the service name may be specified as None.
+    * If no config name is specified, the configuration file is read to obtain config information.
+    * supported paltform: Python
 * kwargs
-    * Specify the messaging system-specific parameters as YAML mappings.
+    * no_config
+        * bool
+        * Specifying True prevents the configuration file from being loaded.
+        * supported paltform: Python, MicroPython
+    * consistency
+        * Specify the reliability of message delivery.
+        * AT_MOST_ONCE (=0)
+            * A message may not be delivered.
+        * AT_LEAST_ONCE (=1)
+            * A message is always delivered but may be delivered many times.
+        * EXACTLY_ONCE (=2)
+            * A message is always delivered only once.
+        * supported paltform: Python, MicroPython
+    * client_id
+        * Client name.
+        * If any of DEFAULT_CLIENT_ID, None, or an empty string is specified, the library will automatically generate a value.
+        * supported paltform: Python, MicroPython
+    * value_type
+        * The type name of message payload.
+        * `MessageWriter.publish()` will treat the given data as the type specified here.
+        * When using the standard package, the following two type names are supported.
+            * Set `"byte_array"` (default) to treat the payload as `bytes`.
+            * Set `"text"` to treat the payload as `str`.
+        * When using a plugin pacakge, other type names may be supported.
+        * When using the image type plugin provided with SINETStream v1.1 (or later), the following type name is supported.
+            * Set `"image"` to treat the payload as `numpy.ndarray`, which is the image data type in OpenCV.
+            * The color order in `numpy.ndarray` is BGR, which is consistent with OpenCV.
+        * supported paltform: Python, MicroPython
+    * value_serializer
+        * The function used to encode the value to the byte array in the message.
+        * If not specified, an appropriate serializer function will be used according to `value_type`.
+        * supported paltform: Python, MicroPython
+    * data_encryption
+        * Enable or disable message encryption and decryption.
+        * supported paltform: Python
+    * type_spec _(config file version >= 3)_
+        * Additionally, describe parameters specific to the messaging system as YAML mappings.
+        * supported paltform: Python, MicroPython
+    * Specify the messaging system-specific parameters as YAML mappings. _(config file version < 3)_
 
-The parameters specified in `kwargs` are passed to the constructor of the backend messaging system.
+For config file versio >= 3: The parameters specified in `type_spec` are passed to the constructor of the backend messaging system.
+Please refer to the [Messaging system-specific parameters](#messaging-system-specific-parameters) of for details.
+
+For config file version < 2: The parameters specified in `kwargs` are passed to the constructor of the backend messaging system.
 Please refer to the [Messaging system-specific parameters](#messaging-system-specific-parameters) of for details.
 
 For the arguments other than `service`, their default values can be specified in the configuration file.
@@ -494,16 +591,15 @@ AuthorizationError does not occur in the following cases:
 
 ### 2.4 AsyncMessageWriter Class
 
+> supproted platform: Python
+
 #### `AsyncMessageWriter()`
 
 ```
 AsyncMessageWriter(
-    service,
-    topic,
-    consistency=AT_MOST_ONCE,
-    client_id=DEFAULT_CLIENT_ID,
-    value_type="byte_array",
-    value_serializer=None,
+    service=None,
+    topic=None,
+    config=None,
     **kwargs)
 ```
 
@@ -517,37 +613,46 @@ The constructor of MessageWriter class
 * topic
     * Topic name
     * If not specified, the value specified in the configuration file will be used as default.
-* consistency
-    * Specify the reliability of message delivery.
-    * AT_MOST_ONCE (=0)
-        * A message may not be delivered.
-    * AT_LEAST_ONCE (=1)
-        * A message is always delivered but may be delivered many times.
-    * EXACTLY_ONCE (=2)
-        * A message is always delivered only once.
-* client_id
-    * Client name.
-    * If any of DEFAULT_CLIENT_ID, None, or an empty string is specified, the library will automatically generate a value.
-* value_type
-    * The type name of message payload.
-    * 'MessageWriter.publish()' will treat the given data as the type specified here.
-    * When using the standard package, the following two type names are supported.
-        * Set '"byte_array"' (default) to treat the payload as 'bytes'.
-        * Set '"text"' to treat the payload as 'str'.
-    * When using a plugin pacakge, other type names may be supported.
-    * When using the image type plugin provided with SINETStream, the following type name is supported.
-        * Set '"image"' to treat the payload as 'numpy.ndarray', which is the image data type in OpenCV.
-        * The color order in 'numpy.ndarray' is BGR, which is consistent with OpenCV.
-* value_serializer
-    * The function used to encode the value to the byte array in the message.
-    * If not specified, an appropriate serializer function will be used according to 'value_type'.
-* data_encryption
-    * Enable or disable message encryption and decryption.
 * kwargs
-    * Specify the messaging system-specific parameters as YAML mappings.
+    * no_config
+        * bool
+        * Specifying True prevents the configuration file from being loaded.
+    * consistency
+        * Specify the reliability of message delivery.
+        * AT_MOST_ONCE (=0)
+            * A message may not be delivered.
+        * AT_LEAST_ONCE (=1)
+            * A message is always delivered but may be delivered many times.
+        * EXACTLY_ONCE (=2)
+            * A message is always delivered only once.
+    * client_id
+        * Client name.
+        * If any of DEFAULT_CLIENT_ID, None, or an empty string is specified, the library will automatically generate a value.
+    * value_type
+        * The type name of message payload.
+        * 'MessageWriter.publish()' will treat the given data as the type specified here.
+        * When using the standard package, the following two type names are supported.
+            * Set '"byte_array"' (default) to treat the payload as 'bytes'.
+            * Set '"text"' to treat the payload as 'str'.
+        * When using a plugin pacakge, other type names may be supported.
+        * When using the image type plugin provided with SINETStream, the following type name is supported.
+            * Set '"image"' to treat the payload as 'numpy.ndarray', which is the image data type in OpenCV.
+            * The color order in 'numpy.ndarray' is BGR, which is consistent with OpenCV.
+    * value_serializer
+        * The function used to encode the value to the byte array in the message.
+        * If not specified, an appropriate serializer function will be used according to 'value_type'.
+    * data_encryption
+        * Enable or disable message encryption and decryption.
+    * type_spec _(config file version >= 3)_
+        * Additionally, describe parameters specific to the messaging system as YAML mappings.
+        * supported paltform: Python, MicroPython
+    * Specify the messaging system-specific parameters as YAML mappings. _(config file version < 3)_
 
-The parameters specified in 'kwargs' are passed to the constructor of the backend messaging system.
-Please refer to the  [Messaging system-specific parameters](#messaging-system-specific-parameters) for details.
+For config file versio >= 3: The parameters specified in `type_spec` are passed to the constructor of the backend messaging system.
+Please refer to the [Messaging system-specific parameters](#messaging-system-specific-parameters) of for details.
+
+For config file version < 2: The parameters specified in `kwargs` are passed to the constructor of the backend messaging system.
+Please refer to the [Messaging system-specific parameters](#messaging-system-specific-parameters) of for details.
 
 For the arguments other than service, their default values can be specified in the configuration file.
 If the same parameter is specified in both the configuration file and the constructor argument, the value specified in the constructor argument takes precedence.
@@ -630,6 +735,8 @@ Depending on the messaging system, even if an unauthorized operation is performe
 
 The wrapper class for the message object provided by the messaging system.
 
+> supported platform: Python, MicroPython
+
 #### Property
 
 All the properties are read only.
@@ -662,6 +769,8 @@ Metrics class
 You can get metrics information by referencing the metrics property for Reader/Writer objects.
 After close() Reader/Writer objects, you can get metrics information when it is closed (but raw is None).
 
+> supported platform: Python, MicroPython
+
 * MessageReader.metrics
 * MessageWriter.metrics
 * AsyncMessageReader.metrics
@@ -677,9 +786,27 @@ If the `reset_raw` argument is set to True, the metrics of the backend messaging
 
 > Eclipse Paho, an MQTT client library used in the SINETStream MQTT plugin, does not provide metrics collection capability.
 > The Kafka client library has the capability, but does not provide the reset function.
+> The Micro Python MQTT plugin does not provide statistics.
 
 The metrics are measured at the boundary of the SINETStream main library and the specified messaging system plugin.
 Therefore, a stream of encrypted massages will be measured if the data encryption function provided by SINETStream is used.
+
+```
+  <writer>                      <reader>
+  Application                   Application
+    ↓                            ↑
+  value_serializer              value_deserializer
+    ↓                            ↑                ←msg_uncompressed_bytes_total
+  compressor                    decompressor
+    ↓                            ↑                ←msg_compressed_bytes_total
+  Avro serializer               Avro deserializer
+    ↓                            ↑
+  encrypt                       decrypt
+    ↓                            ↑
+  packetize                     depacketize
+- - ↓  - - - - - - - - - - - - - ↑ - - - - - - - -←the boundary
+  messaging system → broker → messaging system
+```
 
 #### Property
 
@@ -790,7 +917,8 @@ with reader as f:
 
 ## 3. Messaging system-specific parameters
 
-`kwargs` can be used to transparently pass parameters to the backend messaging system.
+For config file version >= 3, use `type_spec`; and for config file version < 3, use `kwargs`
+to transparently specify parameters specific to the backend messaging system.
 The actual parameters that can be passed depend on the backend.
 No validation is performed.
 

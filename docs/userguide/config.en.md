@@ -27,8 +27,6 @@ SINETStream User Guide
 
 <pre>
 1. Overview
- 1.1 Location of configuration files
- 1.2 Priority of setting values
 2. Common parameters
  2.1 Basic parameters
  2.2 API parameters
@@ -121,7 +119,7 @@ config:
   ...
 ````
 
-If the header section doesn't exist, it is considered to be in conventional format (only the configuration section).
+If the header section doesn't exist, it is considered to be in conventional format (version 1; only the configuration section).
 
 The block describing the header is as follows:
 
@@ -131,14 +129,76 @@ The block describing the header is as follows:
   ...
 ```
 
+### SINETStreamのバージョンと設定ファイルのフォーマットバージョンの関係
+
+#### Python版
+
+| SINETStream ver | conf v1 | conf v2 | conf v3 |
+|--- |--- |--- |--- |
+| 1.10.0 | Deprecated | Deprecated | Supported |
+| ~~1.6.0~~ | Supported | Supported | |
+| ~~1.0.0~~ | Supported | | |
+
+#### Java platform
+
+| SINETStream ver | conf v1 | conf v2 | conf v3 |
+|--- |--- |--- |--- |
+| 1.6.0 | Supported | Supported | |
+| ~~1.0.0~~ | Supported | | |
+
+#### Android platform
+
+| SINETStream ver | conf v1 | conf v2 | conf v3 |
+|--- |--- |--- |--- |
+| 1.8.0 | Supported | Supported | |
+| ~~1.4.0~~ | Supported | | |
+
+#### MicroPython platform
+
+| SINETStream ver | conf v1 | conf v2 | conf v3 |
+|--- |--- |--- |--- |
+| 1.10.0 | Deprecated | Deprecated | Supported |
+
+```
+# version 3
+header:
+  version: 3
+  header description block
+config:
+  service description block 1
+  service description block 2
+  ...
+  type_spec:
+    {messaging system-specific parameter 1}: {value 1}
+    {messaging system-specific parameter 2}: {value 2}
+    ...
+```
+
+```
+# version 2
+header:
+  version: 2
+  header description block
+config:
+  service description block 1
+  service description block 2
+  ...
+```
+
+```
+# version 1
+service description block 1
+service description block 2
+```
+
 ### Header section of the configuration file
 
-Header parameters are as follows:
+Header parameters should be specfied as follows:
 
 * version
     * Format version of the configuration file.
-    * Version `2` can be specified.
-    * If omitted, the latest format is assumed to be specified.
+    * Version `2` or `3` can be specified.
+    * If omitted, the latest format (currently 3) is assumed to be specified.
 * fingerprint
     * Fingerprint of the publickey used for encryption of secret info.
     * Fingerprint can be omitted if encryption is not used in the configuration section.
@@ -149,6 +209,21 @@ The configuration section consists of service description blocks (each block is 
 The block that describes one service is as follows:
 
 ```
+# config veresion 3
+{Service Name}:
+  type: {type of Message System}
+  brokers:
+    - {host Name 1}:{port number 1}
+    - {host Name 2}:{port number 2}
+  {other parameters 1}: {value 1}
+  {other parameters 2}: {value 2}
+  type_spec:
+      {messaging system-specific parameters 1}: {value 1}
+      {messaging system-specific parameters 2}: {value 2}
+```
+
+```
+# config veresion 1 or 2
 {Service Name}:
   type: {type of Message System}
   brokers:
@@ -161,7 +236,9 @@ The block that describes one service is as follows:
 `type` specifies the type of the messaging system.
 `brokers` specify the addresses of the brokers of the messaging system.
 
-The other parameters and values depend on the messaging system.
+The messaging system-specific parameters and values in type_spec:
+(if config version 1 or 2, the other parameters and values)
+depend on the messaging system.
 For instance, the following parameters can be specified.
 
 * Parameters for communication protocol
@@ -174,7 +251,7 @@ For instance, the following parameters can be specified.
     * User name
     * Password
 
-### 1.1 Location of the configuration file
+### Location of the configuration file
 
 Configuration file is searched in the following order.
 Only the first file found will be used.
@@ -188,7 +265,7 @@ Only the first file found will be used.
 > `parameter 2: value 2` is written in `$HOME/.config/sinetstream/config.yml`,
 > the latter will be ignored.
 
-### 1.2 Priority of setting values
+### Priority of setting values
 
 If the parameters specified in the configuration file conflict with the parameters specified in the API functions, or
 if the common parameters conflict with the messaging system-specific parameters, the first value found in the following order is used.
@@ -274,18 +351,56 @@ If a parameter is not specified in the API function, the value specified in the 
     * Enable or disable message encryption and decryption.
 * receive_timeout_ms
     * Maximum time (in milliseconds) for `MessageReader` to wait for message arrival.
-
-<!---
 * message_format
-    * XXX
---->
-
+    * Specifies the SINETStream message format version.
+    * Valid values: 2, 3
+    * Default value: 3
+    * The Writer transmits using the specified version.
+    * The Reader attempts to decode using version 3 if specified;
+      if unsuccessful, it tries version 2.
+      When version 2 is specified, it decodes using version 2.
+* use_realtime_clock (upython only)
+    * メッセージフォーマットバージョン2以降でWriterがpublish()でタイムスタンプをつけるときにシステム時間を使うかどうか。
+    * falseの場合は無効値のタイムスタンプがつけられる。
+    * デフォルト値: true
+    * Whether Writer uses the system time when adding timestamps with publish() in message format version 2 or later.
+    * If false, a null timestamp is sent.
+    * Default value: true
 `value_serializer` and `value_deserializer` take precedence over value_type.
 
 > If `value_deserializer` and `value_type` are specified and `value_serializer` is not, value_desirializer will be enabled for MessageReader and value_type will be enabled for MessageWriter.
 
 > Limitation of Python API:
 > In SINETStream v1.*, `value_serializer`/`value_deserializer` can be specified only by the API function parameters and cannot be specified in the configuration file.
+
+#### Setting Example
+
+The following shows an example of enabling message compression/decompression.
+
+```
+header:
+  version: 3
+config:
+  service-comp-1:
+    type: mqtt
+    brokers: mqtt.example.org
+    data_compression: true
+```
+
+The following example uses the zstd compression algorithm with a compression level of 10.
+
+```
+header:
+  version: 3
+config:
+  service-comp-2:
+    type: mqtt
+    brokers: mqtt.example.org
+    data_compression: true
+    compression:
+      algorithm: zstd
+      level: 10
+```
 
 ### 2.3 Parameters for SSL/TLS
 
@@ -342,23 +457,29 @@ Below is an example of specifying a boolean value for the parameter `tls`.
 In this case, a default messaging system-specific value is used as the setting value.
 
 ```
-service-tls-1:
-  type: mqtt
-  brokers: mqtt.example.org
-  tls: true
+header:
+  version: 3
+config:
+  service-tls-1:
+    type: mqtt
+    brokers: mqtt.example.org
+    tls: true
 ```
 
 Below is an example of specifying a mapping for the parameter `tls`.
 
 ```
-service-tls-2:
-  type: kafka
-  brokers:
-    - kafka-1:9092
-  tls:
-    ca_certs: /etc/sinetstream/ca.pem
-    certfile: certs/client.pem
-    keyfile: certs/client.key
+header:
+  version: 3
+config:
+  service-tls-2:
+    type: kafka
+    brokers:
+      - kafka-1:9092
+    tls:
+      ca_certs: /etc/sinetstream/ca.pem
+      certfile: certs/client.pem
+      keyfile: certs/client.key
 ```
 
 #### Priority
@@ -435,18 +556,21 @@ The mapping may contain the following keys.
 Below is an example of setting `crypto`.
 
 ```
-service-aes-1:
-  type: kafka
-  brokers:
-    - kafka0.example.org:9092
-  crypto:
-    algorithm: AES
-    key_length: 256
-    mode: EAX
-    key_derivation:
-      algorithm: pbkdf2
-      iteration: 10000
-    password: secret-000
+header:
+  version: 3
+config:
+  service-aes-1:
+    type: kafka
+    brokers:
+      - kafka0.example.org:9092
+    crypto:
+      algorithm: AES
+      key_length: 256
+      mode: EAX
+      key_derivation:
+        algorithm: pbkdf2
+        iteration: 10000
+      password: secret-000
 ```
 
 ## 3. Messaging system-specific parameters

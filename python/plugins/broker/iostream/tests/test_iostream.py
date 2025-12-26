@@ -63,7 +63,8 @@ def test_pubsub(comp, udato, tstamp):
         no_config=True,
         data_compression=comp,
         user_data_only=udato,
-        iostream={"iobase": bio},
+        iostream={"iobase": bio},   # v1,v2
+        type_spec={"iobase": bio},  # v3
     ) as w:
         for m in msgs:
             if udato and len(m) == 0:
@@ -86,7 +87,8 @@ def test_pubsub(comp, udato, tstamp):
         no_config=True,
         data_compression=comp,
         user_data_only=udato,
-        iostream={"iobase": bio},
+        iostream={"iobase": bio},   # v1,v2
+        type_spec={"iobase": bio},  # v3
     ) as r:
         i = iter(r)
         for x, m in xs:
@@ -126,7 +128,8 @@ def test_pubsub_compound(comp, tstamp):
             type="iostream",
             no_config=True,
             data_compression=comp,
-            iostream={"iobase": bio},
+            iostream={"iobase": bio},   # v1,v2
+            type_spec={"iobase": bio},  # v3
         ) as w:
             for m in msgs:
                 w.publish(m, timestamp=tstamp)
@@ -138,7 +141,8 @@ def test_pubsub_compound(comp, tstamp):
             type="iostream",
             no_config=True,
             data_compression=comp,
-            iostream={"iobase": bio},
+            iostream={"iobase": bio},   # v1,v2
+            type_spec={"iobase": bio},  # v3
         ) as r:
             i = iter(r)
             for m2, m1 in zip(i, msgs):
@@ -165,7 +169,8 @@ def test_pubsub_concat():
             data_compression=comp,
             # compression={"algorithm": "zstd"},
             user_data_only=True,
-            iostream={"iobase": bio},
+            iostream={"iobase": bio},   # v1,v2
+            type_spec={"iobase": bio},  # v3
         ) as w:
             for m in smsgs:
                 w.publish(m)
@@ -179,7 +184,8 @@ def test_pubsub_concat():
             data_compression=comp,
             # compression={"algorithm": "zstd"},
             user_data_only=True,
-            iostream={"iobase": bio},
+            iostream={"iobase": bio},   # v1,v2
+            type_spec={"iobase": bio},   # v3
         ) as r:
             i = iter(r)
             m2 = next(i)

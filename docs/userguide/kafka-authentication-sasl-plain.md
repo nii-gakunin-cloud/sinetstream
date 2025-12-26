@@ -226,16 +226,19 @@ SINETStreamは、設定ファイルに記されたパスから証明書を読み
 設定ファイルの例を以下に示す。
 
 ```yaml
-service-kafka-sasl-plain:
-  brokers: broker.example.org:9094
-  type: kafka
-  topic: topic-001
-  tls:
-    ca_certs: /opt/certs/cacert.pem
-  security_protocol: SASL_SSL
-  sasl_mechanism: PLAIN
-  sasl_plain_username: user01
-  sasl_plain_password: user01-pass
+header:
+  version: 3
+config:
+  service-kafka-sasl-plain:
+    brokers: broker.example.org:9094
+    type: kafka
+    topic: topic-001
+    tls:
+      ca_certs: /opt/certs/cacert.pem
+    security_protocol: SASL_SSL
+    sasl_mechanism: PLAIN
+    sasl_plain_username: user01
+    sasl_plain_password: user01-pass
 ```
 
 `brokers`, `type`, `topic`, `tls` についてはSASL認証を利用しない場合の設定ファイルと同様なので説明を省く。

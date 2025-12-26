@@ -1,16 +1,19 @@
 #!/bin/bash
-
+set -x
 : ${CERT_DIR:=/opt/certs}
 
-# XXX START
-export S3_ENDPOINT_URL=http://broker:9000
-export S3_BUCKET=sstest
-export S3_PREFIX=testprefix
-export S3_SUFFIX=.test
-export S3_NAME=minute
-export S3_AWS_ACCESS_KEY_ID=sinetstream-s3-access
-export S3_AWS_SECRET_ACCESS_KEY=sinetstream-s3-secret
-# XXX END
+PIP=pip3.11
+PYTHON=python3.11
+
+## XXX START
+#export S3_ENDPOINT_URL=http://broker:9000
+#export S3_BUCKET=sstest
+#export S3_PREFIX=testprefix
+#export S3_SUFFIX=.test
+#export S3_NAME=minute
+#export S3_AWS_ACCESS_KEY_ID=sinetstream-s3-access
+#export S3_AWS_SECRET_ACCESS_KEY=sinetstream-s3-secret
+## XXX END
 
 setup_certs() {
   return # XXX
@@ -37,14 +40,19 @@ setup_bad_hostname() {
 }
 
 install_packages() {
-  if [ -d wheelhouse ]; then
-    for pkg in wheelhouse/*.whl; do
-      pip install --upgrade --exists-action a ${pkg}
-    done
-  fi
+  for wheelhouse in wheelhouse*; do
+    if [ -d ${wheelhouse} ]; then
+      for pkg in ${wheelhouse}/*.whl; do
+        ${PIP} install --upgrade --exists-action a ${pkg}
+      done
+    fi
+  done
 }
 
-install_packages
+case "${INSTALL_PACKAGES:-NO}" in
+[Yy][Ee][Ss])
+  install_packages ;;
+esac
 
 if [ -n "${CERT_URL}" ]; then
   setup_certs
@@ -56,8 +64,8 @@ fi
 # install_packages
 
 create_bucket() {
-    pip install boto3
-    python - << _END_
+    ${PIP} install boto3
+    ${PYTHON} - << _END_
 import boto3
 s3 = boto3.resource(
         service_name="s3",
@@ -74,8 +82,31 @@ _END_
 }
 create_bucket
 
+# setup minio client
+setup_mc() {
+curl --output /root/mc --remote-name https://dl.min.io/client/mc/release/linux-amd64/mc
+chmod a+x /root/mc
+mkdir /root/.mc
+cat >/root/.mc/config.json <<__END__
+{
+  "version": "10",
+  "aliases": {
+    "broker": {
+      "url": "$S3_ENDPOINT_URL",
+      "accessKey": "$S3_AWS_ACCESS_KEY_ID",
+      "secretKey": "$S3_AWS_SECRET_ACCESS_KEY",
+      "api": "S3v4",
+      "path": "auto"
+    }
+  }
+/root/mc tree --files broker
+}
+__END__
+}
+setup_mc
+
 # show dependency tree
-pip install pipdeptree
+${PIP} install pipdeptree
 pipdeptree -fl  # XXX this doesn't show the pkgs that will be installed by "setup.py test"
 
 if [ "$#" -eq 0 ]; then

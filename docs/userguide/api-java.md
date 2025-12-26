@@ -57,19 +57,44 @@ SINETStream ユーザガイド
 この例では、以下の内容の設定ファイル `.sinetstream_config.yml` をクライアントマシンのカレントディレクトリに作成する。
 
 ```
-service-1:
-  type: kafka
-  brokers:
-    - kafka-1:9092
-    - kafka-2:9092
-    - kafka-3:9092
-    - kafka-4:9092
-service-2:
-  type: mqtt
-  brokers: 192.168.2.105:1883
-  username_pw_set:
-    username: user01
-    password: pass01
+header:
+  version: 3
+config:
+  service-1:
+    type: kafka
+    brokers:
+      - kafka-1:9092
+      - kafka-2:9092
+      - kafka-3:9092
+      - kafka-4:9092
+  service-2:
+    type: mqtt
+    brokers: 192.168.2.105:1883
+    type_spec:
+      username_pw:
+        username: user01
+        password: pass01
+```
+
+DEPRECATED: config version 2以前の書き方:
+
+```
+header:
+  version: 2
+config:
+  service-1:
+    type: kafka
+    brokers:
+      - kafka-1:9092
+      - kafka-2:9092
+      - kafka-3:9092
+      - kafka-4:9092
+  service-2:
+    type: mqtt
+    brokers: 192.168.2.105:1883
+    username_pw_set:
+      username: user01
+      password: pass01
 ```
 
 ### メッセージ送信
@@ -417,6 +442,8 @@ Readerではメッセージングシステムプラグインからデータを�
   Avro serializer               Avro deserializer
     ↓                            ↑
   encrypt                       decrypt
+    ↓                            ↑
+  packetize                     depacketize
 - - ↓  - - - - - - - - - - - - - ↑ - - - - - - - -←メトリクス測定境界
   messaging system → broker → messaging system
 ```

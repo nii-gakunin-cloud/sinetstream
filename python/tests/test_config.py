@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 
 @pytest.mark.parametrize("service", [SERVICE, None])
 def test_load_config(setup_config, service):
-    svc, params = sinetstream.configs.get_config_params(service)
+    confver, svc, params = sinetstream.configs.get_config_params(service)
     logger.info(f"params={params}")
     assert svc == SERVICE
     assert params is not None
@@ -44,7 +44,7 @@ def test_load_config(setup_config, service):
 
 @pytest.mark.parametrize("service", [SERVICE, None])
 def test_load_home_config(setup_home_config, service):
-    svc, params = sinetstream.configs.get_config_params(service)
+    confver, svc, params = sinetstream.configs.get_config_params(service)
     logger.info(f"params={params}")
     assert svc == SERVICE
     assert params is not None

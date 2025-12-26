@@ -165,20 +165,24 @@ An example of SINETStream's configuration file is shown below.
 > This is identical to the configuration for password authentication.
 
 ```yaml
-service-mqtt:
-  brokers: broker.example.org:8884
-  type: mqtt
-  topic: topic-001
-  consistency: AT_LEAST_ONCE
-  tls:
-    ca_certs: /opt/certs/cacert.pem
-  username_pw_set:
-    username: user03
-    password: user03-pass
+header:
+  version: 3
+config:
+  service-mqtt:
+    brokers: broker.example.org:8884
+    type: mqtt
+    topic: topic-001
+    consistency: AT_LEAST_ONCE
+    tls:
+      ca_certs: /opt/certs/cacert.pem
+    type_spec:
+      username_pw:
+        username: user03
+        password: user03-pass
 ```
 
 The settings for `brokers`, `type`, `topic`, `consistency`, `tls` are identical to those without authentication.
-Settings related to password authentication are under `username_pw_set:`.
+Settings related to password authentication are under `username_pw:`.
 
 The meanings of the above settings are:
 
@@ -186,6 +190,24 @@ The meanings of the above settings are:
     * User name
 * `password`
     * Password
+
+DEPRECATED: writing style prior to config version 2:
+
+```yaml
+header:
+  version: 2
+config:
+  service-mqtt:
+    brokers: broker.example.org:9094
+    type: mqtt
+    topic: topic-001
+    consistency: AT_LEAST_ONCE
+    tls:
+      ca_certs: /opt/certs/cacert.pem
+    username_pw_set:
+      username: user03
+      password: user03-pass
+```
 
 ### Create a program that uses SINETStream
 

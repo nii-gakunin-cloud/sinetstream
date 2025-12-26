@@ -75,7 +75,48 @@ config_files = [
 ]
 
 
+CONFIG_VERSION_1 = 1
 CONFIG_VERSION_2 = 2
+CONFIG_VERSION_3 = 3
+CONFIG_VERSION_LATEST = CONFIG_VERSION_3
+
+
+def confver_isvalid(v):
+    return v in [CONFIG_VERSION_2, CONFIG_VERSION_3]
+
+
+class ConfVer1:
+    def ver(self):
+        return CONFIG_VERSION_1
+
+    def type_spec(self):
+        return False
+
+
+class ConfVer2:
+    def ver(self):
+        return CONFIG_VERSION_2
+
+    def type_spec(self):
+        return False
+
+
+class ConfVer3:
+    def ver(self):
+        return CONFIG_VERSION_3
+
+    def type_spec(self):
+        return True
+
+
+def make_confver(v=CONFIG_VERSION_LATEST):
+    if v == CONFIG_VERSION_1:
+        return ConfVer1()
+    if v == CONFIG_VERSION_2:
+        return ConfVer2()
+    if v == CONFIG_VERSION_3:
+        return ConfVer3()
+    raise RuntimeError("internal error")
 
 
 def get_config_params_local(service, config_file, **_kwargs):
@@ -85,15 +126,16 @@ def get_config_params_local(service, config_file, **_kwargs):
         if "version" in header:
             version = header["version"]
         else:
-            version = CONFIG_VERSION_2
-        if version != CONFIG_VERSION_2:
-            raise InvalidConfigError(f"version={version} is invalid ({CONFIG_VERSION_2} expected)")
+            version = CONFIG_VERSION_LATEST
+        if not confver_isvalid(version):
+            raise InvalidConfigError(f"version={version} is invalid")
         if "config" not in content:
             raise InvalidConfigError(f"No config section in {config_file}")
         config = content["config"]
         # FIXME: fingerprint = header.get("fingerprint")
     else:
         # assume version 1
+        version = CONFIG_VERSION_1
         config = content
 
     if not isinstance(config, dict):
@@ -109,7 +151,7 @@ def get_config_params_local(service, config_file, **_kwargs):
         service = next(iter(config.keys()))
         # service = [k for k in config.keys()][0]
 
-    return service, config.get(service) if isinstance(config, dict) else None
+    return make_confver(version), service, config.get(service) if isinstance(config, dict) else None
 
 
 def load_config_file(config_file):
@@ -158,8 +200,6 @@ private_key_cache = None  # (path, privkey, fp)
 
 
 def get_private_key():
-    global private_key_cache_lock
-    global private_key_cache
     with private_key_cache_lock:
         if private_key_cache is not None:
             return private_key_cache
@@ -168,14 +208,12 @@ def get_private_key():
 
 
 def set_key_cache(x):
-    global private_key_cache_lock
     global private_key_cache
     with private_key_cache_lock:
         private_key_cache = x
 
 
 def clear_key_cache():
-    global private_key_cache_lock
     global private_key_cache
     with private_key_cache_lock:
         private_key_cache = None
@@ -260,10 +298,10 @@ def decrypt_params(x):
 
 def get_config_params(service=None, config=None, config_file=None, **kwargs):
     if config is None:
-        service, params = get_config_params_local(service, config_file, **kwargs)
+        confver, service, params = get_config_params_local(service, config_file, **kwargs)
     else:
         need_all_key = True
-        service, params = get_config_params_server(service, config, need_all_key, **kwargs)
+        confver, service, params = get_config_params_server(service, config, need_all_key, **kwargs)
     if params is None:
         logger.error(f"invalid service: {service}")
         raise NoServiceError()
@@ -271,4 +309,4 @@ def get_config_params(service=None, config=None, config_file=None, **kwargs):
     params = decrypt_params(params)
     clear_key_cache()
 
-    return service, params
+    return confver, service, params

@@ -104,7 +104,7 @@ def test_config_encrypted(setup_privkey, setup_config_file, config_file):
     with Path(config_file).open(mode="w") as f:
         f.write(y)
     from sinetstream.configs import get_config_params
-    svc, params = get_config_params(SERVICE, config_file=config_file)
+    confver, svc, params = get_config_params(SERVICE, config_file=config_file)
     assert svc == SERVICE
     assert params["binbin"] == b"text in binbin"
     assert params["enen"] == b"text in enen"

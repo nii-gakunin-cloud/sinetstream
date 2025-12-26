@@ -4,9 +4,9 @@ COPY chart /opt/chart/
 
 WORKDIR /opt/chart
 
-RUN npm install -g @vue/cli \
+RUN npm install --legacy-peer-deps -g @vue/cli \
  && rm -rf node_modules package-lock.json \
- && npm install
+ && npm install --legacy-peer-deps
 
 RUN npm run build
 
@@ -15,6 +15,9 @@ FROM centos:7.9.2009
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 RUN sed -i -e '/tsflags/s/^tsflags/#tsflags/' /etc/yum.conf
+
+# workaround: repo moved mirror.centos.org->vault.centos.org
+RUN sed -i -e '/^#[[:space:]]*baseurl/{s/^#[[:space:]]*//;s/mirror.centos.org/vault.centos.org/;};/^mirrorlist=/s/^/#/;' /etc/yum.repos.d/CentOS-Base.repo
 
 # Install Apache Kafka(Confluent)
 ARG CONFLUENT_VERSION=6.0
@@ -52,11 +55,13 @@ RUN yum -y install epel-release \
 # Install Python 3.8
 ARG PYTHON3="scl enable rh-python38"
 ARG PIP3INSTALL="pip3_install_-U_--no-cache-dir_pip_setuptools"
-RUN yum -y install centos-release-scl \
- && yum -y install rh-python38 rh-python38-python-pyyaml \
- && yum clean all \
- && rm -rf /var/cache/yum/* \
- && ${PYTHON3} "pip3 install -U --no-cache-dir pip setuptools"
+RUN yum -y install centos-release-scl
+# workaround: repo moved mirror.centos.org->vault.centos.org
+RUN sed -i -e '/^#[[:space:]]*baseurl/{s/^#[[:space:]]*//;s/mirror.centos.org/vault.centos.org/;};/^mirrorlist=/s/^/#/;' /etc/yum.repos.d/CentOS-SCLo-scl.repo /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo
+RUN yum -y install rh-python38 rh-python38-python-pyyaml
+RUN yum clean all
+RUN rm -rf /var/cache/yum/*
+RUN ${PYTHON3} "pip3 install -U --no-cache-dir pip setuptools"
 
 # Kafka Connect: S3
 RUN yum -y install --enablerepo=Confluent confluent-hub-client \

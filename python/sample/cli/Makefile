@@ -3,11 +3,13 @@ all::
 lint::
 	tox -e lint
 
-build::
-	python3 -m venv .
+build:: bin/python bin/pip
 	bin/pip install -U pip setuptools
 	bin/pip install build
 	bin/python -m build
+
+bin/python:
+	python3 -m venv .
 
 bdist_wheel:: build
 
@@ -17,3 +19,6 @@ clean::
 
 run::
 	cd src/sinetstream_cli; ./sinetstream_cli.py write --help; ./sinetstream_cli.py read --help
+
+install:: build
+	../../venv/bin/python3 -m pip install dist/sinetstream_cli-*.whl

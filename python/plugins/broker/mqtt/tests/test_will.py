@@ -22,6 +22,7 @@
 import pytest
 from sinetstream import MessageReader, MessageWriter  # , InvalidArgumentError
 from conftest import (
+    CONFVER1, CONFVER2, CONFVER3, CONFVER,
     SERVICE, TOPIC,  # WS_BROKER, WSS_BROKER, CACERT_PATH,
 )
 # from itertools import product
@@ -36,7 +37,7 @@ rnd = ''.join(choices(ascii_letters + digits, k=10))
 WILL_TOPIC = TOPIC + f"-will-{rnd}"
 PAYLOAD = f'TEST-WILL-MESSAGE-{rnd}'
 
-will_set_params = {
+will_set_params_v1 = {
     'will_set': {
         'topic': WILL_TOPIC,
         'value_type': 'text',
@@ -47,9 +48,21 @@ will_set_params = {
     }
 }
 
+will_set_params_v3 = {
+    'will': {
+        'topic': WILL_TOPIC,
+        'value_type': 'text',
+        'payload': PAYLOAD,
+        # 'qos': 1,
+        'consistency': 'AT_LEAST_ONCE',
+        'retain': False,
+    }
+}
 
-@pytest.mark.parametrize("config_value_type,config_params", [
-    (will_set_params["will_set"]["value_type"], will_set_params),
+
+@pytest.mark.parametrize("config_value_type,config_mqtt_params,config_version", [
+    (will_set_params_v1["will_set"]["value_type"], will_set_params_v1, CONFVER1),
+    (will_set_params_v3["will"]["value_type"], will_set_params_v3, CONFVER3),
 ])
 def test_will_payload():
     with MessageWriter(SERVICE) as w, \

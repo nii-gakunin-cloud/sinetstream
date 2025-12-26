@@ -10,6 +10,40 @@ https://keepachangelog.com/
 ### Security
 --->
 
+<!--- ---------------------------------------------------------------------- --->
+## [v1.10.0] - 2026-01-XX XXX
+
+### Added
+
+- config file format version 3
+    - the version number in header section should be specified.
+    - if not specified, it defaults to the latest version.
+    - the sample file is [here](docs/tutorial/.sinetstream_config.yml).
+    - implemented on sinetstream-python and sinetstream-upython.
+    - details are [here](docs/userguide/config.md).
+- [SINETStream for MicroPython](https://github.com/nii-gakunin-cloud/sinetstream-upython) (upython)
+
+### Changed
+
+- XXX
+
+### Deprecated
+
+- config file format version 1 and 2 discontinued in the future.
+
+### Removed
+
+- XXX
+
+### Fixed
+
+- bugfix for string data for some parameters encrypted from config-server (Python)
+
+### Security
+
+- Update versions of dependent packages (Android Tutorial Container)
+
+<!--- ---------------------------------------------------------------------- --->
 ## [v1.9.2] - 2025-03-31
 
 ### Changed

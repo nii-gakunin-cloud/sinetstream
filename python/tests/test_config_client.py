@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 @pytest.mark.skip
 @pytest.mark.parametrize("svc, cfg", [("service-kafka-001", "test-sinetstream-client")])
 def test_get_config(svc, cfg):
-    service, params = sinetstream.configs.get_config_params(
+    confver, service, params = sinetstream.configs.get_config_params(
                 svc,
                 config=cfg)
     logger.info(f"params={params}")
@@ -132,7 +132,7 @@ def test_get_config__configs_simple(setup_auth, svc):
                          status_code=200,
                          json=configs_resp_simple)
     try:
-        service, params = sinetstream.configs.get_config_params(
+        confver, service, params = sinetstream.configs.get_config_params(
                     svc,
                     config="stream009",
                     auth_path=setup_auth,
@@ -184,7 +184,7 @@ def test_get_config__configs_attach(setup_auth, svc):
                          status_code=200,
                          json=configs_attach_resp)
     try:
-        service, params = sinetstream.configs.get_config_params(
+        confver, service, params = sinetstream.configs.get_config_params(
                     svc,
                     config="stream009",
                     auth_path=setup_auth,
@@ -215,7 +215,7 @@ def test_get_config__configs_empty_attach(setup_auth, svc):
                              status_code=200,
                              json=resp)
         try:
-            service, params = sinetstream.configs.get_config_params(
+            confver, service, params = sinetstream.configs.get_config_params(
                         svc,
                         config="stream009",
                         auth_path=setup_auth,
@@ -337,7 +337,7 @@ def test_get_config__secret(setup_auth, setup_privkey, svc):
                          status_code=200,
                          json=secret2_resp)
     try:
-        service, params = sinetstream.configs.get_config_params(
+        confver, service, params = sinetstream.configs.get_config_params(
                     svc,
                     config="stream009",
                     auth_path=setup_auth,
@@ -397,7 +397,7 @@ def test_get_config__secret_msgv3(setup_auth, setup_privkey, svc):
                          status_code=200,
                          json=secret2_resp)
     try:
-        service, params = sinetstream.configs.get_config_params(
+        confver, service, params = sinetstream.configs.get_config_params(
                     svc,
                     config="stream009",
                     auth_path=setup_auth,

@@ -24,6 +24,7 @@ from itertools import product
 from sinetstream import MessageReader, MessageWriter, ConnectionError
 import pytest
 from conftest import (
+    CONFVER1, CONFVER2, CONFVER3, CONFVER,
     SERVICE, TOPIC, SSL_BROKER, SSL_BROKER_BAD_HOSTNAME, CACERT_PATH,
 )
 import ssl
@@ -34,32 +35,77 @@ pytestmark = pytest.mark.skipif(
     SSL_BROKER is None, reason='MQTT_SSL_BROKER is not set.')
 
 
-@pytest.mark.parametrize("io", [MessageReader, MessageWriter])
+ca_certs_data = None
+
+if CACERT_PATH is not None:
+    logger.debug(f'CACERT: {CACERT_PATH}')
+    with open(str(CACERT_PATH), mode='rb') as f:
+        ca_certs_data = f.read()
+
+def config_minimal_params():
+    if CACERT_PATH is None:
+        return {'tls': True}
+    else:
+        logger.debug(f'CACERT: {CACERT_PATH}')
+        return {
+            'tls': {
+                'ca_certs_data': ca_certs_data,
+            }
+        }
+
+
+minimal_params = config_minimal_params()
+
+
+@pytest.mark.parametrize("io,config_comm_params,config_version", [
+    pytest.param(MessageReader, minimal_params, CONFVER1),
+    pytest.param(MessageWriter, minimal_params, CONFVER1),
+    pytest.param(MessageReader, minimal_params, CONFVER3),
+    pytest.param(MessageWriter, minimal_params, CONFVER3),
+])
 def test_tls(io, setup_config):
     with io(SERVICE, TOPIC) as _:
         pass
 
 
-tls_set_params = {
+tls_set_params_v1 = {
     'tls_set': {
-        'ca_certs': str(CACERT_PATH),
+        'ca_certs_data': ca_certs_data,
     }
 }
 
 
-@pytest.mark.parametrize("io,config_params", [
-    pytest.param(MessageReader, tls_set_params),
-    pytest.param(MessageWriter, tls_set_params),
+@pytest.mark.parametrize("io,config_comm_params,config_version", [
+    pytest.param(MessageReader, tls_set_params_v1, CONFVER1),
+    pytest.param(MessageWriter, tls_set_params_v1, CONFVER1),
 ])
-def test_tls_set(io, setup_config):
+def test_tls_set_v1(io, setup_config):
+    with io(SERVICE, TOPIC) as _:
+        pass
+
+
+tls_set_params_v3 = {
+    'tls': {
+        'ca_certs_data': ca_certs_data,
+    }
+}
+
+
+@pytest.mark.parametrize("io,config_mqtt_params,config_version", [
+    pytest.param(MessageReader, tls_set_params_v3, CONFVER3),
+    pytest.param(MessageWriter, tls_set_params_v3, CONFVER3),
+])
+def test_tls_set_v3(io, setup_config):
     with io(SERVICE, TOPIC) as _:
         pass
 
 
 @pytest.mark.timeout(15)
-@pytest.mark.parametrize("io,config_params", [
-    pytest.param(MessageReader, None),
-    pytest.param(MessageWriter, None),
+@pytest.mark.parametrize("io,config_comm_params,config_version", [
+    pytest.param(MessageReader, None, CONFVER1),
+    pytest.param(MessageWriter, None, CONFVER1),
+    pytest.param(MessageReader, None, CONFVER3),
+    pytest.param(MessageWriter, None, CONFVER3),
 ])
 def test_tls_error(io, setup_config):
     with pytest.raises(ConnectionError):
@@ -67,29 +113,39 @@ def test_tls_error(io, setup_config):
 
 
 @pytest.mark.timeout(7)
-@pytest.mark.parametrize("io,config_params", [
-    pytest.param(MessageReader, None),
-    pytest.param(MessageWriter, None),
+@pytest.mark.parametrize("io,config_comm_params,config_version", [
+    pytest.param(MessageReader, None, CONFVER1),
+    pytest.param(MessageWriter, None, CONFVER1),
 ])
-def test_tls_error_timeout(io, setup_config):
+def test_tls_error_timeout_v1(io, setup_config):
     with pytest.raises(ConnectionError):
         io(SERVICE, TOPIC, connection_timeout=3).open()
 
 
-check_hostname_params = [
+@pytest.mark.timeout(7)
+@pytest.mark.parametrize("io,config_comm_params,config_version", [
+    pytest.param(MessageReader, None, CONFVER3),
+    pytest.param(MessageWriter, None, CONFVER3),
+])
+def test_tls_error_timeout_v3(io, setup_config):
+    with pytest.raises(ConnectionError):
+        io(SERVICE, TOPIC, type_spec={"connection_timeout":3}).open()
+
+
+check_hostname_params_v1 = [
     {
         'tls': {
-            'ca_certs': str(CACERT_PATH),
+            'ca_certs_data': ca_certs_data,
         }
     }, {
         'tls': {
-            'ca_certs': str(CACERT_PATH),
+            'ca_certs_data': ca_certs_data,
             'check_hostname': True,
         }
     }, {
-        'tls_set': {'ca_certs': str(CACERT_PATH)},
+        'tls_set': {'ca_certs_data': ca_certs_data},
     }, {
-        'tls_set': {'ca_certs': str(CACERT_PATH)},
+        'tls_set': {'ca_certs_data': ca_certs_data},
         'tls_insecure_set': {'value': False},
     },
 ]
@@ -98,25 +154,64 @@ check_hostname_params = [
 @pytest.mark.skipif(
     SSL_BROKER_BAD_HOSTNAME is None,
     reason='MQTT_SSL_BROKER_BAD_HOSTNAME is not set.')
-@pytest.mark.parametrize("io,config_brokers,config_params", product(
+@pytest.mark.parametrize("io,config_brokers,config_comm_params,config_version", product(
     [MessageReader, MessageWriter],
     [SSL_BROKER_BAD_HOSTNAME],
-    check_hostname_params,
+    check_hostname_params_v1,
+    [CONFVER1],
 ))
-def test_tls_bad_hostname(io, setup_config):
+def test_tls_bad_hostname_v1(io, setup_config):
     with pytest.raises(ConnectionError):
         with io(SERVICE, TOPIC) as _:
             pass
 
 
-no_check_hostname_params = [
+check_hostname_params_v3 = [
     {
         'tls': {
-            'ca_certs': str(CACERT_PATH),
+            'ca_certs_data': ca_certs_data,
+        }
+    }, {
+        'tls': {
+            'ca_certs_data': ca_certs_data,
+            'check_hostname': True,
+        }
+    }, {
+        'type_spec': {
+            'tls_set': {'ca_certs_data': ca_certs_data},
+        }
+    }, {
+        'type_spec': {
+            'tls': {'ca_certs_data': ca_certs_data},
+            'tls_insecure': {'value': False},
+        }
+    },
+]
+
+
+@pytest.mark.skipif(
+    SSL_BROKER_BAD_HOSTNAME is None,
+    reason='MQTT_SSL_BROKER_BAD_HOSTNAME is not set.')
+@pytest.mark.parametrize("io,config_brokers,config_comm_params,config_version", product(
+    [MessageReader, MessageWriter],
+    [SSL_BROKER_BAD_HOSTNAME],
+    check_hostname_params_v3,
+    [CONFVER3],
+))
+def test_tls_bad_hostname_v3(io, setup_config):
+    with pytest.raises(ConnectionError):
+        with io(SERVICE, TOPIC) as _:
+            pass
+
+
+no_check_hostname_params_v1 = [
+    {
+        'tls': {
+            'ca_certs_data': ca_certs_data,
             'check_hostname': False,
         }
     }, {
-        'tls_set': {'ca_certs': str(CACERT_PATH)},
+        'tls_set': {'ca_certs_data': ca_certs_data},
         'tls_insecure_set': {'value': True},
     },
 ]
@@ -125,20 +220,50 @@ no_check_hostname_params = [
 @pytest.mark.skipif(
     SSL_BROKER_BAD_HOSTNAME is None,
     reason='MQTT_SSL_BROKER_BAD_HOSTNAME is not set.')
-@pytest.mark.parametrize("io,config_brokers,config_params", product(
+@pytest.mark.parametrize("io,config_brokers,config_comm_params,config_version", product(
     [MessageReader, MessageWriter],
     [SSL_BROKER_BAD_HOSTNAME],
-    no_check_hostname_params,
+    no_check_hostname_params_v1,
+    [CONFVER1],
 ))
-def test_tls_no_check_hostname(io, setup_config):
+def test_tls_no_check_hostname_v1(io, setup_config):
     with io(SERVICE, TOPIC) as _:
         pass
 
 
-cert_reqs_params = [
+no_check_hostname_params_v3 = [
+    {
+        'tls': {
+            'ca_certs_data': ca_certs_data,
+            'check_hostname': False,
+        }
+    }, {
+        'type_spec': {
+            'tls': {'ca_certs_data': ca_certs_data},
+            'tls_insecure': {'value': True},
+        }
+    },
+]
+
+
+@pytest.mark.skipif(
+    SSL_BROKER_BAD_HOSTNAME is None,
+    reason='MQTT_SSL_BROKER_BAD_HOSTNAME is not set.')
+@pytest.mark.parametrize("io,config_brokers,config_comm_params,config_version", product(
+    [MessageReader, MessageWriter],
+    [SSL_BROKER_BAD_HOSTNAME],
+    no_check_hostname_params_v3,
+    [CONFVER3],
+))
+def test_tls_no_check_hostname_v3(io, setup_config):
+    with io(SERVICE, TOPIC) as _:
+        pass
+
+
+cert_reqs_params_v1 = [
     {
         'tls_set': {
-            'ca_certs': str(CACERT_PATH),
+            'ca_certs_data': ca_certs_data,
             'cert_reqs': x.name,
         },
     }
@@ -146,19 +271,41 @@ cert_reqs_params = [
 ]
 
 
-@pytest.mark.parametrize("io,config_params", product(
+@pytest.mark.parametrize("io,config_mqtt_params,config_version", product(
     [MessageReader, MessageWriter],
-    cert_reqs_params,
+    cert_reqs_params_v1,
+    [CONFVER1],
 ))
-def test_tls_cert_reqs(io, setup_config):
+def test_tls_cert_reqs_v1(io, setup_config):
     with io(SERVICE, TOPIC) as _:
         pass
 
 
-tls_version_params = [
+cert_reqs_params_v3 = [
+    {
+        'tls': {
+            'ca_certs_data': ca_certs_data,
+            'cert_reqs': x.name,
+        },
+    }
+    for x in list(ssl.VerifyMode)
+]
+
+
+@pytest.mark.parametrize("io,config_mqtt_params,config_version", product(
+    [MessageReader, MessageWriter],
+    cert_reqs_params_v3,
+    [CONFVER3],
+))
+def test_tls_cert_reqs_v3(io, setup_config):
+    with io(SERVICE, TOPIC) as _:
+        pass
+
+
+tls_version_params_v1 = [
     {
         'tls_set': {
-            'ca_certs': str(CACERT_PATH),
+            'ca_certs_data': ca_certs_data,
             'tls_version': x.name,
         },
     }
@@ -166,11 +313,33 @@ tls_version_params = [
 ]
 
 
-@pytest.mark.parametrize("io,config_params", product(
+@pytest.mark.parametrize("io,config_mqtt_params,config_version", product(
     [MessageReader, MessageWriter],
-    tls_version_params,
+    tls_version_params_v1,
+    [CONFVER1],
 ))
-def test_tls_version(io, setup_config):
+def test_tls_version_v1(io, setup_config):
+    with io(SERVICE, TOPIC) as _:
+        pass
+
+
+tls_version_params_v3 = [
+    {
+        'tls': {
+            'ca_certs_data': ca_certs_data,
+            'tls_version': x.name,
+        },
+    }
+    for x in [ssl.PROTOCOL_TLSv1_2]
+]
+
+
+@pytest.mark.parametrize("io,config_mqtt_params,config_version", product(
+    [MessageReader, MessageWriter],
+    tls_version_params_v3,
+    [CONFVER3],
+))
+def test_tls_version_v3(io, setup_config):
     with io(SERVICE, TOPIC) as _:
         pass
 
@@ -179,18 +348,3 @@ def test_tls_version(io, setup_config):
 def config_brokers():
     logger.debug(f'BROKER: {SSL_BROKER}')
     return [SSL_BROKER]
-
-
-@pytest.fixture()
-def config_params():
-    if CACERT_PATH is None:
-        return {'tls': True}
-    else:
-        logger.debug(f'CACERT: {CACERT_PATH}')
-        with open(str(CACERT_PATH), mode='rb') as f:
-            cacert_data = f.read()
-        return {
-            'tls': {
-                'ca_certs_data': cacert_data,
-            }
-        }

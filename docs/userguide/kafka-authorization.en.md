@@ -218,17 +218,20 @@ An example of SINETStream's configuration file is shown below.
 > This is identical to the configuration for SASL/SCRAM authentication.
 
 ```yaml
-service-kafka:
-  brokers: broker.example.org:9094
-  type: kafka
-  topic: topic-001
-  consistency: AT_LEAST_ONCE
-  tls:
-    ca_certs: /opt/certs/cacert.pem
-  security_protocol: SASL_SSL
-  sasl_mechanism: SCRAM-SHA-256
-  sasl_plain_username: user03
-  sasl_plain_pasword: user03-pass
+header:
+  version: 3
+config:
+  service-kafka:
+    brokers: broker.example.org:9094
+    type: kafka
+    topic: topic-001
+    consistency: AT_LEAST_ONCE
+    tls:
+      ca_certs: /opt/certs/cacert.pem
+    security_protocol: SASL_SSL
+    sasl_mechanism: SCRAM-SHA-256
+    sasl_plain_username: user03
+    sasl_plain_pasword: user03-pass
 ```
 
 The settings for `brokers`, `type`, `topic`, `consistency`, `tls` are identical to those without authentication.

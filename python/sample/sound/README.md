@@ -57,7 +57,7 @@ python-sounddevice, PySoundFileでは音声データのやり取りに[NumPy](ht
 
 ```yaml
 header:
-  version: 2
+  #version: 3
 config:
   sound:
     type: kafka

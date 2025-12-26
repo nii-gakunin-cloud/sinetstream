@@ -103,11 +103,14 @@ MQTTブローカーなどのサービスをDockerコンテナとして実行し�
 チュートリアルコンテナで実行しているMQTTブローカーをSINETStreamから利用する場合、以下のように設定ファイルを記述してください。
 
 ```yaml
-service-tutorial-mqtt:
-    type: mqtt
-    brokers: "192.168.1.XXX:1883"
-    topic: sensor-data
-    value_type: text
+header:
+    version: 3
+config:
+    service-tutorial-mqtt:
+        type: mqtt
+        brokers: "192.168.1.XXX:1883"
+        topic: sensor-data
+        value_type: text
 ```
 
 `brokers`の値は環境に合わせて適宜変更してください。

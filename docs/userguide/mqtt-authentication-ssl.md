@@ -143,14 +143,17 @@ SINETStreamは、設定ファイルに記されたパスから証明書を読み
 設定ファイルの例を以下に示す。
 
 ```yaml
-service-mqtt-ssl:
-  brokers: broker.example.org:9093
-  type: mqtt
-  topic: topic-001
-  tls:
-    ca_certs: /opt/certs/cacert.pem
-    certfile: /home/user01/certs/client0.crt
-    keyfile: /home/user01/certs/client0.key
+header:
+  version: 3
+config:
+  service-mqtt-ssl:
+    brokers: broker.example.org:9093
+    type: mqtt
+    topic: topic-001
+    tls:
+      ca_certs: /opt/certs/cacert.pem
+      certfile: /home/user01/certs/client0.crt
+      keyfile: /home/user01/certs/client0.key
 ```
 
 `brokers`, `type`, `topic` については認証を利用しない場合の設定ファイルと同様なので説明を省く。

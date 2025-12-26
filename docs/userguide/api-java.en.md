@@ -58,19 +58,44 @@ Please refer to the [Configuration files](config.en.md) for details.
 In this example, we create the following configuration file `.sinetstream_config.yml` in the current directory on the client machine.
 
 ```
-service-1:
-  type: kafka
-  brokers:
-    - kafka-1:9092
-    - kafka-2:9092
-    - kafka-3:9092
-    - kafka-4:9092
-service-2:
-  type: mqtt
-  brokers: 192.168.2.105:1883
-  username_pw_set:
-    username: user01
-    password: pass01
+header:
+  version: 3
+config:
+  service-1:
+    type: kafka
+    brokers:
+      - kafka-1:9092
+      - kafka-2:9092
+      - kafka-3:9092
+      - kafka-4:9092
+  service-2:
+    type: mqtt
+    brokers: 192.168.2.105:1883
+    type_spec:
+      username_pw:
+        username: user01
+        password: pass01
+```
+
+DEPRECATED: config version 2
+
+```
+header:
+  version: 2
+config:
+  service-1:
+    type: kafka
+    brokers:
+      - kafka-1:9092
+      - kafka-2:9092
+      - kafka-3:9092
+      - kafka-4:9092
+  service-2:
+    type: mqtt
+    brokers: 192.168.2.105:1883
+    username_pw_set:
+      username: user01
+      password: pass01
 ```
 
 ### Sending Messages
@@ -392,6 +417,23 @@ The resetMetrics() method without the argument `reset_raw` is the same as specif
 
 The metrics are measured at the boundary of the SINETStream main library and the specified messaging system plugin.
 Therefore, a stream of encrypted massages will be measured if the data encryption function provided by SINETStream is used.
+
+```
+  <writer>                      <reader>
+  Application                   Application
+    ↓                            ↑
+  value serializer              value deserializer
+    ↓                            ↑                ←msg_uncompressed_bytes_total
+  compressor                    decompressor
+    ↓                            ↑                ←msg_compressed_bytes_total
+  Avro serializer               Avro deserializer
+    ↓                            ↑
+  encrypt                       decrypt
+    ↓                            ↑
+  packetize                     depacketize
+- - ↓  - - - - - - - - - - - - - ↑ - - - - - - - -←the boundary
+  messaging system → broker → messaging system
+```
 
 #### Property
 

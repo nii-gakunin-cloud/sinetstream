@@ -1,6 +1,8 @@
 # vim:noexpandtab tabstop=8 shiftwidth=8
 
-PYTHON3 = python3
+#venvdir =
+PYTHON3SYS = python3
+PYTHON3 = $(venvdir)/bin/python3
 TOX = $(PYTHON3) -m tox
 TWINE = $(PYTHON3) -m twine
 

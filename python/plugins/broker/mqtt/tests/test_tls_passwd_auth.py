@@ -23,6 +23,7 @@ import logging
 from sinetstream import MessageReader, MessageWriter, ConnectionError
 import pytest
 from conftest import (
+    CONFVER1, CONFVER2, CONFVER3, CONFVER,
     SERVICE, TOPIC, SSL_USER_PASSWD_BROKER, MQTT_USER, MQTT_PASSWD,
     CACERT_PATH,
 )
@@ -35,14 +36,37 @@ pytestmark = pytest.mark.skipif(
 
 _TLS_PARAMS = {'ca_certs': str(CACERT_PATH)} if CACERT_PATH is not None else True
 
+ok_passwd_params_v1 = {
+    'username_pw_set': {
+        'username': MQTT_USER,
+        'password': MQTT_PASSWD,
+    },
+    'tls': _TLS_PARAMS,
+}
 
-@pytest.mark.parametrize("io", [MessageReader, MessageWriter])
+ok_passwd_params_v3 = {
+    'type_spec': {
+        'username_pw': {
+            'username': MQTT_USER,
+            'password': MQTT_PASSWD,
+        },
+    },
+    'tls': _TLS_PARAMS,
+}
+
+
+@pytest.mark.parametrize("io,config_comm_params,config_version", [
+    (MessageReader, ok_passwd_params_v1, CONFVER1),
+    (MessageWriter, ok_passwd_params_v1, CONFVER1),
+    (MessageReader, ok_passwd_params_v3, CONFVER3),
+    (MessageWriter, ok_passwd_params_v3, CONFVER3),
+])
 def test_password_auth(io, setup_config):
     with io(SERVICE, TOPIC) as _:
         pass
 
 
-bad_passwd_params = {
+bad_passwd_params_v1 = {
     'username_pw_set': {
         'username': MQTT_USER,
         'password': MQTT_PASSWD + 'X',
@@ -50,10 +74,22 @@ bad_passwd_params = {
     'tls': _TLS_PARAMS,
 }
 
+bad_passwd_params_v3 = {
+    'type_spec': {
+        'username_pw': {
+            'username': MQTT_USER,
+            'password': MQTT_PASSWD + 'X',
+        },
+    },
+    'tls': _TLS_PARAMS,
+}
 
-@pytest.mark.parametrize("io,config_params", [
-    (MessageReader, bad_passwd_params),
-    (MessageWriter, bad_passwd_params),
+
+@pytest.mark.parametrize("io,config_comm_params,config_version", [
+    (MessageReader, bad_passwd_params_v1, CONFVER1),
+    (MessageWriter, bad_passwd_params_v1, CONFVER1),
+    (MessageReader, bad_passwd_params_v3, CONFVER3),
+    (MessageWriter, bad_passwd_params_v3, CONFVER3),
 ])
 def test_bad_password(io, setup_config):
     with pytest.raises(ConnectionError):
@@ -61,7 +97,7 @@ def test_bad_password(io, setup_config):
             pass
 
 
-bad_user_params = {
+bad_user_params_v1 = {
     'username_pw_set': {
         'username': MQTT_USER + 'X',
         'password': MQTT_PASSWD,
@@ -69,10 +105,22 @@ bad_user_params = {
     'tls': _TLS_PARAMS,
 }
 
+bad_user_params_v3 = {
+    'type_spec': {
+        'username_pw': {
+            'username': MQTT_USER + 'X',
+            'password': MQTT_PASSWD,
+        },
+    },
+    'tls': _TLS_PARAMS,
+}
 
-@pytest.mark.parametrize("io,config_params", [
-    (MessageReader, bad_user_params),
-    (MessageWriter, bad_user_params),
+
+@pytest.mark.parametrize("io,config_comm_params,config_version", [
+    (MessageReader, bad_user_params_v1, CONFVER1),
+    (MessageWriter, bad_user_params_v1, CONFVER1),
+    (MessageReader, bad_user_params_v3, CONFVER3),
+    (MessageWriter, bad_user_params_v3, CONFVER3),
 ])
 def test_bad_user(io, setup_config):
     with pytest.raises(ConnectionError):
@@ -84,14 +132,3 @@ def test_bad_user(io, setup_config):
 def config_brokers():
     logger.debug(f'BROKER: {SSL_USER_PASSWD_BROKER}')
     return [SSL_USER_PASSWD_BROKER]
-
-
-@pytest.fixture()
-def config_params():
-    return {
-        'username_pw_set': {
-            'username': MQTT_USER,
-            'password': MQTT_PASSWD,
-        },
-        'tls': _TLS_PARAMS,
-    }

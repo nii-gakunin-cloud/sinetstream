@@ -37,7 +37,9 @@ Currently, SINETStream supports Apache Kafka and MQTT Broker, among others, as b
 --->
 The backend is extensible as plugins to support other messaging systems.
 
-SINETStream provides three API versions, i.e., Python API, Java API and Android API (MQTT only).
+SINETStream provides three API versions, i.e., Python API (CPython and MicroPython), Java API and Android API (MQTT only).
+Regarding the Android version, it is also intended to support applications that distribute sensor information as an IoT (Internet of Things) device.
+Therefore, we also provide the `SINETStreamHelper` library, which periodically outputs the readings from the sensors built into Android devices in JSON format.
 
 ## Contents
 

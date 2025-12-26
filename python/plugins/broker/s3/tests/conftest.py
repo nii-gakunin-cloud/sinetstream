@@ -61,22 +61,27 @@ S3_AWS_SECRET_ACCESS_KEY = getenv("S3_AWS_SECRET_ACCESS_KEY", "minioadmin")
 
 def create_config_file(config=Path('.sinetstream_config.yml')):
     parameters = {
-        SERVICE: {
-            "type": "s3",
-            "topic": TOPIC,
-            # "brokers": XXX,
-            # "user_data_only": False,
-            # consistency: AT_MOST_ONCE,
-            "s3": {
-                "endpoint_url": S3_ENDPOINT_URL,
-                "bucket": S3_BUCKET,
-                "prefix": S3_PREFIX,
-                "suffix": S3_SUFFIX,
-                "name": S3_NAME,
-                "aws_access_key_id": S3_AWS_ACCESS_KEY_ID,
-                "aws_secret_access_key": S3_AWS_SECRET_ACCESS_KEY,
-                # "utc_offset": "+0900",
-            },
+        "header": {
+            "versoin": 3
+        },
+        "config": {
+            SERVICE: {
+                "type": "s3",
+                "topic": TOPIC,
+                # "brokers": XXX,
+                # "user_data_only": False,
+                # consistency: AT_MOST_ONCE,
+                "type_spec": {
+                    "endpoint_url": S3_ENDPOINT_URL,
+                    "bucket": S3_BUCKET,
+                    "prefix": S3_PREFIX,
+                    "suffix": S3_SUFFIX,
+                    "name": S3_NAME,
+                    "aws_access_key_id": S3_AWS_ACCESS_KEY_ID,
+                    "aws_secret_access_key": S3_AWS_SECRET_ACCESS_KEY,
+                    # "utc_offset": "+0900",
+                },
+            }
         }
     }
     logger.debug(f'CONFIG: {parameters}')

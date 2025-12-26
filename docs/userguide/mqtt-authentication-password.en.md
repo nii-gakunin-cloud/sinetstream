@@ -154,24 +154,44 @@ SINETStream reads the certificate from the path specified in the configuration f
 An example of SINETStream's configuration file is shown below.
 
 ```yaml
-service-mqtt-password:
-  brokers: broker.example.org:9093
-  type: mqtt
-  topic: topic-001
-  tls:
-    ca_certs: /opt/certs/cacert.pem
-  username_pw_set:
-    username: user01
-    password: user01-pass
+header:
+  version: 3
+config:
+  service-mqtt-password:
+    brokers: broker.example.org:9093
+    type: mqtt
+    topic: topic-001
+    tls:
+      ca_certs: /opt/certs/cacert.pem
+    username_pw_set:
+      username: user01
+      password: user01-pass
 ```
 
 The settings for `brokers`, `type`, `topic`, `consistency`, `tls` are identical to those without authentication.
-Settings related to password authentication are under `username_pw_set:`.
+Settings related to password authentication are under `username_pw:`.
 
 * `username`
     * User name
 * `password`
     * Password
+
+DEPRECATED: writing style prior to config version 2:
+
+```yaml
+header:
+  version: 2
+config:
+  service-mqtt-password:
+    brokers: broker.example.org:9093
+    type: mqtt
+    topic: topic-001
+    tls:
+      ca_certs: /opt/certs/cacert.pem
+    username_pw_set:
+      username: user01
+      password: user01-pass
+```
 
 ### Create a program that uses SINETStream
 
@@ -186,6 +206,19 @@ with sinetstream.MessageWriter(service='service-mqtt-password') as writer:
 As you see, no code is written for authentication.
 
 If you want to configure the authentication within your program, add parameters to the constructor arguments.
+
+```python
+user_password = {
+    'username_pw': {
+      'username': 'user01',
+      'password': 'user01-pass',
+    }
+}
+with sinetstream.MessageWriter(service='service-mqtt', type_spec=user_password) as writer:
+    writer.publish(b'message 001')
+```
+
+DEPRECATED: writing style prior to config version 2:
 
 ```python
 user_password = {

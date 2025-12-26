@@ -24,6 +24,7 @@ from sinetstream import MessageReader, MessageWriter, ConnectionError
 import threading
 import pytest
 from conftest import (
+    CONFVER1, CONFVER3,
     SERVICE, TOPIC, USER_PASSWD_BROKER, KAFKA_USER, KAFKA_PASSWD,
 )
 
@@ -32,8 +33,19 @@ logger = logging.getLogger(__name__)
 pytestmark = pytest.mark.skipif(
     USER_PASSWD_BROKER is None, reason='KAFKA_USER_PASSWD_BROKER is not set.')
 
+sasl_plain = {
+    'security_protocol': 'SASL_PLAINTEXT',
+    'sasl_mechanism': 'PLAIN',
+    'sasl_plain_username': KAFKA_USER,
+    'sasl_plain_password': KAFKA_PASSWD,
+}
 
-@pytest.mark.parametrize("io", [MessageReader, MessageWriter])
+
+@pytest.mark.parametrize("io, config_kafka_params, config_version", [
+    (MessageReader, sasl_plain, CONFVER1),
+    (MessageWriter, sasl_plain, CONFVER3),
+    ]
+)
 def test_password_auth(io, setup_config):
     with io(SERVICE, TOPIC) as _:
         pass
@@ -63,9 +75,11 @@ bad_security_protocol_params = {
 }
 
 
-@pytest.mark.parametrize("io,config_params", [
-    (MessageReader, bad_passwd_params),
-    (MessageWriter, bad_passwd_params),
+@pytest.mark.parametrize("io,config_kafka_params,config_version", [
+    (MessageReader, bad_passwd_params, CONFVER1),
+    (MessageWriter, bad_passwd_params, CONFVER1),
+    (MessageReader, bad_passwd_params, CONFVER3),
+    (MessageWriter, bad_passwd_params, CONFVER3),
 ])
 def test_bad_password(io, setup_config):
     count = threading.active_count()
@@ -76,7 +90,7 @@ def test_bad_password(io, setup_config):
     ss.close()
 
 
-@pytest.mark.parametrize("io,config_params", [
+@pytest.mark.parametrize("io,config_kafka_params", [
     (MessageReader, bad_user_params),
     (MessageWriter, bad_user_params),
 ])
@@ -89,7 +103,7 @@ def test_bad_user(io, setup_config):
     ss.close()
 
 
-@pytest.mark.parametrize("io,config_params", [
+@pytest.mark.parametrize("io,config_kafka_params", [
     (MessageReader, bad_security_protocol_params),
     (MessageWriter, bad_security_protocol_params),
 ])
@@ -105,11 +119,11 @@ def config_brokers():
     return [USER_PASSWD_BROKER]
 
 
-@pytest.fixture()
-def config_params():
-    return {
-        'security_protocol': 'SASL_PLAINTEXT',
-        'sasl_mechanism': 'PLAIN',
-        'sasl_plain_username': KAFKA_USER,
-        'sasl_plain_password': KAFKA_PASSWD,
-    }
+#@pytest.fixture()
+#def config_params():
+#    return {
+#        'security_protocol': 'SASL_PLAINTEXT',
+#        'sasl_mechanism': 'PLAIN',
+#        'sasl_plain_username': KAFKA_USER,
+#        'sasl_plain_password': KAFKA_PASSWD,
+#    }

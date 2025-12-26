@@ -365,17 +365,20 @@ $ docker rm tutorial
 `Reader`, `Writer` で使用した SINETStream の設定ファイル `.sinetstream_config.yml` の内容を以下に示します。
 
 ```yaml
-service-tutorial-kafka:
-    type: kafka
-    brokers: "broker:9092"
-    topic: topic-tutorial-kafka
-    value_type: text
+header:
+    version: 3
+config:
+    service-tutorial-kafka:
+        type: kafka
+        brokers: "broker:9092"
+        topic: topic-tutorial-kafka
+        value_type: text
 
-service-tutorial-mqtt:
-    type: mqtt
-    brokers: "broker:1883"
-    topic: topic-tutorial-mqtt
-    value_type: text
+    service-tutorial-mqtt:
+        type: mqtt
+        brokers: "broker:1883"
+        topic: topic-tutorial-mqtt
+        value_type: text
 ```
 
 設定ファイルは階層化したキー、バリューをYAMLの形式で記述しています。

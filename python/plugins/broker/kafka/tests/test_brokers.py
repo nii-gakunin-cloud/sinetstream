@@ -21,12 +21,14 @@
 
 import pytest
 from sinetstream import MessageReader, MessageWriter, InvalidArgumentError
-from conftest import SERVICE, TOPIC, BROKER
+from conftest import SERVICE, TOPIC, BROKER, CONFVER1, CONFVER3
 
 
-@pytest.mark.parametrize("io,config_brokers", [
-    pytest.param(MessageReader, None),
-    pytest.param(MessageWriter, None),
+@pytest.mark.parametrize("io,config_brokers,config_version", [
+    pytest.param(MessageReader, None, CONFVER1),
+    pytest.param(MessageWriter, None, CONFVER1),
+    pytest.param(MessageReader, None, CONFVER3),
+    pytest.param(MessageWriter, None, CONFVER3),
 ])
 def test_no_broker(io, setup_config):
     with pytest.raises(InvalidArgumentError):
@@ -34,9 +36,11 @@ def test_no_broker(io, setup_config):
             pass
 
 
-@pytest.mark.parametrize("io,config_brokers", [
-    pytest.param(MessageReader, []),
-    pytest.param(MessageWriter, []),
+@pytest.mark.parametrize("io,config_brokers,config_version", [
+    pytest.param(MessageReader, [], CONFVER1),
+    pytest.param(MessageWriter, [], CONFVER1),
+    pytest.param(MessageReader, [], CONFVER3),
+    pytest.param(MessageWriter, [], CONFVER3),
 ])
 def test_empty_broker_list(io, setup_config):
     with pytest.raises(InvalidArgumentError):
@@ -44,18 +48,22 @@ def test_empty_broker_list(io, setup_config):
             pass
 
 
-@pytest.mark.parametrize("io,config_brokers", [
-    pytest.param(MessageReader, BROKER),
-    pytest.param(MessageWriter, BROKER),
+@pytest.mark.parametrize("io,config_brokers,config_version", [
+    pytest.param(MessageReader, BROKER, CONFVER1),
+    pytest.param(MessageWriter, BROKER, CONFVER1),
+    pytest.param(MessageReader, BROKER, CONFVER3),
+    pytest.param(MessageWriter, BROKER, CONFVER3),
 ])
 def test_brokers_str_type(io, setup_config):
     with io(SERVICE) as f:
         assert f.params['brokers'] == BROKER
 
 
-@pytest.mark.parametrize("io,config_brokers", [
-    pytest.param(MessageReader, [BROKER]),
-    pytest.param(MessageWriter, [BROKER]),
+@pytest.mark.parametrize("io,config_brokers,config_version", [
+    pytest.param(MessageReader, [BROKER], CONFVER1),
+    pytest.param(MessageWriter, [BROKER], CONFVER1),
+    pytest.param(MessageReader, [BROKER], CONFVER3),
+    pytest.param(MessageWriter, [BROKER], CONFVER3),
 ])
 def test_brokers_list(io, setup_config):
     with io(SERVICE) as f:

@@ -24,6 +24,7 @@ from itertools import product
 from sinetstream import MessageReader, MessageWriter, ConnectionError
 import pytest
 from conftest import (
+    CONFVER1, CONFVER2, CONFVER3, CONFVER,
     SERVICE, TOPIC, SSL_CERT_AUTH_BROKER,
     CACERT_PATH, CLIENT_CERT_PATH, CLIENT_CERT_KEY_PATH,
     CLIENT_BAD_CERT_PATH, CLIENT_BAD_CERT_KEY_PATH,
@@ -36,7 +37,7 @@ pytestmark = pytest.mark.skipif(
     reason='MQTT_SSL_CERT_AUTH_BROKER is not set.')
 
 
-no_client_auth_params = [
+no_client_auth_params_v1 = [
     {
         'tls': {'ca_certs': str(CACERT_PATH)}
     }, {
@@ -45,9 +46,10 @@ no_client_auth_params = [
 ]
 
 
-@pytest.mark.parametrize("io,config_params", product(
+@pytest.mark.parametrize("io,config_comm_params,config_version", product(
     [MessageReader, MessageWriter],
-    no_client_auth_params,
+    no_client_auth_params_v1,
+    [CONFVER1],
 ))
 def test_no_client_cert_tls(io, setup_config):
     with pytest.raises(ConnectionError):
@@ -55,7 +57,25 @@ def test_no_client_cert_tls(io, setup_config):
             pass
 
 
-client_auth_params = [
+no_client_auth_params_v3 = [
+    {
+        'tls': {'ca_certs': str(CACERT_PATH)}
+    },
+]
+
+
+@pytest.mark.parametrize("io,config_comm_params,config_version", product(
+    [MessageReader, MessageWriter],
+    no_client_auth_params_v3,
+    [CONFVER3],
+))
+def test_no_client_cert_tls_cfv3(io, setup_config):
+    with pytest.raises(ConnectionError):
+        with io(SERVICE, TOPIC) as _:
+            pass
+
+
+client_auth_params_v1 = [
     {
         'tls': {
             'ca_certs': str(CACERT_PATH),
@@ -75,16 +95,47 @@ client_auth_params = [
 @pytest.mark.skipif(
     CLIENT_CERT_PATH is None or CLIENT_CERT_KEY_PATH is None,
     reason='CLIENT_CERT_PATH or CLIENT_CERT_KEY_PATH is not set.')
-@pytest.mark.parametrize("io,config_params", product(
+@pytest.mark.parametrize("io,config_comm_params,config_version", product(
     [MessageReader, MessageWriter],
-    client_auth_params,
+    client_auth_params_v1,
+    [CONFVER1],
 ))
 def test_tls_client_auth(io, setup_config):
     with io(SERVICE, TOPIC) as _:
         pass
 
 
-bad_client_auth_params = [
+client_auth_params_v3 = [
+    {
+        'tls': {
+            'ca_certs': str(CACERT_PATH),
+            'certfile': str(CLIENT_CERT_PATH),
+            'keyfile': str(CLIENT_CERT_KEY_PATH),
+        }
+    }, {
+        'tls_set': {
+            'ca_certs': str(CACERT_PATH),
+            'certfile': str(CLIENT_CERT_PATH),
+            'keyfile': str(CLIENT_CERT_KEY_PATH),
+        }
+    },
+]
+
+
+@pytest.mark.skipif(
+    CLIENT_CERT_PATH is None or CLIENT_CERT_KEY_PATH is None,
+    reason='CLIENT_CERT_PATH or CLIENT_CERT_KEY_PATH is not set.')
+@pytest.mark.parametrize("io,config_comm_params,config_version", product(
+    [MessageReader, MessageWriter],
+    client_auth_params_v1,
+    [CONFVER1],
+))
+def test_tls_client_auth(io, setup_config):
+    with io(SERVICE, TOPIC) as _:
+        pass
+
+
+bad_client_auth_params_v1 = [
     {
         'tls': {
             'ca_certs': str(CACERT_PATH),
@@ -105,9 +156,33 @@ bad_client_auth_params = [
 @pytest.mark.skipif(
     CLIENT_BAD_CERT_PATH is None or CLIENT_BAD_CERT_KEY_PATH is None,
     reason='CLIENT_BAD_CERT_PATH or CLIENT_BAD_CERT_KEY_PATH is not set.')
-@pytest.mark.parametrize("io,config_params", product(
+@pytest.mark.parametrize("io,config_comm_params", product(
     [MessageReader, MessageWriter],
-    bad_client_auth_params,
+    bad_client_auth_params_v1,
+))
+def test_tls_bad_client_auth(io, setup_config):
+    with pytest.raises(ConnectionError):
+        with io(SERVICE, TOPIC) as _:
+            pass
+
+
+bad_client_auth_params_v3 = [
+    {
+        'tls': {
+            'ca_certs': str(CACERT_PATH),
+            'certfile': str(CLIENT_BAD_CERT_PATH),
+            'keyfile': str(CLIENT_BAD_CERT_KEY_PATH),
+        }
+    },
+]
+
+
+@pytest.mark.skipif(
+    CLIENT_BAD_CERT_PATH is None or CLIENT_BAD_CERT_KEY_PATH is None,
+    reason='CLIENT_BAD_CERT_PATH or CLIENT_BAD_CERT_KEY_PATH is not set.')
+@pytest.mark.parametrize("io,config_comm_params", product(
+    [MessageReader, MessageWriter],
+    bad_client_auth_params_v1,
 ))
 def test_tls_bad_client_auth(io, setup_config):
     with pytest.raises(ConnectionError):

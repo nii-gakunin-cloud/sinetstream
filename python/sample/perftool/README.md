@@ -45,15 +45,18 @@ under the License.
 
 #### 設定ファイル記述例
 ```
-service-perftool-kafka:
-    type: kafka
-    brokers: "broker:9092"
-    topic: topic-perftool-kafka
+header:
+    #version: 3
+config:
+    service-perftool-kafka:
+        type: kafka
+        brokers: "broker:9092"
+        topic: topic-perftool-kafka
 
-service-perftool-mqtt:
-    type: mqtt
-    brokers: "broker:1883"
-    topic: topic-perftool-mqtt
+    service-perftool-mqtt:
+        type: mqtt
+        brokers: "broker:1883"
+        topic: topic-perftool-mqtt
 
 ```
 
