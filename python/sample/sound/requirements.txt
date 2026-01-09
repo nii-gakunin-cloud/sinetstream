@@ -18,5 +18,5 @@ sinetstream-type-ndarray==1.8.2 # SINETStreamVERSION
 six==1.16.0
 sounddevice==0.4.6
 soundfile==0.12.1
-urllib3==2.6.0
+urllib3==2.6.3
 zstandard==0.22.0
