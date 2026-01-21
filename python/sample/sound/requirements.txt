@@ -11,10 +11,10 @@ pycparser==2.21
 pycryptodomex==3.19.1
 PyYAML==6.0.1
 requests==2.32.4
-sinetstream==1.8.2              # SINETStreamVERSION
-sinetstream-kafka==1.8.2        # SINETStreamVERSION
-sinetstream-mqtt==1.8.2         # SINETStreamVERSION
-sinetstream-type-ndarray==1.8.2 # SINETStreamVERSION
+sinetstream==1.10.0              # SINETStreamVERSION
+sinetstream-kafka==1.10.0        # SINETStreamVERSION
+sinetstream-mqtt==1.10.0         # SINETStreamVERSION
+sinetstream-type-ndarray==1.10.0 # SINETStreamVERSION
 six==1.16.0
 sounddevice==0.4.6
 soundfile==0.12.1

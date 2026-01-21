@@ -36,7 +36,7 @@ Java版は
 ## 前提条件
 
 * Python版
-    * Python3.9以上                     <!--- PythonVERSION --->
+    * Python3.10以上                    <!--- PythonVERSION --->
     * SINETStream v1.10.0(Python)       <!--- SINETStreamVERSION --->
 * Java版
     * Java11以上                        <!--- JavaVERSION --->

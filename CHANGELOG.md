@@ -22,18 +22,14 @@ https://keepachangelog.com/
     - implemented on sinetstream-python and sinetstream-upython.
     - details are [here](docs/userguide/config.md).
 - [SINETStream for MicroPython](https://github.com/nii-gakunin-cloud/sinetstream-upython) (upython)
-
-### Changed
-
-- XXX
+    - ported sinetstream-python api and MQTT plugin
+- [Apache Avro for SINETStream MicroPython](https://github.com/nii-gakunin-cloud/sinetstream-uavro/)
+    - ported [Apache Avro](https://avro.apache.org/)
+    - required by sinetstream-upython
 
 ### Deprecated
 
 - config file format version 1 and 2 discontinued in the future.
-
-### Removed
-
-- XXX
 
 ### Fixed
 

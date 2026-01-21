@@ -25,6 +25,9 @@ under the License.
 
 The container image for the SINETStream Android tutorial
 
+> **CAUTION**: As this software contains known vulnerabilities, please use it in a secure environment where it is not exposed to threats.
+
+
 ## Overview
 
 ![Module configuration](doc/tutorial-001.png)

@@ -25,6 +25,8 @@ under the License.
 
 SINETStream Androidのチュートリアル用コンテナイメージ
 
+> **注意**: 既知の脆弱性があるソフトウェアが含まれているため脅威にさらされない安全な環境で利用してください。
+
 ## 概要
 
 ![構成](doc/tutorial-001.png)
