@@ -4,3 +4,6 @@
 [submodule "android-helper"]
 	path = android-helper
 	url = https://github.com/nii-gakunin-cloud/sinetstream-android-helper.git
+[submodule "upython"]
+	path = upython
+	url = https://github.com/nii-gakunin-cloud/sinetstream-upython
