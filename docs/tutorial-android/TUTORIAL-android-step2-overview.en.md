@@ -91,23 +91,23 @@ desktop computer. Then we also describe how to install, setup and
 operate of the server programs.
 
 On the host machine, install the `Docker Engine` at first.
-Then execute `docker run` to install the container image for STEP2.
-Finally, start all required server programs.
+See [Install Docker Engine](https://docs.docker.com/engine/install/)
+for the installation procedure.
 
-Go through the companion document
-[TUTORIAL - DOCKER-CONTAINER](sinetstreamhelper-tutorial-container/TUTORIAL-docker-container.en.md)
-for the actual procedure details.
+Then execute `docker run` to install the container image for STEP2
+and start all required server programs.
 
 ```console
      % sudo docker run -d --name broker -p 1883:1883 -p 80:80 harbor.vcloud.nii.ac.jp/sinetstream/android-tutorial:latest
 ```
 
+> The arguments of the `docker run` command above specify the container
+> name as `broker`, and open two TCP ports: 1883 (MQTT) and 80 (HTTP).
+> If you need to change the listening port numbers, adjust the `-p`
+> option values accordingly.
+
 With this `docker run` command, installation of the back-end system
 and starting of server processes are automatically executed.
-
-As for the system details on the back-end side, see the companion
-document
-[The container image for the SINETStream Android tutorial](sinetstreamhelper-tutorial-container/README.en.md).
 
 
 ### 3.2 Works on the Android side
@@ -127,7 +127,7 @@ for the data visualization listens for the incoming connection.
 From a web browser on an observing PC, connect to the following URL.
 
 ```
-    http://<server_address>/chart.html
+    http://<server_address>/
 ```
 
 For the `server_address` of the URL, specify the host machine
@@ -157,9 +157,8 @@ Please stop and remove the container image with the following commands.
      % sudo docker rm broker
 ```
 
-Please see the companion document
-[TUTORIAL-DOCKER-CONTAINER](sinetstreamhelper-tutorial-container/TUTORIAL-docker-container.en.md)
-for details.
+See [Docker CLI reference](https://docs.docker.com/reference/cli/docker/)
+for details on the container stop and removal commands.
 
 
 ## 4. Restrictions
@@ -256,12 +255,12 @@ Android versions) and `Cache`.
 
 * Sensor type mismatch between the received data and the graph settings.
     * Initial graph settings takes following 3 sensor types.
-        * step_counter
         * light
-        * accelerometer
+        * magnetic_field
+        * gravity
     * If you want to see other sensor types, or if some of those types
-are unavailable on the Android device, choose desired ones via UI
-operations on the web interface.
+are unavailable on the Android device, choose desired ones via the
+settings dialog on the web interface.
     * See the companion document
 [TUTORIAL - A web interface for the sensor data visualization](TUTORIAL-android-step2-webbrowser.en.md)
 for more info.

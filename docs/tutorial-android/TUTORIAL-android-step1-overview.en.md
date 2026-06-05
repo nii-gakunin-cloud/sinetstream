@@ -90,15 +90,14 @@ Here we demonstrate a sample usage that only the MQTT `Broker`
 functionality is used while other elements of the back-end system
 for the other tutorial (TUTORIAL-ANDROID-STEP2) left untouched.
 
-If the back-end system for the TUTORIAL-ANDROID-STEP2 has not yet
-started, go through the chain of works (install the `Docker Engine`,
-install and run the container image) by following the
-[Tutorial DOCKER-CONTAINER](sinetstreamhelper-tutorial-container/TUTORIAL-docker-container.en.md)
-document.
-
 ```console
      % sudo docker run -d --name broker -p 1883:1883 -p 80:80 harbor.vcloud.nii.ac.jp/sinetstream/android-tutorial:latest
 ```
+
+> The arguments of the `docker run` command above specify the container
+> name as `broker`, and open two TCP ports: 1883 (MQTT) and 80 (HTTP).
+> If you need to change the listening port numbers, adjust the `-p`
+> option values accordingly.
 
 With this `docker run` command, installation of the back-end system
 and starting of server processes are automatically executed.

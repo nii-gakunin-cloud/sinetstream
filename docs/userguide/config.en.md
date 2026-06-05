@@ -411,6 +411,7 @@ While the names of the parameters for SSL/TLS differ depending on the messaging 
     * One of the following:
         * A boolean specifying whether to use a TLS connection.
         * Specify the parameters related to TLS connection as YAML mapping (`{key}`:`{value}`)
+            * not available in the MicroPython platform (upython).
 
 The mapping may contain the following keys.
 

@@ -84,17 +84,17 @@ Android端末から対向`Broker`に接続さえできれば十分です。
 ここでは、Android版のもう一つのチュートリアル(STEP2)で用いるバックエンドシステムはそのままにして、
 MQTTの`Broker`機能だけを流用する例を示します。
 
-もしまだSTEP2のバックエンド機能を立ち上げていない場合、別紙
-[チュートリアル DOCKER-CONTAINER](sinetstreamhelper-tutorial-container/TUTORIAL-docker-container.md)
-の案内に従い`Docker Engine`の導入、
-およびコンテナイメージの導入と起動といった一連の作業を実施してください。
-
 ```console
      % sudo docker run -d --name broker -p 1883:1883 -p 80:80 harbor.vcloud.nii.ac.jp/sinetstream/android-tutorial:latest
 ```
+
+> 上記`docker run`コマンドの引数で、コンテナ名称を`broker`、
+> TCPポート1883(MQTT)と80(HTTP)の2つを開くように指定しています。
+> サービスの待ち受けポート番号を変更する場合は`-p`オプションの値を
+> 変更してください。
+
 この`docker run`コマンド実行により、
 バックエンド側の導入とサーバ群の起動が自動的に実施されます。
-
 
 ### 3.2 Android端末側の作業
 

@@ -85,22 +85,24 @@ Android端末のセンサー情報収集アプリを実際に動かす前に、
 その上でサーバプログラム群の導入と設定、操作方法などの手順に関して記述します。
 
 ホスト機材において、まずは動作基盤`Docker Engine`を導入してください。
+`Docker Engine`の導入方法に関しては
+[Install Docker Engine](https://docs.docker.com/engine/install/)
+を参照してください。
+
 次に`docker run`コマンドによりSTEP2用のコンテナイメージを導入し、
 続けて所用のサーバ群の一括起動を実施してください。
-
-これらの具体的な手順は、別紙
-[チュートリアル DOCKER-CONTAINER](sinetstreamhelper-tutorial-container/TUTORIAL-docker-container.md)
-を参照ください。
 
 ```console
      % sudo docker run -d --name broker -p 1883:1883 -p 80:80 harbor.vcloud.nii.ac.jp/sinetstream/android-tutorial:latest
 ```
+
+> 上記`docker run`コマンドの引数で、コンテナ名称を`broker`、
+> TCPポート1883(MQTT)と80(HTTP)の2つを開くように指定しています。
+> サービスの待ち受けポート番号を変更する場合は`-p`オプションの値を
+> 変更してください。
+
 この`docker run`コマンド実行により、
 バックエンド側の導入とサーバ群の起動が自動的に実施されます。
-
-なお、バックエンド側のシステム的な詳細に関しては、別紙
-[SINETStream Androidのチュートリアル用コンテナイメージ](sinetstreamhelper-tutorial-container/README.md)
-を参照ください。
 
 
 ### 3.2 Android端末側の作業
@@ -120,7 +122,7 @@ Android端末のセンサー情報収集アプリを実際に動かす前に、
 観測用PCのウェブブラウザから以下のURLに接続してください。
 
 ```
-    http://<server_address>/chart.html
+    http://<server_address>/
 ```
 
 上記URLのサーバアドレス部分は、
@@ -148,8 +150,8 @@ Android端末のセンサー情報収集アプリを実際に動かす前に、
      % sudo docker rm broker
 ```
 
-詳細は別紙
-[チュートリアル DOCKER-CONTAINER](sinetstreamhelper-tutorial-container/TUTORIAL-docker-container.md)
+コンテナの停止と削除の詳細に関しては
+[Docker CLI reference](https://docs.docker.com/reference/cli/docker/)
 を参照ください。
 
 
@@ -235,10 +237,10 @@ Android版`SINETStream`ライブラリの提供する全ての機能を網羅し
 
 * 配信中のセンサー種別と、グラフ表示対象のセンサー種別が一致していない
     * グラフ表示画面の初期値は、以下の3種類が表示されます。
-        * 歩数計（step_counter）
         * 照度計（light）
-        * 加速度計（accelerometer）
-    * 上記以外のセンサー種別を観測したい場合、あるいはAndroid端末側で対応していない場合は、グラフ画面操作により表示対象のセンサー種別を設定してください。
+        * 地磁気計（magnetic_field）
+        * 重力計（gravity）
+    * 上記以外のセンサー種別を観測したい場合、あるいはAndroid端末側で対応していない場合は、設定画面により表示対象のセンサー種別を変更してください。
     * 詳細に関しては別紙
 [チュートリアル - センサーデータ可視化用のウェブインタフェース](TUTORIAL-android-step2-webbrowser.md)
 を参照ください。
