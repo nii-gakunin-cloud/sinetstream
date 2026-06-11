@@ -109,6 +109,8 @@ and start all required server programs.
 With this `docker run` command, installation of the back-end system
 and starting of server processes are automatically executed.
 
+> The source code for the container image is [here](https://github.com/nii-gakunin-cloud/sinetstream-android-tutorial).
+
 
 ### 3.2 Works on the Android side
 

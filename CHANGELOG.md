@@ -11,6 +11,14 @@ https://keepachangelog.com/
 --->
 
 <!--- ---------------------------------------------------------------------- --->
+## 2026-06-05
+
+### Changed
+
+- `docs/tutorial-android/sinetstreamhelper-tutorial-container` has been rewritten and
+  moved to [sinetstream-android-tutorial](https://github.com/nii-gakunin-cloud/sinetstream-android-tutorial).
+
+<!--- ---------------------------------------------------------------------- --->
 ## [v1.10.0] - 2026-01-21
 
 ### Added

@@ -104,6 +104,8 @@ Android端末のセンサー情報収集アプリを実際に動かす前に、
 この`docker run`コマンド実行により、
 バックエンド側の導入とサーバ群の起動が自動的に実施されます。
 
+> コンテナイメージのソースコードは[こちら](https://github.com/nii-gakunin-cloud/sinetstream-android-tutorial)です。
+
 
 ### 3.2 Android端末側の作業
 
